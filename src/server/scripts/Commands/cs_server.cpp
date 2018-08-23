@@ -231,7 +231,8 @@ public:
         handler->PSendSysMessage(LANG_UPTIME, str.c_str());
         handler->PSendSysMessage("Smoothed update time diff: %u.", sMonitor->GetSmoothTimeDiff());
         handler->PSendSysMessage("Instant update time diff: %u.", sWorld->GetUpdateTime());
-        handler->PSendSysMessage("Current map update time diff: %u.", currentMapTimeDiff);
+        if(currentMapTimeDiff != 0)
+            handler->PSendSysMessage("Current map update time diff: %u.", currentMapTimeDiff);
         if (sWorld->IsShuttingDown())
             handler->PSendSysMessage("Server restart in %s", secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
 

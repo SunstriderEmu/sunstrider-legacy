@@ -13,6 +13,7 @@
 #include "ArenaTeamMgr.h"
 #include "MapManager.h"
 #include "Mail.h"
+#include "ReputationMgr.h"
 
 class misc2_commandscript : public CommandScript
 {
@@ -1094,7 +1095,7 @@ public:
                 else
                     FactionName = "#Not found#";
                 ReputationRank rank = target->GetReputationRank(factionEntry);
-                std::string rankName = handler->GetTrinityString(ChatHandler::ReputationRankStrIndex[rank]);
+                std::string rankName = handler->GetTrinityString(ReputationRankStrIndex[rank]);
                 std::ostringstream ss;
                 ss << itr->second.ID << ": |cffffffff|Hfaction:" << itr->second.ID << "|h[" << FactionName << "]|h|r " << rankName << "|h|r (" << target->GetReputation(factionEntry) << ")";
 

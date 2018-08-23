@@ -569,7 +569,7 @@ public:
         return true;
     }
 
-    static bool HandleReloadSpellElixirCommand(ChatHandler* handler, char const* /args)
+    static bool HandleReloadSpellElixirCommand(ChatHandler* handler, char const* args)
     {
         TC_LOG_INFO("command", "Re-Loading Spell Elixir types...");
         sSpellMgr->LoadSpellElixirs();

@@ -1,7 +1,7 @@
 #ifndef __PROFILER_H
 #define __PROFILER_H
 
-class Profiler
+class TC_GAME_API Profiler
 {
 public:
     static Profiler* instance()

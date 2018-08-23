@@ -5,6 +5,8 @@
 #include "AuctionHouseMgr.h"
 #include "BattleGround.h"
 #include "GuildMgr.h"
+#include "Mail.h"
+#include "Config.h"
 
 class shop_commandscript : public CommandScript
 {
@@ -866,7 +868,7 @@ public:
 
                                     MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
 
-                                    std::string subject = handler->GetSession()->handler->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                    std::string subject = handler->GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
                                     MailDraft(subject, {})
                                         .AddItem(newItem)
                                         .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
@@ -895,7 +897,7 @@ public:
 
                                     MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
 
-                                    std::string subject = handler->GetSession()->handler->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                    std::string subject = handler->GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
                                     MailDraft(subject, {})
                                         .AddItem(newItem)
                                         .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
@@ -936,7 +938,7 @@ public:
 
                                 MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
 
-                                std::string subject = handler->GetSession()->handler->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                std::string subject = handler->GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
                                 MailDraft(subject, {})
                                     .AddItem(newItem)
                                     .SendMailTo(trans_, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);
@@ -976,7 +978,7 @@ public:
 
                                 MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
 
-                                std::string subject = handler->GetSession()->handler->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+                                std::string subject = handler->GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
                                 MailDraft(subject, {})
                                     .AddItem(newItem)
                                     .SendMailTo(trans, MailReceiver(plr, plr->GetGUID().GetCounter()), sender, MAIL_CHECK_MASK_COPIED);

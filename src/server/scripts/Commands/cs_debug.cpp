@@ -663,7 +663,7 @@ public:
         return true;
     }
 
-    static bool HandleDebugBattleGroundCommand(const char* )
+    static bool HandleDebugBattleGroundCommand(ChatHandler* handler, const char* /*args*/)
     {
         bool enabled = sBattlegroundMgr->ToggleBattleGroundTesting();
 
@@ -1143,7 +1143,7 @@ public:
     /* Syntax: .debug getarmor */
     static bool HandleDebugGetArmorCommand(ChatHandler* handler, char const* args)
     {
-        return HandleDebugGetValueCommand("186"); //186 == UNIT_FIELD_RESISTANCES
+        return HandleDebugGetValueCommand(handler, "186"); //186 == UNIT_FIELD_RESISTANCES
     }
 
     //show animation

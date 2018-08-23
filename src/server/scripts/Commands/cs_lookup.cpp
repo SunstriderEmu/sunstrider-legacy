@@ -2,12 +2,7 @@
 #include "Language.h"
 #include "GameEventMgr.h"
 #include "AccountMgr.h"
-
-const uint32 ChatHandler::ReputationRankStrIndex[MAX_REPUTATION_RANK] =
-{
-    LANG_REP_HATED,    LANG_REP_HOSTILE, LANG_REP_UNFRIENDLY, LANG_REP_NEUTRAL,
-    LANG_REP_FRIENDLY, LANG_REP_HONORED, LANG_REP_REVERED,    LANG_REP_EXALTED
-};
+#include "ReputationMgr.h"
 
 class lookup_commandscript : public CommandScript
 {
@@ -354,7 +349,7 @@ public:
                     if (repState)                               // and then target!=NULL also
                     {
                         ReputationRank rank = target->GetReputationRank(factionEntry);
-                        std::string rankName = handler->GetTrinityString(ChatHandler::ReputationRankStrIndex[rank]);
+                        std::string rankName = handler->GetTrinityString(ReputationRankStrIndex[rank]);
 
                         ss << " " << rankName << "|h|r (" << target->GetReputation(factionEntry) << ")";
 

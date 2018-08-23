@@ -1,9 +1,9 @@
 #include "Chat.h"
 #include "Language.h"
 #include "AccountMgr.h"
+#include "CharacterCache.h"
 
 #define _CONCAT3_(A, B, C) "CONCAT( " A ", " B ", " C " )"
-
 
 class ban_commandscript : public CommandScript
 {
@@ -409,7 +409,7 @@ public:
             return true;
         }
 
-        return HandleBanInfoHelper(accountid, account_name.c_str());
+        return HandleBanInfoHelper(handler, accountid, account_name.c_str());
     }
 
     static bool HandleBanInfoCharacterCommand(ChatHandler* handler, char const* args)
@@ -441,10 +441,10 @@ public:
             return true;
         }
 
-        return HandleBanInfoHelper(accountid, accountname.c_str());
+        return HandleBanInfoHelper(handler, accountid, accountname.c_str());
     }
 
-    static bool HandleBanInfoHelper(uint32 accountid, char const* accountname)
+    static bool HandleBanInfoHelper(ChatHandler* handler, uint32 accountid, char const* accountname)
     {
         QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC", accountid);
         if (!result)

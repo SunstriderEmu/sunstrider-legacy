@@ -2062,7 +2062,8 @@ void World::Update(time_t diff)
     for(auto & m_timer : m_timers)
         if(m_timer.GetCurrent()>=0)
             m_timer.Update(diff);
-    else m_timer.SetCurrent(0);
+    else
+        m_timer.SetCurrent(0);
 
     ///- Update Who List Storage
     if (m_timers[WUPDATE_WHO_LIST].Passed())

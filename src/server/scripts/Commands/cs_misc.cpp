@@ -13,6 +13,8 @@
 #include "ScriptMgr.h"
 #include "SpellHistory.h"
 #include "MovementDefines.h"
+#include "Mail.h"
+#include "Config.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -1540,7 +1542,7 @@ public:
         }
 
         // from console show not existed sender
-        MailSender sender(MAIL_NORMAL,GetSession() ? handler->GetSession()->GetPlayer()->GetGUID().GetCounter() : 0, MAIL_STATIONERY_GM);
+        MailSender sender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUID().GetCounter() : 0, MAIL_STATIONERY_GM);
 
         // fill mail
         MailDraft draft(subject, text);

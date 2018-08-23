@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "MapManager.h"
 
 class tele_commandscript : public CommandScript
 {
@@ -105,7 +106,7 @@ public:
             return false;
 
         // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
-        GameTele const* tele = extractGameTeleFromLink(tail);
+        GameTele const* tele = handler->extractGameTeleFromLink(tail);
         if (!tele)
         {
             handler->SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
@@ -169,7 +170,7 @@ public:
         }
 
         // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
-        GameTele const* tele = extractGameTeleFromLink((char*)args);
+        GameTele const* tele = handler->extractGameTeleFromLink((char*)args);
         if (!tele)
         {
             handler->SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
@@ -328,7 +329,7 @@ public:
         }
 
         // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
-        GameTele const* tele = extractGameTeleFromLink((char*)args);
+        GameTele const* tele = handler->extractGameTeleFromLink((char*)args);
 
         if (!tele)
         {

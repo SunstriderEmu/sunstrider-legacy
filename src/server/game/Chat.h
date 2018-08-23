@@ -14,7 +14,7 @@ struct GameTele;
 struct GM_Ticket;
 class GameObject;
 
-class ChatCommand
+class TC_GAME_API ChatCommand
 {
     typedef bool(*pHandler)(ChatHandler*, char const*);
 
@@ -114,8 +114,6 @@ class TC_GAME_API ChatHandler
         Creature* GetCreatureFromPlayerMapByDbGuid(ObjectGuid::LowType lowguid);
 
         bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, ObjectGuid &guid, bool offline = false);
-
-        static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK];
 
         bool ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd);
         bool ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd);

@@ -88,7 +88,7 @@ private:
 	uint32 count = 0;
 };
 
-class Monitor
+class TC_GAME_API Monitor
 {
 	friend class MapUpdater;
 	friend class World;

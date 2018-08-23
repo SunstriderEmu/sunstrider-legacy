@@ -18,6 +18,7 @@ public:
         {
             { "profiling", SEC_SUPERADMIN,   false, nullptr,                                  "", profilingCommandTable },
         };
+        return commandTable;
     }
 
     /* .profiling start [filename] */

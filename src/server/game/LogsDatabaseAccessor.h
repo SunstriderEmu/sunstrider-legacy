@@ -2,7 +2,8 @@
 #define _LOGSDATABASEACCESSOR_H
 
 #include "Define.h"
-#include "../game/SharedDefines.h"
+#include "SharedDefines.h"
+#include "Mail.h"
 
 class Creature;
 class Player;
@@ -13,7 +14,7 @@ class MailItemsInfo;
 class Unit;
 enum SanctionType : uint32;
 
-class LogsDatabaseAccessor
+class TC_GAME_API LogsDatabaseAccessor
 {
 public:
     static LogsDatabaseAccessor* instance()

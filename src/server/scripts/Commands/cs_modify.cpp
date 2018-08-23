@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "ReplayPlayer.h"
+#include "ReputationMgr.h"
 
 class modify_commandscript : public CommandScript
 {
@@ -1166,7 +1167,7 @@ public:
             amount = -42000;
             for (; r < MAX_REPUTATION_RANK; ++r)
             {
-                std::string rank = handler->GetTrinityString(ChatHandler::ReputationRankStrIndex[r]);
+                std::string rank = handler->GetTrinityString(ReputationRankStrIndex[r]);
                 if(rank.empty())
                     continue;
 

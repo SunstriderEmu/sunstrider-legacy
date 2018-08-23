@@ -49,7 +49,7 @@ enum WaypointPathType
     WP_PATH_TYPE_TOTAL
 };
 
-std::string GetWaypointPathTypeName(WaypointPathType type);
+TC_GAME_API std::string GetWaypointPathTypeName(WaypointPathType type);
 
 enum WaypointPathDirection
 {
@@ -60,7 +60,7 @@ enum WaypointPathDirection
     WP_PATH_DIRECTION_TOTAL
 };
 
-std::string GetWaypointPathDirectionName(WaypointPathDirection dir);
+TC_GAME_API std::string GetWaypointPathDirectionName(WaypointPathDirection dir);
 
 template<class T>
 class WaypointMovementGenerator;

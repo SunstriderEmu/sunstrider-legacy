@@ -68,6 +68,7 @@
 #include "GuildMgr.h"
 #include "ArenaTeamMgr.h"
 #include "PetitionMgr.h"
+#include "ReputationMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
