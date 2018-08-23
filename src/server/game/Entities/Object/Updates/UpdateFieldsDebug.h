@@ -6,7 +6,7 @@
 #include "UpdateFields.h"
 #include <iomanip>
 
-class UpdateFieldsDebug
+class TC_GAME_API UpdateFieldsDebug
 {
 private:
     //shouldn't be instanced

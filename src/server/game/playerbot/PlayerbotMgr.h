@@ -43,7 +43,7 @@ protected:
     PlayerBotMap playerBots;
 };
 
-class PlayerbotMgr : public PlayerbotHolder
+class TC_GAME_API PlayerbotMgr : public PlayerbotHolder
 {
 public:
     PlayerbotMgr(Player* const master);

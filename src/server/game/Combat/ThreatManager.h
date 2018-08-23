@@ -228,7 +228,7 @@ class TC_GAME_API ThreatManager
 
     friend class ThreatReference;
     friend struct CompareThreatLessThan;
-    friend class ChatHandler;
+    friend class debug_commandscript;
 };
 
 // Please check Game/Combat/ThreatManager.h for documentation on how this class works!

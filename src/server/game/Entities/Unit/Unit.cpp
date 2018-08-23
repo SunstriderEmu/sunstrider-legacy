@@ -61,7 +61,7 @@ float baseMoveSpeed[MAX_MOVE_TYPE] =
     7.0f,                                                   // MOVE_FLIGHT
     4.5f,                                                   // MOVE_FLIGHT_BACK
 #ifdef LICH_KING
-    3.14f                  // MOVE_PITCH_RATE
+    3.14f                                                   // MOVE_PITCH_RATE
 #endif
 };
 

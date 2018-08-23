@@ -116,7 +116,7 @@ class AuctionHouseObject
     AuctionEntryMap AuctionsMap;
 };
 
-class AuctionHouseMgr
+class TC_GAME_API AuctionHouseMgr
 {
     private:
         AuctionHouseMgr();

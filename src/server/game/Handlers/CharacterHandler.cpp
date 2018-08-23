@@ -28,6 +28,7 @@
 #include "CharacterCache.h"
 #include "GuildMgr.h"
 #include "ArenaTeamMgr.h"
+#include "ReputationMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -997,8 +998,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 {
-
-
    // TC_LOG_DEBUG("network.opcode", "WORLD: Received CMSG_SET_FACTION_ATWAR" );
 
     uint32 repListID;
@@ -1021,8 +1020,6 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
 void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 {
-    //
-
     //TC_LOG_DEBUG("FIXME","WORLD SESSION: HandleSetFactionCheat");
     /*
         uint32 FactionID;
@@ -1085,8 +1082,6 @@ void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
-
-
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_WATCHED_FACTION");
     uint32 fact;
     recvData >> fact;
@@ -1095,8 +1090,6 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
-
-
    // TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_FACTION_INACTIVE");
     uint32 replistid;
     uint8 inactive;
@@ -1198,7 +1191,6 @@ void WorldSession::HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo>
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
     ObjectGuid guid;
-
 
     recvData >> guid;
 

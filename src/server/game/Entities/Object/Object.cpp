@@ -33,6 +33,7 @@
 #include "CinematicMgr.h"
 #include "SpellAuraEffects.h"
 #include "TotemAI.h"
+#include "ReputationMgr.h"
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"

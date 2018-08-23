@@ -59,7 +59,7 @@ struct map_liquidHeader
     float  liquidLevel;
 };
 
-class GridMap
+class TC_GAME_API GridMap
 {
     uint32  _flags;
     union{

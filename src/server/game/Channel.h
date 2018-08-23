@@ -51,7 +51,7 @@ enum ChatNotify
     CHAT_VOICE_OFF_NOTICE             = 0x23,           //+ "[%s] Channel voice disabled by %s.";
 };
 
-class Channel
+class TC_GAME_API Channel
 {
     enum ChannelFlags
     {

@@ -16,15 +16,8 @@ class StaticTransport;
 class MotionTransport;
 class Group;
 
-// GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
-#pragma pack(1)
-#else
-#pragma pack(push,1)
-#endif
-
 // from `gameobject_template`
-struct GameObjectTemplate
+struct TC_GAME_API GameObjectTemplate
 {
     uint32  entry;
     uint32  type;
@@ -443,13 +436,6 @@ struct GameObjectData : public SpawnData
     uint32 ArtKit;
     uint32 ScriptId;
 };
-
-// GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
-#pragma pack()
-#else
-#pragma pack(pop)
-#endif
 
 // For containers:  [GO_NOT_READY]->GO_READY (close)->GO_ACTIVATED (open) ->GO_JUST_DEACTIVATED->GO_READY        -> ...
 // For bobber:      GO_NOT_READY  ->GO_READY (close)->GO_ACTIVATED (open) ->GO_JUST_DEACTIVATED-><deleted>
