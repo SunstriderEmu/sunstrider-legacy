@@ -2713,19 +2713,19 @@ void Creature::CallAssistance()
 
 void Creature::CallForHelp(float radius)
 {
-    if (radius <= 0.0f || !GetVictim() || IsPet() || IsCharmed())
+    if (radius <= 0.0f || !IsEngaged() || IsPet() || IsCharmed())
         return;
 
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
-    Cell cell(p);
-    cell.SetNoCreate();
+    Unit* target = GetThreatManager().GetCurrentVictim();
+    if (!target)
+        target = GetThreatManager().GetAnyTarget();
+    if (!target)
+        target = GetCombatManager().GetAnyTarget();
+    ASSERT(target, "Creature %u (%s) is engaged without threat list", GetEntry(), GetName().c_str());
 
-    Trinity::CallOfHelpCreatureInRangeDo u_do(this, GetVictim(), radius);
-    Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(u_do);
-
-    TypeContainerVisitor<Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo>, GridTypeMapContainer >  grid_creature_searcher(worker);
-
-    cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+    Trinity::CallOfHelpCreatureInRangeDo u_do(this, target, radius);
+    Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(this, u_do);
+    Cell::VisitGridObjects(this, worker, radius);
 }
 
 bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /* = true */) const
