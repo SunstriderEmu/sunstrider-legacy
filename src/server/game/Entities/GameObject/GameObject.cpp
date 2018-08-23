@@ -80,6 +80,7 @@ WorldPacket GameObjectTemplate::BuildQueryData(LocaleConstant loc) const
 #endif
 
     queryTemp.Write();
+    queryTemp.ShrinkToFit();
     return queryTemp.Move();
 }
 

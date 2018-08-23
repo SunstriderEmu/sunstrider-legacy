@@ -35,6 +35,7 @@ namespace WorldPackets
 
         void Clear() { _worldPacket.clear(); }
         WorldPacket&& Move() { return std::move(_worldPacket); }
+        void ShrinkToFit() { _worldPacket.shrink_to_fit(); }
 
         OpcodeServer GetOpcode() const { return OpcodeServer(_worldPacket.GetOpcode()); }
     };

@@ -208,5 +208,6 @@ WorldPacket ItemTemplate::BuildQueryData(LocaleConstant loc) const
 #endif
 
     response.Write();
+    response.ShrinkToFit();
     return response.Move();
 }

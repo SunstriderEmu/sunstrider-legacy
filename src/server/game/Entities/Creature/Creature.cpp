@@ -200,6 +200,7 @@ WorldPacket CreatureTemplate::BuildQueryData(LocaleConstant loc) const
     queryTemp.Stats.CreatureMovementInfoID = movementId;
 #endif
     queryTemp.Write();
+    queryTemp.ShrinkToFit();
     return queryTemp.Move();
 }
 
