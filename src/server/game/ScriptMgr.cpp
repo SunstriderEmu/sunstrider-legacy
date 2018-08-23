@@ -425,7 +425,11 @@ class CreatureGameObjectScriptRegistrySwapHooks
         if (!creature->IsAlive())
             return;
 
-        creature->AI_InitializeAndEnable();
+        creature->AI()->InitializeAI();
+#ifdef LICH_KING
+        if (creature->GetVehicleKit())
+            creature->GetVehicleKit()->Reset();
+#endif
         creature->AI()->EnterEvadeMode();
 
         // Cast a dummy visual spell asynchronously here to signal

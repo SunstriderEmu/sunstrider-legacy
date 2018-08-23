@@ -13,9 +13,8 @@
 
 static void DoMovementInform(Unit* owner, Unit* target)
 {
-    if (Creature* cOwner = owner->ToCreature())
-        if (CreatureAI* ai = cOwner->AI())
-            ai->MovementInform(CHASE_MOTION_TYPE, target->GetGUID().GetCounter());
+    if (CreatureAI* AI = owner->ToCreature()->AI())
+        AI->MovementInform(FOLLOW_MOTION_TYPE, target->GetGUID().GetCounter());
 }
 
 static bool PositionOkay(Unit* owner, Unit* target, float range, Optional<ChaseAngle> angle = {})

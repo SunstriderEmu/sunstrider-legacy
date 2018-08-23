@@ -615,13 +615,12 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         //@ai assign this AI
         bool AIM_Destroy();
         bool AIM_Create(CreatureAI* ai = nullptr);
-        void AI_InitializeAndEnable();
         bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 
         void WarnDeathToFriendly();
 
-		CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(i_AI); }
+        CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(GetAI()); }
 
         uint32 GetShieldBlockValue() const override                  //dunno mob block value
         {

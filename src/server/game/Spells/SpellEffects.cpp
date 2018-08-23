@@ -1516,9 +1516,8 @@ void Spell::EffectDummy(uint32 i)
                         for (uint8 idx = 0; idx < spawnNum; idx++)
                         {
                             cr = unitTarget->SummonCreature(20805, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
-                            if (cr && cr->IsAIEnabled) {
-                                cr->AI()->AttackStart(_unitCaster);
-                            }
+                            if (cr)
+                                cr->EngageWithTarget(_unitCaster);
                         }
                         Unit::Kill(_unitCaster, unitTarget, false); // Just for the "burst" animation on death....
                         ( unitTarget->ToCreature() )->RemoveCorpse();
@@ -1530,9 +1529,8 @@ void Spell::EffectDummy(uint32 i)
                         for (uint8 idx = 0; idx < spawnNum; idx++)
                         {
                             cr = unitTarget->SummonCreature(20806, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
-                            if (cr && cr->IsAIEnabled) {
-                                cr->AI()->AttackStart(_unitCaster);
-                            }
+                            if(cr)
+                                cr->EngageWithTarget(_unitCaster);
                         }
                         Unit::Kill(_unitCaster, unitTarget, false); // Just for the "burst" animation on death....
                         unitTarget->ToCreature()->RemoveCorpse();
@@ -1704,11 +1702,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     pCreature->SetHealth(health);
-
-                    if(pCreature->IsAIEnabled) {
-                        pCreature->AI()->AttackStart(_unitCaster);
-                    }
-
+                    pCreature->EngageWithTarget(_unitCaster);
                     return;
                 }
                 case 34665:                                 //Administer Antidote
@@ -1738,10 +1732,7 @@ void Spell::EffectDummy(uint32 i)
                     pCreature->SetHealth(health);
                     (_unitCaster->ToPlayer())->KilledMonsterCredit(16992,pCreature->GetGUID());
 
-                    if(pCreature->IsAIEnabled) {
-                        pCreature->AI()->AttackStart(_unitCaster);
-                    }
-
+                    pCreature->EngageWithTarget(_unitCaster);
                     return;
                 }
                 case 34063:                                 //Soul Mirror
@@ -1757,10 +1748,7 @@ void Spell::EffectDummy(uint32 i)
                     if (unitTarget->GetTypeId() == TYPEID_UNIT)
                         (unitTarget->ToCreature())->RemoveCorpse();
 
-                    if(pCreature->IsAIEnabled) {
-                        pCreature->AI()->AttackStart(_unitCaster);
-                    }
-
+                    pCreature->EngageWithTarget(_unitCaster);
                     return;
                 }
                 case 45030:                                 // Impale Emissary
@@ -1787,7 +1775,6 @@ void Spell::EffectDummy(uint32 i)
                         // 01001000 - goblin binary
                         m_caster->CastSpell(m_caster, 50246, true);
                     }
-
                     return;
                 }
                 case 51582:                                 //Rocket Boots Engaged (Rocket Boots Xtreme and Rocket Boots Xtreme Lite)
@@ -2407,7 +2394,7 @@ void Spell::EffectDummy(uint32 i)
         return;
     }
     
-    if (unitTarget && _unitCaster && unitTarget->ToCreature() && unitTarget->ToCreature()->IsAIEnabled)
+    if (unitTarget && _unitCaster && unitTarget->ToCreature() && unitTarget->ToCreature()->IsAIEnabled())
         unitTarget->ToCreature()->AI()->sOnDummyEffect(_unitCaster, m_spellInfo->Id, i);
 }
 
@@ -4208,21 +4195,21 @@ void Spell::EffectPickPocket(uint32 /*i*/)
     // victim have to be alive and humanoid or undead
     if (unitTarget->IsAlive() && (unitTarget->GetCreatureTypeMask() &CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) != 0)
     {
-        int32 chance = 10 + int32(_unitCaster->GetLevel()) - int32(unitTarget->GetLevel());
+        // WoWWiki: "Failure rates depend on relative levels, but the base failure rate seems to be around 5%."
+        int32 successChance = 95 + (int32(_unitCaster->GetLevel()) - int32(unitTarget->GetLevel())) * 2.0f; //rule out of my hat: 2% chance per lvl diff
 
-        if (chance > irand(0, 19))
+        if(roll_chance_i(successChance))
         {
             // Stealing successful
-            //TC_LOG_DEBUG("FIXME","Sending loot from pickpocket");
-            (m_caster->ToPlayer())->SendLoot(unitTarget->GetGUID(),LOOT_PICKPOCKETING);
+            (m_caster->ToPlayer())->SendLoot(unitTarget->GetGUID(), LOOT_PICKPOCKETING);
         }
         else
         {
+            // WoWWiki: "Sapping an enemy before pickpocketing them renders you immune to their aggro as long as you get out of their aggro radius once they resist. However, nearby allies will notice your stealth break and attack you."
             // Reveal action + get attack
             _unitCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-            if ((unitTarget->ToCreature())->IsAIEnabled) {
-                (unitTarget->ToCreature())->AI()->AttackStart(_unitCaster);
-            }
+            if(!unitTarget->HasUnitState(UNIT_STATE_STUNNED) && !unitTarget->IsFriendlyTo(_unitCaster))
+                unitTarget->EngageWithTarget(_unitCaster);
         }
     }
 }

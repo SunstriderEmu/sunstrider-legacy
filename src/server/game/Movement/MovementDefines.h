@@ -19,6 +19,7 @@
 #define TRINITY_MOVEMENTDEFINES_H
 
 #include "Common.h"
+#include <memory>
 
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1

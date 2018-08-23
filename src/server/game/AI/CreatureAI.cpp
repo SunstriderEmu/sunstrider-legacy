@@ -17,14 +17,18 @@ CreatureAI::CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_MoveInLineOfSig
 }
 
 //Disable CreatureAI when charmed
-void CreatureAI::OnCharmed(Unit* charmer, bool apply)
+void CreatureAI::OnCharmed(bool isNew)
 {
-    //me->IsAIEnabled = !apply;*/
-    me->NeedChangeAI = true;
-    me->IsAIEnabled = false;
-}
+    if (isNew && !me->IsCharmed() && me->LastCharmerGUID)
+    {
+        if (!me->HasReactState(REACT_PASSIVE))
+            if (Unit* lastCharmer = ObjectAccessor::GetUnit(*me, me->LastCharmerGUID))
+                me->EngageWithTarget(lastCharmer);
 
-void CreatureAI::OnPossess(Unit* charmer, bool apply) {}
+        me->LastCharmerGUID.Clear();
+    }
+    UnitAI::OnCharmed(isNew);
+}
 
 void CreatureAI::Talk(uint8 id, WorldObject const* whisperTarget /*= nullptr*/)
 {

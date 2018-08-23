@@ -180,9 +180,6 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Called at waypoint reached or PointMovement end
     void MovementInform(uint32, uint32) override {}
 
-    // Called when AI is temporarily replaced or put back when possess is applied or removed
-    void OnPossess(Unit* charmer, bool apply) override {}
-    
     // Called when creature finishes a spell cast
     void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target, bool ok) override {}
     

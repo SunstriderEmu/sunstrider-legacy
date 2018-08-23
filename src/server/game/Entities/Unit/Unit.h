@@ -1210,7 +1210,11 @@ class TC_GAME_API Unit : public WorldObject
         void CleanupBeforeRemoveFromMap(bool finalCleanup);
         void CleanupsBeforeDelete(bool finalCleanup = true) override;  // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
-        UnitAI* GetAI() { return i_AI; }
+        bool IsAIEnabled() const { return (i_AI != nullptr); }
+        void AIUpdateTick(uint32 diff, bool force = false);
+        UnitAI* GetAI() const { return i_AI.get(); }
+        void SetAI(UnitAI* newAI);
+        void ScheduleAIChange();
 
         virtual bool IsAffectedByDiminishingReturns() const { return (GetCharmerOrOwnerPlayerOrPlayerItself() != nullptr); }
         DiminishingLevels GetDiminishing(DiminishingGroup group) const;
@@ -1667,7 +1671,6 @@ class TC_GAME_API Unit : public WorldObject
         CharmInfo* GetCharmInfo() { return m_charmInfo; }
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
-        void UpdateCharmAI();
         // returns the unit that this player IS CONTROLLING
         Unit* GetUnitBeingMoved() const;
         // returns the player that this player IS CONTROLLING
@@ -1944,6 +1947,8 @@ class TC_GAME_API Unit : public WorldObject
         int32 GetHighestExclusiveSameEffectSpellGroupValue(AuraEffect const* aurEff, AuraType auraType, bool checkMiscValue = false, int32 miscValue = 0) const;
         bool IsHighestExclusiveAura(Aura const* aura, bool removeOtherAuraApplications = false);
 
+        ObjectGuid LastCharmerGUID;
+
         bool m_ControlledByPlayer;
 
         void HandleSpellClick(Unit* clicker, int8 seatId = -1);
@@ -2197,13 +2202,6 @@ class TC_GAME_API Unit : public WorldObject
         void AddPetAura(PetAura const* petSpell);
         void RemovePetAura(PetAura const* petSpell);
 
-        // relocation notification
-        //void SetToNotify();
-        //bool m_Notified, m_IsInNotifyList;
-        //float oldX, oldY, oldZ;
-
-        bool IsAIEnabled, NeedChangeAI;
-
         void OutDebugInfo() const;
         virtual bool IsLoading() const { return false; }
 		bool IsDuringRemoveFromWorld() const { return m_duringRemoveFromWorld; }
@@ -2258,9 +2256,6 @@ class TC_GAME_API Unit : public WorldObject
         explicit Unit (bool isWorldObject);
 
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
-
-        UnitAI* i_AI;
-        UnitAI* i_disabledAI;
 
         bool _last_in_water_status;
         Position _lastInWaterCheckPosition;
@@ -2353,6 +2348,10 @@ class TC_GAME_API Unit : public WorldObject
         CombatManager m_combatManager; 
         friend class ThreatManager;
         ThreatManager m_threatManager;
+
+        void UpdateCharmAI();
+        void RestoreDisabledAI();
+        std::unique_ptr<UnitAI> i_AI, i_disabledAI;
 
         std::unordered_set<AbstractFollower*> m_followingMe;
 

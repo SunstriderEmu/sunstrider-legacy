@@ -143,8 +143,8 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
     _nextMoveTime.Reset(1000); //movement will start after 1s
 
     // inform AI
-    if (creature->IsAIEnabled)
-        creature->AI()->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
+    if (CreatureAI* AI = creature->AI())
+        AI->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
 
     return true;
 }
@@ -238,8 +238,8 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     {
         //waypoints ended
         creature->UpdateCurrentWaypointInfo(0, 0);
-        if (creature->IsAIEnabled)
-            creature->AI()->WaypointPathEnded(arrivedNode.id, _path->id);
+        if (CreatureAI* ai = creature->AI())
+            ai->WaypointPathEnded(arrivedNode.id, _path->id);
         return;
     }
 
@@ -592,10 +592,10 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     }
 
     // inform AI
-    if (creature->IsAIEnabled)
+    if (CreatureAI* AI = creature->AI())
     {
         WaypointNode const& dbCurrentNode = _path->nodes.at(_currentNode);
-        creature->AI()->WaypointStarted(dbCurrentNode.id, _path->id);
+        AI->WaypointStarted(dbCurrentNode.id, _path->id);
         TC_LOG_TRACE("misc", "Creature %u started waypoint movement at node %u (path %u)", creature->GetEntry(), dbCurrentNode.id, _path->id);
     }
 
@@ -690,17 +690,17 @@ void WaypointMovementGenerator<Creature>::DoDeactivate(Creature* owner)
     owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
 }
 
-void WaypointMovementGenerator<Creature>::MovementInform(Creature* creature, uint32 DBNodeId)
+void WaypointMovementGenerator<Creature>::MovementInform(Creature* owner, uint32 DBNodeId)
 {
 #ifdef TRINITY_DEBUG
     onArrivedProcessing = true;
 #endif
 
-    if (creature->IsAIEnabled)
+    if (CreatureAI* AI = owner->AI())
     {
-        creature->AI()->MovementInform(WAYPOINT_MOTION_TYPE, DBNodeId);
+        AI->MovementInform(WAYPOINT_MOTION_TYPE, DBNodeId);
         if(_path)
-            creature->AI()->WaypointReached(DBNodeId, _path->id);
+            AI->WaypointReached(DBNodeId, _path->id);
     }
 #ifdef TRINITY_DEBUG
     onArrivedProcessing = false;

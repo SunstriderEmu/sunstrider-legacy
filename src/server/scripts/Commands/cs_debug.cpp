@@ -1532,7 +1532,7 @@ public:
         if (!player)
             return false;
         Creature* target =  handler->GetSelectedCreature();
-        if (!target || !target->IsAIEnabled || !target->AI())
+        if (!target || !target->IsAIEnabled())
         {
             return false;
         }

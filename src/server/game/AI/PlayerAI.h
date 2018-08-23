@@ -12,8 +12,6 @@ class TC_GAME_API PlayerAI : public UnitAI
     public:
         explicit PlayerAI(Player* player) : UnitAI(static_cast<Unit*>(player)), me(player), _selfSpec(PlayerAI::GetPlayerSpec(player)), _isSelfHealer(PlayerAI::IsPlayerHealer(player)), _isSelfRangedAttacker(PlayerAI::IsPlayerRangedAttacker(player)) { }
 
-        void OnCharmed(Unit* /*charmer*/, bool /*apply*/) override { } // charm AI application for players is handled by Unit::SetCharmedBy / Unit::RemoveCharmedBy
-
         // helper functions to determine player info
         // Return values range from 0 (left-most spec) to 2 (right-most spec). If two specs have the same number of talent points, the left-most of those specs is returned.
         static uint8 GetPlayerSpec(Player const* who);
@@ -81,7 +79,7 @@ class SimpleCharmedPlayerAI : public PlayerAI
     public:
         SimpleCharmedPlayerAI(Player* player) : PlayerAI(player), _castCheckTimer(2500), _chaseCloser(false), _forceFacing(true), _isFollowing(false) { }
         void UpdateAI(const uint32 diff) override;
-        void OnCharmed(Unit* /* charmer */, bool apply) override;
+        void OnCharmed(bool isNew) override;
 
     protected:
         bool CanAIAttack(Unit const* who) const override;

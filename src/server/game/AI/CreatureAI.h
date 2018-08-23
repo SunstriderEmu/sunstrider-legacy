@@ -143,8 +143,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         // called when the corpse of this creature gets removed
         virtual void CorpseRemoved(uint32& respawnDelay) {}
 
-        void OnCharmed(Unit* charmer, bool apply) override;
-        void OnPossess(Unit* charmer, bool apply) override;
+        void OnCharmed(bool isNew) override;
         
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}

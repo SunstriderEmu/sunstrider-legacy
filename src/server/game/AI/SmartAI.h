@@ -128,7 +128,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void InitializeAI() override;
 
         // Called when creature gets charmed by another unit
-        void OnCharmed(Unit* charmer, bool apply) override;
+        void OnCharmed(bool isNew) override;
 
         // Used in scripts to share variables
         void DoAction(const int32 param = 0) override;

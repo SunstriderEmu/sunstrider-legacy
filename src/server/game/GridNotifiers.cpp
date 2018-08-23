@@ -97,12 +97,11 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
 
     if (!c->HasUnitState(UNIT_STATE_SIGHTLESS))
     {
-        if (c->IsAIEnabled && c->CanSeeOrDetect(u, false, true))
+        if (c->IsAIEnabled() && c->CanSeeOrDetect(u, false, true))
             c->AI()->MoveInLineOfSight_Safe(u);
         else
-            if (u->GetTypeId() == TYPEID_PLAYER && u->HasStealthAura() && c->IsAIEnabled && /* c->CanSeeOrDetect(u, false, true, true) already in next check */ c->CanDoStealthAlert(u))
-                //c->AI()->TriggerAlert(u);
-                c->StartStealthAlert(u);
+            if (u->GetTypeId() == TYPEID_PLAYER && u->HasStealthAura() && c->IsAIEnabled() && /* c->CanSeeOrDetect(u, false, true, true) already in next check */ c->CanDoStealthAlert(u))
+                c->StartStealthAlert(u); //c->AI()->TriggerAlert(u);
     }
 }
 
@@ -514,8 +513,7 @@ void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
     if (!u->IsWithinLOSInMap(i_enemy, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
         return;
 
-    if (u->AI())
-        u->AI()->AttackStart(i_enemy);
+    u->EngageWithTarget(i_enemy);
 }
 
 bool AnyDeadUnitCheck::operator()(Unit* u) { return !u->IsAlive(); }

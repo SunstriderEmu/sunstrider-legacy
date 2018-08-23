@@ -24,6 +24,12 @@ void UnitAI::AttackStart(Unit *victim)
     }
 }
 
+void UnitAI::OnCharmed(bool isNew)
+{
+    if (!isNew)
+        me->ScheduleAIChange();
+}
+
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
 {
     me->SetCombatDistance(dist);
