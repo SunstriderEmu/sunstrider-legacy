@@ -55,6 +55,7 @@
 #include "TemporarySummon.h"
 #include "Transport.h"
 #include "TransportMgr.h"
+#include "UpdateTime.h"
 #include "Util.h"
 #include "WardenDataStorage.h"
 #include "WaypointManager.h"
@@ -483,6 +484,9 @@ void World::LoadConfigSettings(bool reload)
         }
         sLog->LoadFromConfig();
     }
+
+    // load update time related configs
+    sWorldUpdateTime.LoadFromConfig();
 
     ///- Read the player limit from the config file
     SetPlayerLimit(sConfigMgr->GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
@@ -1203,8 +1207,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PVP_TOKEN_ZONE_ID] = sConfigMgr->GetIntDefault("PvPToken.ZoneID", 0);
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfigMgr->GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfigMgr->GetBoolDefault("ShowKickInWorld", false);
-    m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfigMgr->GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
-    m_configs[CONFIG_MIN_LOG_UPDATE] = sConfigMgr->GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfigMgr->GetIntDefault("MapUpdate.Threads", 4);
 
     m_configs[CONFIG_WORLDCHANNEL_MINLEVEL] = sConfigMgr->GetIntDefault("WorldChannel.MinLevel", 10);
@@ -1957,28 +1959,6 @@ void World::DetectDBCLang()
     TC_LOG_INFO("server.loading", "Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
 }
 
-void World::ResetTimeDiffRecord()
-{
-    if (m_updateTimeCount != 1)
-        return;
-
-    m_currentTime = GetMSTime();
-}
-
-void World::RecordTimeDiff(std::string const& text)
-{
-    if (m_updateTimeCount != 1)
-        return;
-
-    uint32 thisTime = GetMSTime();
-    uint32 diff = GetMSTimeDiff(m_currentTime, thisTime);
-
-    if (diff > m_configs[CONFIG_MIN_LOG_UPDATE])
-        TC_LOG_INFO("misc", "Difftime %s: %u.", text.c_str(), diff);
-
-    m_currentTime = thisTime;
-}
-
 uint32 World::GetCurrentQuestForPool(uint32 poolId)
 {
     std::map<uint32, uint32>::const_iterator itr = m_currentQuestInPools.find(poolId);
@@ -2043,27 +2023,19 @@ void World::Update(time_t diff)
 
     sMonitor->StartedWorldLoop();
 
-    if(m_configs[CONFIG_INTERVAL_LOG_UPDATE])
-    {
-        if(m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
-        {
-            TC_LOG_DEBUG("misc","Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
-            m_updateTimeSum = m_updateTime;
-            m_updateTimeCount = 1;
-        }
-        else
-        {
-            m_updateTimeSum += m_updateTime;
-            ++m_updateTimeCount;
-        }
-    }
+    sWorldUpdateTime.UpdateWithDiff(diff);
+
+    // Record update if recording set in log and diff is greater then minimum set in log
+    sWorldUpdateTime.RecordUpdateTime(GameTime::GetGameTimeMS(), diff, GetActiveSessionCount());
 
     ///- Update the different timers
-    for(auto & m_timer : m_timers)
-        if(m_timer.GetCurrent()>=0)
+    for (auto & m_timer : m_timers)
+    {
+        if (m_timer.GetCurrent() >= 0)
             m_timer.Update(diff);
-    else
-        m_timer.SetCurrent(0);
+        else
+            m_timer.SetCurrent(0);
+    }
 
     ///- Update Who List Storage
     if (m_timers[WUPDATE_WHO_LIST].Passed())
@@ -2112,16 +2084,19 @@ void World::Update(time_t diff)
     }
 
     /// <li> Handle session updates
-    ResetTimeDiffRecord();
+    sWorldUpdateTime.RecordUpdateTimeReset();
     UpdateSessions(diff);
-    RecordTimeDiff("UpdateSessions");
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateSessions");
 
     // Update groups
+    sWorldUpdateTime.RecordUpdateTimeReset();
     sGroupMgr->Update(diff);
-    // Update guilds
-    sGuildMgr->Update(); 
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateGroups");
 
-    RecordTimeDiff("UpdateGroups");
+    // Update guilds
+    sWorldUpdateTime.RecordUpdateTimeReset();
+    sGuildMgr->Update();
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateGuild");
 
     /// <li> Handle weather updates when the timer has passed
     if (m_timers[WUPDATE_WEATHERS].Passed())
@@ -2155,20 +2130,22 @@ void World::Update(time_t diff)
     }
 
     ///- Update objects (maps, transport, creatures,...)
+    sWorldUpdateTime.RecordUpdateTimeReset();
     sMapMgr->Update(diff);
-    RecordTimeDiff("UpdateMapMgr");
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateMapMgr");
 
 #ifdef TESTS
     //MUST be after map updates, testing code assumes so
-    sTestMgr->Update();
-    RecordTimeDiff("UpdatesTestMgr");
+    sWorldUpdateTime.RecordUpdateTimeReset();
+    sTestMgr->Update();;
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdatesTestMgr");
 #endif
 
     sBattlegroundMgr->Update(diff);
-    RecordTimeDiff("UpdateBattlegroundMgr");
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateBattlegroundMgr");
 
     sOutdoorPvPMgr->Update(diff);
-    RecordTimeDiff("UpdateOutdoorPvPMgr");
+    sWorldUpdateTime.RecordUpdateTimeDuration("UpdateOutdoorPvPMgr");
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())
@@ -2189,9 +2166,9 @@ void World::Update(time_t diff)
     }
 
     // execute callbacks from sql queries that were queued recently
-    ResetTimeDiffRecord();
+    sWorldUpdateTime.RecordUpdateTimeReset();
     ProcessQueryCallbacks();
-    RecordTimeDiff("ProcessQueryCallbacks");
+    sWorldUpdateTime.RecordUpdateTimeDuration("ProcessQueryCallbacks");
 
     ///- Announce if a timer has passed
     if (m_timers[WUPDATE_ANNOUNCES].Passed())

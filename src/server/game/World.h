@@ -238,8 +238,6 @@ enum WorldConfigs
     CONFIG_PVP_TOKEN_ZONE_ID,
     CONFIG_NO_RESET_TALENT_COST,
     CONFIG_SHOW_KICK_IN_WORLD,
-    CONFIG_INTERVAL_LOG_UPDATE,
-    CONFIG_MIN_LOG_UPDATE,
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PREMATURE_BG_REWARD,
     CONFIG_NUMTHREADS,
@@ -608,10 +606,6 @@ class TC_GAME_API World
         /// Get the path where data (dbc, maps) are stored on disk
         std::string GetDataPath() const { return m_dataPath; }
 
-        /// Update time
-        uint32 GetUpdateTime() const { return m_updateTime; }
-        void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
-
         /// Next daily quests and random bg reset time
         time_t GetNextDailyQuestsResetTime() const { return m_NextDailyQuestReset; }
 
@@ -735,11 +729,6 @@ class TC_GAME_API World
         void LoadDBVersion();
         char const* GetDBVersion() { return m_DBVersion.c_str(); }
 
-        /** Record current time to start from for the next RecordTimeDiff call */
-        void ResetTimeDiffRecord();
-        /** Print time diff since last ResetTimeDiffRecord() or since last RecordTimeDiff() (this function also does the reset) */
-        void RecordTimeDiff(std::string const& text);
-
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);
@@ -789,9 +778,6 @@ class TC_GAME_API World
         IntervalTimer m_timers[WUPDATE_COUNT];
         uint32 mail_timer;
         uint32 mail_timer_expires;
-        uint32 m_updateTime, m_updateTimeSum;
-        uint32 m_updateTimeCount;
-        uint32 m_currentTime;
 
         typedef std::unordered_map<uint32, Weather* > WeatherMap;
         WeatherMap m_weathers;

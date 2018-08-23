@@ -542,17 +542,20 @@ namespace Trinity
     template<class Do>
     struct CreatureWorker
     {
+        uint32 i_phaseMask;
         Do& i_do;
 
-        explicit CreatureWorker(Do& _do) : i_do(_do) {}
+        CreatureWorker(WorldObject const* searcher, Do& _do)
+            : i_phaseMask(searcher->GetPhaseMask()), i_do(_do) { }
 
         void Visit(CreatureMapType &m)
         {
-            for(auto & itr : m)
-                i_do(itr.GetSource());
+            for (CreatureMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+                if (itr->GetSource()->InSamePhase(i_phaseMask))
+                    i_do(itr->GetSource());
         }
 
-        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
     };
 
     // CHECKS && DO classes
