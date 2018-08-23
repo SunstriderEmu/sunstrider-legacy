@@ -1393,7 +1393,7 @@ bool Creature::isTappedBy(Player const* player) const
     return true;
 }
 
-void Creature::SetLootRecipient(Unit *unit, bool withGroup)
+void Creature::SetLootRecipient(Unit* unit, bool withGroup)
 {
     // set the player whose group should receive the right
     // to loot the creature after it dies

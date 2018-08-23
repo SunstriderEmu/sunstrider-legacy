@@ -130,8 +130,12 @@ WorldPacket const* WorldPackets::Query::QueryItemSingleResponse::Write()
         _worldPacket << int32(Stats.MaxCount);
         _worldPacket << int32(Stats.Stackable);
         _worldPacket << Stats.ContainerSlots;
+#ifdef LICH_KING
         _worldPacket << Stats.StatsCount;                         // item stats count
         for (uint32 i = 0; i < Stats.StatsCount; ++i)
+#else
+        for (uint32 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+#endif
         {
             _worldPacket << Stats.ItemStat[i].ItemStatType;
             _worldPacket << Stats.ItemStat[i].ItemStatValue;

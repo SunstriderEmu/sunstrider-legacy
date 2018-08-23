@@ -11524,7 +11524,7 @@ void Player::QuickEquipItem( uint16 pos, Item *pItem)
     }
 }
 
-void Player::SetVisibleItemSlot(uint8 slot, Item *pItem)
+void Player::SetVisibleItemSlot(uint8 slot, Item* pItem)
 {
     // PLAYER_VISIBLE_ITEM_i_CREATOR    // Size: 2
     // PLAYER_VISIBLE_ITEM_i_0          // Size: 12
