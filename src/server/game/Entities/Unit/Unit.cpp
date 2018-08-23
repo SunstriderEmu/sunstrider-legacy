@@ -778,35 +778,6 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
             return 0;
     }
 
-    //Script Event damage taken
-    if(attacker && pVictim->GetTypeId() == TYPEID_UNIT && pVictim->IsAIEnabled())
-    {
-        // Set tagging
-        if(!pVictim->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED) && !(pVictim->ToCreature())->IsPet())
-        {
-            //Set Loot
-            switch(attacker->GetTypeId())
-            {
-                case TYPEID_PLAYER:
-                {
-                    (pVictim->ToCreature())->SetLootRecipient(attacker);
-                    //Set tagged
-                    (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
-                    break;
-                }
-                case TYPEID_UNIT:
-                {
-                    if((attacker->ToCreature())->IsPet())
-                    {
-                        (pVictim->ToCreature())->SetLootRecipient(attacker->GetOwner());
-                        (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
     if (damagetype != NODAMAGE)
     {
        // interrupting auras with AURA_INTERRUPT_FLAG_TAKE_DAMAGE before checking !damage (absorbed damage breaks that type of auras)
@@ -896,29 +867,23 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
         }
     }
 
-    if (attacker && pVictim->GetTypeId() == TYPEID_UNIT && !(pVictim->ToCreature())->IsPet())
+    if (pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+        //
+    }
+    else if (!pVictim->IsControlledByPlayer() || pVictim->IsVehicle())
     {
         if(!(pVictim->ToCreature())->hasLootRecipient())
             (pVictim->ToCreature())->SetLootRecipient(attacker);
 
-        if(attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
+        if(!attacker || attacker->IsControlledByPlayer() || attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
             (pVictim->ToCreature())->LowerPlayerDamageReq(health < damage ?  health : damage);
     }
     
     if (health <= damage)
     {
         //TC_LOG_DEBUG("FIXME","DealDamage: victim just died");
-        Kill(attacker, pVictim, durabilityLoss);
-        
-        //Hook for OnPVPKill Event
-        /*
-        if (pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
-        {
-            Player *killer = ToPlayer();
-            Player *killed = pVictim->ToPlayer();
-            sScriptMgr->OnPVPKill(killer, killed);
-        }
-        */
+        Unit::Kill(attacker, pVictim, durabilityLoss);
     }
     else                                                    // if (health <= damage)
     {
@@ -927,36 +892,35 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
         pVictim->ModifyHealth(- (int32)damage);
 
         if(damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
-        {
-            //TODO: This is from procflag, I do not know which spell needs this
-            //Maim?
-            //if (!spellProto || !(spellProto->AuraInterruptFlags&AURA_INTERRUPT_FLAG_DIRECT_DAMAGE))
-                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
-        }
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);
 
-        if (attacker && pVictim->GetTypeId() != TYPEID_PLAYER)
+        if (pVictim->GetTypeId() != TYPEID_PLAYER)
         {
-            //TC_LOG_INFO("DealDamage, AddThreat : %f",threat);
-            pVictim->GetThreatManager().AddThreat(attacker, float(damage), spellProto);
-        }
-        else                                                // victim is a player
-        {
-            // Rage from damage received
-            if(attacker != pVictim && pVictim->GetPowerType() == POWER_RAGE)
-            {
-                uint32 rage_damage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
-                (pVictim->ToPlayer())->RewardRage(rage_damage, 0, false);
-            }
+            // Part of Evade mechanics. DoT's and Thorns / Retribution Aura do not contribute to this
+            if (damagetype != DOT && damage > 0 && !pVictim->GetOwnerGUID().IsPlayer() && (!spellProto || !spellProto->HasAura(SPELL_AURA_DAMAGE_SHIELD)))
+                pVictim->ToCreature()->SetLastDamagedTime(GameTime::GetGameTime() + MAX_AGGRO_RESET_TIME);
 
+            if(attacker)
+                pVictim->GetThreatManager().AddThreat(attacker, float(damage), spellProto);
+        }
+        else 
+        {
             // random durability for items (HIT TAKEN)
             if (attacker && roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
             {
-                EquipmentSlots slot = EquipmentSlots(urand(0,EQUIPMENT_SLOT_END-1));
+                EquipmentSlots slot = EquipmentSlots(urand(0, EQUIPMENT_SLOT_END - 1));
                 (pVictim->ToPlayer())->DurabilityPointLossForEquipSlot(slot);
             }
         }
 
-        if(attacker && attacker->GetTypeId()==TYPEID_PLAYER)
+        // Rage from damage received
+        if(attacker != pVictim && pVictim->GetPowerType() == POWER_RAGE)
+        {
+            uint32 rage_damage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
+            (pVictim->ToPlayer())->RewardRage(rage_damage, 0, false);
+        }
+
+        if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
         {
             // random durability for items (HIT DONE)
             if (roll_chance_f(sWorld->GetRate(RATE_DURABILITY_LOSS_DAMAGE)))
@@ -7375,10 +7339,6 @@ int32 Unit::ModifyHealth(int32 dVal)
 
     int32 gain = 0;
     
-    // Part of Evade mechanics. Only track health lost, not gained.
-    if (dVal < 0 && GetTypeId() != TYPEID_PLAYER && !IsPet())
-        SetLastDamagedTime(time(nullptr));
-
     int32 curHealth = (int32)GetHealth();
 
     int32 val = dVal + curHealth;
