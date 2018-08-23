@@ -757,6 +757,8 @@ class TC_GAME_API World
         CharTitlesEntry const* getGladiatorTitle(uint8 rank);
         // --
 
+        void RemoveOldCorpses();
+
         void TriggerGuidWarning();
         void TriggerGuidAlert();
         bool IsGuidWarning() { return _guidWarn; }

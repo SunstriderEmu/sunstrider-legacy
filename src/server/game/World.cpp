@@ -3245,4 +3245,9 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
     SendGlobalMessage(&data,nullptr,team);
 }
 
+void World::RemoveOldCorpses()
+{
+    m_timers[WUPDATE_CORPSES].SetCurrent(m_timers[WUPDATE_CORPSES].GetInterval());
+}
+
 Realm realm;
