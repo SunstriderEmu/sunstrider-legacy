@@ -25,6 +25,7 @@ public:
         static std::vector<ChatCommand> commandTable =
         {
             { "announce",       SEC_GAMEMASTER1,  true,  &HandleAnnounceCommand,            "" },
+            { "appear",         SEC_GAMEMASTER1,  false, &HandleAppearCommand,              "" },
             { "arenarename",    SEC_GAMEMASTER2,  true,  &HandleRenameArenaTeamCommand,     "" },
             { "bg",             SEC_PLAYER,       false, &HandleBattlegroundCommand,        "" },
             { "blink",          SEC_GAMEMASTER1,  false, &HandleBlinkCommand,               "" },
@@ -38,14 +39,13 @@ public:
             { "dismount",       SEC_PLAYER,       false, &HandleDismountCommand,            "" },
             { "gmannounce",     SEC_GAMEMASTER1,  true,  &HandleGMAnnounceCommand,          "" },
             { "gmnotify",       SEC_GAMEMASTER1,  true,  &HandleGMNotifyCommand,            "" },
-            { "goname",         SEC_GAMEMASTER1,  false, &HandleGonameCommand,              "" },
             { "gps",            SEC_GAMEMASTER1,  true,  &HandleGPSCommand,                 "" },
             { "gpss",           SEC_GAMEMASTER1,  false, &HandleGPSSCommand,                "" },
             { "help",           SEC_PLAYER,       true,  &HandleHelpCommand,                "" },
             { "heroday",        SEC_PLAYER,       true,  &HandleHerodayCommand,             "" },
             { "loadpath",       SEC_GAMEMASTER3,  false, &HandleReloadAllPaths,             "" },
             { "lockaccount",    SEC_PLAYER,       false, &HandleLockAccountCommand,         "" },
-            { "namego",         SEC_GAMEMASTER1,  false, &HandleNamegoCommand,              "" },
+            { "summon",         SEC_GAMEMASTER1,  false, &HandleSummonCommand,              "" },
             { "notify",         SEC_GAMEMASTER1,  true,  &HandleNotifyCommand,              "" },
             { "password",       SEC_PLAYER,       false, &HandlePasswordCommand,            "" },
             { "pinfo",          SEC_GAMEMASTER2,  true,  &HandlePInfoCommand,               "" },
@@ -352,20 +352,22 @@ public:
     }
 
     //Summon Player
-    static bool HandleNamegoCommand(ChatHandler* handler, char const* args)
+    static bool HandleSummonCommand(ChatHandler* handler, char const* args)
     {
-        ARGS_CHECK
+        Player* target;
+        ObjectGuid targetGuid;
+        std::string targetName;
+        if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
+            return false;
 
-        std::string name = args;
-
-        if (!normalizePlayerName(name))
+        Player* _player = handler->GetSession()->GetPlayer();
+        if (target == _player || targetGuid == _player->GetGUID())
         {
-            handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            handler->SendSysMessage("cannot teleport self"); //handler->PSendSysMessage(LANG_CANT_TELEPORT_SELF);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        Player *target = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if (target)
         {
             if (target->IsBeingTeleported() == true)
@@ -387,7 +389,7 @@ public:
                     return false;
                 }
                 // if both players are in different bgs
-                else if (target->GetBattlegroundId() && handler->GetSession()->GetPlayer()->GetBattlegroundId() != target->GetBattlegroundId())
+                else if (target->GetBattlegroundId() && _player->GetBattlegroundId() != target->GetBattlegroundId())
                 {
                     handler->PSendSysMessage(LANG_CANNOT_GO_TO_BG_FROM_BG, target->GetName().c_str());
                     handler->SetSentErrorMessage(true);
@@ -395,7 +397,7 @@ public:
                 }
                 // all's well, set bg id
                 // when porting out from the bg, it will be reset to 0
-                target->SetBattlegroundId(handler->GetSession()->GetPlayer()->GetBattlegroundId(), handler->GetSession()->GetPlayer()->GetBattlegroundTypeId());
+                target->SetBattlegroundId(_player->GetBattlegroundId(), _player->GetBattlegroundTypeId());
                 // remember current position as entry point for return at bg end teleportation
                 if (!target->GetMap()->IsBattlegroundOrArena())
                     target->SetBattlegroundEntryPoint();
@@ -412,9 +414,9 @@ public:
                 }
 
                 // we are in instance, and can summon only player in our group with us as lead
-                if (!handler->GetSession()->GetPlayer()->GetGroup() || !target->GetGroup() ||
-                    (target->GetGroup()->GetLeaderGUID() != handler->GetSession()->GetPlayer()->GetGUID()) ||
-                    (handler->GetSession()->GetPlayer()->GetGroup()->GetLeaderGUID() != handler->GetSession()->GetPlayer()->GetGUID()))
+                if (!_player->GetGroup() || !target->GetGroup() ||
+                    (target->GetGroup()->GetLeaderGUID() != _player->GetGUID()) ||
+                    (_player->GetGroup()->GetLeaderGUID() != _player->GetGUID()))
                     // the last check is a bit excessive, but let it be, just in case
                 {
                     handler->PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST, target->GetName().c_str());
@@ -432,20 +434,21 @@ public:
 
             // before GM
             float x, y, z;
-            handler->GetSession()->GetPlayer()->GetClosePoint(x, y, z, target->GetCombatReach());
-            if (target->TeleportTo(handler->GetSession()->GetPlayer()->GetMapId(), x, y, z, target->GetOrientation()))
+            _player->GetClosePoint(x, y, z, target->GetCombatReach());
+            if (target->TeleportTo(_player->GetMapId(), x, y, z, target->GetOrientation()))
             {
+                target->SetPhaseMask(_player->GetPhaseMask(), true);
                 handler->PSendSysMessage(LANG_SUMMONING, target->GetName().c_str(), "");
                 if (handler->needReportToTarget(target))
                     ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, handler->GetName().c_str());
             }
             else {
-                handler->PSendSysMessage("Teleportation failed");
+                handler->PSendSysMessage("Teleport failed");
             }
         }
-        else if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name))
+        else 
         {
-            handler->PSendSysMessage(LANG_SUMMONING, name.c_str(), handler->GetTrinityString(LANG_OFFLINE));
+            handler->PSendSysMessage(LANG_SUMMONING, targetName.c_str(), handler->GetTrinityString(LANG_OFFLINE));
 
             // in point where GM stay
             Player::SavePositionInDB(handler->GetSession()->GetPlayer()->GetMapId(),
@@ -454,33 +457,31 @@ public:
                 handler->GetSession()->GetPlayer()->GetPositionZ(),
                 handler->GetSession()->GetPlayer()->GetOrientation(),
                 handler->GetSession()->GetPlayer()->GetZoneId(),
-                guid);
-        }
-        else
-        {
-            handler->PSendSysMessage(LANG_NO_PLAYER, args);
-            handler->SetSentErrorMessage(true);
+                targetGuid);
         }
 
         return true;
     }
 
     //Teleport to Player
-    static bool HandleGonameCommand(ChatHandler* handler, char const* args)
+    static bool HandleAppearCommand(ChatHandler* handler, char const* args)
     {
-        ARGS_CHECK
+
+        Player* target;
+        ObjectGuid targetGuid;
+        std::string targetName;
+        if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
+            return false;
+
         Player* _player = handler->GetSession()->GetPlayer();
-
-        std::string name = args;
-
-        if (!normalizePlayerName(name))
+        if (target == _player || targetGuid == _player->GetGUID())
         {
-            handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            //handler->SendSysMessage(LANG_CANT_TELEPORT_SELF);
+            handler->SendSysMessage("Can't teleport self");
             handler->SetSentErrorMessage(true);
             return false;
         }
-
-        Player *target = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
+        
         if (target)
         {
             Map* cMap = target->GetMap();
@@ -578,32 +579,33 @@ public:
 
             return true;
         }
-
-        if (ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name))
+        else
         {
-            handler->PSendSysMessage(LANG_APPEARING_AT, name.c_str());
+            // check offline security
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
+                return false;
+
+            handler->PSendSysMessage(LANG_APPEARING_AT, targetName.c_str());
 
             // to point where player stay (if loaded)
             float x, y, z, o;
             uint32 map;
             bool in_flight;
-            if (Player::LoadPositionFromDB(map, x, y, z, o, in_flight, guid))
+            if (!Player::LoadPositionFromDB(map, x, y, z, o, in_flight, targetGuid))
             {
-                // stop flight if need
-                if (_player->IsInFlight())
-                    _player->FinishTaxiFlight();
-                // save only in non-flight case
-                else
-                    _player->SaveRecallPosition();
-
-                _player->TeleportTo(map, x, y, z, _player->GetOrientation());
-                return true;
+                handler->PSendSysMessage("Failed to load target player position");
+                return false;
             }
-        }
+            // stop flight if need
+            if (_player->IsInFlight())
+                _player->FinishTaxiFlight();
+            // save only in non-flight case
+            else
+                _player->SaveRecallPosition();
 
-        handler->PSendSysMessage(LANG_NO_PLAYER, args);
-        handler->SetSentErrorMessage(true);
-        return false;
+            _player->TeleportTo(map, x, y, z, _player->GetOrientation());
+            return true;
+        }
     }
 
     // Teleport player to last position

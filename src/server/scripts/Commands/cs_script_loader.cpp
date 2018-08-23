@@ -46,6 +46,7 @@ void AddSC_recup_commandscript();
 void AddSC_reload_commandscript();
 void AddSC_replay_commandscript();
 void AddSC_reset_commandscript();
+void AddSC_send_commandscript();
 void AddSC_server_commandscript();
 void AddSC_shop_commandscript();
 void AddSC_smartai_commandscript();
@@ -90,6 +91,7 @@ void AddCommandsScripts()
     AddSC_replay_commandscript();
     AddSC_recup_commandscript();
     AddSC_reset_commandscript();
+    AddSC_send_commandscript();
     AddSC_server_commandscript();
     AddSC_shop_commandscript();
     AddSC_smartai_commandscript();
