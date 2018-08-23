@@ -22,6 +22,7 @@
 #include "SpellDefines.h"
 #include "Formulas.h"
 #include "ScriptMgr.h"
+#include "ReputationMgr.h"
 #include <numeric>
 
 //
@@ -3874,23 +3875,15 @@ void AuraEffect::HandleForceReaction(AuraApplication const* aurApp, uint8 mode, 
 
     Player* player = m_target->ToPlayer();
 
-    uint32 faction_id = GetMiscValue();
-    uint32 faction_rank = _amount;
+    uint32 factionId = GetMiscValue();
+    ReputationRank factionRank = ReputationRank(GetAmount());
 
-    if (apply)
-        player->m_forcedReactions[faction_id] = ReputationRank(faction_rank);
-    else
-        player->m_forcedReactions.erase(faction_id);
+    player->GetReputationMgr().ApplyForceReaction(factionId, factionRank, apply);
+    player->GetReputationMgr().SendForceReactions();
 
-    WorldPacket data;
-    data.Initialize(SMSG_SET_FORCED_REACTIONS, 4 + player->m_forcedReactions.size()*(4 + 4));
-    data << uint32(player->m_forcedReactions.size());
-    for (ForcedReactions::const_iterator itr = player->m_forcedReactions.begin(); itr != player->m_forcedReactions.end(); ++itr)
-    {
-        data << uint32(itr->first);                         // faction_id (Faction.dbc)
-        data << uint32(itr->second);                        // reputation rank
-    }
-    player->SendDirectMessage(&data);
+    // stop fighting at apply (if forced rank friendly) or at remove (if real rank friendly)
+    if ((apply && factionRank >= REP_FRIENDLY) || (!apply && player->GetReputationRank(factionId) >= REP_FRIENDLY))
+        player->StopAttackFaction(factionId);
 }
 
 void AuraEffect::HandleAuraModSkill(AuraApplication const* aurApp, uint8 mode, bool apply) const

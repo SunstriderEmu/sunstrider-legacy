@@ -52,7 +52,6 @@ public:
             { "recall",         SEC_GAMEMASTER1,  false, &HandleRecallCommand,              "" },
             { "rename",         SEC_GAMEMASTER2,  true,  &HandleCharacterRenameCommand,     "" },
             { "repairitems",    SEC_GAMEMASTER2,  false, &HandleRepairitemsCommand,         "" },
-            { "reportlag",      SEC_PLAYER,       false, &HandleReportLagCommand,           "" },
             { "save",           SEC_PLAYER,       false, &HandleSaveCommand,                "" },
             { "saveall",        SEC_GAMEMASTER1,  true,  &HandleSaveAllCommand,             "" },
             { "sendmail",       SEC_GAMEMASTER1,  true,  &HandleSendMailCommand,            "" },
@@ -317,19 +316,6 @@ public:
         return true;
     }
 
-    static bool HandleReportLagCommand(ChatHandler* handler, char const* args)
-    {
-        time_t now = time(nullptr);
-        Player* player = handler->GetSession()->GetPlayer();
-        if (now - player->lastLagReport > 10) { // Spam prevention
-            TC_LOG_INFO("misc", "[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
-                player->GetName().c_str(), player->GetGUID().GetCounter(), handler->GetSession()->GetRemoteAddress().c_str(), sWorld->GetUpdateTime());
-            player->lastLagReport = now;
-        }
-
-        return true;
-    }
-
     static bool HandleBattlegroundCommand(ChatHandler* handler, char const* args)
     {
         Player* p = handler->GetSession()->GetPlayer();
@@ -337,8 +323,8 @@ public:
 
         ARGS_CHECK
 
-            if (p->InBattleground() || p->GetMap()->Instanceable())
-                return true;
+        if (p->InBattleground() || p->GetMap()->Instanceable())
+            return true;
 
         char* cBGType = strtok((char*)args, " ");
         char* cAsGroup = strtok(nullptr, " ");
@@ -1075,46 +1061,6 @@ public:
         handler->PSendSysMessage(LANG_PINFO_LEVEL, timeStr.c_str(), level, gold, silv, copp);
 
         handler->PSendSysMessage("Current mail: %s", current_mail.c_str());
-
-        if (py && strncmp(py, "rep", 3) == 0)
-        {
-            if (!target)
-            {
-                // rep option not implemented for offline case
-                handler->SendSysMessage(LANG_PINFO_NO_REP);
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
-
-            char const* FactionName;
-            for (FactionStateList::const_iterator itr = target->m_factions.begin(); itr != target->m_factions.end(); ++itr)
-            {
-                FactionEntry const *factionEntry = sFactionStore.LookupEntry(itr->second.ID);
-                if (factionEntry)
-                    FactionName = factionEntry->name[handler->GetSessionDbcLocale()];
-                else
-                    FactionName = "#Not found#";
-                ReputationRank rank = target->GetReputationRank(factionEntry);
-                std::string rankName = handler->GetTrinityString(ReputationRankStrIndex[rank]);
-                std::ostringstream ss;
-                ss << itr->second.ID << ": |cffffffff|Hfaction:" << itr->second.ID << "|h[" << FactionName << "]|h|r " << rankName << "|h|r (" << target->GetReputation(factionEntry) << ")";
-
-                if (itr->second.Flags & FACTION_FLAG_VISIBLE)
-                    ss << handler->GetTrinityString(LANG_FACTION_VISIBLE);
-                if (itr->second.Flags & FACTION_FLAG_AT_WAR)
-                    ss << handler->GetTrinityString(LANG_FACTION_ATWAR);
-                if (itr->second.Flags & FACTION_FLAG_PEACE_FORCED)
-                    ss << handler->GetTrinityString(LANG_FACTION_PEACE_FORCED);
-                if (itr->second.Flags & FACTION_FLAG_HIDDEN)
-                    ss << handler->GetTrinityString(LANG_FACTION_HIDDEN);
-                if (itr->second.Flags & FACTION_FLAG_INVISIBLE_FORCED)
-                    ss << handler->GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
-                if (itr->second.Flags & FACTION_FLAG_INACTIVE)
-                    ss << handler->GetTrinityString(LANG_FACTION_INACTIVE);
-
-                handler->SendSysMessage(ss.str().c_str());
-            }
-        }
         return true;
     }
 

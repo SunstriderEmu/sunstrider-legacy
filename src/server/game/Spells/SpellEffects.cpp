@@ -47,6 +47,7 @@
 #include "InstanceScript.h"
 #include "LogsDatabaseAccessor.h"
 #include "SpellHistory.h"
+#include "ReputationMgr.h"
 
 SpellEffectHandlerFn SpellEffectHandlers[TOTAL_SPELL_EFFECTS]=
 {
@@ -6539,18 +6540,19 @@ void Spell::EffectReputation(uint32 i)
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    Player *_player = unitTarget->ToPlayer();
+    Player* player = unitTarget->ToPlayer();
 
-    int32  rep_change = damage;//+1;           // field store reputation change -1
+    int32  repChange = damage;//+1;           // field store reputation change -1
 
-    uint32 faction_id = m_spellInfo->Effects[i].MiscValue;
+    uint32 factionId = m_spellInfo->Effects[i].MiscValue;
 
-    FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction_id);
-
+    FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionId);
     if(!factionEntry)
         return;
 
-    _player->ModifyFactionReputation(factionEntry,rep_change);
+    repChange = player->CalculateReputationGain(REPUTATION_SOURCE_SPELL, 0, repChange, factionId);
+
+    player->GetReputationMgr().ModifyReputation(factionEntry, repChange);
 }
 
 void Spell::EffectQuestComplete(uint32 i)

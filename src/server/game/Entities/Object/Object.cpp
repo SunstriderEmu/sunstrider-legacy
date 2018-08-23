@@ -3423,22 +3423,14 @@ ReputationRank WorldObject::GetReactionTo(WorldObject const* target) const
     if (selfPlayerOwner)
     {
         if (FactionTemplateEntry const* targetFactionTemplateEntry = target->GetFactionTemplateEntry())
-        {
-            //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
-            auto forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
-            if (forceItr != selfPlayerOwner->m_forcedReactions.end())
-                return forceItr->second;
-        }
+            if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
+                return *repRank;
     }
     else if (targetPlayerOwner)
     {
         if (FactionTemplateEntry const* selfFactionTemplateEntry = GetFactionTemplateEntry())
-        {
-            //if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(selfFactionTemplateEntry))
-            auto forceItr = targetPlayerOwner->m_forcedReactions.find(selfFactionTemplateEntry->faction);
-            if (forceItr != targetPlayerOwner->m_forcedReactions.end())
-                return forceItr->second;
-        }
+            if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(selfFactionTemplateEntry))
+                return *repRank;
     }
 
     Unit const* unit = ToUnit();
@@ -3479,10 +3471,8 @@ ReputationRank WorldObject::GetReactionTo(WorldObject const* target) const
             {
                 if (FactionTemplateEntry const* targetFactionTemplateEntry = target->GetFactionTemplateEntry())
                 {
-                    //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
-                    auto forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
-                    if (forceItr != selfPlayerOwner->m_forcedReactions.end())
-                        return forceItr->second;
+                    if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
+                        return *repRank;
 
                     if (!selfPlayerOwner->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
                     {
@@ -3496,10 +3486,8 @@ ReputationRank WorldObject::GetReactionTo(WorldObject const* target) const
                                     return REP_HOSTILE;
 
                                 // if faction has reputation, hostile state depends only from AtWar state
-                                //if (selfPlayerOwner->GetReputationMgr().IsAtWar(targetFactionEntry))
-                                if (FactionState const* factionState = (selfPlayerOwner->ToPlayer())->GetFactionState(targetFactionEntry))
-                                    if (factionState->Flags & FACTION_FLAG_AT_WAR)
-                                        return REP_HOSTILE;
+                                if (selfPlayerOwner->GetReputationMgr().IsAtWar(targetFactionEntry))
+                                    return REP_HOSTILE;
 
                                 return REP_FRIENDLY;
                             }
@@ -3526,12 +3514,8 @@ ReputationRank WorldObject::GetFactionReactionTo(FactionTemplateEntry const* fac
     // sunwell: check forced reputation for self also
     if (Player const* selfPlayerOwner = GetAffectingPlayer())
     {
-        //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(target->GetFactionTemplateEntry()))
-        {
-            auto forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
-            if (forceItr != selfPlayerOwner->m_forcedReactions.end())
-                return forceItr->second;
-        }
+        if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(target->GetFactionTemplateEntry()))
+            return *repRank;
     }
 
     if (Player const* targetPlayerOwner = target->GetAffectingPlayer())
@@ -3540,10 +3524,8 @@ ReputationRank WorldObject::GetFactionReactionTo(FactionTemplateEntry const* fac
         if (factionTemplateEntry->factionFlags & FACTION_TEMPLATE_FLAG_CONTESTED_GUARD
             && targetPlayerOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
             return REP_HOSTILE;
-        //if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(factionTemplateEntry))
-        auto forceItr = targetPlayerOwner->m_forcedReactions.find(factionTemplateEntry->faction);
-        if (forceItr != targetPlayerOwner->m_forcedReactions.end())
-            return forceItr->second;
+        if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(factionTemplateEntry))
+            return *repRank;
 
         if (target->ToUnit() && !target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
         {
@@ -3552,12 +3534,9 @@ ReputationRank WorldObject::GetFactionReactionTo(FactionTemplateEntry const* fac
                 if (factionEntry->CanHaveReputation())
                 {
                     // CvP case - check reputation, don't allow state higher than neutral when at war
-                    //ReputationRank repRank = targetPlayerOwner->GetReputationMgr().GetRank(factionEntry);
-                    ReputationRank repRank = targetPlayerOwner->GetReputationRank(factionEntry);
-                    //if (targetPlayerOwner->GetReputationMgr().IsAtWar(factionEntry))
-                    if (FactionState const* repState = targetPlayerOwner->GetFactionState(factionEntry))
-                        if (repState->Flags & FACTION_FLAG_AT_WAR)
-                            repRank = std::min(REP_NEUTRAL, repRank);
+                    ReputationRank repRank = targetPlayerOwner->GetReputationMgr().GetRank(factionEntry);
+                    if (targetPlayerOwner->GetReputationMgr().IsAtWar(factionEntry))
+                        repRank = std::min(REP_NEUTRAL, repRank);
                     return repRank;
                 }
             }
@@ -3758,12 +3737,9 @@ bool WorldObject::IsValidAttackTarget(WorldObject const* target, SpellInfo const
 
             if (FactionTemplateEntry const* factionTemplate = creature->GetFactionTemplateEntry())
             {
-                //if (!(player->GetReputationMgr().GetForcedRankIfAny(factionTemplate)))
-                auto forceItr = player->m_forcedReactions.find(factionTemplate->faction);
-                if (forceItr == player->m_forcedReactions.end())
+                if (!(player->GetReputationMgr().GetForcedRankIfAny(factionTemplate)))
                     if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction))
-                        //if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
-                        if (FactionState const* repState = player->GetFactionState(factionEntry))
+                        if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
                             if (!(repState->Flags & FACTION_FLAG_AT_WAR))
                                 return false;
 

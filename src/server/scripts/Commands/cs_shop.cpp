@@ -7,6 +7,7 @@
 #include "GuildMgr.h"
 #include "Mail.h"
 #include "Config.h"
+#include "ReputationMgr.h"
 
 class shop_commandscript : public CommandScript
 {
@@ -755,9 +756,9 @@ public:
                     continue;
 
                 if (!to)
-                    plr->DropFactionReputation(from);
+                    plr->GetReputationMgr().DropFactionReputation(from);
                 else
-                    plr->SwapFactionReputation(from, to);
+                    plr->GetReputationMgr().SwapFactionReputation(from, to);
             } while (result->NextRow());
         }
 
@@ -770,19 +771,19 @@ public:
 
                 if (dest_team == TEAM_ALLIANCE) {
                     if (faction_alliance == 0)
-                        plr->DropFactionReputation(faction_horde);
+                        plr->GetReputationMgr().DropFactionReputation(faction_horde);
                     else if (faction_horde == 0)
-                        plr->DropFactionReputation(faction_alliance);
+                        plr->GetReputationMgr().DropFactionReputation(faction_alliance);
                     else
-                        plr->SwapFactionReputation(faction_alliance, faction_horde);
+                        plr->GetReputationMgr().SwapFactionReputation(faction_alliance, faction_horde);
                 }
                 else {
                     if (faction_horde == 0)
-                        plr->DropFactionReputation(faction_alliance);
+                        plr->GetReputationMgr().DropFactionReputation(faction_alliance);
                     else if (faction_alliance == 0)
-                        plr->DropFactionReputation(faction_horde);
+                        plr->GetReputationMgr().DropFactionReputation(faction_horde);
                     else
-                        plr->SwapFactionReputation(faction_horde, faction_alliance);
+                        plr->GetReputationMgr().SwapFactionReputation(faction_horde, faction_alliance);
                 }
             }
         }

@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "ReputationMgr.h"
 
 class quest_commandscript : public CommandScript
 {
@@ -134,7 +135,7 @@ public:
         player->SetQuestStatus(entry, QUEST_STATUS_NONE);
 
         // reset rewarded for restart repeatable quest
-        player->getQuestStatusMap()[entry].m_rewarded = false;
+        player->getQuestStatusMap()[entry].Rewarded = false;
 
         handler->SendSysMessage(LANG_COMMAND_QUEST_REMOVED);
         return true;
@@ -259,7 +260,7 @@ public:
             if (curRep < repValue)
             {
                 FactionEntry const *factionEntry = sFactionStore.LookupEntry(repFaction);
-                player->SetFactionReputation(factionEntry, repValue);
+                player->GetReputationMgr().SetOneFactionReputation(factionEntry, repValue, false);
             }
         }
 

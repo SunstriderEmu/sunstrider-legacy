@@ -477,18 +477,10 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 {
     // When this packet send?
 
-
     ObjectGuid guid ;
     recvData >> guid;
 
-    _player->SetUInt32Value(UNIT_FIELD_TARGET,guid);
-
-    // update reputation list if need
-    Unit* unit = ObjectAccessor::GetUnit(*_player, guid );
-    if(!unit)
-        return;
-
-    _player->SetFactionVisibleForFactionTemplateId(unit->GetFaction());
+    _player->SetSelection(guid);
 }
 
 void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
@@ -498,7 +490,6 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 
     _player->SetSelection(guid);
 
-    // update reputation list if need
     Unit* unit = ObjectAccessor::GetUnit(*_player, guid);
     if (_player->HaveSpectators())
     {
@@ -512,9 +503,6 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
         msg.SetTarget(unit ? unit->GetName() : "0");
         _player->SendSpectatorAddonMsgToBG(msg);
     }
-
-    if (unit)
-        _player->SetFactionVisibleForFactionTemplateId(unit->GetFaction());
 }
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )

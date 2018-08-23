@@ -269,7 +269,7 @@ class TC_GAME_API Quest
         uint32 RewardChoiceItemCount[QUEST_REWARD_CHOICES_COUNT];
         uint32 RewardItemId[QUEST_REWARDS_COUNT];
         uint32 RewardItemIdCount[QUEST_REWARDS_COUNT];
-        uint32 RewardRepFaction[QUEST_REPUTATIONS_COUNT];
+        uint32 RewardFactionId[QUEST_REPUTATIONS_COUNT];
         int32  RewardRepValue[QUEST_REPUTATIONS_COUNT];
         uint32 DetailsEmote[QUEST_EMOTE_COUNT];
         uint32 DetailsEmoteDelay[QUEST_EMOTE_COUNT];
@@ -360,21 +360,21 @@ enum QuestUpdateState
 struct QuestStatusData
 {
     QuestStatusData()
-        : m_status(QUEST_STATUS_NONE),m_rewarded(false),
-        m_explored(false), m_timer(0), uState(QUEST_NEW)
+        : Status(QUEST_STATUS_NONE), Rewarded(false),
+        Explored(false), m_timer(0), uState(QUEST_NEW)
     {
-        memset(m_itemcount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint32));
-        memset(m_creatureOrGOcount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint32));
+        memset(ItemCount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint32));
+        memset(CreatureOrGOCount, 0, QUEST_OBJECTIVES_COUNT * sizeof(uint32));
     }
 
-    QuestStatus m_status;
-    bool m_rewarded;
-    bool m_explored;
+    QuestStatus Status;
+    bool Rewarded;
+    bool Explored;
     uint32 m_timer;
     QuestUpdateState uState;
 
-    uint32 m_itemcount[ QUEST_OBJECTIVES_COUNT ];
-    uint32 m_creatureOrGOcount[ QUEST_OBJECTIVES_COUNT ];
+    uint32 ItemCount[ QUEST_OBJECTIVES_COUNT ];
+    uint32 CreatureOrGOCount[ QUEST_OBJECTIVES_COUNT ];
 };
 
 struct AccessRequirement

@@ -4473,6 +4473,45 @@ void Unit::CombatStopWithPets(bool includingCast)
         minion->CombatStop(includingCast);
 }
 
+void Unit::StopAttackFaction(uint32 faction_id)
+{
+    if (Unit* victim = GetVictim())
+    {
+        if (victim->GetFactionTemplateEntry()->faction == faction_id)
+        {
+            AttackStop();
+            if (IsNonMeleeSpellCast(false))
+                InterruptNonMeleeSpells(false);
+
+            // melee and ranged forced attack cancel
+            if (GetTypeId() == TYPEID_PLAYER)
+                ToPlayer()->SendAttackSwingCancelAttack();
+        }
+    }
+
+    AttackerSet const& attackers = GetAttackers();
+    for (AttackerSet::const_iterator itr = attackers.begin(); itr != attackers.end();)
+    {
+        if ((*itr)->GetFactionTemplateEntry()->faction == faction_id)
+        {
+            (*itr)->AttackStop();
+            itr = attackers.begin();
+        }
+        else
+            ++itr;
+    }
+
+    std::vector<CombatReference*> refsToEnd;
+    for (auto const& pair : m_combatManager.GetPvECombatRefs())
+        if (pair.second->GetOther(this)->GetFactionTemplateEntry()->faction == faction_id)
+            refsToEnd.push_back(pair.second);
+    for (CombatReference* ref : refsToEnd)
+        ref->EndCombat();
+
+    for (Unit* minion : m_Controlled)
+        minion->StopAttackFaction(faction_id);
+}
+
 bool Unit::IsAttackingPlayer() const
 {
     if(HasUnitState(UNIT_STATE_ATTACK_PLAYER))

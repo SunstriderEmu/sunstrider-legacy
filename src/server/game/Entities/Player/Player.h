@@ -36,7 +36,7 @@ class SpellCastTargets;
 class PlayerAI;
 class CinematicMgr;
 class TradeData;
-
+class ReputationMgr;
 #ifdef PLAYERBOT
 // Playerbot mod
 class PlayerbotAI;
@@ -157,6 +157,17 @@ enum ActionButtonType
 };
 
 #define  MAX_ACTION_BUTTONS 132                             //checked in 2.3.0
+
+enum ReputationSource
+{
+    REPUTATION_SOURCE_KILL,
+    REPUTATION_SOURCE_QUEST,
+    REPUTATION_SOURCE_DAILY_QUEST,
+    REPUTATION_SOURCE_WEEKLY_QUEST,
+    REPUTATION_SOURCE_MONTHLY_QUEST,
+    REPUTATION_SOURCE_REPEATABLE_QUEST,
+    REPUTATION_SOURCE_SPELL
+};
 
 typedef std::map<uint8,ActionButton> ActionButtonList;
 
@@ -352,21 +363,6 @@ enum LoadData
     LOAD_DATA_XP_BLOCKED,
     LOAD_DATA_CUSTOM_XP
 };
-
-typedef uint32 RepListID;
-struct FactionState
-{
-    uint32 ID;
-    RepListID ReputationListID;
-    uint32 Flags;
-    int32  Standing;
-    bool Changed;
-    bool Deleted;
-};
-
-typedef std::map<RepListID,FactionState> FactionStateList;
-
-typedef std::map<uint32,ReputationRank> ForcedReactions;
 
 struct EnchantDuration
 {
@@ -678,7 +674,7 @@ enum AtLoginFlags
     AT_LOGIN_RESET_TALENTS = 0x04,
     AT_LOGIN_SET_DESERTER  = 0x08,
     AT_LOGIN_RESET_FLYS    = 0x10,
-    AT_LOGIN_ALL_REP       = 0x20,
+    //reuse
     AT_LOGIN_FIRST         = 0x40,
 	//0x80
 	AT_LOGIN_RESURRECT     = 0x100,
@@ -1260,33 +1256,33 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***                    STORAGE SYSTEM                 ***/
         /*********************************************************/
 
-        void SetVirtualItemSlot( uint8 i, Item* item);
-        void SetSheath(SheathState sheathed ) override;
-        uint8 FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const;
-        uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = nullptr ) const;
+        void SetVirtualItemSlot(uint8 i, Item* item);
+        void SetSheath(SheathState sheathed) override;
+        uint8 FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) const;
+        uint32 GetItemCount(uint32 item, bool inBankAlso = false, Item* skipItem = nullptr) const;
         Item* GetFirstItem(uint32 item) const;
-        Item* GetItemByGuid(ObjectGuid guid ) const;
-        Item* GetItemByPos( uint16 pos ) const;
-        Item* GetItemByPos( uint8 bag, uint8 slot ) const;
+        Item* GetItemByGuid(ObjectGuid guid) const;
+        Item* GetItemByPos(uint16 pos) const;
+        Item* GetItemByPos(uint8 bag, uint8 slot) const;
         Bag*  GetBagByPos(uint8 slot) const;
         //Does additional check for disarmed weapons
         Item* GetUseableItemByPos(uint8 bag, uint8 slot) const;
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
         bool HasMainWeapon() const override;
         Item* GetShield(bool useable = false) const;
-        static WeaponAttackType GetAttackBySlot( uint8 slot );        // MAX_ATTACK if not weapon slot
+        static WeaponAttackType GetAttackBySlot(uint8 slot);        // MAX_ATTACK if not weapon slot
         std::vector<Item *> &GetItemUpdateQueue() { return m_itemUpdateQueue; }
-        static bool IsInventoryPos( uint16 pos ) { return IsInventoryPos(pos >> 8,pos & 255); }
-        static bool IsInventoryPos( uint8 bag, uint8 slot );
-        static bool IsEquipmentPos( uint16 pos ) { return IsEquipmentPos(pos >> 8,pos & 255); }
-        static bool IsEquipmentPos( uint8 bag, uint8 slot );
-        static bool IsBagPos( uint16 pos );
-        static bool IsBankPos( uint16 pos ) { return IsBankPos(pos >> 8,pos & 255); }
-        static bool IsBankPos( uint8 bag, uint8 slot );
-        bool IsValidPos( uint16 pos ) { return IsBankPos(pos >> 8,pos & 255); }
-        bool IsValidPos( uint8 bag, uint8 slot ) const;
-        bool HasBankBagSlot( uint8 slot ) const;
-        bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
+        static bool IsInventoryPos(uint16 pos) { return IsInventoryPos(pos >> 8, pos & 255); }
+        static bool IsInventoryPos(uint8 bag, uint8 slot);
+        static bool IsEquipmentPos(uint16 pos) { return IsEquipmentPos(pos >> 8, pos & 255); }
+        static bool IsEquipmentPos(uint8 bag, uint8 slot);
+        static bool IsBagPos(uint16 pos);
+        static bool IsBankPos(uint16 pos) { return IsBankPos(pos >> 8, pos & 255); }
+        static bool IsBankPos(uint8 bag, uint8 slot);
+        bool IsValidPos(uint16 pos) { return IsBankPos(pos >> 8, pos & 255); }
+        bool IsValidPos(uint8 bag, uint8 slot) const;
+        bool HasBankBagSlot(uint8 slot) const;
+        bool HasItemCount(uint32 item, uint32 count, bool inBankAlso = false) const;
         uint32 GetEmptyBagSlotsCount() const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;
         bool CanNoReagentCast(SpellInfo const* spellInfo) const;
@@ -1332,24 +1328,24 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = nullptr, uint32* itemLimitCategory = nullptr) const;
         InventoryResult _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = nullptr, bool swap = false, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const;
 
-        void ApplyEquipCooldown( Item * pItem );
-        void SetAmmo( uint32 item );
+        void ApplyEquipCooldown(Item * pItem);
+        void SetAmmo(uint32 item);
         void RemoveAmmo();
         float GetAmmoDPS() const { return m_ammoDPS; }
         bool CheckAmmoCompatibility(const ItemTemplate *ammo_proto) const;
-        void QuickEquipItem( uint16 pos, Item *pItem);
-        void VisualizeItem( uint8 slot, Item *pItem);
+        void QuickEquipItem(uint16 pos, Item *pItem);
+        void VisualizeItem(uint8 slot, Item *pItem);
         void SetVisibleItemSlot(uint8 slot, Item *pItem);
-        Item* BankItem( ItemPosCountVec const& dest, Item *pItem, bool update )
+        Item* BankItem(ItemPosCountVec const& dest, Item *pItem, bool update)
         {
             return StoreItem( dest, pItem, update);
         }
-        Item* BankItem( uint16 pos, Item *pItem, bool update );
-        void RemoveItem( uint8 bag, uint8 slot, bool update );
+        Item* BankItem(uint16 pos, Item *pItem, bool update);
+        void RemoveItem(uint8 bag, uint8 slot, bool update);
         void MoveItemFromInventory(uint8 bag, uint8 slot, bool update);
-                                                            // in trade, auction, guild bank, mail....
+        // in trade, auction, guild bank, mail....
         void MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool update, bool in_characterInventoryDB = false);
-                                                            // in trade, guild bank, mail....
+        // in trade, guild bank, mail....
         void RemoveItemDependentAurasAndCasts(Item* pItem);
         void DestroyItem( uint8 bag, uint8 slot, bool update );
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false, bool inBankAlso = false);
@@ -1410,57 +1406,58 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /*********************************************************/
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
+        int32 GetQuestLevel(Quest const* quest) const { return quest && (quest->GetQuestLevel() > 0) ? quest->GetQuestLevel() : GetLevel(); }
 
-        void PrepareQuestMenu(ObjectGuid guid );
-        void SendPreparedQuest(ObjectGuid guid );
-        bool IsActiveQuest( uint32 quest_id ) const;
-        Quest const *GetNextQuest(ObjectGuid guid, Quest const *pQuest );
-        bool CanSeeStartQuest( Quest const *pQuest );
-        bool CanTakeQuest( Quest const *pQuest, bool msg );
-        bool CanAddQuest( Quest const *pQuest, bool msg );
-        bool CanCompleteQuest( uint32 quest_id );
+        void PrepareQuestMenu(ObjectGuid guid);
+        void SendPreparedQuest(ObjectGuid guid);
+        bool IsActiveQuest(uint32 quest_id) const;
+        Quest const *GetNextQuest(ObjectGuid guid, Quest const *pQuest);
+        bool CanSeeStartQuest(Quest const *pQuest);
+        bool CanTakeQuest(Quest const *pQuest, bool msg);
+        bool CanAddQuest(Quest const *pQuest, bool msg);
+        bool CanCompleteQuest(uint32 quest_id);
         bool CanCompleteRepeatableQuest(Quest const *pQuest);
-        bool CanRewardQuest( Quest const *pQuest, bool msg );
-        bool CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg );
+        bool CanRewardQuest(Quest const *pQuest, bool msg);
+        bool CanRewardQuest(Quest const *pQuest, uint32 reward, bool msg);
         void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
-        void AddQuest( Quest const *pQuest, Object *questGiver );
-        void CompleteQuest( uint32 quest_id );
-        void IncompleteQuest( uint32 quest_id );
-        void RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver, bool announce = true );
-        void FailQuest( uint32 quest_id );
-        void FailTimedQuest( uint32 quest_id );
-        bool SatisfyQuestSkillOrClass( Quest const* qInfo, bool msg );
-        bool SatisfyQuestLevel( Quest const* qInfo, bool msg );
-        bool SatisfyQuestLog( bool msg );
-        bool SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg );
-        bool SatisfyQuestRace( Quest const* qInfo, bool msg );
-        bool SatisfyQuestReputation( Quest const* qInfo, bool msg );
-        bool SatisfyQuestStatus( Quest const* qInfo, bool msg );
+        void AddQuest(Quest const *pQuest, Object *questGiver);
+        void CompleteQuest(uint32 quest_id);
+        void IncompleteQuest(uint32 quest_id);
+        void RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver, bool announce = true);
+        void FailQuest(uint32 quest_id);
+        void FailTimedQuest(uint32 quest_id);
+        bool SatisfyQuestSkillOrClass(Quest const* qInfo, bool msg);
+        bool SatisfyQuestLevel(Quest const* qInfo, bool msg);
+        bool SatisfyQuestLog(bool msg);
+        bool SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg);
+        bool SatisfyQuestRace(Quest const* qInfo, bool msg);
+        bool SatisfyQuestReputation(Quest const* qInfo, bool msg);
+        bool SatisfyQuestStatus(Quest const* qInfo, bool msg);
         bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
-        bool SatisfyQuestTimed( Quest const* qInfo, bool msg );
-        bool SatisfyQuestExclusiveGroup( Quest const* qInfo, bool msg );
-        bool SatisfyQuestNextChain( Quest const* qInfo, bool msg );
-        bool SatisfyQuestPrevChain( Quest const* qInfo, bool msg );
-        bool SatisfyQuestDay( Quest const* qInfo, bool msg );
-        bool GiveQuestSourceItem( Quest const *pQuest );
-        bool TakeQuestSourceItem( uint32 quest_id, bool msg );
-        bool GetQuestRewardStatus( uint32 quest_id ) const;
-        QuestStatus GetQuestStatus( uint32 quest_id ) const;
-        void SetQuestStatus( uint32 quest_id, QuestStatus status );
-        void AutoCompleteQuest( Quest const* qInfo );
+        bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
+        bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
+        bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
+        bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
+        bool SatisfyQuestDay(Quest const* qInfo, bool msg);
+        bool GiveQuestSourceItem(Quest const *pQuest);
+        bool TakeQuestSourceItem(uint32 quest_id, bool msg);
+        bool GetQuestRewardStatus(uint32 quest_id) const;
+        QuestStatus GetQuestStatus(uint32 quest_id) const;
+        void SetQuestStatus(uint32 quest_id, QuestStatus status);
+        void AutoCompleteQuest(Quest const* qInfo);
         QuestGiverStatus GetQuestDialogStatus(Object* questGiver);
 
-        void SetDailyQuestStatus( uint32 quest_id );
+        void SetDailyQuestStatus(uint32 quest_id);
         void ResetDailyQuestStatus();
         bool IsDailyQuestDone(uint32 quest_id) const;
 
-        uint16 FindQuestSlot( uint32 quest_id ) const;
-        uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
-        uint32 GetQuestSlotState(uint16 slot)   const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_STATE_OFFSET); }
-        uint32 GetQuestSlotCounters(uint16 slot)const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET); }
-        uint8 GetQuestSlotCounter(uint16 slot,uint8 counter) const { return GetByteValue(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET,counter); }
-        uint32 GetQuestSlotTime(uint16 slot)    const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_TIME_OFFSET); }
-        void SetQuestSlot(uint16 slot,uint32 quest_id, uint32 timer = 0)
+        uint16 FindQuestSlot(uint32 quest_id) const;
+        uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
+        uint32 GetQuestSlotState(uint16 slot)   const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_STATE_OFFSET); }
+        uint32 GetQuestSlotCounters(uint16 slot)const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET); }
+        uint8 GetQuestSlotCounter(uint16 slot, uint8 counter) const { return GetByteValue(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_COUNTS_OFFSET, counter); }
+        uint32 GetQuestSlotTime(uint16 slot)    const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_TIME_OFFSET); }
+        void SetQuestSlot(uint16 slot, uint32 quest_id, uint32 timer = 0)
         {
             SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_ID_OFFSET,quest_id);
             SetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_STATE_OFFSET,0);
@@ -1483,30 +1480,31 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             }
         }
         uint32 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry);
-        void AdjustQuestRequiredItemCount( Quest const* pQuest );
-        void AreaExploredOrEventHappens( uint32 questId );
-        void GroupEventHappens( uint32 questId, WorldObject const* pEventObject );
-        void ItemAddedQuestCheck( uint32 entry, uint32 count );
-        void ItemRemovedQuestCheck( uint32 entry, uint32 count );
+        void AdjustQuestRequiredItemCount(Quest const* pQuest);
+        void AreaExploredOrEventHappens(uint32 questId);
+        void GroupEventHappens(uint32 questId, WorldObject const* pEventObject);
+        void ItemAddedQuestCheck(uint32 entry, uint32 count);
+        void ItemRemovedQuestCheck(uint32 entry, uint32 count);
         void KilledMonsterCredit(uint32 entry, ObjectGuid guid, uint32 questId = 0);
         void ActivatedGO(uint32 entry, ObjectGuid guid);
-        void CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id );
-        void TalkedToCreature( uint32 entry, ObjectGuid guid );
-        void MoneyChanged( uint32 value );
-        bool HasQuestForItem( uint32 itemid ) const;
+        void CastedCreatureOrGO(uint32 entry, ObjectGuid guid, uint32 spell_id);
+        void TalkedToCreature(uint32 entry, ObjectGuid guid);
+        void MoneyChanged(uint32 value);
+        void ReputationChanged(FactionEntry const* factionEntry);
+        bool HasQuestForItem(uint32 itemid) const;
         bool HasQuestForGO(int32 GOId);
         void UpdateForQuestWorldObjects();
         bool CanShareQuest(uint32 quest_id) const;
 
-        void SendQuestComplete( uint32 quest_id );
-        void SendQuestReward( Quest const *pQuest, uint32 XP, Object* questGiver );
-        void SendQuestFailed( uint32 quest_id );
-        void SendQuestTimerFailed( uint32 quest_id );
-        void SendCanTakeQuestResponse( uint32 msg );
+        void SendQuestComplete(uint32 quest_id);
+        void SendQuestReward(Quest const *pQuest, uint32 XP, Object* questGiver);
+        void SendQuestFailed(uint32 quest_id);
+        void SendQuestTimerFailed(uint32 quest_id);
+        void SendCanTakeQuestResponse(uint32 msg);
         void SendQuestConfirmAccept(Quest const* pQuest, Player* pReceiver);
-        void SendPushToPartyResponse( Player *pPlayer, uint32 msg );
-        void SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint32 count );
-        void SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, ObjectGuid guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count );
+        void SendPushToPartyResponse(Player *pPlayer, uint32 msg);
+        void SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32 count);
+        void SendQuestUpdateAddCreatureOrGo(Quest const* pQuest, ObjectGuid guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count);
 
         ObjectGuid GetDivider() { return m_divider; };
         void SetDivider(ObjectGuid guid) { m_divider = guid; };
@@ -1983,7 +1981,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
 		TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
-        static uint32 getFactionForRace(uint8 race);
         void SetFactionForRace(uint8 race);
         
         static bool IsMainFactionForRace(uint32 race, uint32 factionId);
@@ -1995,39 +1992,15 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewardSource);
         bool IsHonorOrXPTarget(Unit* victim) const;
 
-        FactionStateList m_factions;
-        ForcedReactions m_forcedReactions;
-        FactionStateList const& GetFactionStateList() { return m_factions; }
-        uint32 GetDefaultReputationFlags(const FactionEntry *factionEntry) const;
-        int32 GetBaseReputation(const FactionEntry *factionEntry) const;
+        ReputationMgr&       GetReputationMgr() { return *m_reputationMgr; }
+        ReputationMgr const& GetReputationMgr() const { return *m_reputationMgr; }
         int32 GetReputation(uint32 faction_id) const;
-        int32 GetReputation(const FactionEntry *factionEntry) const;
-        ReputationRank GetReputationRank(uint32 faction) const;
-        ReputationRank GetReputationRank(const FactionEntry *factionEntry) const;
-        ReputationRank GetBaseReputationRank(const FactionEntry *factionEntry) const;
-        ReputationRank ReputationToRank(int32 standing) const;
-        const static int32 ReputationRank_Length[MAX_REPUTATION_RANK];
-        bool ModifyFactionReputation(uint32 FactionTemplateId, int32 DeltaReputation);
-        bool ModifyFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        bool SetFactionReputation(uint32 FactionTemplateId, int32 standing);
-        bool SetFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        bool SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing);
-        void SwapFactionReputation(uint32 factionId1, uint32 factionId2);
-        void DropFactionReputation(uint32 factionId);
-        int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, bool for_quest);
-        void RewardReputation(Unit *pVictim, float rate);
-        void RewardReputation(Quest const *pQuest);
-        void SetInitialFactions();
-        void UpdateReputation();
-        void SendFactionState(FactionState const* faction);
-        void SendInitialReputations();
-        FactionState const* GetFactionState( FactionEntry const* factionEntry) const;
-        void SetFactionAtWar(FactionState* faction, bool atWar);
-        void SetFactionInactive(FactionState* faction, bool inactive);
-        void SetFactionVisible(FactionState* faction);
-        void SetFactionVisibleForFactionTemplateId(uint32 FactionTemplateId);
-        void SetFactionVisibleForFactionId(uint32 FactionId);
+        ReputationRank GetReputationRank(uint32 faction_id) const;
+        void RewardReputation(Unit* victim, float rate);
+        void RewardReputation(Quest const* quest);
+
+        int32 CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus = false);
+
         void UpdateSkillsForLevel();
         void UpdateSkillsToMaxSkillsForLevel();             // for .levelup
         void ModifySkillBonus(uint32 skillid,int32 val, bool talent);
@@ -2476,7 +2449,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _LoadDailyQuestStatus(PreparedQueryResult result);
         void _LoadGroup(PreparedQueryResult result);
         void _LoadSkills(PreparedQueryResult result);
-        void _LoadReputation(PreparedQueryResult result);
         void _LoadSpells(PreparedQueryResult result);
         bool _LoadHomeBind(PreparedQueryResult result);
         void _LoadDeclinedNames(PreparedQueryResult result);
@@ -2493,7 +2465,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveMail(SQLTransaction trans);
         void _SaveQuestStatus(SQLTransaction trans);
         void _SaveDailyQuestStatus(SQLTransaction trans);
-        void _SaveReputation(SQLTransaction trans);
         void _SaveSpells(SQLTransaction trans);
         void _SaveSkills(SQLTransaction trans);
         void _SaveBGData(SQLTransaction& trans);
@@ -2553,7 +2524,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
-        //TC PlayerTalentMap* m_talents[MAX_TALENT_SPECS];
+        ReputationMgr*  m_reputationMgr;
+#ifdef LICH_KING
+        PlayerTalentMap* m_talents[MAX_TALENT_SPECS];
+#endif
 
         uint32 m_timeSyncCounter;
         uint32 m_timeSyncTimer;

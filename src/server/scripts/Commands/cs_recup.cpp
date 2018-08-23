@@ -2,6 +2,7 @@
 #include "Language.h"
 #include "RecupMgr.h"
 #include "Mail.h"
+#include "ReputationMgr.h"
 
 class recup_commandscript : public CommandScript
 {
@@ -91,7 +92,7 @@ public:
                 return false;
             }
 
-            player->SetFactionReputation(factionEntry, amount);
+            player->GetReputationMgr().SetOneFactionReputation(factionEntry, amount, false);
             handler->PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[handler->GetSessionDbcLocale()], factionId, player->GetName().c_str(), player->GetReputation(factionId));
         }
 

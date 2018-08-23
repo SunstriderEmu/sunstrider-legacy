@@ -60,7 +60,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         if (questTemplate->RequiredItemId[i])
         {
             int required = questTemplate->RequiredItemCount[i];
-            int available = questStatus.m_itemcount[i];
+            int available = questStatus.ItemCount[i];
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(questTemplate->RequiredItemId[i]);
             TellObjective(chat->formatItem(proto), available, required);
         }
@@ -68,7 +68,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         if (questTemplate->RequiredNpcOrGo[i])
         {
             int required = questTemplate->RequiredNpcOrGoCount[i];
-            int available = questStatus.m_creatureOrGOcount[i];
+            int available = questStatus.CreatureOrGOCount[i];
 
             if (questTemplate->RequiredNpcOrGo[i] < 0)
             {

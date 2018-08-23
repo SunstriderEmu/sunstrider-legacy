@@ -8,6 +8,7 @@
 #include "OutdoorPvPMgr.h"
 #include "Language.h"
 #include "World.h"
+#include "ReputationMgr.h"
 
 OutdoorPvPSI::OutdoorPvPSI()
 {
@@ -133,7 +134,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // add 19 honor
             // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
-            plr->ModifyFactionReputation(609,20);
+            plr->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609), 20);
             // complete quest
             plr->KilledMonsterCredit(SI_TURNIN_QUEST_CM_A, ObjectGuid::Empty);
         }
@@ -158,7 +159,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(Player *plr, uint32 trigger)
             // add 19 honor
             // plr->RewardHonor(NULL,1,19);     // Commented out to prevent bug abusing
             // add 20 cenarion circle repu
-            plr->ModifyFactionReputation(609,20);
+            plr->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609), 20);
             // complete quest
             plr->KilledMonsterCredit(SI_TURNIN_QUEST_CM_H, ObjectGuid::Empty);
         }

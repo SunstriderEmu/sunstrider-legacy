@@ -1183,9 +1183,9 @@ public:
                     if (deltaTxt)
                     {
                         int32 delta = atoi(deltaTxt);
-                        if ((delta < 0) || (delta > Player::ReputationRank_Length[r] -1))
+                        if ((delta < 0) || (delta > ReputationMgr::PointsInRank[r] -1))
                         {
-                            handler->PSendSysMessage(LANG_COMMAND_FACTION_DELTA, (Player::ReputationRank_Length[r]-1));
+                            handler->PSendSysMessage(LANG_COMMAND_FACTION_DELTA, (ReputationMgr::PointsInRank[r]-1));
                             handler->SetSentErrorMessage(true);
                             return false;
                         }
@@ -1193,7 +1193,7 @@ public:
                     }
                     break;
                 }
-                amount += Player::ReputationRank_Length[r];
+                amount += ReputationMgr::PointsInRank[r];
             }
             if (r >= MAX_REPUTATION_RANK)
             {
@@ -1219,7 +1219,8 @@ public:
             return false;
         }
 
-        target->SetFactionReputation(factionEntry,amount);
+        target->GetReputationMgr().SetOneFactionReputation(factionEntry, amount, false);
+        target->GetReputationMgr().SendState(target->GetReputationMgr().GetState(factionEntry));
         handler->PSendSysMessage(LANG_COMMAND_MODIFY_REP, factionEntry->name[handler->GetSessionDbcLocale()], factionId, target->GetName().c_str(), target->GetReputation(factionId));
         return true;
     }

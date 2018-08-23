@@ -27,6 +27,7 @@
 #include "SpellMgr.h"
 #include "Spell.h"
 #include "SharedDefines.h"
+#include "ReputationMgr.h"
 
 char const* ConditionMgr::StaticSourceTypeData[CONDITION_SOURCE_TYPE_MAX] =
 {
@@ -176,7 +177,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             if (Player const* player = object->ToPlayer())
             {
                 if (FactionEntry const* faction = sFactionStore.LookupEntry(ConditionValue1))
-                    condMeets = (ConditionValue2 & (1 << player->GetReputationRank(faction))) != 0;
+                    condMeets = (ConditionValue2 & (1 << player->GetReputationMgr().GetRank(faction))) != 0;
             }
             break;
         }

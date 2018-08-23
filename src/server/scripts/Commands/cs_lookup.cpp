@@ -287,8 +287,8 @@ public:
     {
         ARGS_CHECK
 
-            // Can be NULL at console call
-            Player *target = handler->GetSelectedPlayer();
+        // Can be NULL at console call
+        Player* target = handler->GetSelectedPlayer();
 
         std::string namepart = args;
         std::wstring wnamepart;
@@ -306,13 +306,7 @@ public:
             FactionEntry const *factionEntry = sFactionStore.LookupEntry(id);
             if (factionEntry)
             {
-                FactionState const* repState = nullptr;
-                if (target)
-                {
-                    FactionStateList::const_iterator repItr = target->m_factions.find(factionEntry->reputationListID);
-                    if (repItr != target->m_factions.end())
-                        repState = &repItr->second;
-                }
+                FactionState const* factionState = target ? target->GetReputationMgr().GetState(factionEntry) : nullptr;
 
                 int loc = handler->GetSessionDbcLocale();
                 std::string name = factionEntry->name[loc];
@@ -346,24 +340,24 @@ public:
                     else
                         ss << id << " - " << name << " " << localeNames[loc];
 
-                    if (repState)                               // and then target!=NULL also
+                    if (factionState)                               // and then target!=NULL also
                     {
-                        ReputationRank rank = target->GetReputationRank(factionEntry);
-                        std::string rankName = handler->GetTrinityString(ReputationRankStrIndex[rank]);
+                        uint32 index = target->GetReputationMgr().GetReputationRankStrIndex(factionEntry);
+                        std::string rankName = handler->GetTrinityString(index);
 
-                        ss << " " << rankName << "|h|r (" << target->GetReputation(factionEntry) << ")";
+                        ss << " " << rankName << "|h|r (" << target->GetReputationMgr().GetReputation(factionEntry) << ")";
 
-                        if (repState->Flags & FACTION_FLAG_VISIBLE)
+                        if (factionState->Flags & FACTION_FLAG_VISIBLE)
                             ss << handler->GetTrinityString(LANG_FACTION_VISIBLE);
-                        if (repState->Flags & FACTION_FLAG_AT_WAR)
+                        if (factionState->Flags & FACTION_FLAG_AT_WAR)
                             ss << handler->GetTrinityString(LANG_FACTION_ATWAR);
-                        if (repState->Flags & FACTION_FLAG_PEACE_FORCED)
+                        if (factionState->Flags & FACTION_FLAG_PEACE_FORCED)
                             ss << handler->GetTrinityString(LANG_FACTION_PEACE_FORCED);
-                        if (repState->Flags & FACTION_FLAG_HIDDEN)
+                        if (factionState->Flags & FACTION_FLAG_HIDDEN)
                             ss << handler->GetTrinityString(LANG_FACTION_HIDDEN);
-                        if (repState->Flags & FACTION_FLAG_INVISIBLE_FORCED)
+                        if (factionState->Flags & FACTION_FLAG_INVISIBLE_FORCED)
                             ss << handler->GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
-                        if (repState->Flags & FACTION_FLAG_INACTIVE)
+                        if (factionState->Flags & FACTION_FLAG_INACTIVE)
                             ss << handler->GetTrinityString(LANG_FACTION_INACTIVE);
                     }
                     else

@@ -162,8 +162,6 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 //== Player ====================================================
 
-const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
-
 uint32 const MAX_MONEY_AMOUNT = static_cast<uint32>(std::numeric_limits<int32>::max());
 
 Player::Player(WorldSession *session) :
@@ -376,12 +374,11 @@ Player::Player(WorldSession *session) :
     lastLagReport = 0;
 
     _cinematicMgr = new CinematicMgr(this);
+    m_reputationMgr = new ReputationMgr(this);
 }
 
 Player::~Player()
 {
-    CleanupsBeforeDelete();
-
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     //m_social = nullptr;
 
@@ -393,7 +390,7 @@ Player::~Player()
     for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
         delete itr->second;
 
-    /* TC
+#ifdef LICH_KING
     for (uint8 i = 0; i < MAX_TALENT_SPECS; ++i)
     {
         for (PlayerTalentMap::const_iterator itr = m_talents[i]->begin(); itr != m_talents[i]->end(); ++itr)
@@ -401,7 +398,7 @@ Player::~Player()
 
         delete m_talents[i];
     }
-    */
+#endif
 
     //all mailed items should be deleted, also all mail should be deallocated
     for (auto & itr : m_mail)
@@ -416,18 +413,16 @@ Player::~Player()
         if(x)
             delete x;
 
-    // clean up player-instance binds, may unload some instance saves
-    for(auto & m_boundInstance : m_boundInstances)
-        for(auto & itr : m_boundInstance)
-            itr.second.save->RemovePlayer(this);
-
     delete m_declinedname;
     delete _cinematicMgr;
+    delete m_reputationMgr;
 
 #ifdef PLAYERBOT
     delete m_playerbotAI;
     delete m_playerbotMgr;
 #endif
+
+    //TC sWorld->DecreasePlayerCount();
 }
 
 void Player::CleanupsBeforeDelete(bool finalCleanup)
@@ -437,7 +432,13 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
         TradeCancel(false);
         DuelComplete(DUEL_INTERRUPTED);
     }
+
     Unit::CleanupsBeforeDelete(finalCleanup);
+
+    // clean up player-instance binds, may unload some instance saves
+    for (auto & m_boundInstance : m_boundInstances)
+        for (auto & itr : m_boundInstance)
+            itr.second.save->RemovePlayer(this);
 }
 
 bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo)
@@ -579,10 +580,6 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
         for (uint8 i=0; i<64; i++)
             SetFlag(PLAYER_EXPLORED_ZONES_1+i,0xFFFFFFFF);
     }
-
-    //Reputations if "StartAllReputation" is enabled, -- TODO: Fix this in a better way
-    if(sWorld->getConfig(CONFIG_START_ALL_REP))
-        SetAtLoginFlag(AT_LOGIN_ALL_REP);
 
     // Played time
     m_Last_tick = time(nullptr);
@@ -2417,7 +2414,7 @@ Creature* Player::GetNPCIfCanInteractWith(ObjectGuid guid, uint32 npcflagmask)
     if(factionTemplate)
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY && !HasAuraEffect(29938,0) ) //needed for quest 9410 "A spirit guide"
+        if( faction->reputationListID >= 0 && GetReputationMgr().GetRank(faction) <= REP_UNFRIENDLY && !HasAuraEffect(29938,0) ) //needed for quest 9410 "A spirit guide"
             return nullptr;
     }
 
@@ -6214,578 +6211,217 @@ uint32 Player::TeamForRace(uint8 race)
     return ALLIANCE;
 }
 
-uint32 Player::getFactionForRace(uint8 race)
-{
-    ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race);
-    if(!rEntry)
-    {
-        TC_LOG_ERROR("entities.player","Race %u not found in DBC: wrong DBC files?",uint32(race));
-        return 0;
-    }
-
-    return rEntry->FactionID;
-}
-
 void Player::SetFactionForRace(uint8 race)
 {
     m_team = TeamForRace(race);
-    SetFaction( getFactionForRace(race) );
+
+    ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(race);
+    SetFaction(rEntry ? rEntry->FactionID : 0);
 }
 
-void Player::UpdateReputation()
+int32 Player::GetReputation(uint32 factionentry) const
 {
-    TC_LOG_TRACE("entities.player", "WORLD: Player::UpdateReputation" );
-
-    for(FactionStateList::const_iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
-    {
-        SendFactionState(&(itr->second));
-    }
-}
-
-void Player::SendFactionState(FactionState const* faction)
-{
-    if(faction->Flags & FACTION_FLAG_VISIBLE)               //If faction is visible then update it
-    {
-        WorldPacket data(SMSG_SET_FACTION_STANDING, (16));  // last check 2.4.0
-        data << (float) 0;                                  // unk 2.4.0
-        data << (uint32) 1;                                 // count
-        // for
-        data << (uint32) faction->ReputationListID;
-        data << (uint32) faction->Standing;
-        // end for
-        SendDirectMessage(&data);
-    }
-}
-
-void Player::SendInitialReputations()
-{
-    WorldPacket data(SMSG_INITIALIZE_FACTIONS, (4+128*5));
-    data << uint32 (0x00000080);
-
-    RepListID a = 0;
-
-    for (FactionStateList::const_iterator itr = m_factions.begin(); itr != m_factions.end(); ++itr)
-    {
-        // fill in absent fields
-        for (; a != itr->first; a++)
-        {
-            data << uint8  (0x00);
-            data << uint32 (0x00000000);
-        }
-
-        // fill in encountered data
-        data << uint8  (itr->second.Flags);
-        data << uint32 (itr->second.Standing);
-
-        ++a;
-    }
-
-    // fill in absent fields
-    for (; a != 128; a++)
-    {
-        data << uint8  (0x00);
-        data << uint32 (0x00000000);
-    }
-
-    SendDirectMessage(&data);
-}
-
-FactionState const* Player::GetFactionState( FactionEntry const* factionEntry) const
-{
-    auto itr = m_factions.find(factionEntry->reputationListID);
-    if (itr != m_factions.end())
-        return &itr->second;
-
-    return nullptr;
-}
-
-void Player::SetFactionAtWar(FactionState* faction, bool atWar)
-{
-    // Do not allow to declare war to our own faction. But allow for rival factions (eg Aldor vs Scryer).
-    if (atWar && (faction->Flags & FACTION_FLAG_PEACE_FORCED) && !(faction->Flags & FACTION_FLAG_RIVAL))
-        return;
-
-    // already set
-    if(((faction->Flags & FACTION_FLAG_AT_WAR) != 0) == atWar)
-        return;
-
-    if( atWar )
-        faction->Flags |= FACTION_FLAG_AT_WAR;
-    else
-        faction->Flags &= ~FACTION_FLAG_AT_WAR;
-
-    faction->Changed = true;
-}
-
-void Player::SetFactionInactive(FactionState* faction, bool inactive)
-{
-    // always invisible or hidden faction can't be inactive
-    if(inactive && ((faction->Flags & (FACTION_FLAG_INVISIBLE_FORCED|FACTION_FLAG_HIDDEN)) || !(faction->Flags & FACTION_FLAG_VISIBLE) ) )
-        return;
-
-    // already set
-    if(((faction->Flags & FACTION_FLAG_INACTIVE) != 0) == inactive)
-        return;
-
-    if(inactive)
-        faction->Flags |= FACTION_FLAG_INACTIVE;
-    else
-        faction->Flags &= ~FACTION_FLAG_INACTIVE;
-
-    faction->Changed = true;
-}
-
-void Player::SetFactionVisibleForFactionTemplateId(uint32 FactionTemplateId)
-{
-    FactionTemplateEntry const*factionTemplateEntry = sFactionTemplateStore.LookupEntry(FactionTemplateId);
-
-    if(!factionTemplateEntry)
-        return;
-
-    SetFactionVisibleForFactionId(factionTemplateEntry->faction);
-}
-
-void Player::SetFactionVisibleForFactionId(uint32 FactionId)
-{
-    FactionEntry const *factionEntry = sFactionStore.LookupEntry(FactionId);
-    if(!factionEntry)
-        return;
-
-    if(factionEntry->reputationListID < 0)
-        return;
-
-    auto itr = m_factions.find(factionEntry->reputationListID);
-    if (itr == m_factions.end())
-        return;
-
-    SetFactionVisible(&itr->second);
-}
-
-void Player::SetFactionVisible(FactionState* faction)
-{
-    // always invisible or hidden faction can't be make visible
-    if(faction->Flags & (FACTION_FLAG_INVISIBLE_FORCED|FACTION_FLAG_HIDDEN))
-        return;
-
-    // already set
-    if(faction->Flags & FACTION_FLAG_VISIBLE)
-        return;
-
-    faction->Flags |= FACTION_FLAG_VISIBLE;
-    faction->Changed = true;
-
-    if(!m_session->PlayerLoading())
-    {
-        // make faction visible in reputation list at client
-        WorldPacket data(SMSG_SET_FACTION_VISIBLE, 4);
-        data << faction->ReputationListID;
-        SendDirectMessage(&data);
-    }
-}
-
-void Player::SetInitialFactions()
-{
-    for(uint32 i = 1; i < sFactionStore.GetNumRows(); i++)
-    {
-        FactionEntry const *factionEntry = sFactionStore.LookupEntry(i);
-
-        if( factionEntry && (factionEntry->reputationListID >= 0))
-        {
-            FactionState newFaction;
-            newFaction.ID = factionEntry->ID;
-            newFaction.ReputationListID = factionEntry->reputationListID;
-            newFaction.Standing = 0;
-            newFaction.Flags = GetDefaultReputationFlags(factionEntry);
-            newFaction.Changed = true;
-            newFaction.Deleted = false;
-
-            m_factions[newFaction.ReputationListID] = newFaction;
-        }
-    }
-}
-
-uint32 Player::GetDefaultReputationFlags(const FactionEntry *factionEntry) const
-{
-    if (!factionEntry)
-        return 0;
-
-    uint32 raceMask = GetRaceMask();
-    uint32 classMask = GetClassMask();
-    for (int i=0; i < 4; i++)
-    {
-        if( (factionEntry->BaseRepRaceMask[i] & raceMask) &&
-            (factionEntry->BaseRepClassMask[i]==0 ||
-            (factionEntry->BaseRepClassMask[i] & classMask) ) )
-            return factionEntry->ReputationFlags[i];
-    }
-    return 0;
-}
-
-int32 Player::GetBaseReputation(const FactionEntry *factionEntry) const
-{
-    if (!factionEntry)
-        return 0;
-
-    uint32 raceMask = GetRaceMask();
-    uint32 classMask = GetClassMask();
-    for (int i=0; i < 4; i++)
-    {
-        if( (factionEntry->BaseRepRaceMask[i] & raceMask) &&
-            (factionEntry->BaseRepClassMask[i]==0 ||
-            (factionEntry->BaseRepClassMask[i] & classMask) ) )
-            return factionEntry->BaseRepValue[i];
-    }
-
-    // in faction.dbc exist factions with (RepListId >=0, listed in character reputation list) with all BaseRepRaceMask[i]==0
-    return 0;
-}
-
-int32 Player::GetReputation(uint32 faction_id) const
-{
-    FactionEntry const *factionEntry = sFactionStore.LookupEntry(faction_id);
-
-    if (!factionEntry)
-    {
-        TC_LOG_ERROR("entities.player","Player::GetReputation: Can't get reputation of %s for unknown faction (faction template id) #%u.",GetName().c_str(), faction_id);
-        return 0;
-    }
-
-    return GetReputation(factionEntry);
-}
-
-int32 Player::GetReputation(const FactionEntry *factionEntry) const
-{
-    // Faction without recorded reputation. Just ignore.
-    if(!factionEntry)
-        return 0;
-
-    auto itr = m_factions.find(factionEntry->reputationListID);
-    if (itr != m_factions.end())
-        return GetBaseReputation(factionEntry) + itr->second.Standing;
-
-    return 0;
+    return GetReputationMgr().GetReputation(sFactionStore.LookupEntry(factionentry));
 }
 
 ReputationRank Player::GetReputationRank(uint32 faction) const
 {
-    FactionEntry const*factionEntry = sFactionStore.LookupEntry(faction);
-    if(!factionEntry)
-        return MIN_REPUTATION_RANK;
-
-    return GetReputationRank(factionEntry);
-}
-
-ReputationRank Player::ReputationToRank(int32 standing) const
-{
-    int32 Limit = REPUTATION_CAP + 1;
-    for (int i = MAX_REPUTATION_RANK-1; i >= MIN_REPUTATION_RANK; --i)
-    {
-        Limit -= ReputationRank_Length[i];
-        if (standing >= Limit )
-            return ReputationRank(i);
-    }
-    return MIN_REPUTATION_RANK;
-}
-
-ReputationRank Player::GetReputationRank(const FactionEntry *factionEntry) const
-{
-    int32 Reputation = GetReputation(factionEntry);
-    return ReputationToRank(Reputation);
-}
-
-ReputationRank Player::GetBaseReputationRank(const FactionEntry *factionEntry) const
-{
-    int32 Reputation = GetBaseReputation(factionEntry);
-    return ReputationToRank(Reputation);
-}
-
-bool Player::ModifyFactionReputation(uint32 FactionTemplateId, int32 DeltaReputation)
-{
-    FactionTemplateEntry const* factionTemplateEntry = sFactionTemplateStore.LookupEntry(FactionTemplateId);
-
-    if(!factionTemplateEntry)
-    {
-        TC_LOG_ERROR("entities.player","Player::ModifyFactionReputation: Can't update reputation of %s for unknown faction (faction template id) #%u.", GetName().c_str(), FactionTemplateId);
-        return false;
-    }
-
-    FactionEntry const *factionEntry = sFactionStore.LookupEntry(factionTemplateEntry->faction);
-
-    // Faction without recorded reputation. Just ignore.
-    if(!factionEntry)
-        return false;
-
-    return ModifyFactionReputation(factionEntry, DeltaReputation);
-}
-
-bool Player::ModifyFactionReputation(FactionEntry const* factionEntry, int32 standing)
-{
-    SimpleFactionsList const* flist = GetFactionTeamList(factionEntry->ID);
-    if (flist)
-    {
-        bool res = false;
-        for (uint32 itr : *flist)
-        {
-            FactionEntry const *factionEntryCalc = sFactionStore.LookupEntry(itr);
-            if(factionEntryCalc)
-                res = ModifyOneFactionReputation(factionEntryCalc, standing);
-        }
-        return res;
-    }
-    else
-        return ModifyOneFactionReputation(factionEntry, standing);
-}
-
-bool Player::ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
-{
-    auto itr = m_factions.find(factionEntry->reputationListID);
-    if (itr != m_factions.end())
-    {
-        int32 BaseRep = GetBaseReputation(factionEntry);
-        int32 new_rep = BaseRep + itr->second.Standing + standing;
-
-        if (new_rep > REPUTATION_CAP)
-            new_rep = REPUTATION_CAP;
-        else
-        if (new_rep < REPUTATION_BOTTOM)
-            new_rep = REPUTATION_BOTTOM;
-
-        if(ReputationToRank(new_rep) <= REP_HOSTILE)
-            SetFactionAtWar(&itr->second,true);
-
-        itr->second.Standing = new_rep - BaseRep;
-        itr->second.Changed = true;
-
-        SetFactionVisible(&itr->second);
-
-        for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
-        {
-            if(uint32 questid = GetQuestSlotQuestId(i))
-            {
-                Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
-                if( qInfo && qInfo->GetRepObjectiveFaction() == factionEntry->ID )
-                {
-                    QuestStatusData& q_status = m_QuestStatus[questid];
-                    if( q_status.m_status == QUEST_STATUS_INCOMPLETE )
-                    {
-                        if(GetReputation(factionEntry) >= qInfo->GetRepObjectiveValue())
-                            if ( CanCompleteQuest( questid ) )
-                                CompleteQuest( questid );
-                    }
-                    else if( q_status.m_status == QUEST_STATUS_COMPLETE )
-                    {
-                        if(GetReputation(factionEntry) < qInfo->GetRepObjectiveValue())
-                            IncompleteQuest( questid );
-                    }
-                }
-            }
-        }
-
-        SendFactionState(&(itr->second));
-
-        return true;
-    }
-    return false;
-}
-
-bool Player::SetFactionReputation(uint32 FactionTemplateId, int32 standing)
-{
-    FactionTemplateEntry const* factionTemplateEntry = sFactionTemplateStore.LookupEntry(FactionTemplateId);
-
-    if(!factionTemplateEntry)
-    {
-        TC_LOG_ERROR("entities.player","Player::SetFactionReputation: Can't set reputation of %s for unknown faction (faction template id) #%u.", GetName().c_str(), FactionTemplateId);
-        return false;
-    }
-
-    FactionEntry const *factionEntry = sFactionStore.LookupEntry(factionTemplateEntry->faction);
-
-    // Faction without recorded reputation. Just ignore.
-    if(!factionEntry)
-        return false;
-
-    return SetFactionReputation(factionEntry, standing);
-}
-
-bool Player::SetFactionReputation(FactionEntry const* factionEntry, int32 standing)
-{
-    SimpleFactionsList const* flist = GetFactionTeamList(factionEntry->ID);
-    if (flist)
-    {
-        bool res = false;
-        for (uint32 itr : *flist)
-        {
-            FactionEntry const *factionEntryCalc = sFactionStore.LookupEntry(itr);
-            if(factionEntryCalc)
-                res = SetOneFactionReputation(factionEntryCalc, standing);
-        }
-        return res;
-    }
-    else
-        return SetOneFactionReputation(factionEntry, standing);
-}
-
-bool Player::SetOneFactionReputation(FactionEntry const* factionEntry, int32 standing)
-{
-    auto itr = m_factions.find(factionEntry->reputationListID);
-    if (itr != m_factions.end())
-    {
-        if (standing > REPUTATION_CAP)
-            standing = REPUTATION_CAP;
-        else
-        if (standing < REPUTATION_BOTTOM)
-            standing = REPUTATION_BOTTOM;
-
-        int32 BaseRep = GetBaseReputation(factionEntry);
-        itr->second.Standing = standing - BaseRep;
-        itr->second.Changed = true;
-
-        SetFactionVisible(&itr->second);
-
-        if(ReputationToRank(standing) <= REP_HOSTILE)
-            SetFactionAtWar(&itr->second,true);
-
-        SendFactionState(&(itr->second));
-        return true;
-    }
-    return false;
-}
-
-void Player::SwapFactionReputation(uint32 factionId1, uint32 factionId2)
-{
-    FactionEntry const* factionEntry1 = sFactionStore.LookupEntry(factionId1);
-    FactionEntry const* factionEntry2 = sFactionStore.LookupEntry(factionId2);
-
-    FactionState* state1 = (FactionState*) GetFactionState(factionEntry1);
-    FactionState* state2 = (FactionState*) GetFactionState(factionEntry2);
-
-
-    if (!state1 || !state2) {
-        TC_LOG_ERROR("entities.player","Player::SwapFactionReputation: Attempt to swap a faction with a non-existing FactionEntry");
-        return;
-    }
-
-    FactionState derefState1 = *state1;
-    FactionState derefState1Cpy = *state1;
-    FactionState derefState2 = *state2;
-
-    derefState1.Standing = derefState2.Standing;
-    derefState1.Flags = derefState2.Flags;
-    derefState1.Changed = true;
-
-    derefState2.Standing = derefState1Cpy.Standing;
-    derefState2.Flags = derefState1Cpy.Flags;
-    derefState2.Changed = true;
-
-    m_factions[factionEntry1->reputationListID] = derefState2;
-    m_factions[factionEntry2->reputationListID] = derefState1;
-}
-
-void Player::DropFactionReputation(uint32 factionId)
-{
-    FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionId);
-    if (!factionEntry) {
-        TC_LOG_ERROR("entities.player","Player::SwapFactionReputation: Attempt to drop a faction with a non-existing FactionEntry");
-        return;
-    }
-
-    FactionState* state = (FactionState*) GetFactionState(factionEntry);
-    state->Changed = true;
-    state->Deleted = true;
+    FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction);
+    return GetReputationMgr().GetRank(factionEntry);
 }
 
 //Calculate total reputation percent player gain with quest/creature level
-int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, bool for_quest)
+int32 Player::CalculateReputationGain(ReputationSource source, uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool noQuestBonus)
 {
-    // for grey creature kill received 20%, in other case 100.
-    int32 percent = (!for_quest && (creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(GetLevel()))) ? 20 : 100;
+    float percent = 100.0f;
 
-    int32 repMod = GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
+    float repMod = noQuestBonus ? 0.0f : float(GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN));
+
+    // faction specific auras only seem to apply to kills
+    if (source == REPUTATION_SOURCE_KILL)
+        repMod += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_FACTION_REPUTATION_GAIN, faction);
 
     percent += rep > 0 ? repMod : -repMod;
 
-    if(percent <=0)
+    float rate;
+    switch (source)
+    {
+    case REPUTATION_SOURCE_KILL:
+        rate = 0.2f; //sWorld->getRate(RATE_REPUTATION_LOWLEVEL_KILL);
+        break;
+    case REPUTATION_SOURCE_QUEST:
+    case REPUTATION_SOURCE_DAILY_QUEST:
+    case REPUTATION_SOURCE_WEEKLY_QUEST:
+    case REPUTATION_SOURCE_MONTHLY_QUEST:
+    case REPUTATION_SOURCE_REPEATABLE_QUEST:
+        rate = 0.2f; // sWorld->getRate(RATE_REPUTATION_LOWLEVEL_QUEST);
+        break;
+    case REPUTATION_SOURCE_SPELL:
+    default:
+        rate = 1.0f;
+        break;
+    }
+
+    if (rate != 1.0f && creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(GetLevel()))
+        percent *= rate;
+
+    if (percent <= 0.0f)
         return 0;
 
-    return int32(sWorld->GetRate(RATE_REPUTATION_GAIN)*rep*percent/100);
+    /* TC
+    // Multiply result with the faction specific rate
+    if (RepRewardRate const* repData = sObjectMgr->GetRepRewardRate(faction))
+    {
+        float repRate = 0.0f;
+        switch (source)
+        {
+        case REPUTATION_SOURCE_KILL:
+            repRate = repData->creatureRate;
+            break;
+        case REPUTATION_SOURCE_QUEST:
+            repRate = repData->questRate;
+            break;
+        case REPUTATION_SOURCE_DAILY_QUEST:
+            repRate = repData->questDailyRate;
+            break;
+        case REPUTATION_SOURCE_WEEKLY_QUEST:
+            repRate = repData->questWeeklyRate;
+            break;
+        case REPUTATION_SOURCE_MONTHLY_QUEST:
+            repRate = repData->questMonthlyRate;
+            break;
+        case REPUTATION_SOURCE_REPEATABLE_QUEST:
+            repRate = repData->questRepeatableRate;
+            break;
+        case REPUTATION_SOURCE_SPELL:
+            repRate = repData->spellRate;
+            break;
+        }
+
+        // for custom, a rate of 0.0 will totally disable reputation gain for this faction/type
+        if (repRate <= 0.0f)
+            return 0;
+
+        percent *= repRate;
+    }
+    */
+    percent *= sWorld->GetRate(RATE_REPUTATION_GAIN);
+
+#ifdef LICH_KING
+    if (source != REPUTATION_SOURCE_SPELL && GetsRecruitAFriendBonus(false))
+        percent *= 1.0f + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS);
+#endif
+
+    return CalculatePct(rep, percent);
 }
 
 //Calculates how many reputation points player gains in victim's enemy factions
-void Player::RewardReputation(Unit *pVictim, float rate)
+void Player::RewardReputation(Unit* victim, float rate)
 {
-    if(!pVictim || pVictim->GetTypeId() == TYPEID_PLAYER)
+    if (!victim || victim->GetTypeId() == TYPEID_PLAYER)
         return;
 
-    if((pVictim->ToCreature())->IsReputationGainDisabled())
+    if (victim->ToCreature()->IsReputationGainDisabled())
         return;
 
-    ReputationOnKillEntry const* Rep = sObjectMgr->GetReputationOnKilEntry((pVictim->ToCreature())->GetCreatureTemplate()->Entry);
-
-    if(!Rep)
+    ReputationOnKillEntry const* Rep = sObjectMgr->GetReputationOnKilEntry(victim->ToCreature()->GetCreatureTemplate()->Entry);
+    if (!Rep)
         return;
+
+    uint32 ChampioningFaction = 0;
+#ifdef LICH_KING
+    if (GetChampioningFaction())
+    {
+        // support for: Championing - http://www.wowwiki.com/Championing
+        Map const* map = GetMap();
+        if (map->IsNonRaidDungeon())
+            if (LFGDungeonEntry const* dungeon = GetLFGDungeon(map->GetId(), map->GetDifficulty()))
+                if (dungeon->reclevel == 80)
+                    ChampioningFaction = GetChampioningFaction();
+    }
+#endif
 
     Unit::AuraEffectList const& DummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
-    for(auto DummyAura : DummyAuras)
-    if(DummyAura->GetId() == 32098 || DummyAura->GetId() == 32096)
+    for (auto DummyAura : DummyAuras)
+        if (DummyAura->GetId() == 32098 || DummyAura->GetId() == 32096)
+        {
+            uint32 area_id = GetAreaId();
+            if (area_id == 3483 || area_id == 3535 || area_id == 3562 || area_id == 3713)
+                rate *= 1.25f;
+        }
+
+    uint32 team = GetTeam();
+
+    if (Rep->RepFaction1 && (!Rep->TeamDependent || team == ALLIANCE))
     {
-        uint32 area_id = GetAreaId();
-        if(area_id == 3483 || area_id == 3535 || area_id == 3562 || area_id == 3713)
-            rate = rate*(1.0f + 25.0f / 100.0f);
+        int32 donerep1 = CalculateReputationGain(REPUTATION_SOURCE_KILL, victim->GetLevel(), Rep->RepValue1, ChampioningFaction ? ChampioningFaction : Rep->RepFaction1);
+        donerep1 = int32(donerep1 * rate);
+
+        FactionEntry const* factionEntry1 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->RepFaction1);
+        uint32 current_reputation_rank1 = GetReputationMgr().GetRank(factionEntry1);
+        if (factionEntry1)
+            GetReputationMgr().ModifyReputation(factionEntry1, donerep1, current_reputation_rank1 > Rep->ReputationMaxCap1);
     }
 
-    if(Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==ALLIANCE))
+    if (Rep->RepFaction2 && (!Rep->TeamDependent || team == HORDE))
     {
-        int32 donerep1 = CalculateReputationGain(pVictim->GetLevel(),Rep->repvalue1,false);
-        donerep1 = int32(donerep1*rate);
-        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(Rep->repfaction1);
-        uint32 current_reputation_rank1 = GetReputationRank(factionEntry1);
-        if(factionEntry1 && current_reputation_rank1 <= Rep->reputation_max_cap1)
-            ModifyFactionReputation(factionEntry1, donerep1);
+        int32 donerep2 = CalculateReputationGain(REPUTATION_SOURCE_KILL, victim->GetLevel(), Rep->RepValue2, ChampioningFaction ? ChampioningFaction : Rep->RepFaction2);
+        donerep2 = int32(donerep2 * rate);
 
-        // Wiki: Team factions value divided by 2
-        if(Rep->is_teamaward1)
-        {
-            FactionEntry const *team1_factionEntry = sFactionStore.LookupEntry(factionEntry1->team);
-            if(team1_factionEntry)
-                ModifyFactionReputation(team1_factionEntry, donerep1 / 2);
-        }
-    }
-
-    if(Rep->repfaction2 && (!Rep->team_dependent || GetTeam()==HORDE))
-    {
-        int32 donerep2 = CalculateReputationGain(pVictim->GetLevel(),Rep->repvalue2,false);
-        donerep2 = int32(donerep2*rate);
-        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(Rep->repfaction2);
-        uint32 current_reputation_rank2 = GetReputationRank(factionEntry2);
-        if(factionEntry2 && current_reputation_rank2 <= Rep->reputation_max_cap2)
-            ModifyFactionReputation(factionEntry2, donerep2);
-
-        // Wiki: Team factions value divided by 2
-        if(Rep->is_teamaward2)
-        {
-            FactionEntry const *team2_factionEntry = sFactionStore.LookupEntry(factionEntry2->team);
-            if(team2_factionEntry)
-                ModifyFactionReputation(team2_factionEntry, donerep2 / 2);
-        }
+        FactionEntry const* factionEntry2 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->RepFaction2);
+        uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
+        if (factionEntry2)
+            GetReputationMgr().ModifyReputation(factionEntry2, donerep2, current_reputation_rank2 > Rep->ReputationMaxCap2);
     }
 }
 
 //Calculate how many reputation points player gain with the quest
-void Player::RewardReputation(Quest const *pQuest)
+void Player::RewardReputation(Quest const* quest)
 {
-    // quest reputation reward/loss
-    for(int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
     {
-        if(pQuest->RewardRepFaction[i] && pQuest->RewardRepValue[i] )
-        {
-            int32 rep = CalculateReputationGain(pQuest->GetQuestLevel(),pQuest->RewardRepValue[i],true);
-            FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewardRepFaction[i]);
-            if(factionEntry)
-                ModifyFactionReputation(factionEntry, rep);
-        }
-    }
+        if (!quest->RewardFactionId[i])
+            continue;
 
-    // TODO: implement reputation spillover
+        int32 rep = 0;
+        bool noQuestBonus = false;
+
+#ifdef LICH_KING
+        if (quest->RewardFactionValueIdOverride[i])
+        {
+            rep = quest->RewardFactionValueIdOverride[i] / 100;
+            noQuestBonus = true;
+        }
+        else
+        {
+            uint32 row = ((quest->RewardFactionValueId[i] < 0) ? 1 : 0) + 1;
+            if (QuestFactionRewEntry const* questFactionRewEntry = sQuestFactionRewardStore.LookupEntry(row))
+            {
+                uint32 field = abs(quest->RewardFactionValueId[i]);
+                rep = questFactionRewEntry->QuestRewFactionValue[field];
+            }
+        }
+#else
+        rep = quest->RewardRepValue[i];
+#endif
+
+        if (!rep)
+            continue;
+
+        if (quest->IsDaily())
+            rep = CalculateReputationGain(REPUTATION_SOURCE_DAILY_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
+        else if (quest->IsWeekly())
+            rep = CalculateReputationGain(REPUTATION_SOURCE_WEEKLY_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
+        else if (quest->IsMonthly())
+            rep = CalculateReputationGain(REPUTATION_SOURCE_MONTHLY_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
+        else if (quest->IsRepeatable())
+            rep = CalculateReputationGain(REPUTATION_SOURCE_REPEATABLE_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
+        else
+            rep = CalculateReputationGain(REPUTATION_SOURCE_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
+
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(quest->RewardFactionId[i]))
+            GetReputationMgr().ModifyReputation(factionEntry, rep);
+    }
 }
 
 void Player::UpdateArenaFields()
@@ -13700,7 +13336,7 @@ bool Player::IsActiveQuest(uint32 quest_id) const
 {
     auto itr = m_QuestStatus.find(quest_id);
 
-    return itr != m_QuestStatus.end() && itr->second.m_status != QUEST_STATUS_NONE;
+    return itr != m_QuestStatus.end() && itr->second.Status != QUEST_STATUS_NONE;
 }
 
 Quest const* Player::GetNextQuest(ObjectGuid guid, Quest const *pQuest)
@@ -13791,7 +13427,7 @@ bool Player::CanCompleteQuest( uint32 quest_id )
     if( quest_id )
     {
         QuestStatusData& q_status = m_QuestStatus[quest_id];
-        if( q_status.m_status == QUEST_STATUS_COMPLETE )
+        if( q_status.Status == QUEST_STATUS_COMPLETE )
             return false;                                   // not allow re-complete quest
 
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id);
@@ -13803,14 +13439,14 @@ bool Player::CanCompleteQuest( uint32 quest_id )
         if (qInfo->IsAutoComplete() && CanTakeQuest(qInfo, false))
             return true;
 
-        if ( q_status.m_status == QUEST_STATUS_INCOMPLETE )
+        if ( q_status.Status == QUEST_STATUS_INCOMPLETE )
         {
 
             if ( qInfo->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
             {
                 for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
                 {
-                    if( qInfo->RequiredItemCount[i]!= 0 && q_status.m_itemcount[i] < qInfo->RequiredItemCount[i] )
+                    if( qInfo->RequiredItemCount[i]!= 0 && q_status.ItemCount[i] < qInfo->RequiredItemCount[i] )
                         return false;
                 }
             }
@@ -13822,12 +13458,12 @@ bool Player::CanCompleteQuest( uint32 quest_id )
                     if( qInfo->RequiredNpcOrGo[i] == 0 )
                         continue;
 
-                    if( qInfo->RequiredNpcOrGoCount[i] != 0 && q_status.m_creatureOrGOcount[i] < qInfo->RequiredNpcOrGoCount[i] )
+                    if( qInfo->RequiredNpcOrGoCount[i] != 0 && q_status.CreatureOrGOCount[i] < qInfo->RequiredNpcOrGoCount[i] )
                         return false;
                 }
             }
 
-            if ( qInfo->HasFlag( QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT ) && !q_status.m_explored )
+            if ( qInfo->HasFlag( QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT ) && !q_status.Explored )
                 return false;
 
             if ( qInfo->HasFlag( QUEST_TRINITY_FLAGS_TIMED ) && q_status.m_timer == 0 )
@@ -13944,7 +13580,7 @@ bool Player::CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg )
     return true;
 }
 
-void Player::AddQuest( Quest const *pQuest, Object *questGiver )
+void Player::AddQuest(Quest const *pQuest, Object* questGiver)
 {
     uint16 log_slot = FindQuestSlot( 0 );
     assert(log_slot < MAX_QUEST_LOG_SIZE);
@@ -13957,29 +13593,36 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
         questStatusData.uState = QUEST_CHANGED;
 
     // check for repeatable quests status reset
-    questStatusData.m_status = QUEST_STATUS_INCOMPLETE;
-    questStatusData.m_explored = false;
+    questStatusData.Status = QUEST_STATUS_INCOMPLETE;
+    questStatusData.Explored = false;
 
     if ( pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
     {
-        for(uint32 & i : questStatusData.m_itemcount)
+        for(uint32 & i : questStatusData.ItemCount)
             i = 0;
     }
 
     if ( pQuest->HasFlag(QUEST_TRINITY_FLAGS_KILL_OR_CAST | QUEST_TRINITY_FLAGS_SPEAKTO) )
     {
-        for(uint32 & i : questStatusData.m_creatureOrGOcount)
+        for(uint32 & i : questStatusData.CreatureOrGOCount)
             i = 0;
     }
 
-    GiveQuestSourceItem( pQuest );
-    AdjustQuestRequiredItemCount( pQuest );
+    GiveQuestSourceItem(pQuest);
+    AdjustQuestRequiredItemCount(pQuest);
 
-    if( pQuest->GetRepObjectiveFaction() )
-        SetFactionVisibleForFactionId(pQuest->GetRepObjectiveFaction());
+    if (pQuest->GetRepObjectiveFaction())
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->GetRepObjectiveFaction()))
+            GetReputationMgr().SetVisible(factionEntry);
+
+#ifdef LICH_KING
+    if (pQuest->GetRepObjectiveFaction2())
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->GetRepObjectiveFaction2()))
+            GetReputationMgr().SetVisible(factionEntry);
+#endif
 
     uint32 qtime = 0;
-    if( pQuest->HasFlag( QUEST_TRINITY_FLAGS_TIMED ) )
+    if (pQuest->HasFlag(QUEST_TRINITY_FLAGS_TIMED))
     {
         uint32 limittime = pQuest->GetLimitTime();
 
@@ -14147,9 +13790,9 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     // Not give XP in case already completed once repeatable quest
     uint32 XP = 0;
     if (hasCustomXpRate())
-        XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*m_customXp);
+        XP = q_status.Rewarded ? 0 : uint32(pQuest->XPValue( this )*m_customXp);
     else
-        XP = q_status.m_rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld->GetRate(RATE_XP_QUEST));
+        XP = q_status.Rewarded ? 0 : uint32(pQuest->XPValue( this )*sWorld->GetRate(RATE_XP_QUEST));
 
     if(!sWorld->getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE) || !pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
     {
@@ -14195,7 +13838,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     else
         SetQuestStatus(quest_id, QUEST_STATUS_NONE);
 
-    q_status.m_rewarded = true;
+    q_status.Rewarded = true;
 
     if(announce)
         SendQuestReward( pQuest, XP, questGiver );
@@ -14334,7 +13977,7 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg )
         if( qPrevInfo && i_prevstatus != m_QuestStatus.end() )
         {
             // If any of the positive previous quests completed, return true
-            if( prevQuest > 0 && i_prevstatus->second.m_rewarded )
+            if( prevQuest > 0 && i_prevstatus->second.Rewarded )
             {
                 // skip one-from-all exclusive group
                 if(qPrevInfo->GetExclusiveGroup() >= 0)
@@ -14358,7 +14001,7 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg )
                     auto i_exstatus = m_QuestStatus.find( exclude_Id );
 
                     // alternative quest from group also must be completed and rewarded(reported)
-                    if( i_exstatus == m_QuestStatus.end() || !i_exstatus->second.m_rewarded )
+                    if( i_exstatus == m_QuestStatus.end() || !i_exstatus->second.Rewarded )
                     {
                         if( msg )
                             SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -14368,8 +14011,8 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg )
                 return true;
             }
             // If any of the negative previous quests active, return true
-            if( prevQuest < 0 && (i_prevstatus->second.m_status == QUEST_STATUS_INCOMPLETE
-                || (i_prevstatus->second.m_status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(prevId))))
+            if( prevQuest < 0 && (i_prevstatus->second.Status == QUEST_STATUS_INCOMPLETE
+                || (i_prevstatus->second.Status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(prevId))))
             {
                 // skip one-from-all exclusive group
                 if(qPrevInfo->GetExclusiveGroup() >= 0)
@@ -14394,8 +14037,8 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg )
 
                     // alternative quest from group also must be active
                     if( i_exstatus == m_QuestStatus.end() ||
-                        (i_exstatus->second.m_status != QUEST_STATUS_INCOMPLETE &&
-                        (i_prevstatus->second.m_status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId))) )
+                        (i_exstatus->second.Status != QUEST_STATUS_INCOMPLETE &&
+                        (i_prevstatus->second.Status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId))) )
                     {
                         if( msg )
                             SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -14464,7 +14107,7 @@ bool Player::SatisfyQuestStatus(Quest const* qInfo, bool msg)
     }
 
     auto itr = m_QuestStatus.find(qInfo->GetQuestId());
-    if  ( itr != m_QuestStatus.end() && itr->second.m_status != QUEST_STATUS_NONE )
+    if  ( itr != m_QuestStatus.end() && itr->second.Status != QUEST_STATUS_NONE )
     {
         if( msg )
             SendCanTakeQuestResponse( INVALIDREASON_QUEST_ALREADY_ON );
@@ -14531,7 +14174,7 @@ bool Player::SatisfyQuestExclusiveGroup( Quest const* qInfo, bool msg )
 
         // alternative quest already started or completed
         if( i_exstatus != m_QuestStatus.end()
-            && (i_exstatus->second.m_status == QUEST_STATUS_COMPLETE || i_exstatus->second.m_status == QUEST_STATUS_INCOMPLETE) )
+            && (i_exstatus->second.Status == QUEST_STATUS_COMPLETE || i_exstatus->second.Status == QUEST_STATUS_INCOMPLETE) )
         {
             if( msg )
                 SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -14549,7 +14192,7 @@ bool Player::SatisfyQuestNextChain( Quest const* qInfo, bool msg )
     // next quest in chain already started or completed
     auto itr = m_QuestStatus.find( qInfo->GetNextQuestInChain() );
     if( itr != m_QuestStatus.end()
-        && (itr->second.m_status == QUEST_STATUS_COMPLETE || itr->second.m_status == QUEST_STATUS_INCOMPLETE) )
+        && (itr->second.Status == QUEST_STATUS_COMPLETE || itr->second.Status == QUEST_STATUS_INCOMPLETE) )
     {
         if( msg )
             SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -14575,8 +14218,8 @@ bool Player::SatisfyQuestPrevChain( Quest const* qInfo, bool msg )
         if( i_prevstatus != m_QuestStatus.end() )
         {
             // If any of the previous quests in chain active, return false
-            if( i_prevstatus->second.m_status == QUEST_STATUS_INCOMPLETE
-                || (i_prevstatus->second.m_status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(prevId)))
+            if( i_prevstatus->second.Status == QUEST_STATUS_INCOMPLETE
+                || (i_prevstatus->second.Status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(prevId)))
             {
                 if( msg )
                     SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -14683,9 +14326,9 @@ bool Player::GetQuestRewardStatus( uint32 quest_id ) const
     {
         // for repeatable quests: rewarded field is set after first reward only to prevent getting XP more than once
         auto itr = m_QuestStatus.find( quest_id );
-        if( itr != m_QuestStatus.end() && itr->second.m_status != QUEST_STATUS_NONE
+        if( itr != m_QuestStatus.end() && itr->second.Status != QUEST_STATUS_NONE
             && !qInfo->IsRepeatable() )
-            return itr->second.m_rewarded;
+            return itr->second.Rewarded;
 
         return false;
     }
@@ -14698,7 +14341,7 @@ QuestStatus Player::GetQuestStatus( uint32 quest_id ) const
     {
         auto itr = m_QuestStatus.find( quest_id );
         if( itr != m_QuestStatus.end() )
-            return itr->second.m_status;
+            return itr->second.Status;
     }
 
     if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id))
@@ -14758,7 +14401,7 @@ void Player::SetQuestStatus( uint32 questId, QuestStatus status )
 
         QuestStatusData& q_status = m_QuestStatus[questId];
 
-        q_status.m_status = status;
+        q_status.Status = status;
         if (q_status.uState != QUEST_NEW)
             q_status.uState = QUEST_CHANGED;
     }
@@ -14853,7 +14496,7 @@ uint32 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
         if ( qInfo->RequiredNpcOrGo[j] == entry )
-            return m_QuestStatus[quest_id].m_creatureOrGOcount[j];
+            return m_QuestStatus[quest_id].CreatureOrGOCount[j];
 
     return 0;
 }
@@ -14871,7 +14514,7 @@ void Player::AdjustQuestRequiredItemCount( Quest const* pQuest )
                 uint32 curitemcount = GetItemCount(pQuest->RequiredItemId[i],true);
 
                 QuestStatusData& q_status = m_QuestStatus[quest_id];
-                q_status.m_itemcount[i] = std::min(curitemcount, reqitemcount);
+                q_status.ItemCount[i] = std::min(curitemcount, reqitemcount);
                 if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
             }
         }
@@ -14896,9 +14539,9 @@ void Player::AreaExploredOrEventHappens( uint32 questId )
         {
             QuestStatusData& q_status = m_QuestStatus[questId];
 
-            if(!q_status.m_explored)
+            if(!q_status.Explored)
             {
-                q_status.m_explored = true;
+                q_status.Explored = true;
                 if (q_status.uState != QUEST_NEW)
                     q_status.uState = QUEST_CHANGED;
             }
@@ -14936,7 +14579,7 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
 
         QuestStatusData& q_status = m_QuestStatus[questid];
 
-        if ( q_status.m_status != QUEST_STATUS_INCOMPLETE )
+        if ( q_status.Status != QUEST_STATUS_INCOMPLETE )
             continue;
 
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
@@ -14949,11 +14592,11 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
             if ( reqitem == entry )
             {
                 uint32 reqitemcount = qInfo->RequiredItemCount[j];
-                uint32 curitemcount = q_status.m_itemcount[j];
+                uint32 curitemcount = q_status.ItemCount[j];
                 if ( curitemcount < reqitemcount )
                 {
                     uint32 additemcount = ( curitemcount + count <= reqitemcount ? count : reqitemcount - curitemcount);
-                    q_status.m_itemcount[j] += additemcount;
+                    q_status.ItemCount[j] += additemcount;
                     if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
                     SendQuestUpdateAddItem( qInfo, j, additemcount );
@@ -14989,14 +14632,14 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
 
                 uint32 reqitemcount = qInfo->RequiredItemCount[j];
                 uint32 curitemcount;
-                if( q_status.m_status != QUEST_STATUS_COMPLETE )
-                    curitemcount = q_status.m_itemcount[j];
+                if( q_status.Status != QUEST_STATUS_COMPLETE )
+                    curitemcount = q_status.ItemCount[j];
                 else
                     curitemcount = GetItemCount(entry,true);
                 if ( curitemcount < reqitemcount + count )
                 {
                     uint32 remitemcount = ( curitemcount <= reqitemcount ? count : count + reqitemcount - curitemcount);
-                    q_status.m_itemcount[j] = curitemcount - remitemcount;
+                    q_status.ItemCount[j] = curitemcount - remitemcount;
                     if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
                     IncompleteQuest( questid );
@@ -15025,7 +14668,7 @@ void Player::KilledMonsterCredit(uint32 entry, ObjectGuid guid, uint32 questId)
             continue;
         // just if !ingroup || !noraidgroup || raidgroup
         QuestStatusData& q_status = m_QuestStatus[questid];
-        if( q_status.m_status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->GetType() == QUEST_TYPE_RAID))
+        if( q_status.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->GetType() == QUEST_TYPE_RAID))
         {
             if( qInfo->HasFlag( QUEST_TRINITY_FLAGS_KILL_OR_CAST) )
             {
@@ -15044,10 +14687,10 @@ void Player::KilledMonsterCredit(uint32 entry, ObjectGuid guid, uint32 questId)
                     if ( reqkill == entry )
                     {
                         uint32 reqkillcount = qInfo->RequiredNpcOrGoCount[j];
-                        uint32 curkillcount = q_status.m_creatureOrGOcount[j];
+                        uint32 curkillcount = q_status.CreatureOrGOCount[j];
                         if ( curkillcount < reqkillcount )
                         {
-                            q_status.m_creatureOrGOcount[j] = curkillcount + addkillcount;
+                            q_status.CreatureOrGOCount[j] = curkillcount + addkillcount;
                             if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
                             SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curkillcount, addkillcount);
@@ -15078,7 +14721,7 @@ void Player::ActivatedGO(uint32 entry, ObjectGuid guid)
             continue;
         // just if !ingroup || !noraidgroup || raidgroup
         QuestStatusData& q_status = m_QuestStatus[questid];
-        if( q_status.m_status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->GetType() == QUEST_TYPE_RAID))
+        if( q_status.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->GetType() == QUEST_TYPE_RAID))
         {
             if( qInfo->HasFlag( QUEST_TRINITY_FLAGS_KILL_OR_CAST) )
             {
@@ -15097,10 +14740,10 @@ void Player::ActivatedGO(uint32 entry, ObjectGuid guid)
                     if ( -reqkill == int32(entry) )
                     {
                         uint32 reqkillcount = qInfo->RequiredNpcOrGoCount[j];
-                        uint32 curkillcount = q_status.m_creatureOrGOcount[j];
+                        uint32 curkillcount = q_status.CreatureOrGOCount[j];
                         if ( curkillcount < reqkillcount )
                         {
-                            q_status.m_creatureOrGOcount[j] = curkillcount + addkillcount;
+                            q_status.CreatureOrGOCount[j] = curkillcount + addkillcount;
                             if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
                             SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curkillcount, addkillcount);
@@ -15136,7 +14779,7 @@ void Player::CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id 
 
         QuestStatusData& q_status = m_QuestStatus[questid];
 
-        if ( q_status.m_status == QUEST_STATUS_INCOMPLETE )
+        if ( q_status.Status == QUEST_STATUS_INCOMPLETE )
         {
             if( qInfo->HasFlag( QUEST_TRINITY_FLAGS_KILL_OR_CAST ) )
             {
@@ -15168,10 +14811,10 @@ void Player::CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id 
                         continue;
 
                     uint32 reqCastCount = qInfo->RequiredNpcOrGoCount[j];
-                    uint32 curCastCount = q_status.m_creatureOrGOcount[j];
+                    uint32 curCastCount = q_status.CreatureOrGOCount[j];
                     if ( curCastCount < reqCastCount )
                     {
-                        q_status.m_creatureOrGOcount[j] = curCastCount + addCastCount;
+                        q_status.CreatureOrGOCount[j] = curCastCount + addCastCount;
                         if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
                         SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curCastCount, addCastCount);
@@ -15206,7 +14849,7 @@ void Player::MoneyChanged( uint32 count )
         {
             QuestStatusData& q_status = m_QuestStatus[questid];
 
-            if( q_status.m_status == QUEST_STATUS_INCOMPLETE )
+            if( q_status.Status == QUEST_STATUS_INCOMPLETE )
             {
                 if(int32(count) >= -qInfo->GetRewOrReqMoney())
                 {
@@ -15214,10 +14857,38 @@ void Player::MoneyChanged( uint32 count )
                         CompleteQuest( questid );
                 }
             }
-            else if( q_status.m_status == QUEST_STATUS_COMPLETE )
+            else if( q_status.Status == QUEST_STATUS_COMPLETE )
             {
                 if(int32(count) < -qInfo->GetRewOrReqMoney())
                     IncompleteQuest( questid );
+            }
+        }
+    }
+}
+
+void Player::ReputationChanged(FactionEntry const* factionEntry)
+{
+    for (uint8 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
+    {
+        if (uint32 questid = GetQuestSlotQuestId(i))
+        {
+            if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid))
+            {
+                if (qInfo->GetRepObjectiveFaction() == factionEntry->ID)
+                {
+                    QuestStatusData& q_status = m_QuestStatus[questid];
+                    if (q_status.Status == QUEST_STATUS_INCOMPLETE)
+                    {
+                        if (GetReputationMgr().GetReputation(factionEntry) >= qInfo->GetRepObjectiveValue())
+                            if (CanCompleteQuest(questid))
+                                CompleteQuest(questid);
+                    }
+                    else if (q_status.Status == QUEST_STATUS_COMPLETE)
+                    {
+                        if (GetReputationMgr().GetReputation(factionEntry) < qInfo->GetRepObjectiveValue())
+                            IncompleteQuest(questid);
+                    }
+                }
             }
         }
     }
@@ -15232,7 +14903,7 @@ bool Player::HasQuestForItem( uint32 itemid ) const
     {
         QuestStatusData const& q_status = m_QuestStatu.second;
 
-        if (q_status.m_status == QUEST_STATUS_INCOMPLETE)
+        if (q_status.Status == QUEST_STATUS_INCOMPLETE)
         {
             Quest const* qinfo = sObjectMgr->GetQuestTemplate(m_QuestStatu.first);
             if(!qinfo)
@@ -15247,7 +14918,7 @@ bool Player::HasQuestForItem( uint32 itemid ) const
             // This part for ReqItem drop
             for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
             {
-                if(itemid == qinfo->RequiredItemId[j] && q_status.m_itemcount[j] < qinfo->RequiredItemCount[j] )
+                if(itemid == qinfo->RequiredItemId[j] && q_status.ItemCount[j] < qinfo->RequiredItemCount[j] )
                     return true;
             }
             // This part - for ReqSource
@@ -15260,20 +14931,20 @@ bool Player::HasQuestForItem( uint32 itemid ) const
 
                     // total count of created ReqItems and SourceItems is less than RequiredItemCount
                     if(qinfo->RequiredItemId[idx] != 0 &&
-                        q_status.m_itemcount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredItemCount[idx] * qinfo->RequiredSourceItemCount[j])
+                        q_status.ItemCount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredItemCount[idx] * qinfo->RequiredSourceItemCount[j])
                         return true;
 
                     // total count of casted ReqCreatureOrGOs and SourceItems is less than RequiredNpcOrGoCount
                     if (qinfo->RequiredNpcOrGo[idx] != 0)
                     {
-                        if(q_status.m_creatureOrGOcount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredNpcOrGoCount[idx] * qinfo->RequiredSourceItemCount[j])
+                        if(q_status.CreatureOrGOCount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredNpcOrGoCount[idx] * qinfo->RequiredSourceItemCount[j])
                             return true;
                     }
                     // spell with SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT (with script) case
                     else if(qinfo->ReqSpell[idx] != 0)
                     {
                         // not casted and need more reagents/item for use.
-                        if(!q_status.m_explored && GetItemCount(itemid,true) < qinfo->RequiredSourceItemCount[j])
+                        if(!q_status.Explored && GetItemCount(itemid,true) < qinfo->RequiredSourceItemCount[j])
                             return true;
                     }
                 }
@@ -16155,7 +15826,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadDailyQuestStatus(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS));
 
     // must be before inventory (some items required reputation check)
-    _LoadReputation(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_REPUTATION));
+    m_reputationMgr->LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_REPUTATION));
 
     _LoadInventory(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_INVENTORY), time_diff);
 
@@ -16931,19 +16602,19 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
 
                 uint32 qstatus = fields[1].GetUInt32();
                 if(qstatus < MAX_QUEST_STATUS)
-                    questStatusData.m_status = QuestStatus(qstatus);
+                    questStatusData.Status = QuestStatus(qstatus);
                 else
                 {
-                    questStatusData.m_status = QUEST_STATUS_NONE;
+                    questStatusData.Status = QUEST_STATUS_NONE;
                     TC_LOG_ERROR("entities.player","Player %s have invalid quest %d status (%d), replaced by QUEST_STATUS_NONE(0).",GetName().c_str(),quest_id,qstatus);
                 }
 
-                questStatusData.m_rewarded = ( fields[2].GetUInt8() > 0 );
-                questStatusData.m_explored = ( fields[3].GetUInt8() > 0 );
+                questStatusData.Rewarded = ( fields[2].GetUInt8() > 0 );
+                questStatusData.Explored = ( fields[3].GetUInt8() > 0 );
 
                 time_t quest_time = time_t(fields[4].GetUInt64());
 
-                if( pQuest->HasFlag( QUEST_TRINITY_FLAGS_TIMED ) && !GetQuestRewardStatus(quest_id) &&  questStatusData.m_status != QUEST_STATUS_NONE )
+                if( pQuest->HasFlag( QUEST_TRINITY_FLAGS_TIMED ) && !GetQuestRewardStatus(quest_id) &&  questStatusData.Status != QUEST_STATUS_NONE )
                 {
                     AddTimedQuest( quest_id );
 
@@ -16955,39 +16626,39 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                 else
                     quest_time = 0;
 
-                questStatusData.m_creatureOrGOcount[0] = fields[5].GetUInt32();
-                questStatusData.m_creatureOrGOcount[1] = fields[6].GetUInt32();
-                questStatusData.m_creatureOrGOcount[2] = fields[7].GetUInt32();
-                questStatusData.m_creatureOrGOcount[3] = fields[8].GetUInt32();
-                questStatusData.m_itemcount[0] = fields[9].GetUInt32();
-                questStatusData.m_itemcount[1] = fields[10].GetUInt32();
-                questStatusData.m_itemcount[2] = fields[11].GetUInt32();
-                questStatusData.m_itemcount[3] = fields[12].GetUInt32();
+                questStatusData.CreatureOrGOCount[0] = fields[5].GetUInt32();
+                questStatusData.CreatureOrGOCount[1] = fields[6].GetUInt32();
+                questStatusData.CreatureOrGOCount[2] = fields[7].GetUInt32();
+                questStatusData.CreatureOrGOCount[3] = fields[8].GetUInt32();
+                questStatusData.ItemCount[0] = fields[9].GetUInt32();
+                questStatusData.ItemCount[1] = fields[10].GetUInt32();
+                questStatusData.ItemCount[2] = fields[11].GetUInt32();
+                questStatusData.ItemCount[3] = fields[12].GetUInt32();
 
                 questStatusData.uState = QUEST_UNCHANGED;
 
                 // add to quest log
                 if( slot < MAX_QUEST_LOG_SIZE &&
-                    ( questStatusData.m_status == QUEST_STATUS_INCOMPLETE ||
-                    (questStatusData.m_status == QUEST_STATUS_COMPLETE &&
-                    (!questStatusData.m_rewarded || pQuest->IsDaily())) )
+                    ( questStatusData.Status == QUEST_STATUS_INCOMPLETE ||
+                    (questStatusData.Status == QUEST_STATUS_COMPLETE &&
+                    (!questStatusData.Rewarded || pQuest->IsDaily())) )
                   )
                 {
                     SetQuestSlot(slot,quest_id,quest_time);
 
-                    if(questStatusData.m_status == QUEST_STATUS_COMPLETE)
+                    if(questStatusData.Status == QUEST_STATUS_COMPLETE)
                         SetQuestSlotState(slot,QUEST_STATE_COMPLETE);
-                    else if (questStatusData.m_status == QUEST_STATUS_FAILED)
+                    else if (questStatusData.Status == QUEST_STATUS_FAILED)
                         SetQuestSlotState(slot, QUEST_STATE_FAIL);
 
                     for(uint8 idx = 0; idx < QUEST_OBJECTIVES_COUNT; ++idx)
-                        if(questStatusData.m_creatureOrGOcount[idx])
-                            SetQuestSlotCounter(slot,idx,questStatusData.m_creatureOrGOcount[idx]);
+                        if(questStatusData.CreatureOrGOCount[idx])
+                            SetQuestSlotCounter(slot,idx,questStatusData.CreatureOrGOCount[idx]);
 
                     ++slot;
                 }
 
-                if(questStatusData.m_rewarded)
+                if(questStatusData.Rewarded)
                 {
                     // learn rewarded spell if unknown
                     learnQuestRewardedSpells(pQuest);
@@ -17046,59 +16717,6 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
     }
 
     m_DailyQuestChanged = false;
-}
-
-void Player::_LoadReputation(PreparedQueryResult result)
-{
-    m_factions.clear();
-
-    // Set initial reputations (so everything is nifty before DB data load)
-    SetInitialFactions();
-
-    //QueryResult result = CharacterDatabase.PQuery("SELECT faction,standing,flags FROM character_reputation WHERE guid = '%u'",GetGUID().GetCounter());
-
-    if(result)
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            FactionEntry const *factionEntry = sFactionStore.LookupEntry(fields[0].GetUInt32());
-            if( factionEntry && (factionEntry->reputationListID >= 0))
-            {
-                FactionState* faction = &m_factions[factionEntry->reputationListID];
-
-                // update standing to current
-                faction->Standing = int32(fields[1].GetUInt32());
-
-                uint32 dbFactionFlags = fields[2].GetUInt32();
-
-                if( dbFactionFlags & FACTION_FLAG_VISIBLE )
-                    SetFactionVisible(faction);             // have internal checks for forced invisibility
-
-                if( dbFactionFlags & FACTION_FLAG_INACTIVE)
-                    SetFactionInactive(faction,true);       // have internal checks for visibility requirement
-
-                if( dbFactionFlags & FACTION_FLAG_AT_WAR )  // DB at war
-                    SetFactionAtWar(faction,true);          // have internal checks for FACTION_FLAG_PEACE_FORCED
-                else                                        // DB not at war
-                {
-                    // allow remove if visible (and then not FACTION_FLAG_INVISIBLE_FORCED or FACTION_FLAG_HIDDEN)
-                    if( faction->Flags & FACTION_FLAG_VISIBLE )
-                        SetFactionAtWar(faction,false);     // have internal checks for FACTION_FLAG_PEACE_FORCED
-                }
-
-                // set atWar for hostile
-                if(GetReputationRank(factionEntry) <= REP_HOSTILE)
-                    SetFactionAtWar(faction,true);
-
-                // reset changed flag if values similar to saved in DB
-                if(faction->Flags==dbFactionFlags)
-                    faction->Changed = false;
-            }
-        }
-        while( result->NextRow() );
-    }
 }
 
 void Player::_LoadSpells(PreparedQueryResult result)
@@ -17777,7 +17395,7 @@ void Player::SaveToDB(bool create /*=false*/)
     _SaveActions(trans);
     _SaveAuras(trans);
     _SaveSkills(trans);
-    _SaveReputation(trans);
+    m_reputationMgr->SaveToDB(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
 
     CharacterDatabase.CommitTransaction(trans);
@@ -18112,11 +17730,11 @@ void Player::_SaveQuestStatus(SQLTransaction trans)
             case QUEST_NEW :
                 trans->PAppend("INSERT INTO character_queststatus (guid,quest,status,rewarded,explored,timer,mobcount1,mobcount2,mobcount3,mobcount4,itemcount1,itemcount2,itemcount3,itemcount4) "
                     "VALUES ('%u', '%u', '%u', '%u', '%u', '" UI64FMTD "', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
-                    GetGUID().GetCounter(), m_QuestStatu.first, m_QuestStatu.second.m_status, m_QuestStatu.second.m_rewarded, m_QuestStatu.second.m_explored, uint64(m_QuestStatu.second.m_timer / 1000 + GameTime::GetGameTime()), m_QuestStatu.second.m_creatureOrGOcount[0], m_QuestStatu.second.m_creatureOrGOcount[1], m_QuestStatu.second.m_creatureOrGOcount[2], m_QuestStatu.second.m_creatureOrGOcount[3], m_QuestStatu.second.m_itemcount[0], m_QuestStatu.second.m_itemcount[1], m_QuestStatu.second.m_itemcount[2], m_QuestStatu.second.m_itemcount[3]);
+                    GetGUID().GetCounter(), m_QuestStatu.first, m_QuestStatu.second.Status, m_QuestStatu.second.Rewarded, m_QuestStatu.second.Explored, uint64(m_QuestStatu.second.m_timer / 1000 + GameTime::GetGameTime()), m_QuestStatu.second.CreatureOrGOCount[0], m_QuestStatu.second.CreatureOrGOCount[1], m_QuestStatu.second.CreatureOrGOCount[2], m_QuestStatu.second.CreatureOrGOCount[3], m_QuestStatu.second.ItemCount[0], m_QuestStatu.second.ItemCount[1], m_QuestStatu.second.ItemCount[2], m_QuestStatu.second.ItemCount[3]);
                 break;
             case QUEST_CHANGED :
                 trans->PAppend("UPDATE character_queststatus SET status = '%u',rewarded = '%u',explored = '%u',timer = '" UI64FMTD "',mobcount1 = '%u',mobcount2 = '%u',mobcount3 = '%u',mobcount4 = '%u',itemcount1 = '%u',itemcount2 = '%u',itemcount3 = '%u',itemcount4 = '%u'  WHERE guid = '%u' AND quest = '%u' ",
-                    m_QuestStatu.second.m_status, m_QuestStatu.second.m_rewarded, m_QuestStatu.second.m_explored, uint64(m_QuestStatu.second.m_timer / 1000 + GameTime::GetGameTime()), m_QuestStatu.second.m_creatureOrGOcount[0], m_QuestStatu.second.m_creatureOrGOcount[1], m_QuestStatu.second.m_creatureOrGOcount[2], m_QuestStatu.second.m_creatureOrGOcount[3], m_QuestStatu.second.m_itemcount[0], m_QuestStatu.second.m_itemcount[1], m_QuestStatu.second.m_itemcount[2], m_QuestStatu.second.m_itemcount[3], GetGUID().GetCounter(), m_QuestStatu.first );
+                    m_QuestStatu.second.Status, m_QuestStatu.second.Rewarded, m_QuestStatu.second.Explored, uint64(m_QuestStatu.second.m_timer / 1000 + GameTime::GetGameTime()), m_QuestStatu.second.CreatureOrGOCount[0], m_QuestStatu.second.CreatureOrGOCount[1], m_QuestStatu.second.CreatureOrGOCount[2], m_QuestStatu.second.CreatureOrGOCount[3], m_QuestStatu.second.ItemCount[0], m_QuestStatu.second.ItemCount[1], m_QuestStatu.second.ItemCount[2], m_QuestStatu.second.ItemCount[3], GetGUID().GetCounter(), m_QuestStatu.first );
                 break;
             case QUEST_UNCHANGED:
                 break;
@@ -18177,20 +17795,6 @@ void Player::_SaveSkills(SQLTransaction trans)
         itr->second.uState = SKILL_UNCHANGED;
 
         ++itr;
-    }
-}
-
-void Player::_SaveReputation(SQLTransaction trans)
-{
-    for(auto & m_faction : m_factions)
-    {
-        if (m_faction.second.Changed)
-        {
-            trans->PAppend("DELETE FROM character_reputation WHERE guid = '%u' AND faction='%u'", GetGUID().GetCounter(), m_faction.second.ID);
-            if (!m_faction.second.Deleted)
-                trans->PAppend("INSERT INTO character_reputation (guid,faction,standing,flags) VALUES ('%u', '%u', '%i', '%u')", GetGUID().GetCounter(), m_faction.second.ID, m_faction.second.Standing, m_faction.second.Flags);
-            m_faction.second.Changed = false;
-        }
     }
 }
 
@@ -20326,7 +19930,7 @@ bool Player::IsQuestRewarded(uint32 quest_id) const
     {
         if (itr.first != quest_id)
             continue;
-        return itr.second.m_rewarded;
+        return itr.second.Rewarded;
     }
 
     return false;
@@ -20464,7 +20068,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SendDirectMessage(&data);
 
     SendInitialActionButtons();
-    SendInitialReputations();
+    m_reputationMgr->SendInitialReputations();
     uint32 newzone, newarea;
     GetZoneAndAreaId(newzone, newarea);
     UpdateZone(newzone, newarea);
@@ -20883,7 +20487,7 @@ void Player::learnQuestRewardedSpells()
     for(QuestStatusMap::const_iterator itr = m_QuestStatus.begin(); itr != m_QuestStatus.end(); ++itr)
     {
         // skip no rewarded quests
-        if(!itr->second.m_rewarded)
+        if(!itr->second.Rewarded)
             continue;
 
         Quest const* quest = sObjectMgr->GetQuestTemplate(itr->first);
@@ -21558,7 +21162,7 @@ bool Player::HasQuestForGO(int32 GOId)
     for(auto & m_QuestStatu : m_QuestStatus)
     {
         QuestStatusData qs=m_QuestStatu.second;
-        if (qs.m_status == QUEST_STATUS_INCOMPLETE)
+        if (qs.Status == QUEST_STATUS_INCOMPLETE)
         {
             Quest const* qinfo = sObjectMgr->GetQuestTemplate(m_QuestStatu.first);
             if(!qinfo)
@@ -21572,7 +21176,7 @@ bool Player::HasQuestForGO(int32 GOId)
                 if (qinfo->RequiredNpcOrGo[j]>=0)         //skip non GO case
                     continue;
 
-                if((-1)*GOId == qinfo->RequiredNpcOrGo[j] && qs.m_creatureOrGOcount[j] < qinfo->RequiredNpcOrGoCount[j])
+                if((-1)*GOId == qinfo->RequiredNpcOrGo[j] && qs.CreatureOrGOCount[j] < qinfo->RequiredNpcOrGoCount[j])
                     return true;
             }
         }

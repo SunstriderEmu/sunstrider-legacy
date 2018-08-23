@@ -23,6 +23,7 @@
 #include "ScriptMgr.h"
 #include "CreatureAI.h"
 #include "QueryCallback.h"
+#include "ReputationMgr.h"
 
 enum StableResultCode
 {
@@ -260,6 +261,10 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         TC_LOG_ERROR("network", "WORLD: HandleGossipHelloOpcode - Player %s (GUID: %u) attempted to speak with unit (GUID: %u) but it was not found or out of range. Cheat attempt?", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter(), uint32(guid.GetCounter()) );
         return;
     }
+
+    // set faction visible if needed
+    if (FactionTemplateEntry const* factionTemplateEntry = sFactionTemplateStore.LookupEntry(unit->GetFaction()))
+        _player->GetReputationMgr().SetVisible(factionTemplateEntry);
 
     GetPlayer()->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
     // remove fake death

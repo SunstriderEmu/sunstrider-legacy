@@ -9,6 +9,7 @@
 #include "Realm.h"
 #include "DatabaseLoader.h"
 #include "Config.h"
+#include "UpdateTime.h"
 
 #include <boost/filesystem.hpp>
 #include <mysql_version.h>
@@ -230,7 +231,7 @@ public:
         handler->PSendSysMessage("Players online: %u (Max: %u, Queued: %u)", activeClientsNum, maxActiveClientsNum, queuedClientsNum);
         handler->PSendSysMessage(LANG_UPTIME, str.c_str());
         handler->PSendSysMessage("Smoothed update time diff: %u.", sMonitor->GetSmoothTimeDiff());
-        handler->PSendSysMessage("Instant update time diff: %u.", sWorld->GetUpdateTime());
+        handler->PSendSysMessage("Instant update time diff: %u.", sWorldUpdateTime.GetLastUpdateTime());
         if(currentMapTimeDiff != 0)
             handler->PSendSysMessage("Current map update time diff: %u.", currentMapTimeDiff);
         if (sWorld->IsShuttingDown())
