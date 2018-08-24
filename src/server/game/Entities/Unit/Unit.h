@@ -1638,6 +1638,7 @@ class TC_GAME_API Unit : public WorldObject
 #endif
 
         bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
+        Player* GetControllingPlayer() const;
         ObjectGuid GetCharmerOrOwnerGUID() const override;
         bool IsCharmedOwnedByPlayerOrPlayer() const;
 

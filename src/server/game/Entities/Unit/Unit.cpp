@@ -817,7 +817,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
     if(attacker && pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->ToPlayer())->duel && damage >= (health-1))
     {
         // prevent kill only if killed in duel and killed by opponent or opponent controlled creature
-        if((pVictim->ToPlayer())->duel->opponent == attacker || (pVictim->ToPlayer())->duel->opponent->GetGUID() == attacker->GetOwnerGUID())
+        if (pVictim->ToPlayer()->duel->opponent == attacker->GetControllingPlayer())
             damage = health-1;
 
         duel_hasEnded = true;
@@ -4607,6 +4607,18 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
     }
 
     return HasFlag(UNIT_FIELD_AURASTATE, 1 << (flag - 1));
+}
+
+Player* Unit::GetControllingPlayer() const
+{
+    if (ObjectGuid guid = GetCharmerOrOwnerGUID())
+    {
+        if (Unit* master = ObjectAccessor::GetUnit(*this, guid))
+            return master->GetControllingPlayer();
+        return nullptr;
+    }
+    else
+        return const_cast<Player*>(ToPlayer());
 }
 
 Unit* Unit::GetCharmer() const
