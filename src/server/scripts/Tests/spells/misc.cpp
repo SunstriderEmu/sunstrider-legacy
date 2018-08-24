@@ -318,10 +318,38 @@ public:
     }
 };
 
+/* "spells delayed stacks"
+Test a spell applying aura with a fly time and stacks
+*/
+class SpellDelayedStacks : public TestCase
+{
+    void Test() override
+    {
+        uint32 const STACK_COUNT = 5;
+        uint32 const BUFF_ID = 30531; //apply aura on nearby entries with 17256, has a fly time and does stack
+
+        //Player* p = SpawnRandomPlayer();
+        Creature* caster = SpawnCreature(17256); //hellfire channeler
+        Creature* other  = SpawnCreature(17256); //hellfire channeler
+
+        SECTION("stacks", STATUS_KNOWN_BUG, [&] 
+        {
+            for(uint32 i = 0; i < STACK_COUNT; i++)
+                TEST_CAST(caster, caster, BUFF_ID, SPELL_CAST_OK, TRIGGERED_FULL_MASK);
+
+            WaitNextUpdate();
+            Wait(5000); //let it fly
+
+            TEST_AURA_STACK(other, BUFF_ID, STACK_COUNT);
+        });
+    }
+};
+
 void AddSC_test_spells_misc()
 {
     new NextMeleeHitTest();
     new EnvironmentalTrapTest();
     new StackingRulesTest();
     new SpellPositivity();
+    RegisterTestCase("spells delayed stacks", SpellDelayedStacks);
 }
