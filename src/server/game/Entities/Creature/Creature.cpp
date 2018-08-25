@@ -1021,12 +1021,9 @@ bool Creature::AIM_Create(CreatureAI* ai /*= nullptr*/)
         return false;
     }
 
-    if (!ai)
-        ai = FactorySelector::SelectAI(this);
-
-    SetAI(ai);
-
     Motion_Initialize();
+
+    SetAI(ai ? ai : FactorySelector::SelectAI(this));
 
     return true;
 }
