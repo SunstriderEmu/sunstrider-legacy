@@ -40,10 +40,10 @@ public:
             { "arena",          SEC_GAMEMASTER2,      false, &HandleModifyArenaCommand,         "" },
             { "drunk",          SEC_GAMEMASTER1,      false, &HandleDrunkCommand,               "" },
             { "gender",         SEC_GAMEMASTER3,      false, &HandleModifyGenderCommand,        "" },
+            { "morph",          SEC_GAMEMASTER2,      false, &HandleMorphCommand,               "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
-            { "morph",          SEC_GAMEMASTER2,      false, &HandleMorphCommand,               "" },
             { "demorph",        SEC_GAMEMASTER2,      false, &HandleDeMorphCommand,             "" },
             { "modify",         SEC_GAMEMASTER1,      false, nullptr,                           "", modifyCommandTable },
         };
