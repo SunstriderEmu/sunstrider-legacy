@@ -140,8 +140,6 @@ public:
     class ArcaneBrillianceTestImpt : public TestCase
     {
     public:
-
-
         void AssertArcaneBrillianceWorks(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 reagentId, uint32 manaCost, uint8 intBonus)
         {
             float const expectedCasterInt = caster->GetStat(STAT_INTELLECT) + intBonus;
@@ -197,8 +195,6 @@ public:
     class ArcaneExplosionTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* mage = SpawnPlayer(CLASS_MAGE, RACE_HUMAN);

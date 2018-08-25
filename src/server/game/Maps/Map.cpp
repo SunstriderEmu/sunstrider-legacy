@@ -35,13 +35,15 @@
 #include "Totem.h"
 #include "Transport.h"
 #include "ScriptMgr.h"
-#include <unordered_set>
-#include <vector>
+#include "GameTime.h"
 #ifdef TESTS
 #include "TestCase.h"
 #include "TestThread.h"
 #include "TestPlayer.h"
 #endif
+
+#include <unordered_set>
+#include <vector>
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -3252,8 +3254,16 @@ void TestMap::Update(const uint32& diff)
 
     ASSERT(test->IsSetup());
     testThread->ResumeExecution();
+    uint32 startTimeMS = GetMSTime();
     testThread->WaitUntilDoneOrWaiting(test);
     //from this line we be sure that the test thread is not currently running
+    if (uint32 warnThresholdMS = sWorld->getIntConfig(CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD))
+    {
+        uint32 diff = GetMSTimeDiffToNow(startTimeMS);
+        if(diff > warnThresholdMS)
+            TC_LOG_WARN("misc", "Test '%s' took %u ms to update", testThread->GetTest()->GetName().c_str(), diff);
+    }
+
 #endif
 }
 

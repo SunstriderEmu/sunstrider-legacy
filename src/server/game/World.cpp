@@ -1315,9 +1315,26 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.RepartitionThreshold", 0);
 
     m_configs[CONFIG_BETASERVER_ENABLED] = sConfigMgr->GetIntDefault("BetaServer.Enabled", false);
-    m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = sConfigMgr->GetIntDefault("Testing.MaxParallel", 10);
+    uint32 const DEFAULT_TEST_MAX_PARALLEL = 30;
+    m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = sConfigMgr->GetIntDefault("Testing.MaxParallel", DEFAULT_TEST_MAX_PARALLEL);
     if (m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] == 0)
-        m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = 10;
+    {
+        TC_LOG_ERROR("server.loading", "Testing.MaxParallel can't be 0, setting it to %u", DEFAULT_TEST_MAX_PARALLEL);
+        m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = DEFAULT_TEST_MAX_PARALLEL;
+    }
+    uint32 const DEFAULT_TEST_MAX_UPDATE_TIME = 100;
+    m_configs[CONFIG_TESTING_MAX_UPDATE_TIME] = sConfigMgr->GetIntDefault("Testing.MaxTestUpdateTime", DEFAULT_TEST_MAX_UPDATE_TIME);
+    if (m_configs[CONFIG_TESTING_MAX_UPDATE_TIME] == 0)
+    {
+        TC_LOG_ERROR("server.loading", "Testing.MaxTestUpdateTime can't be 0, setting it to %u", CONFIG_TESTING_MAX_UPDATE_TIME);
+        m_configs[CONFIG_TESTING_MAX_UPDATE_TIME] = CONFIG_TESTING_MAX_UPDATE_TIME;
+    }
+    m_configs[CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD] = sConfigMgr->GetIntDefault("Testing.WarnUpdateTimeThreshold", 150);
+    if (m_configs[CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD] <= m_configs[CONFIG_TESTING_MAX_UPDATE_TIME])
+    {
+        m_configs[CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD] = m_configs[CONFIG_TESTING_MAX_UPDATE_TIME] + 50;
+        TC_LOG_ERROR("server.loading", "Testing.WarnUpdateTimeThreshold can't be lower than Testing.MaxTestUpdateTime, setting it to %i", m_configs[CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD]);
+    }
 
     m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
     m_configs[CONFIG_DEBUG_DISABLE_ARMOR] = sConfigMgr->GetBoolDefault("Debug.DisableArmor", 0);

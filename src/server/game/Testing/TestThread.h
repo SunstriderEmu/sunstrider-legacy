@@ -18,8 +18,6 @@ class TestThread
 {
     friend class TestCase; //to allow calling Wait and HandleThreadPause
 public:
-    static const uint32 MAX_UPDATE_TIME_MS = 200;
-
     enum ThreadState : uint8
     {
         STATE_NOT_STARTED, //not yet setup
@@ -80,7 +78,7 @@ private:
     std::mutex _testCVMutex;
     std::atomic<uint32>     _waitTimer;
     // --
-    milliseconds _thisUpdateStartTimeMS;
+    uint32 _thisUpdateStartTimeMS;
 
 
     // Sleep caller execution for given ms (MUST BE called from the TestCase only)

@@ -1606,10 +1606,25 @@ BetaServer.Enabled = 0
 ###################################################################################################################
 # TESTING
 #
-#	Testing.MaxParallel
-#		Max tests running concurrently (others are queued). We can't start every tests at once because that would fill up server memory.
 
-Testing.MaxParallel = 10
+#	Testing.MaxParallel
+#       Max tests running concurrently, while others are queued. The more concurrent tests, the more memory is used.
+#       Default:  30
+
+Testing.MaxParallel = 30
+
+#	Testing.MaxTestUpdateTime
+#       Test will pause and continue at next update if it takes more than this time to update.
+#       Default:  100 (MS)
+
+Testing.MaxTestUpdateTime = 100
+
+#	Testing.WarnUpdateTimeThreshold
+#       Warn if a test took more than specified time (in MS) to update. Warning is triggered with "info" filter at level WARN.
+#       Default:  150 (MS)
+#                 0   (disabled)
+
+Testing.WarnUpdateTimeThreshold = 150
 
 #
 ###################################################################################################################

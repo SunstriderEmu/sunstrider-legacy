@@ -162,6 +162,7 @@ AiPlayerbot.MinRandomBotInWorldTime = 7200
 AiPlayerbot.MaxRandomBotInWorldTime = 1209600
 AiPlayerbot.MinRandomBotRandomizeTime = 7200
 AiPlayerbot.MaxRandomRandomizeTime = 1209600
+AiPlayerbot.MinRandomBotReviveTime = 60
 AiPlayerbot.MaxRandomReviveTime = 300
 AiPlayerbot.MinRandomBotsPerInterval = 50
 AiPlayerbot.MaxRandomBotsPerInterval = 100

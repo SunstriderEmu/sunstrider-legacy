@@ -586,14 +586,11 @@ public:
 class BashTest : public TestCaseScript
 {
 public:
-
 	BashTest() : TestCaseScript("spells druid bash") { }
 
 	class BashTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);

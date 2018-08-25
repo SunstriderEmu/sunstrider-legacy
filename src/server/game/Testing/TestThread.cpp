@@ -66,7 +66,7 @@ void TestThread::Run()
         if (waitAfterJoin)
             Wait(5000); //give some time before starting the test
 
-        _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        _thisUpdateStartTimeMS = GetMSTime();
 
         _testCase->_Test();
 
@@ -101,7 +101,7 @@ void TestThread::ResumeExecution()
         return;
 
     ASSERT(_state != STATE_FINISHED && _state != STATE_CANCELING);
-    _thisUpdateStartTimeMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    _thisUpdateStartTimeMS = GetMSTime();
 
     //resume execution if wait finished
     if (_waitTimer == 0 || _state == STATE_PAUSED)
@@ -187,9 +187,8 @@ bool TestThread::HandleThreadPause()
         return false;
 
     //pause if we used too much time in this update
-    milliseconds const nowMS = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-    milliseconds const elapsedTimeMS = nowMS - _thisUpdateStartTimeMS;
-    if (elapsedTimeMS.count() > MAX_UPDATE_TIME_MS)
+    uint32 elapsedTimeMS = GetMSTimeDiffToNow(_thisUpdateStartTimeMS);
+    if (elapsedTimeMS >= sWorld->getIntConfig(CONFIG_TESTING_MAX_UPDATE_TIME))
     {
         _state = STATE_PAUSED;
         WakeUp(); //wake up TestMgr which may be waiting in WaitUntilDoneOrWaiting

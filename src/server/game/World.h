@@ -337,6 +337,8 @@ enum WorldConfigs
     CONFIG_BETASERVER_ENABLED,
 
     CONFIG_TESTING_MAX_PARALLEL_TESTS,
+    CONFIG_TESTING_MAX_UPDATE_TIME,
+    CONFIG_TESTING_WARN_UPDATE_TIME_THRESHOLD,
 
     CONFIG_DEBUG_DISABLE_MAINHAND,
     CONFIG_DEBUG_DISABLE_ARMOR,
@@ -672,7 +674,7 @@ class TC_GAME_API World
             else
                 return 0;
         }
-        //temp compatibility macros
+        //TC compatibility macros
 #define getIntConfig(a) getConfig(a)
 #define getBoolConfig(a) getConfig(a)
 #define getFloatConfig(a) getConfig(a)
