@@ -349,12 +349,12 @@ public:
         handler->PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
         std::string subject = "Welcome!";
+        //TODO TRANSLATE
         std::string body = "Body to write"; ///"Bienvenue sur Sunstrider !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.sunstrider.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe Sunstrider.";
 
         // from console, use non-existing sender
         MailSender sender(MAIL_NORMAL, handler->GetSession() ? handler->GetSession()->GetPlayer()->GetGUID().GetCounter() : 0, MAIL_STATIONERY_GM);
 
-        /// @todo Fix poor design
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft(subject, body)
             .SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender, MailCheckMask(MAIL_CHECK_MASK_HAS_BODY | MAIL_CHECK_MASK_COPIED));

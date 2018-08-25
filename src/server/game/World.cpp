@@ -1315,6 +1315,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.RepartitionThreshold", 0);
 
     m_configs[CONFIG_BETASERVER_ENABLED] = sConfigMgr->GetIntDefault("BetaServer.Enabled", false);
+    m_configs[CONFIG_BETASERVER_LVL70] = sConfigMgr->GetIntDefault("BetaServer.Lvl70", false);
     uint32 const DEFAULT_TEST_MAX_PARALLEL = 30;
     m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] = sConfigMgr->GetIntDefault("Testing.MaxParallel", DEFAULT_TEST_MAX_PARALLEL);
     if (m_configs[CONFIG_TESTING_MAX_PARALLEL_TESTS] == 0)

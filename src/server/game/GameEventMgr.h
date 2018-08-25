@@ -27,7 +27,6 @@ enum GameEventList
     GAME_EVENT_WICKERMAN_FESTIVAL = 50,
     GAME_EVENT_BETA = 62,
     GAME_EVENT_2_4  = 67,
-    GAME_EVENT_INSTANT_70_SERVER = 78,
 };
 
 struct GameEventFinishCondition

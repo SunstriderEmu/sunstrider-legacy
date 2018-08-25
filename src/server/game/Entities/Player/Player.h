@@ -269,7 +269,7 @@ struct DuelInfo
     bool isCompleted;
 };
 
-enum Pack58
+enum Pack58Step
 {
     PACK58_STEP1,
     PACK58_MELEE,

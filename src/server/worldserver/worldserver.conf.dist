@@ -1568,6 +1568,9 @@ CharDelete.KeepDays = 30
 #	BetaServer.Enabled
 #		Enable Beta server features, such as the custom spawning zone.
 #
+#   BetaServer.Lvl70
+#       Allow beta pnj to give lvl 70 and 70 equipment to players.
+#
 ###################################################################################################################
 
 PlayerStart.AllReputation = 0
@@ -1602,6 +1605,7 @@ Teleporter.MinLevel = 1
 Teleporter.MaxLevel = 255
 BuggyQuests.AutoComplete = 0
 BetaServer.Enabled = 0
+BetaServer.Lvl70 = 0
 
 ###################################################################################################################
 # TESTING
