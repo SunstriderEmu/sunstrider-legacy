@@ -1675,6 +1675,7 @@ class TC_GAME_API Unit : public WorldObject
         Pet* GetPet() const;
 		Guardian* GetGuardianPet() const;
 		Minion* GetFirstMinion() const;
+        Unit* GetCharmerOrOwner() const { return IsCharmed() ? GetCharmer() : GetOwner(); }
 
 		void SetMinion(Minion *minion, bool apply);
 		void GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry);
