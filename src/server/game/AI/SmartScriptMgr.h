@@ -8,6 +8,10 @@ class Unit;
 #define SMARTAI_AI_NAME "SmartAI"
 #define SMARTAI_GOBJECT_AI_NAME "SmartGameObjectAI"
 
+#include "WaypointDefines.h"
+#include "Define.h"
+#include "ObjectGuid.h"
+
 #include <boost/serialization/strong_typedef.hpp>
 BOOST_STRONG_TYPEDEF(unsigned int, SmartPhaseMask)
 
