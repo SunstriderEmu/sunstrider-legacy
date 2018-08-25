@@ -259,45 +259,52 @@ public:
             } while (result->NextRow());
         }
 
+
         // guild bank case
-        uint32 guild_count = 0;
-        result = CharacterDatabase.PQuery("SELECT COUNT(item_entry) FROM guild_bank_item WHERE item_entry='%u'", item_id);
-        if (result)
-        {
-            guild_count = (*result)[0].GetUInt32();
-        }
+        uint32 guildCount = 0;
 
-        result = CharacterDatabase.PQuery(
-            //      0             1           2
-            "SELECT gi.item_guid, gi.guildid, guild.name "
-            "FROM guild_bank_item AS gi, guild WHERE gi.item_entry='%u' AND gi.guildid = guild.guildid LIMIT %u ",
-            item_id, uint32(count));
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_BANK_COUNT_ITEM);
+        stmt->setUInt32(0, item_id);
+        result2 = CharacterDatabase.Query(stmt);
 
-        if (result)
+        if (result2)
+            guildCount = (*result2)[0].GetUInt64();
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUILD_BANK_ITEM_BY_ENTRY);
+        stmt->setUInt32(0, item_id);
+        stmt->setUInt32(1, count);
+        result2 = CharacterDatabase.Query(stmt);
+
+        if (result2)
         {
             do
             {
-                Field *fields = result->Fetch();
-                ObjectGuid::LowType item_guid = fields[0].GetUInt32();
-                uint32 guild_guid = fields[1].GetUInt32();
-                std::string guild_name = fields[2].GetString();
+                Field* fields = result2->Fetch();
+                uint32 itemGuid = fields[0].GetUInt32();
+                uint32 guildGuid = fields[1].GetUInt32();
+                std::string guildName = fields[2].GetString();
 
-                char const* item_pos = "[in guild bank]";
+                char const* itemPos = "[in guild bank]";
 
-                handler->PSendSysMessage(LANG_ITEMLIST_GUILD, item_guid, guild_name.c_str(), guild_guid, item_pos);
-            } while (result->NextRow());
+                handler->PSendSysMessage(LANG_ITEMLIST_GUILD, itemGuid, guildName.c_str(), guildGuid, itemPos);
+            } while (result2->NextRow());
 
-            //int64 res_count = result->GetRowCount();
+            uint32 resultCount = uint32(result2->GetRowCount());
+
+            if (count > resultCount)
+                count -= resultCount;
+            else if (count)
+                count = 0;
         }
 
-        if (inv_count + mail_count + auc_count + guild_count == 0)
+        if (inv_count + mail_count + auc_count + guildCount == 0)
         {
             handler->SendSysMessage(LANG_COMMAND_NOITEMFOUND);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        handler->PSendSysMessage(LANG_COMMAND_LISTITEMMESSAGE, item_id, inv_count + mail_count + auc_count + guild_count, inv_count, mail_count, auc_count, guild_count);
+        handler->PSendSysMessage(LANG_COMMAND_LISTITEMMESSAGE, item_id, inv_count + mail_count + auc_count + guildCount, inv_count, mail_count, auc_count, guildCount);
 
         return true;
     }
