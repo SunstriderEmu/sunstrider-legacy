@@ -1538,7 +1538,7 @@ void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)
 {
     if (_player->GetPet())
         _player->PetSpellInitialize();
-    else if (_player->GetCharm())
+    else if (_player->GetCharmed())
         _player->CharmSpellInitialize();
 }
 

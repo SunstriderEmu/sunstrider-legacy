@@ -18281,7 +18281,7 @@ void Player::StopCastingCharm(Aura* except /*= nullptr*/)
     }
 #endif
 
-    Unit* charm = GetCharm();
+    Unit* charm = GetCharmed();
     if (!charm)
         return;
 
@@ -18294,12 +18294,12 @@ void Player::StopCastingCharm(Aura* except /*= nullptr*/)
             ExitVehicle();
 #endif
     }
-    if (GetCharmGUID())
+    if (GetCharmedGUID())
         charm->RemoveCharmAuras(except);
 
-    if (GetCharmGUID())
+    if (GetCharmedGUID())
     {
-        TC_LOG_FATAL("entities.player", "Player::StopCastingCharm: Player '%s' (%s) is not able to uncharm unit (%s)", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), ObjectGuid(GetCharmGUID()).ToString().c_str());
+        TC_LOG_FATAL("entities.player", "Player::StopCastingCharm: Player '%s' (%s) is not able to uncharm unit (%s)", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), ObjectGuid(GetCharmedGUID()).ToString().c_str());
         if (!ObjectGuid(charm->GetCharmerGUID()).IsEmpty())
         {
             TC_LOG_FATAL("entities.player", "Player::StopCastingCharm: Charmed unit has charmer %s", ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
@@ -18447,7 +18447,7 @@ void Player::SendRemoveControlBar() const
 
 void Player::PossessSpellInitialize()
 {
-    Unit* charm = GetCharm();
+    Unit* charm = GetCharmed();
 
     if(!charm)
         return;

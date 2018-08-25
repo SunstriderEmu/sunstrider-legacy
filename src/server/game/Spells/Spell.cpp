@@ -1603,7 +1603,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         {
             target = caster->GetGuardianPet();
             if (!target)
-                target = caster->GetCharm();
+                target = caster->GetCharmed();
         }
         break;
     case TARGET_UNIT_SUMMONER:
@@ -4266,7 +4266,7 @@ void Spell::finish(bool ok, bool cancelChannel)
     // Unsummon summon as possessed creatures on spell cancel
     if (m_spellInfo->IsChanneled() && caster->GetTypeId() == TYPEID_PLAYER)
     {
-        if (Unit* charm = caster->GetCharm())
+        if (Unit* charm = caster->GetCharmed())
             if (charm->GetTypeId() == TYPEID_UNIT
                 && charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET)
                 && charm->GetUInt32Value(UNIT_CREATED_BY_SPELL) == m_spellInfo->Id)
@@ -6146,9 +6146,9 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     case SUMMON_CATEGORY_PET:
                         if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && caster->GetPetGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-                    // intentional missing break, check both GetPetGUID() and GetCharmGUID for SUMMON_CATEGORY_PET
+                    // intentional missing break, check both GetPetGUID() and GetCharmedGUID for SUMMON_CATEGORY_PET
                     case SUMMON_CATEGORY_PUPPET:
-                        if (caster->GetCharmGUID())
+                        if (caster->GetCharmedGUID())
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
                         break;
                     case SUMMON_CATEGORY_ALLY:
@@ -6172,7 +6172,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && caster->GetPetGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
-                if(caster->GetCharmGUID())
+                if(caster->GetCharmedGUID())
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 break;
@@ -6197,7 +6197,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
                 }
 
-                if(caster->GetCharmGUID())
+                if(caster->GetCharmedGUID())
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 break;
@@ -6382,7 +6382,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     if(m_caster->ToUnit()->GetMinionGUID())
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
-                    if(m_caster->ToUnit()->GetCharmGUID())
+                    if(m_caster->ToUnit()->GetCharmedGUID())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
                 }
             }break;
@@ -6394,7 +6394,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if (!caster)
                     return SPELL_FAILED_BAD_TARGETS;
 
-                if(caster->GetCharmGUID())
+                if(caster->GetCharmedGUID())
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
 
                 if(caster->GetCharmerGUID())
@@ -6406,7 +6406,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && caster->GetPetGUID())
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
-                    if (caster->GetCharmGUID())
+                    if (caster->GetCharmedGUID())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
                 }
 
@@ -6594,7 +6594,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
         {
             if (Effect.TargetA.GetTarget() == TARGET_UNIT_PET)
             {
-                if (!caster->GetGuardianPet() && !caster->GetCharm())
+                if (!caster->GetGuardianPet() && !caster->GetCharmed())
                 {
                     if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                         return SPELL_FAILED_DONT_REPORT;

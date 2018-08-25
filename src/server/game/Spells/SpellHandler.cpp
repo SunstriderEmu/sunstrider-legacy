@@ -453,7 +453,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    if(pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharm())
+    if(pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharmed())
     {
         TC_LOG_ERROR( "network", "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(guid.GetCounter()),GetPlayer()->GetName().c_str() );
         return;

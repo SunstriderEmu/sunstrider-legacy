@@ -3168,7 +3168,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             case 30019: // Karazhan Chess event: Control piece
             {
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
-                    if (Unit* charmed = caster->ToPlayer()->GetCharm()) {
+                    if (Unit* charmed = caster->ToPlayer()->GetCharmed()) {
                         charmed->RemoveCharmedBy(caster);
                         charmed->RemoveAura(30019);
                         caster->CastSpell(caster, 30529, true);

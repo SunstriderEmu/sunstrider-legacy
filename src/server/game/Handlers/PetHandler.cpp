@@ -386,7 +386,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
         return;
     }
 
-    if (pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
+    if (pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharmed())
     {
         TC_LOG_ERROR("network", "HandlePetStopAttack: Pet GUID %u isn't a pet or charmed creature of player %s",
             uint32(guid.GetCounter()), GetPlayer()->GetName().c_str());
@@ -699,7 +699,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
             _player->RemovePet((Pet*)pet,PET_SAVE_AS_DELETED);
         }
         //this opcode is also used for some controlled creature other than pets
-        else if(pet->GetGUID() == _player->GetCharmGUID())
+        else if(pet->GetGUID() == _player->GetCharmedGUID())
             _player->StopCastingCharm();
     }
 }
@@ -770,7 +770,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 #endif
     recvPacket >> state;
 
-    if (!_player->GetGuardianPet() && !_player->GetCharm())
+    if (!_player->GetGuardianPet() && !_player->GetCharmed())
         return;
 
     if(guid.IsPlayer())
@@ -778,7 +778,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
     Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
 
-    if(!pet || (pet != _player->GetGuardianPet() && pet != _player->GetCharm()))
+    if(!pet || (pet != _player->GetGuardianPet() && pet != _player->GetCharmed()))
     {
         TC_LOG_ERROR("network", "HandlePetSpellAutocastOpcode.Pet %u isn't pet of player %s .\n", uint32(guid.GetCounter()),GetPlayer()->GetName().c_str() );
         return;
@@ -823,12 +823,12 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 #endif
 
     // This opcode is also sent from charmed and possessed units (players and creatures)
-    if(!_player->GetGuardianPet() && !_player->GetCharm())
+    if(!_player->GetGuardianPet() && !_player->GetCharmed())
         return;
 
     Unit* caster = ObjectAccessor::GetUnit(*_player, guid);
 
-    if(!caster || (caster != _player->GetGuardianPet() && caster != _player->GetCharm()))
+    if(!caster || (caster != _player->GetGuardianPet() && caster != _player->GetCharmed()))
     {
         TC_LOG_ERROR("network", "HandlePetCastSpellOpcode: Pet %u isn't pet of player %s .\n", uint32(guid.GetCounter()),GetPlayer()->GetName().c_str() );
         return;
