@@ -128,6 +128,7 @@ namespace Movement
 
         unit->m_movementInfo.SetMovementFlags(moveFlags);
         move_spline.Initialize(args);
+        ASSERT(!args.flags.done); //sun: should never be true at this point. MOVEMENTFLAG_SPLINE_ENABLED is not enabled on a stop spline.
 
         SendLaunchToSet(unit, transport);
 

@@ -19,6 +19,8 @@ struct FormationInfo
     GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
     bool respawn = false;
     bool linkedLoot = false;
+
+    Position originalHome; //home before being in the formation
 };
 
 typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
@@ -106,6 +108,7 @@ class TC_GAME_API CreatureGroup
         void Respawn();
         void Update(uint32 diff);
         void ForEachMember(std::function<void(Creature*)> const& apply);
+        void SetMemberGroupAI(Creature* member, GroupAI ai);
 
 private:
         //remove every members

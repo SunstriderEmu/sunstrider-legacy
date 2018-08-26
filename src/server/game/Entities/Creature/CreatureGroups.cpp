@@ -247,6 +247,7 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
 
     m_members[member] = fInfo;
     member->SetFormation(this);
+    fInfo->originalHome = member->GetHomePosition();
 }
 
 void CreatureGroup::RemoveMember(Creature *member)
@@ -256,7 +257,11 @@ void CreatureGroup::RemoveMember(Creature *member)
 
     auto itr = m_members.find(member);
     if (itr != m_members.end())
+    {
+        //restore original home (for ex: DarkPortalEventDemonAI rely on this)
+        member->SetHomePosition(itr->second->originalHome);
         m_members.erase(member);
+    }
 
     member->SetFormation(nullptr);
 }
@@ -274,11 +279,16 @@ void CreatureGroup::MemberEngagingTarget(Creature *member, Unit *target)
         return;
 
     GroupAI groupAI = fInfo->second->groupAI;
-    if (groupAI == GROUP_AI_NONE)
+    switch (groupAI)
+    {
+    case GROUP_AI_NONE:
         return;
-
-    if (groupAI == GROUP_AI_LEADER_SUPPORT && member != m_leader)
-        return;
+    case GROUP_AI_LEADER_SUPPORT:
+        if (member != m_leader)
+            return;
+    case GROUP_AI_FULL_SUPPORT:
+        break; //continue
+    }
 
     for(auto & m_member : m_members)
     {
@@ -292,9 +302,8 @@ void CreatureGroup::MemberEngagingTarget(Creature *member, Unit *target)
         if(m_member.first->GetVictim())
             continue;
 
-        if(m_member.first->CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK) {
+        if(m_member.first->CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
             m_member.first->AI()->AttackStart(target);
-        }
     }
 }
 
@@ -492,4 +501,11 @@ void CreatureGroup::ForEachMember(std::function<void(Creature*)> const& apply)
         Creature* member = itr.first;
         apply(member);
     }
+}
+
+void CreatureGroup::SetMemberGroupAI(Creature* member, GroupAI ai)
+{
+    auto itr = m_members.find(member);
+    if (itr != m_members.end())
+        itr->second->groupAI = ai;
 }
