@@ -8,7 +8,7 @@ endif(NOT TESTS)
  
 # Make the native install offset available in this scope
 GetInstallOffset(INSTALL_OFFSET)
- 
+
 # Sets the SCRIPTS_${SCRIPT_MODULE} variables
 # when using predefined templates for script building
 # like dynamic, static, minimal-static...

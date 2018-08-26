@@ -37,7 +37,7 @@
 #define STOP_TIME_FOR_PLAYER  3 * MINUTE * IN_MILLISECONDS           // 3 Minutes
 #define TIMEDIFF_NEXT_WP      250
 
-enum WaypointPathType
+enum WaypointPathType : uint32
 {
     WP_PATH_TYPE_LOOP           = 0,
     /* Note that for ONCE, the creature must have another movement generator if you don't want the waypoint generator to be started again. 
@@ -45,6 +45,8 @@ enum WaypointPathType
     but when used from creature_addon the path will loop anyway */
     WP_PATH_TYPE_ONCE           = 1,
     WP_PATH_TYPE_ROUND_TRIP     = 2,
+
+    WP_PATH_TYPE_UNSPECIFIED    = 100000, //special value
 
     WP_PATH_TYPE_TOTAL
 };
@@ -76,11 +78,13 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        /* using smoothSpline will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint */
-        explicit WaypointMovementGenerator(Movement::PointsArray& points, bool repeating = false, bool smoothSpline = false);
-        explicit WaypointMovementGenerator(WaypointPath& path, bool repeating = true, bool smoothSpline = false);
+        /* 
+        repeating: path will use its default value, either WP_PATH_TYPE_LOOP or any value specified in waypoint_info table. Using this argument will override the default value.
+        smoothSpline: will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint */
+        explicit WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating = {}, bool smoothSpline = false);
+        explicit WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating = {}, bool smoothSpline = false);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
-        explicit WaypointMovementGenerator(uint32 _path_id = 0, bool repeating = true, bool smoothSpline = false);
+        explicit WaypointMovementGenerator(uint32 _path_id = 0, Optional<bool> repeating = {}, bool smoothSpline = false);
         ~WaypointMovementGenerator() override;
 
         MovementGeneratorType GetMovementGeneratorType() const override;

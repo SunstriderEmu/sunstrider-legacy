@@ -866,7 +866,6 @@ void MotionMaster::MovePath(uint32 pathId, bool repeatable, bool smoothSpline)
 
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MovePath: '%s', starts moving over path Id: %u (repeatable: %s, smooth: %u)", _owner->GetGUID().ToString().c_str(), pathId, repeatable ? "YES" : "NO", uint32(smoothSpline));
     Add(new WaypointMovementGenerator<Creature>(pathId, repeatable, smoothSpline), MOTION_SLOT_DEFAULT);
-
 }
 
 void MotionMaster::MovePath(WaypointPath& path, bool repeatable, bool smoothSpline)

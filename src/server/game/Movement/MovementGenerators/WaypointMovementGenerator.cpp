@@ -13,7 +13,7 @@
 #include "MoveSpline.h"
 #include "WaypointManager.h"
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points, bool repeating, bool smoothSpline) :
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
     WaypointMovementGenerator(uint32(0), repeating)
 {
     CreateCustomPath(points);
@@ -22,10 +22,10 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsA
     erasePathAtEnd = true;
 }
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, bool repeating, bool smoothSpline) :
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
     MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
     path_id(_path_id), 
-    path_type(repeating ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE),
+    path_type(WP_PATH_TYPE_UNSPECIFIED),
     direction(WP_PATH_DIRECTION_NORMAL),
     _nextMoveTime(0), 
     _recalculateTravel(false),
@@ -34,13 +34,16 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, 
     erasePathAtEnd(false),
     m_useSmoothSpline(smoothSpline) ,
     _done(false)
-{ }
+{ 
+    if (repeating)
+        path_type = repeating.get() ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE;
+}
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& path, bool repeating, bool smoothSpline) :
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
     MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
     path_id(0),
-    path_type(repeating ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE),
     direction(WP_PATH_DIRECTION_NORMAL),
+    path_type(WP_PATH_TYPE_UNSPECIFIED),
     _nextMoveTime(0),
     _recalculateTravel(false),
     reachedFirstNode(false),
@@ -48,6 +51,8 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& pat
     erasePathAtEnd(false),
     m_useSmoothSpline(smoothSpline)
 {
+    if(repeating)
+        path_type = repeating.get() ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE;
 }
 
 MovementGeneratorType WaypointMovementGenerator<Creature>::GetMovementGeneratorType() const
@@ -107,9 +112,9 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
             return false;
         }
 
-        path_type = WaypointPathType(_path->pathType);
+        if(path_type == WP_PATH_TYPE_UNSPECIFIED)
+            path_type = WaypointPathType(_path->pathType);
         direction = WaypointPathDirection(_path->pathDirection);
-
     }
     
     //some data validation, should be moved elsewhere
