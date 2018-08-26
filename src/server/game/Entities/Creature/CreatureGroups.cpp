@@ -484,3 +484,12 @@ bool CreatureGroup::isLootLinked(Creature* c)
     }
     return false;
 }
+
+void CreatureGroup::ForEachMember(std::function<void(Creature*)> const& apply)
+{
+    for (auto itr : m_members)
+    {
+        Creature* member = itr.first;
+        apply(member);
+    }
+}

@@ -105,6 +105,7 @@ class TC_GAME_API CreatureGroup
         void UpdateCombat();
         void Respawn();
         void Update(uint32 diff);
+        void ForEachMember(std::function<void(Creature*)> const& apply);
 
 private:
         //remove every members
