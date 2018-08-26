@@ -20786,14 +20786,10 @@ void Player::DoPack58(uint8 step)
         case RACE_BLOODELF:        mountid = 28927; break;
         case RACE_DRAENEI:         mountid = 28481; break;
         }
-        ItemPosCountVec dest;
-        uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, mountid, 1 );
-        if( msg == EQUIP_ERR_OK )
-        {
-            Item * item = StoreNewItem(dest, mountid, true);
-            SendNewItem(item, 1, true, false);
-        }
+        StoreNewItemInBestSlots(mountid, 1);
         LearnAllClassProficiencies();
+
+        uint32 addBags = 4;
 
         //give totems to shamans
         switch(GetClass())
@@ -20802,18 +20798,34 @@ void Player::DoPack58(uint8 step)
             {
                 uint32 totemsId[4] = {5176,5177,5175,5178};
                 for(uint32 i : totemsId)
-                {
-                    ItemPosCountVec dest2;
-                    msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest2, i, 1 );
-                    if( msg == EQUIP_ERR_OK )
-                    {
-                        Item * item = StoreNewItem(dest2, i, true);
-                        SendNewItem(item, 1, true, false);
-                    }
-                }
+                    StoreNewItemInBestSlots(i, 1);
+                break;
+            }
+            case CLASS_ROGUE:
+            {
+                StoreNewItemInBestSlots(5060, 1); //thieve tools
+                break;
+            }
+            case CLASS_WARLOCK:
+            {
+                StoreNewItemInBestSlots(6265, 20); //Soul shard
+                StoreNewItemInBestSlots(21872, 1); //Ebon Shadowbag
+                addBags = 3;
+                break;
+            }
+            case CLASS_HUNTER:
+            {
+                StoreNewItemInBestSlots(19319, 1); //Harpy Hide Quiver
+                addBags = 3;
+                break;
             }
             break;
         }
+
+        StoreNewItemInBestSlots(21841, addBags); //netherweave bags
+
+        StoreNewItemInBestSlots(8932, 20); //food
+        StoreNewItemInBestSlots(8766, 20); //drink
 
         LearnAllClassSpells();
         UpdateSkillsToMaxSkillsForLevel();

@@ -222,6 +222,8 @@ bool RecupMgr::RecupProfession(Player* player, RecupProfessionType profession, u
         player->SetSkill(129, 4, maxSkill, maxSkill); //first aid
         player->LearnSpell(27028, false); //first aid spell
         player->LearnSpell(27033, false); //bandage
+        if(maxSkill >= 300)
+            player->StoreNewItemInBestSlots(21990, 20); // netherweave bandages
         break;
     case RECUP_PROFESSION_COOKING:
         player->SetSkill(185, 4, maxSkill, maxSkill);
@@ -230,14 +232,18 @@ bool RecupMgr::RecupProfession(Player* player, RecupProfessionType profession, u
     case RECUP_PROFESSION_FISHING:
         player->SetSkill(356, 4, maxSkill, maxSkill);
         player->LearnSpell(33095, false);
+        player->StoreNewItemInBestSlots(6256, 1); // Fishing pole
         break;
     case RECUP_PROFESSION_ENCHANTMENT:
         player->SetSkill(333, 4, maxSkill, maxSkill);
         player->LearnSpell(28029, false);
+        if (maxSkill >= 300)
+            player->StoreNewItemInBestSlots(16207, 1); // Runed arcanite rod
         break;
     case RECUP_PROFESSION_MINING:
         player->SetSkill(182, 4, maxSkill, maxSkill);
         player->LearnSpell(29354, false);
+        player->StoreNewItemInBestSlots(2901, 1); //mining pick
         break;
     case RECUP_PROFESSION_FORGE:
         player->SetSkill(164, 4, maxSkill, maxSkill);
