@@ -798,7 +798,7 @@ public:
 
     static bool HandleNpcInfoCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Creature* target =  handler->GetSelectedCreature();
+        Creature* target = handler->GetSelectedCreature();
 
         if(!target)
         {

@@ -21366,35 +21366,6 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
     return false;
 }
 
-// Recheck auras requiring a specific item class/subclass
-/*
-void Player::DisableItemDependentAurasAndCasts( Item * pItem )
-{
-    AuraMap& auras = GetAuras();
-    for(auto & itr : auras)
-    {
-        Aura* aura = itr.second;
-
-        SpellInfo const* spellInfo = aura->GetSpellInfo();
-
-        if(   !aura->IsActive()
-           || HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
-           || aura->GetCasterGUID() != GetGUID()  )
-            continue;
-
-        aura->HandleEffect(false);
-    }
-
-    // currently casted spells can be dependent from item
-    for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
-    {
-        if(GetCurrentSpell(i) && GetCurrentSpell(i)->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellRequirements(GetCurrentSpell(i)->m_spellInfo,pItem) )
-            InterruptSpell(i);
-    }
-}
-*/
-
 uint32 Player::GetResurrectionSpellId()
 {
     // search priceless resurrection possibilities

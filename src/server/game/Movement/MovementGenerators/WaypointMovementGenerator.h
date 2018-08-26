@@ -141,7 +141,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         */
         void OnArrived(Creature*, uint32 arrivedNodeIndex);
 
-        /* Fill m_precomputedPath with data from _path according to current node (that is, points until next stop), then start spline path
+        /* Fill _precomputedPath with data from _path according to current node (that is, points until next stop), then start spline path
         nextNode = skip current node
         Returns false on error getting new point
         */
@@ -165,13 +165,15 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         WaypointPathType path_type;
         WaypointPathDirection direction;
 
-        Movement::PointsArray m_precomputedPath;
-        uint32 m_useSmoothSpline; //calculate path to further points to allow using smooth splines
+        Movement::PointsArray _precomputedPath;
+        uint32 _useSmoothSpline; //calculate path to further points to allow using smooth splines
         bool _recalculateTravel;
+
+        Position _originalHome; //original home position before it was altered by this movegen. Some scripts are currently using the home AFTER the waypoint path. (such as 18970)
 
         uint32 _splineId;
         //true when creature has reached the start node in path (it has to travel from its current position first)
-        uint32 reachedFirstNode;
+        uint32 _reachedFirstNode;
         bool _done;
 
         typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> SplineToPathIdMapping;
