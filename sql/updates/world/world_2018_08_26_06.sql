@@ -1,0 +1,7 @@
+
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','1','-224.627','1521.26','22.9911','0','0','0','0','100','0');
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','2','-253.246','1399.58','11.6963','0','0','0','0','100','0');
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','3','-243.995','1305.74','18.6502','0','0','0','0','100','0');
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','4','-238.199','1258.73','26.8495','0','0','0','0','100','0');
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','5','-233.761','1210.39','36.8322','0','0','0','0','100','0');
+replace into `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) values('12949601','6','-231.732','1169.25','41.5227','0','0','0','0','100','0');
