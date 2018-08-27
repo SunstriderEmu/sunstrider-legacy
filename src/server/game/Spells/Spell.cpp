@@ -2070,7 +2070,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                     if (deficit == 0)
                         continue;
 
-                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) 
+                    if (   deficit > maxHPDeficit
                         && target->IsWithinDist(itrTarget, jumpRadius) 
                         && ((_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
                             || target->IsWithinLOSInMap(itrTarget, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
