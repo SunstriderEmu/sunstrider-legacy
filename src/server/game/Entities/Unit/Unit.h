@@ -1508,7 +1508,6 @@ class TC_GAME_API Unit : public WorldObject
 
 #ifdef LICH_KING
         void SendClearTarget();
-        void SendThreatListUpdate() { m_threatManager.SendThreatListToClients(); }
 #endif
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint64 familyFlags) const;
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }

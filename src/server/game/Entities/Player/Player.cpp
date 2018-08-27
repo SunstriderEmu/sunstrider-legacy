@@ -2508,10 +2508,7 @@ void Player::SetGameMaster(bool on)
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
         if (Pet* pet = GetPet())
-        {
             pet->SetFaction(GetFaction());
-            pet->GetThreatManager().UpdateOnlineStates();
-        }
 
         // restore FFA PvP Server state
         if(sWorld->IsFFAPvPRealm())
@@ -22415,8 +22412,6 @@ void Player::SetSpectate(bool on)
 
         ResetContestedPvP();
 
-        GetThreatManager().UpdateOnlineStates();
-
         SetDisplayId(10045);
 
         SetVisible(false);
@@ -22435,7 +22430,6 @@ void Player::SetSpectate(bool on)
         // restore FFA PvP area state, remove not allowed for GM mounts
         UpdateArea(m_areaUpdateId);
 
-        GetThreatManager().UpdateOnlineStates();
         spectateCanceled = false;
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());

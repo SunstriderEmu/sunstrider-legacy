@@ -5972,7 +5972,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     {
         // in dungeons (or for nonplayers), reset this unit on all enemies' threat lists
         for (auto const& pair : unitTarget->GetThreatManager().GetThreatenedByMeList())
-            pair.second->SetThreat(0.0f);
+            pair.second->ScaleThreat(0.0f);
     }
 
     // windrunner: Vanish allows to remove all threat and cast regular stealth so other spells can be used

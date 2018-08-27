@@ -317,31 +317,38 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     }
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(createInfo->Class);
-    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(createInfo->Race);
-
-    if( !classEntry || !raceEntry )
+    if (!classEntry)
     {
+        TC_LOG_ERROR("network", "Class (%u) not found in DBC while creating new char for account (ID: %u): wrong DBC files or cheater?", createInfo->Class, GetAccountId());
         SendCharCreate(CHAR_CREATE_FAILED);
-        TC_LOG_ERROR("network","Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", createInfo->Class, createInfo->Race);
         return;
     }
 
-    // prevent character creating Expansion race without Expansion account
+    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(createInfo->Race);
+    if (!raceEntry)
+    {
+        TC_LOG_ERROR("network", "Race (%u) not found in DBC while creating new char for account (ID: %u): wrong DBC files or cheater?", createInfo->Race, GetAccountId());
+        SendCharCreate(CHAR_CREATE_FAILED);
+        return;
+    }
+
+     // prevent character creating Expansion race without Expansion account
     if (raceEntry->addon > Expansion())
     {
+        TC_LOG_ERROR("entities.player.cheat", "Expansion %u account:[%d] tried to Creat e character with expansion %u race (%u)", Expansion(), GetAccountId(), raceEntry->addon, createInfo->Race);
         SendCharCreate(CHAR_CREATE_EXPANSION);
-        TC_LOG_ERROR("network","Not Expansion 1 account:[%d] but tried to Create character with expansion 1 race (%u)", GetAccountId(), createInfo->Race);
         return;
     }
 
+#ifdef LICH_KING
     // prevent character creating Expansion class without Expansion account
-    // TODO: use possible addon field in ChrClassesEntry in next dbc version
-    if (Expansion() < 2 && createInfo->Class == CLASS_DEATH_KNIGHT)
+    if (classEntry->expansion > Expansion())
     {
-        SendCharCreate(CHAR_CREATE_EXPANSION);
-        TC_LOG_ERROR("network","Not Expansion 2 account:[%d] but tried to Create character with expansion 2 class (%u)", GetAccountId(), createInfo->Class);
+        TC_LOG_ERROR("entities.player.cheat", "Expansion %u account:[%d] tried to Create character with expansion %u class (%u)", Expansion(), GetAccountId(), classEntry->expansion, createInfo->Class);
+        SendCharCreate(CHAR_CREATE_EXPANSION_CLASS);
         return;
     }
+#endif
 
     // prevent character creating with invalid name
     if(!normalizePlayerName(createInfo->Name))
@@ -869,7 +876,6 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     bool firstLogin = pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST);
     if (firstLogin)
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
-
 
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) 
     {

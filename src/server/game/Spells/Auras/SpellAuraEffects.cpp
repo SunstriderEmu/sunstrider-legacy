@@ -3861,7 +3861,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         }
     }
 
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleForceReaction(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4161,7 +4161,7 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
 
     Unit* m_target = aurApp->GetTarget();
     m_target->SetControlled(apply, UNIT_STATE_CONFUSED);
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4175,7 +4175,7 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_FLEEING);
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4292,7 +4292,7 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
             }
         }
     }
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4370,7 +4370,7 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_STUNNED);
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleModStealthDetect(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4558,7 +4558,7 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_ROOT);
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4885,45 +4885,7 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
         && GetSpellInfo()->HasAttribute(SPELL_ATTR2_DAMAGE_REDUCED_SHIELD))
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
-    /*
-    if ((mode & AURA_EFFECT_HANDLE_REAL) && apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
-    {
-        bool hostileTarget = GetCaster() ? GetCaster()->IsFriendlyTo(m_target) : false;
-        if (GetSpellInfo()->IsPositive(hostileTarget))                        //Only positive immunity removes auras
-        {
-            uint32 school_mask = GetMiscValue();
-            Unit::AuraMap& Auras = m_target->GetAuras();
-            for (Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
-            {
-                next = iter;
-                ++next;
-                SpellInfo const *spell = iter->second->GetSpellInfo();
-                if ((spell->GetSchoolMask() & school_mask)  //Check for school mask
-                    && !(spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)   //Spells unaffected by invulnerability
-                    && !iter->second->IsPositive()          //Don't remove positive spells
-                    && !spell->IsPassive()                  //Don't remove passive auras
-                    && spell->Id != GetId()                 //Don't remove self
-                    && spell->Id != 12042                   //Don't remove Arcane Power, don't know why it got removed...
-                    && spell->Id != 37441                   // Improved Arcane Blast
-                    && spell->Id != 16067                   // Arcane Blast (all ranks)
-                    && spell->Id != 18091
-                    && spell->Id != 20883
-                    && spell->Id != 30451
-                    && spell->Id != 35927
-                    && spell->Id != 36032
-                    && spell->Id != 38881
-                    && spell->Id != 33786)
-                {
-                    m_target->RemoveAurasDueToSpell(spell->Id);
-                    if (Auras.empty())
-                        break;
-                    else
-                        next = Auras.begin();
-                }
-            }
-        }
-    }*/
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4932,7 +4894,7 @@ void AuraEffect::HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 m
         return;
     Unit* m_target = aurApp->GetTarget();
     GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModDispelImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -6277,7 +6239,7 @@ void AuraEffect::HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode,
     if (apply && m_target->HasAuraType(SPELL_AURA_MOD_FEAR))
         m_target->SetControlled(false, UNIT_STATE_FLEEING);
 
-    m_target->GetThreatManager().UpdateOnlineStates(true, false);
+    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleArenaPreparation(AuraApplication const* aurApp, uint8 mode, bool apply) const
