@@ -237,18 +237,19 @@ bool DispelableAura::RollDispel() const
 }
 
 Unit::Unit(bool isWorldObject)
-: WorldObject(isWorldObject), LastCharmerGUID(), m_playerMovingMe(nullptr), i_motionMaster(new MotionMaster(this)), m_combatManager(this), m_threatManager(this),
-movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
-m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
-m_charmer(nullptr), m_charmed(nullptr),
-_lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
-_last_in_water_status(false),
-_last_isunderwater_status(false),
-m_duringRemoveFromWorld(false),
-m_disabledRegen(false),
-m_cleanupDone(false), 
-m_regenTimer(0),
-m_spellHistory(new SpellHistory(this))
+    : WorldObject(isWorldObject), LastCharmerGUID(), m_playerMovingMe(nullptr), i_motionMaster(new MotionMaster(this)), m_combatManager(this), m_threatManager(this),
+    movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
+    m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
+    m_charmer(nullptr), m_charmed(nullptr),
+    _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
+    _last_in_water_status(false),
+    _last_isunderwater_status(false),
+    m_duringRemoveFromWorld(false),
+    m_disabledRegen(false),
+    m_cleanupDone(false),
+    m_regenTimer(0),
+    m_spellHistory(new SpellHistory(this)),
+    m_transformSpell(0)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -288,7 +289,6 @@ m_spellHistory(new SpellHistory(this))
     m_auraUpdateIterator = m_ownedAuras.end();
 
     m_interruptMask = 0;
-    m_transform = 0;
     m_canModifyStats = false;
 
     for (uint8 i = 0; i < UNIT_MOD_END; ++i)
@@ -3182,7 +3182,7 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                     CreatureTemplate const* cinfo = creature->GetCreatureTemplate();
 
                     // this also applies for transform auras
-                    if (SpellInfo const* transform = sSpellMgr->GetSpellInfo(GetTransForm()))
+                    if (SpellInfo const* transform = sSpellMgr->GetSpellInfo(GetTransformSpell()))
                         for (const auto & Effect : transform->Effects)
                             if (Effect.ApplyAuraName == SPELL_AURA_TRANSFORM)
                                 if (CreatureTemplate const* transformInfo = sObjectMgr->GetCreatureTemplate(Effect.MiscValue))
@@ -9298,7 +9298,7 @@ void Unit::SetStandState(uint8 state)
 
 bool Unit::IsPolymorphed() const
 {
-    uint32 transformId = GetTransForm();
+    uint32 transformId = GetTransformSpell();
     if (!transformId)
         return false;
 
@@ -11607,7 +11607,7 @@ bool Unit::IsInFeralForm() const
 
 bool Unit::IsInDisallowedMountForm() const
 {
-    if (SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(GetTransForm()))
+    if (SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(GetTransformSpell()))
         if (transformSpellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_MOUNTED))
             return false;
 

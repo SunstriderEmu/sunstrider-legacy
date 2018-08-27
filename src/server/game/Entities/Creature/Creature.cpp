@@ -2044,7 +2044,7 @@ CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= t
             return CAN_ATTACK_RESULT_FEIGN_DEATH;
         // if this == player or owner == player check other conditions
     }
-    else if (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
+    else if (target->GetTransformSpell() == FORM_SPIRITOFREDEMPTION)
         return CAN_ATTACK_RESULT_OTHERS;
 
     //Sathrovarr the Corruptor HACK

@@ -2044,8 +2044,8 @@ class TC_GAME_API Unit : public WorldObject
         bool IsInFeralForm() const;
         uint32 GetModelForTotem(PlayerTotemType totemType);
         uint32 GetModelForForm (ShapeshiftForm from) const;
-        void SetTransForm(uint32 spellid) { m_transform = spellid;}
-        uint32 GetTransForm() const { return m_transform;}
+        void SetTransForm(uint32 spellid) { m_transformSpell  = spellid;}
+        uint32 GetTransformSpell() const { return m_transformSpell ;}
         bool IsInDisallowedMountForm() const;
 
         void AddGameObject(GameObject* gameObj);
@@ -2289,7 +2289,7 @@ class TC_GAME_API Unit : public WorldObject
         GameObjectList m_gameObj;
 
         bool m_isSorted;
-        uint32 m_transform;
+        uint32 m_transformSpell ;
 
         AuraMap m_ownedAuras; //all auras owned by this unit, not necessarily on this unit
         AuraApplicationMap m_appliedAuras; //all auras present on this unit

@@ -3526,7 +3526,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
             // and polymorphic affects
             if (m_target->IsPolymorphed())
-                m_target->RemoveAurasDueToSpell(m_target->GetTransForm());
+                m_target->RemoveAurasDueToSpell(m_target->GetTransformSpell());
             break;
         default:
             break;
@@ -3615,7 +3615,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
         if (modelid > 0)
         {
-            SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(m_target->GetTransForm());
+            SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(m_target->GetTransformSpell());
             if (!transformSpellInfo || !GetSpellInfo()->IsPositive())
                 m_target->SetDisplayId(modelid);
         }
@@ -3835,7 +3835,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
     else
     {
         // HandleEffect(this, AURA_EFFECT_HANDLE_SEND_FOR_CLIENT, true) will reapply it if need
-        if (m_target->GetTransForm() == GetId())
+        if (m_target->GetTransformSpell() == GetId())
             m_target->SetTransForm(0);
 
         m_target->RestoreDisplayId();
