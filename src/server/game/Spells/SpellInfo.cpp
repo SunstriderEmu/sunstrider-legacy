@@ -2816,6 +2816,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 38637:                         // Nether Exhaustion (red)
         case 38638:                         // Nether Exhaustion (green)
         case 38639:                         // Nether Exhaustion (blue)
+        case 31589: // Mage Slow
             return false;
     }
 
