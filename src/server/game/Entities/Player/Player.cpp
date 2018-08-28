@@ -15725,7 +15725,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if( HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM) )
         SetUInt32Value(PLAYER_FLAGS, 0 | old_safe_flags);
 
-    m_taxi.LoadTaxiMask( fields[LOAD_DATA_TAXIMASK].GetCString() );          // must be before InitTaxiNodesForLevel
+    m_taxi.LoadTaxiMask(fields[LOAD_DATA_TAXIMASK].GetCString());          // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[LOAD_DATA_EXTRA_FLAGS].GetUInt16();
 
@@ -16424,7 +16424,8 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
             }
             draft.SendMailTo(trans, this, MailSender(this, MAIL_STATIONERY_GM), MAIL_CHECK_MASK_COPIED);
         }
-        CharacterDatabase.CommitTransaction(trans);
+        if(trans->GetSize())
+            CharacterDatabase.CommitTransaction(trans);
     }
     //if(IsAlive())
     _ApplyAllItemMods();
@@ -17162,7 +17163,8 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
 
         trans->PAppend("INSERT INTO character_homebind (guid,map,zone,position_x,position_y,position_z) VALUES ('%u', '%u', '%u', '%f', '%f', '%f')", GetGUID().GetCounter(), m_homebindMapId, (uint32)m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ);
     }
-    CharacterDatabase.CommitTransaction(trans);
+    if(trans->GetSize())
+        CharacterDatabase.CommitTransaction(trans);
 
     TC_LOG_DEBUG("entities.player","Setting player home position: mapid is: %u, zoneid is %u, X is %f, Y is %f, Z is %f",
         m_homebindMapId, m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ);
@@ -17174,7 +17176,6 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
 /***                   SAVE SYSTEM                     ***/
 /*********************************************************/
 
-//TODO Transaction
 void Player::SaveToDB(bool create /*=false*/)
 {
     // delay auto save at any saves (manual, in code, or autosave)
@@ -17193,181 +17194,273 @@ void Player::SaveToDB(bool create /*=false*/)
     /*if (!create)
         sScriptMgr->OnPlayerSave(this); */
 
-    int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    PreparedStatement* stmt = nullptr;
+    uint8 index = 0;
 
-    // save state (after auras removing), if aura remove some flags then it must set it back by self)
-    // also get change mask and restore it afterwards so that the server don't think the fields are changed
-    bool updateFlag1 = _changesMask.GetBit(UNIT_FIELD_BYTES_1);
-    uint32 tmp_bytes = GetUInt32Value(UNIT_FIELD_BYTES_1);
-    bool updateFlag2 = _changesMask.GetBit(UNIT_FIELD_BYTES_2);
-    uint32 tmp_bytes2 = GetUInt32Value(UNIT_FIELD_BYTES_2);
-    bool updateFlag3 = _changesMask.GetBit(UNIT_FIELD_FLAGS);
-    uint32 tmp_flags = GetUInt32Value(UNIT_FIELD_FLAGS);
-    bool updateFlag4 = _changesMask.GetBit(PLAYER_FLAGS);
-    uint32 tmp_pflags = GetUInt32Value(PLAYER_FLAGS);
-    bool updateFlag5 = _changesMask.GetBit(UNIT_FIELD_DISPLAYID);
-    uint32 tmp_displayid = GetDisplayId();
-
-    // Set player sit state to standing on save, also stealth and shifted form
-    SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE, UNIT_STAND_STATE_STAND);
-    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, 0);                 // shapeshift
-    SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, 0);                 // stand flags?
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
-    SetDisplayId(GetNativeDisplayId());
-
-    bool inworld = IsInWorld();
-
-    std::string sql_name = m_name;
-    CharacterDatabase.EscapeString(sql_name);
-
-    uint32 pflags = GetUInt32Value(PLAYER_FLAGS);
-    pflags &= ~PLAYER_FLAGS_COMMENTATOR;
-    pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
-
-    //TODO replace this with a Prepared Statement
-    std::ostringstream ss;
-    ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
-        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, "
-        "taximask, online, cinematic, "
-        "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
-        "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
-        "death_expire_time, taxi_path, arena_pending_points, arenapoints, totalHonorPoints, todayHonorPoints, yesterdayHonorPoints, "
-        "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, health, power1, power2, power3, power4, power5, latency, "
-        "exploredZones, equipmentCache, ammoId, knownTitles, actionBars, xp_blocked) VALUES ("
-        << GetGUID().GetCounter() << ", "
-        << GetSession()->GetAccountId() << ", '"
-        << sql_name << "', "
-        << uint32(m_race) << ", "
-        << uint32(m_class) << ", "
-        << uint32(m_gender) << ", "
-        << GetLevel() << ", "
-        << GetUInt32Value(PLAYER_XP) << ", "
-        << GetMoney() << ", "
-        << GetUInt32Value(PLAYER_BYTES) << ", "
-        << GetUInt32Value(PLAYER_BYTES_2) << ", "
-        << pflags << ", ";
-
-    if(!IsBeingTeleported())
+    if (create)
     {
-        ss << GetMapId() << ", "
-        << (uint32)GetInstanceId() << ", "
-        << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetPositionX()) << ", "
-        << finiteAlways(GetPositionY()) << ", "
-        << finiteAlways(GetPositionZ()) << ", "
-        << finiteAlways(GetOrientation()) << ", '";
+        //! Insert query
+        /// @todo: Filter out more redundant fields that can take their default value at player create
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER);
+        stmt->setUInt32(index++, GetGUID().GetCounter());
+        stmt->setUInt32(index++, GetSession()->GetAccountId());
+        stmt->setString(index++, GetName());
+        stmt->setUInt8(index++, GetRace());
+        stmt->setUInt8(index++, GetClass());
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER));   // save gender from PLAYER_BYTES_3, UNIT_BYTES_0 changes with every transform effect
+        stmt->setUInt8(index++, GetLevel());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_XP));
+        stmt->setUInt32(index++, GetMoney());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_BYTES));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_BYTES_2));
+        /*stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_SKIN_ID));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_FACE_ID));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_STYLE_ID));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES, PLAYER_BYTES_OFFSET_HAIR_COLOR_ID));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_FACIAL_STYLE));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_BANK_BAG_SLOTS));
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES_2, PLAYER_BYTES_2_OFFSET_REST_STATE));*/
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FLAGS));
+        stmt->setUInt16(index++, (uint16)GetMapId());
+        stmt->setUInt32(index++, (uint32)GetInstanceId());
+        stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+        stmt->setFloat(index++, finiteAlways(GetPositionX()));
+        stmt->setFloat(index++, finiteAlways(GetPositionY()));
+        stmt->setFloat(index++, finiteAlways(GetPositionZ()));
+        stmt->setFloat(index++, finiteAlways(GetOrientation()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetX()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetY()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetZ()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetO()));
+        ObjectGuid::LowType transLowGUID = 0;
+        if (GetTransport())
+            transLowGUID = GetTransport()->GetGUID().GetCounter();
+        stmt->setUInt32(index++, transLowGUID);
+
+        std::ostringstream ss;
+        ss << m_taxi;
+        stmt->setString(index++, ss.str());
+        stmt->setUInt8(index++, m_cinematic);
+        stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_TOTAL]);
+        stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_LEVEL]);
+        stmt->setFloat(index++, finiteAlways(m_rest_bonus));
+        stmt->setUInt32(index++, uint32(GameTime::GetGameTime()));
+        stmt->setUInt8(index++, (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
+        //save, far from tavern/city
+        //save, but in tavern/city
+        stmt->setUInt32(index++, m_resetTalentsCost);
+        stmt->setUInt32(index++, uint32(m_resetTalentsTime));
+        stmt->setUInt16(index++, (uint16)m_ExtraFlags);
+        stmt->setUInt8(index++, m_stableSlots);
+        stmt->setUInt16(index++, (uint16)m_atLoginFlags);
+        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt32(index++, uint32(m_deathExpireTime));
+
+        ss.str("");
+        ss << m_taxi.SaveTaxiDestinationsToString();
+
+        stmt->setString(index++, ss.str());
+        stmt->setUInt32(index++, GetArenaPoints());
+        stmt->setUInt32(index++, GetHonorPoints());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
+        stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
+        stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_CHOSEN_TITLE));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX));
+        stmt->setUInt8(index++, GetDrunkValue());
+        stmt->setUInt32(index++, GetHealth());
+
+        for (uint32 i = 0; i < MAX_POWERS; ++i)
+            stmt->setUInt32(index++, GetPower(Powers(i)));
+
+        stmt->setUInt32(index++, GetSession()->GetLatency());
+
+        ss.str("");
+        for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
+            ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
+        stmt->setString(index++, ss.str());
+
+        ss.str("");
+        // cache equipment...
+#ifdef LICH_KING
+        for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
+            ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + i) << ' ';
+
+        // ...and bags for enum opcode
+        for (uint32 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                ss << item->GetEntry();
+            else
+                ss << '0';
+            ss << " 0 ";
+        }
+#else
+        for (uint32 i = 0; i < 304; ++i) {
+            if (i % 16 == 2 || i % 16 == 3) //save only PLAYER_VISIBLE_ITEM_*_0 + PLAYER_VISIBLE_ITEM_*_PROPERTIES
+                ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
+        }
+#endif
+
+        stmt->setString(index++, ss.str());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_AMMO_ID));
+
+        ss.str("");
+#ifdef LICH_KING
+        for (uint32 i = 0; i < KNOWN_TITLES_SIZE * 2; ++i)
+            ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << ' ';
+#else
+        for (uint32 i = 0; i < 2; ++i)
+            ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << " ";
+#endif
+        stmt->setString(index++, ss.str());
+        stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BAR_TOGGLES));
+        stmt->setUInt8(index++, m_isXpBlocked);
     }
     else
     {
-        ss << GetTeleportDest().m_mapId << ", "
-        << (uint32)0 << ", "
-        << (uint32)GetDifficulty() << ", "
-        << finiteAlways(GetTeleportDest().m_positionX) << ", "
-        << finiteAlways(GetTeleportDest().m_positionY) << ", "
-        << finiteAlways(GetTeleportDest().m_positionZ) << ", "
-        << finiteAlways(GetTeleportDest().m_orientation) << ", '";
+        /*PrepareStatement(CHAR_UPD_CHARACTER, "UPDATE characters SET name=?,race=?,class=?,gender=?,level=?,xp=?,money=?,playerBytes=?,playerBytes2=?,playerFlags=?,"
+            "map=?,instance_id=?,dungeon_difficulty=?,position_x=?,position_y=?,position_z=?,orientation=?,trans_x=?,trans_y=?,trans_z=?,trans_o=?,transguid=?,taximask=?,cinematic=?,totaltime=?,leveltime=?,rest_bonus=?,"
+            "logout_time=?,is_logout_resting=?,resettalents_cost=?,resettalents_time=?,extra_flags=?,stable_slots=?,at_login=?,zone=?,death_expire_time=?,taxi_path=?,"
+            "arenapoints=?,totalHonorPoints=?,todayHonorPoints=?,yesterdayHonorPoints=?,totalKills=?,todayKills=?,yesterdayKills=?,chosenTitle=?,"
+            "watchedFaction=?,drunk=?,health=?,power1=?,power2=?,power3=?,power4=?,power5=?,latency=?,exploredZones=?,"
+            "equipmentCache=?,ammoId=?,knownTitles=?,actionBars=?,online=?,xp_blocked=? WHERE guid=?", CONNECTION_ASYNC);*/
+        // Update query
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER);
+        stmt->setString(index++, GetName());
+        stmt->setUInt8(index++, GetRace());
+        stmt->setUInt8(index++, GetClass());
+        stmt->setUInt8(index++, GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER));   // save gender from PLAYER_BYTES_3, UNIT_BYTES_0 changes with every transform effect
+        stmt->setUInt8(index++, GetLevel());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_XP));
+        stmt->setUInt32(index++, GetMoney());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_BYTES));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_BYTES_2)); //sun: keep this fielkd for reskin case!
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FLAGS));
+
+        if (!IsBeingTeleported())
+        {
+            stmt->setUInt16(index++, (uint16)GetMapId());
+            stmt->setUInt32(index++, (uint32)GetInstanceId());
+            stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+            stmt->setFloat(index++, finiteAlways(GetPositionX()));
+            stmt->setFloat(index++, finiteAlways(GetPositionY()));
+            stmt->setFloat(index++, finiteAlways(GetPositionZ()));
+            stmt->setFloat(index++, finiteAlways(GetOrientation()));
+        }
+        else
+        {
+            stmt->setUInt16(index++, (uint16)GetTeleportDest().GetMapId());
+            stmt->setUInt32(index++, (uint32)0);
+            stmt->setUInt8(index++, (uint8(GetDungeonDifficulty()) | uint8(GetRaidDifficulty()) << 4));
+            stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionX()));
+            stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionY()));
+            stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetPositionZ()));
+            stmt->setFloat(index++, finiteAlways(GetTeleportDest().GetOrientation()));
+        }
+
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetX()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetY()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetZ()));
+        stmt->setFloat(index++, finiteAlways(GetTransOffsetO()));
+        ObjectGuid::LowType transLowGUID = 0;
+        if (GetTransport())
+            transLowGUID = GetTransport()->GetGUID().GetCounter();
+        stmt->setUInt32(index++, transLowGUID);
+
+        std::ostringstream ss;
+        ss << m_taxi;
+        stmt->setString(index++, ss.str());
+        stmt->setUInt8(index++, m_cinematic);
+        stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_TOTAL]);
+        stmt->setUInt32(index++, m_Played_time[PLAYED_TIME_LEVEL]);
+        stmt->setFloat(index++, finiteAlways(m_rest_bonus));
+        stmt->setUInt32(index++, uint32(GameTime::GetGameTime()));
+        stmt->setUInt8(index++, (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
+        //save, far from tavern/city
+        //save, but in tavern/city
+        stmt->setUInt32(index++, m_resetTalentsCost);
+        stmt->setUInt32(index++, uint32(m_resetTalentsTime));
+        stmt->setUInt16(index++, (uint16)m_ExtraFlags);
+        stmt->setUInt8(index++, m_stableSlots);
+        stmt->setUInt16(index++, (uint16)m_atLoginFlags);
+        stmt->setUInt16(index++, GetZoneId());
+        stmt->setUInt32(index++, uint32(m_deathExpireTime));
+
+        ss.str("");
+        ss << m_taxi.SaveTaxiDestinationsToString();
+
+        stmt->setString(index++, ss.str());
+        stmt->setUInt32(index++, GetArenaPoints());
+        stmt->setUInt32(index++, GetHonorPoints());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
+        stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
+        stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_CHOSEN_TITLE));
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX));
+        stmt->setUInt8(index++, GetDrunkValue());
+        stmt->setUInt32(index++, GetHealth());
+
+        for (uint32 i = 0; i < MAX_POWERS; ++i)
+            stmt->setUInt32(index++, GetPower(Powers(i)));
+
+        stmt->setUInt32(index++, GetSession()->GetLatency());
+
+        ss.str("");
+        for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
+            ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
+        stmt->setString(index++, ss.str());
+
+        ss.str("");
+        // cache equipment...
+#ifdef LICH_KING
+        for (uint32 i = 0; i < EQUIPMENT_SLOT_END * 2; ++i)
+            ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + i) << ' ';
+
+        // ...and bags for enum opcode
+        for (uint32 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                ss << item->GetEntry();
+            else
+                ss << '0';
+            ss << " 0 ";
+        }
+#else
+        for (uint32 i = 0; i < 304; ++i) {
+            if (i % 16 == 2 || i % 16 == 3) //save only PLAYER_VISIBLE_ITEM_*_0 + PLAYER_VISIBLE_ITEM_*_PROPERTIES
+                ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
+        }
+#endif
+        stmt->setString(index++, ss.str());
+        stmt->setUInt32(index++, GetUInt32Value(PLAYER_AMMO_ID));
+
+        ss.str("");
+#ifdef LICH_KING
+        for (uint32 i = 0; i < KNOWN_TITLES_SIZE * 2; ++i)
+            ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << ' ';
+#else
+        for (uint32 i = 0; i < 2; ++i)
+            ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << " ";
+#endif
+
+        stmt->setString(index++, ss.str());
+        stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTES_OFFSET_ACTION_BAR_TOGGLES));
+        stmt->setUInt8(index++, m_isXpBlocked);
+        stmt->setUInt8(index++, IsInWorld() && !GetSession()->PlayerLogout() ? 1 : 0);
+        stmt->setUInt32(index++, GetGUID().GetCounter());
     }
 
-    for(uint8 i = 0; i < 8; i++ )
-        ss << m_taxi.GetTaximask(i) << " ";
+    trans->Append(stmt);
 
-    ss << "', ";
-    ss << (inworld ? 1 : 0);
-
-    ss << ", ";
-    ss << m_cinematic;
-
-    ss << ", ";
-    ss << m_Played_time[0];
-    ss << ", ";
-    ss << m_Played_time[1];
-
-    ss << ", ";
-    ss << finiteAlways(m_rest_bonus);
-    ss << ", ";
-    ss << (uint64)time(nullptr);
-    ss << ", ";
-    ss << is_save_resting;
-    ss << ", ";
-    ss << m_resetTalentsCost;
-    ss << ", ";
-    ss << (uint64)m_resetTalentsTime;
-
-    ss << ", ";
-    ss << finiteAlways(GetTransOffsetX());
-    ss << ", ";
-    ss << finiteAlways(GetTransOffsetY());
-    ss << ", ";
-    ss << finiteAlways(GetTransOffsetZ());
-    ss << ", ";
-    ss << finiteAlways(GetTransOffsetO());
-    ss << ", ";
-    ObjectGuid::LowType transportGUIDLow = 0;
-    if (GetTransport())
-        transportGUIDLow = GetTransport()->GetGUID().GetCounter();
-    ss << transportGUIDLow;
-    ss << ", ";
-    ss << m_ExtraFlags;
-
-    ss << ", ";
-    ss << uint32(m_stableSlots);                            // to prevent save uint8 as char
-
-    ss << ", ";
-    ss << uint32(m_atLoginFlags);
-
-    ss << ", ";
-    ss << GetZoneId();
-
-    ss << ", ";
-    ss << (uint64)m_deathExpireTime;
-
-    ss << ", '";
-    ss << m_taxi.SaveTaxiDestinationsToString();
-
-    ss << "', '0', ";
-    ss << GetArenaPoints();
-    ss << ", ";
-    ss << GetHonorPoints() << ", ";
-    ss << GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION) << ", ";
-    ss << GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION) << ", ";
-    ss << GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS) << ", ";
-    ss << uint32(GetUInt16Value(PLAYER_FIELD_KILLS, 0)) << ", ";
-    ss << uint32(GetUInt16Value(PLAYER_FIELD_KILLS, 1)) << ", ";
-    ss << GetUInt32Value(PLAYER_CHOSEN_TITLE) << ", ";
-    ss << GetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX) << ", ";
-    ss << (uint16)(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE) << ", ";
-    ss << GetHealth();
-    for (uint32 i = 0; i < MAX_POWERS; ++i)
-        ss << ", " << GetPower(Powers(i));
-    ss << ", '";
-    ss << GetSession()->GetLatency();
-    ss << "', '";
-    // EXPLORED_ZONES
-    for (uint32 i = 0; i < 128; ++i)
-        ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << " ";
-    ss << "', '";
-    for (uint32 i = 0; i < 304; ++i) {
-        if (i%16 == 2 || i%16 == 3) //save only PLAYER_VISIBLE_ITEM_*_0 + PLAYER_VISIBLE_ITEM_*_PROPERTIES
-            ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
-    }
-    ss << "', ";
-    ss << GetUInt32Value(PLAYER_AMMO_ID) << ", '";
-    // Known titles
-    for (uint32 i = 0; i < 2; ++i)
-        ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << " ";
-    ss << "', '";
-    ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
-    ss << "', '";
-    ss << m_isXpBlocked;
-    ss << "' )";
-
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->Append( ss.str().c_str() );
-
-    if(m_mailsUpdated) {                                     //save mails only when needed
+    if(m_mailsUpdated)                                     //save mails only when needed
         _SaveMail(trans);
-    }
-
+    
     _SaveBGData(trans);
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
@@ -17389,18 +17482,6 @@ void Player::SaveToDB(bool create /*=false*/)
             session->SendCharCreate(CHAR_CREATE_SUCCESS);
     }));
    
-    // restore state (before aura apply, if aura remove flag then aura must set it ack by self)
-    SetUInt32Value(UNIT_FIELD_BYTES_1, tmp_bytes);
-    _changesMask.SetBit(UNIT_FIELD_BYTES_1, updateFlag1);
-    SetUInt32Value(UNIT_FIELD_BYTES_2, tmp_bytes2);
-    _changesMask.SetBit(UNIT_FIELD_BYTES_2, updateFlag2);
-    SetUInt32Value(UNIT_FIELD_FLAGS, tmp_flags);
-    _changesMask.SetBit(UNIT_FIELD_FLAGS, updateFlag3);
-    SetUInt32Value(PLAYER_FLAGS, tmp_pflags);
-    _changesMask.SetBit(PLAYER_FLAGS, updateFlag4);
-    SetDisplayId(tmp_displayid);
-    _changesMask.SetBit(UNIT_FIELD_DISPLAYID, updateFlag5);
-
     // save pet (hunter pet level and experience and all type pets health/mana).
     if(Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);

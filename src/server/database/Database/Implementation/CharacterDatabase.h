@@ -310,10 +310,10 @@ enum CharacterDatabaseStatements : uint32
 
     CHAR_SEL_EXPIRED_AUCTIONS,
 
+    */
     CHAR_INS_CHARACTER,
     CHAR_UPD_CHARACTER,
 
-    */
     CHAR_UPD_ADD_AT_LOGIN_FLAG,
     CHAR_UPD_REM_AT_LOGIN_FLAG,
     CHAR_UPD_ALL_AT_LOGIN_FLAGS,

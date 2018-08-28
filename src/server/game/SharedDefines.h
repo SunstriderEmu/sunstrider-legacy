@@ -264,8 +264,6 @@ enum Powers : uint32
     POWER_HEALTH                        = 0xFFFFFFFE    // Used as uint32 in the code, -2 if signed
 };
 
-#define MAX_POWERS                        5                 // not count POWER_RUNES for now
-
 enum SpellSchools : uint32
 {
     SPELL_SCHOOL_NORMAL                 = 0,

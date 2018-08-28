@@ -155,3 +155,10 @@ FactionTemplateEntry const* PlayerTaxi::GetFlightMasterFactionTemplate() const
 {
     return sFactionTemplateStore.LookupEntry(m_flightMasterFactionId);
 }
+
+std::ostringstream& operator<<(std::ostringstream& ss, PlayerTaxi const& taxi)
+{
+    for (uint8 i = 0; i < TaxiMaskSize; ++i)
+        ss << taxi.m_taximask[i] << ' ';
+    return ss;
+}

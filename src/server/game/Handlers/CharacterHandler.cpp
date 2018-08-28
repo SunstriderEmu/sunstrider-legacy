@@ -1253,7 +1253,6 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
     SendPacket(&data);
 }
 
-
 void WorldSession::SendCharCreate(ResponseCodes result)
 {
     WorldPacket data(SMSG_CHAR_CREATE, 1);
@@ -1267,7 +1266,6 @@ void WorldSession::SendCharDelete(ResponseCodes result)
     data << uint8(result);
     SendPacket(&data);
 }
-
 
 void WorldSession::SendCharRename(ResponseCodes result, CharacterRenameInfo const* renameInfo)
 {
