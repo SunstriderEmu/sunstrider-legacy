@@ -29,7 +29,6 @@
 #include "CellImpl.h"
 #include "ChatTextBuilder.h"
 #include "PathGenerator.h"
-#include "CreatureGroups.h"
 #include "PetAI.h"
 #include "NullCreatureAI.h"
 #include "ScriptMgr.h"
@@ -6957,10 +6956,6 @@ void Unit::EngageWithTarget(Unit* enemy)
         m_threatManager.AddThreat(enemy, 0.0f, nullptr, true, true);
     else
         SetInCombatWith(enemy);
-
-    if (Creature* creature = ToCreature())
-        if (CreatureGroup* formation = creature->GetFormation())
-            formation->MemberEngagingTarget(creature, enemy);
 }
 
 void Unit::AttackedTarget(Unit* target, bool canInitialAggro)
