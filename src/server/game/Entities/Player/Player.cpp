@@ -17193,14 +17193,6 @@ void Player::SaveToDB(bool create /*=false*/)
     /*if (!create)
         sScriptMgr->OnPlayerSave(this); */
 
-    /*
-    uint32 mapid = IsBeingTeleported() ? GetTeleportDest().m_mapId : GetMapId();
-    const MapEntry * me = sMapStore.LookupEntry(mapid);
-    // players aren't saved on arena maps
-    if(!me || me->IsBattleArena())
-        return;
-    */
-
     int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
 
     // save state (after auras removing), if aura remove some flags then it must set it back by self)
@@ -17388,8 +17380,15 @@ void Player::SaveToDB(bool create /*=false*/)
     m_reputationMgr->SaveToDB(trans);
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
 
-    CharacterDatabase.CommitTransaction(trans);
-
+    WorldSession* session = GetSession(); //This player object won't exist anymore when executing the callback, so extract session in a variable to capture
+    GetSession()->GetQueryProcessor().AddQuery(CharacterDatabase.CommitTransaction(trans).WithCallback([session, create]() -> void
+    {
+        //sun: Moved CHAR_CREATE_SUCCESS here, we need to ensure character is created before sending it.
+        //     (else client may end up with a char enum without the newly created character)
+        if (create)
+            session->SendCharCreate(CHAR_CREATE_SUCCESS);
+    }));
+   
     // restore state (before aura apply, if aura remove flag then aura must set it ack by self)
     SetUInt32Value(UNIT_FIELD_BYTES_1, tmp_bytes);
     _changesMask.SetBit(UNIT_FIELD_BYTES_1, updateFlag1);

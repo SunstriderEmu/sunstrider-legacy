@@ -257,7 +257,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
     SendPacket(&data);
 }
 
-void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
+void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 {
     PreparedStatement* stmt;
     // remove expired bans
@@ -278,7 +278,7 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharEnum, this, std::placeholders::_1)));
 }
 
-void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
+void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
     std::shared_ptr<CharacterCreateInfo> createInfo = std::make_shared<CharacterCreateInfo>();
 
@@ -510,7 +510,8 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 
             LoginDatabase.CommitTransaction(trans);
 
-            SendCharCreate(CHAR_CREATE_SUCCESS);
+            // sun: moved to Player::SaveToDB (see explanation there)
+            // SendCharCreate(CHAR_CREATE_SUCCESS);
 
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUID().GetCounter());
@@ -537,7 +538,6 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 {
     ObjectGuid guid;
     recvData >> guid;
-
     //uint32 initAccountId = GetAccountId();
 
     // can't delete loaded character
