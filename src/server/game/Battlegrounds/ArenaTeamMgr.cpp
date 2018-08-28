@@ -158,8 +158,9 @@ void ArenaTeamMgr::DistributeArenaPoints()
             trans->Append(stmt);
         }
     }
-
-    CharacterDatabase.CommitTransaction(trans);
+    
+    if (trans->GetSize())
+        CharacterDatabase.CommitTransaction(trans);
 
     PlayerPoints.clear();
 
