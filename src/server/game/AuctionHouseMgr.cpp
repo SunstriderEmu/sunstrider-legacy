@@ -483,7 +483,8 @@ void AuctionHouseObject::Update()
             RemoveAuction(itr->first);
         }
     }
-    CharacterDatabase.CommitTransaction(trans);
+    if(trans->GetSize()) //Sun: don't commit empty transaction
+        CharacterDatabase.CommitTransaction(trans);
 }
 
 // NOT threadsafe!

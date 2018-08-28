@@ -35,6 +35,9 @@ typedef std::shared_ptr<PreparedResultSet> PreparedQueryResult;
 typedef std::future<PreparedQueryResult> PreparedQueryResultFuture;
 typedef std::promise<PreparedQueryResult> PreparedQueryResultPromise;
 
+typedef std::promise<void> TransactionCompletePromise;
+typedef std::future<void> TransactionCompleteFuture;
+
 class QueryCallback;
 
 class Transaction;

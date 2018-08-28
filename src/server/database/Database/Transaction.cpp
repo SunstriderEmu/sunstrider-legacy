@@ -73,7 +73,10 @@ bool TransactionTask::Execute()
 {
     int errorCode = m_conn->ExecuteTransaction(m_trans);
     if (!errorCode)
+    {
+        m_result.set_value();
         return true;
+    }
 
     if (errorCode == ER_LOCK_DEADLOCK)
     {

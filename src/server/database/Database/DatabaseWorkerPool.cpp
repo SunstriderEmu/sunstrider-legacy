@@ -241,7 +241,7 @@ SQLTransaction DatabaseWorkerPool<T>::BeginTransaction()
 }
 
 template <class T>
-void DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transaction)
+QueryCallback DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transaction)
 {
 #ifdef TRINITY_DEBUG
     //! Only analyze transaction weaknesses in Debug mode.
@@ -251,7 +251,7 @@ void DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transaction)
     {
     case 0:
         TC_LOG_DEBUG("sql.driver", "Transaction contains 0 queries. Not executing.");
-        return;
+        ASSERT(false);
     case 1:
         TC_LOG_DEBUG("sql.driver", "Warning: Transaction only holds 1 query, consider removing Transaction context in code.");
         break;
@@ -260,7 +260,10 @@ void DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transaction)
     }
 #endif // TRINITY_DEBUG
 
-    Enqueue(new TransactionTask(transaction));
+    auto task = new TransactionTask(transaction);
+    TransactionCompleteFuture result = task->GetFuture();
+    Enqueue(task);
+    return QueryCallback(std::move(result));
 }
 
 template <class T>
