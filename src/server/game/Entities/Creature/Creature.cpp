@@ -365,6 +365,14 @@ void Creature::DisappearAndDie()
     DespawnOrUnsummon();
 }
 
+bool Creature::IsReturningHome() const
+{
+    if (GetMotionMaster()->GetCurrentMovementGeneratorType() == HOME_MOTION_TYPE)
+        return true;
+
+    return false;
+}
+
 void Creature::SearchFormation()
 {
     if(IsPet())
@@ -379,6 +387,34 @@ void Creature::SearchFormation()
     if(frmdata != CreatureGroupMap.end())
         sCreatureGroupMgr->AddCreatureToGroup(frmdata->second->leaderGUID, this);
 
+}
+
+bool Creature::IsFormationLeader() const
+{
+    if (!m_formation)
+        return false;
+
+    return m_formation->IsLeader(this);
+}
+
+void Creature::SignalFormationMovement(Position const& destination, uint32 id/* = 0*/, uint32 moveType/* = 0*/, bool orientation/* = false*/)
+{
+    if (!m_formation)
+        return;
+
+    if (!m_formation->IsLeader(this))
+        return;
+
+    m_formation->LeaderMoveTo(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ(), 
+        moveType == WAYPOINT_MOVE_TYPE_RUN);
+}
+
+bool Creature::IsFormationLeaderMoveAllowed() const
+{
+    if (!m_formation)
+        return false;
+
+    return m_formation->CanLeaderStartMoving();
 }
 
 void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)

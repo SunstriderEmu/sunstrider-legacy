@@ -122,8 +122,7 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
     init.Launch();
 
     //Call for creature group update
-    if (owner->GetFormation() && owner->GetFormation()->getLeader() == owner)
-        owner->GetFormation()->LeaderMoveTo(destX, destY, destZ, false);
+    owner->SignalFormationMovement(Position(destX, destY, destZ));
 }
 
 template<>

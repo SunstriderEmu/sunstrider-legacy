@@ -447,8 +447,11 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         return false;
     }
 
-    if (!creature->CanFreeMove() || !creature->IsAlive())
+    if (!creature->CanFreeMove() || !creature->IsAlive() || (creature->IsFormationLeader() && !creature->IsFormationLeaderMoveAllowed())) // if cannot move OR cannot move because of formation
+    {
+        _nextMoveTime.Reset(1000); // delay 1s
         return true; //do not do anything
+    }
 
     WaypointNode const& currentNode = _path->nodes.at(_currentNode);
     //final orientation for spline movement. 0.0f mean no final orientation.
@@ -592,11 +595,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     creature->AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     //Call for creature group update
-    if (creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
-    {
-        creature->SetWalk(currentNode.moveType == WAYPOINT_MOVE_TYPE_WALK);
-        creature->GetFormation()->LeaderMoveTo(_precomputedPath[1].x, _precomputedPath[1].y, _precomputedPath[1].z, currentNode.moveType == WAYPOINT_MOVE_TYPE_RUN);
-    }
+    creature->SignalFormationMovement(_precomputedPath[1], _currentNode, currentNode.moveType, (finalOrientation) ? true : false);
+    creature->SetWalk(currentNode.moveType == WAYPOINT_MOVE_TYPE_WALK); //set walk flag for future usage in SplineHandler
 
     // inform AI
     if (CreatureAI* AI = creature->AI())

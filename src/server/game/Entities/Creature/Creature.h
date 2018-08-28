@@ -795,10 +795,15 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         std::pair<uint32, uint32> GetCurrentWaypointInfo() const { return _currentWaypointNodeInfo; }
         void UpdateCurrentWaypointInfo(uint32 nodeId, uint32 pathId) { _currentWaypointNodeInfo = { nodeId, pathId }; }
 
+        bool IsReturningHome() const;
+
         //check if creature is present in a formation from CreatureGroupManager, and adds it to it if one is found
         void SearchFormation();
         CreatureGroup *GetFormation(){return m_formation;}
         void SetFormation(CreatureGroup *formation) {m_formation = formation;}
+        bool IsFormationLeader() const;
+        void SignalFormationMovement(Position const& destination, uint32 id = 0, uint32 moveType = 0, bool orientation = false);
+        bool IsFormationLeaderMoveAllowed() const;
 
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() const { return DisableReputationGain; }

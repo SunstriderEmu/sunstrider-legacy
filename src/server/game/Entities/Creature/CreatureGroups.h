@@ -94,6 +94,7 @@ class TC_GAME_API CreatureGroup
         bool isFormed() const { return m_Formed; }
         bool IsAlive() const; //true if any member is alive
         bool isLootLinked(Creature* c);
+        bool IsLeader(Creature const* creature) const { return m_leader == creature; }
 
         //add creature to group, with current relative position to leader as position in formation, OR with position instead if specified
         void AddMember(Creature *member, MemberPosition* pos = nullptr);
@@ -103,6 +104,7 @@ class TC_GAME_API CreatureGroup
 
         void LeaderMoveTo(float x, float y, float z, bool run);
         void MemberEngagingTarget(Creature* member, Unit *target);
+        bool CanLeaderStartMoving() const;
 
         void UpdateCombat();
         void Respawn();

@@ -307,6 +307,20 @@ void CreatureGroup::MemberEngagingTarget(Creature *member, Unit *target)
     }
 }
 
+bool CreatureGroup::CanLeaderStartMoving() const
+{
+    for (std::unordered_map<Creature*, FormationInfo*>::value_type const& pair : m_members)
+    {
+        if (pair.first != m_leader && pair.first->IsAlive())
+        {
+            if (pair.first->IsEngaged() || pair.first->IsReturningHome())
+                return false;
+        }
+    }
+
+    return true;
+}
+
 void CreatureGroup::FormationReset(bool dismiss)
 {
     if (m_members.size() && m_members.begin()->second->groupAI == GROUP_AI_NONE)

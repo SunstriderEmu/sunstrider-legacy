@@ -34,6 +34,10 @@ void PointMovementGenerator<T>::LaunchMove(T* owner)
         init.SetFacing(*_finalOrient);
 
     init.Launch();
+
+    // Call for creature group update
+    if (Creature* creature = owner->ToCreature())
+        creature->SignalFormationMovement(_destination, _movementId);
 }
 
 //----- Point Movement Generator

@@ -11383,15 +11383,12 @@ public:
                 WaypointMovementGenerator<Creature>* moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(baseGenerator);
                 moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
 
-                //warn formation of leader movement if needed. atm members don't use spline movement and move point to point.
+                //warn formation movement if needed. atm members don't use spline movement and move point to point.
                 if (result & Movement::MoveSpline::Result_NextSegment)
                 {
-                    if (creature && creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
-                    {
-                        Position dest;
-                        if (moveGenerator->GetCurrentDestinationPoint(creature, dest))
-                            creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
-                    }
+                    Position dest;
+                    if (moveGenerator->GetCurrentDestinationPoint(creature, dest))
+                        creature->SignalFormationMovement(dest, creature->IsWalking() ? WAYPOINT_MOVE_TYPE_WALK : WAYPOINT_MOVE_TYPE_RUN);
                 }
                 _unit->GetMotionMaster()->RemoveFlag(MOTIONMASTER_FLAG_UPDATE);
             }
