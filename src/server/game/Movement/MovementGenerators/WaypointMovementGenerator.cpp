@@ -656,7 +656,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* owner, uint32 diff)
     if (_done || HasFlag(MOVEMENTGENERATOR_FLAG_FINALIZED | MOVEMENTGENERATOR_FLAG_PAUSED))
         return true;
 
-    if (!owner->CanFreeMove() || owner->IsMovementPreventedByCasting())
+    if (!owner->CanFreeMove() || owner->HasUnitState(UNIT_STATE_LOST_CONTROL) || owner->IsMovementPreventedByCasting())
     {
         owner->StopMoving();
         return true;

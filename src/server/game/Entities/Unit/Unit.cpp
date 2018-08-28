@@ -8796,10 +8796,10 @@ CharmInfo::CharmInfo(Unit* unit)
     for (uint8 i = 0; i < MAX_SPELL_CHARM; ++i)
         _charmspells[i].SetActionAndType(0, ACT_DISABLED);
 
-    if(_unit->GetTypeId() == TYPEID_UNIT)
+    if (Creature* creature = _unit->ToCreature())
     {
-        _oldReactState = (_unit->ToCreature())->GetReactState();
-        (_unit->ToCreature())->SetReactState(REACT_PASSIVE);
+        _oldReactState = creature->GetReactState();
+        creature->SetReactState(REACT_PASSIVE);
     }
 }
 
@@ -10259,26 +10259,12 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
         GetMotionMaster()->Clear(MOTION_PRIORITY_NORMAL);
 
         StopMoving();
-
-        // AI will schedule its own change if appropriate
-        if (UnitAI* ai = GetAI())
-            ai->OnCharmed(false);
-        else
-            ScheduleAIChange();
     }
     else if (Player* player = ToPlayer())
     {
         if (player->IsAFK())
             player->ToggleAFK();
 
-        if (charmer->GetTypeId() == TYPEID_UNIT) // we are charmed by a creature
-        {
-            // change AI to charmed AI on next Update tick
-            if (UnitAI* ai = GetAI())
-                ai->OnCharmed(false);
-            else
-                player->ScheduleAIChange();
-        }
         player->SetClientControl(this, false);
     }
 
@@ -10341,6 +10327,15 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     }
 
     AddUnitState(UNIT_STATE_CHARMED);
+
+    if ((GetTypeId() != TYPEID_PLAYER) || (charmer->GetTypeId() != TYPEID_PLAYER))
+    {
+        // AI will schedule its own change if appropriate
+        if (UnitAI* ai = GetAI())
+            ai->OnCharmed(false);
+        else
+            ScheduleAIChange();
+    }
     return true;
 }
 
@@ -10349,16 +10344,12 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     if(!IsCharmed())
         return;
 
-    if(!charmer)
+    if (charmer)
+        ASSERT(charmer == GetCharmer());
+    else
         charmer = GetCharmer();
 
-    if (charmer != GetCharmer()) // one aura overrides another?
-    {
-        //        TC_LOG_FATAL("entities.unit", "Unit::RemoveCharmedBy: this: " UI64FMTD " true charmer: " UI64FMTD " false charmer: " UI64FMTD,
-        //            GetGUID(), GetCharmerGUID(), charmer->GetGUID());
-        //        ABORT();
-        return;
-    }
+    ASSERT(charmer);
 
     CharmType type;
     if (HasUnitState(UNIT_STATE_POSSESSED))
@@ -10385,11 +10376,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     // Vehicle should not attack its passenger after he exists the seat
 #endif
     if (type != CHARM_TYPE_VEHICLE)
-        LastCharmerGUID = ASSERT_NOTNULL(charmer)->GetGUID();
-
-    // If charmer still exists
-    if (!charmer)
-        return;
+        LastCharmerGUID = charmer->GetGUID();
 
     ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
 #ifdef LICH_KING
@@ -10398,10 +10385,10 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     Player* playerCharmer = charmer->ToPlayer();
     { // sun: moved this block higher, else GetFirstControlled always return nullptr (currently bugged at TC)
-        // a guardian should always have charminfo
         if (playerCharmer && this != charmer->GetFirstControlled())
             playerCharmer->SendRemoveControlBar();
-        else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !IsGuardian()))
+
+        if (!IsGuardian())
             DeleteCharmInfo();
     }
 
@@ -10458,6 +10445,12 @@ void Unit::RemoveCharmedBy(Unit* charmer)
         }
     }
 
+    if (Player* player = ToPlayer())
+        player->SetClientControl(this, true);
+
+    // reset confused movement for example
+    ApplyControlStatesIfNeeded();
+
     if (GetTypeId() != TYPEID_PLAYER || charmer->GetTypeId() == TYPEID_UNIT)
     {
         if (UnitAI* charmedAI = GetAI())
@@ -10465,12 +10458,6 @@ void Unit::RemoveCharmedBy(Unit* charmer)
         else
             ScheduleAIChange();
     }
-
-    if (Player* player = ToPlayer())
-        player->SetClientControl(this, true);
-
-    // reset confused movement for example
-    ApplyControlStatesIfNeeded();
 }
 
 void Unit::RestoreFaction()
