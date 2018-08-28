@@ -103,6 +103,7 @@ bool PointMovementGenerator<T>::DoUpdate(T* owner, uint32 /*diff*/)
     {
         MovementGenerator::RemoveFlag(MOVEMENTGENERATOR_FLAG_TRANSITORY);
         MovementGenerator::AddFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED);
+        return false;
     }
 
     return true;

@@ -42,7 +42,6 @@ class TC_GAME_API SmartAI : public CreatureAI
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
         void EndPath(bool fail = false);
         void ResumePath();
-        void MovePointInPath(bool run, uint32 id, float x, float y, float z, float o = 0.0f);
         bool HasEscortState(uint32 uiEscortState) const { return (_escortState & uiEscortState) != 0; }
         void AddEscortState(uint32 uiEscortState) { _escortState |= uiEscortState; }
         void RemoveEscortState(uint32 uiEscortState) { _escortState &= ~uiEscortState; }

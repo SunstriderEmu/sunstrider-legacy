@@ -311,14 +311,6 @@ void SmartAI::ReturnToLastOOCPos()
     me->GetMotionMaster()->MovePoint(SMART_ESCORT_LAST_OOC_POINT, me->GetHomePosition());
 }
 
-void SmartAI::MovePointInPath(bool run, uint32 id, float x, float y, float z, float o)
-{
-    me->GetMotionMaster()->MovePoint(id, x, y, z);
-
-    if (me->GetFormation() && me->GetFormation()->getLeader() == me)
-        me->GetFormation()->LeaderMoveTo(x, y, z, run);
-}
-
 bool SmartAI::IsEscortInvokerInRange()
 {
     if (ObjectVector const* targets = GetScript()->GetStoredTargetVector(SMART_ESCORT_TARGETS, *me))
