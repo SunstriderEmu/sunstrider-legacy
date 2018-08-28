@@ -886,7 +886,12 @@ void Spell::SelectSpellTargets()
         if (m_spellInfo->IsChanneled())
         {
             // maybe do this for all spells?
-            if (!focusObject && m_UniqueTargetInfo.empty() && m_UniqueGOTargetInfo.empty() && m_UniqueItemInfo.empty() && !m_targets.HasDst())
+            if (m_spellInfo->Effects[i].Effect != SPELL_EFFECT_SEND_EVENT //sun: exclude this effect, doesnt need a target. Any other effect like this?
+                && !focusObject 
+                && m_UniqueTargetInfo.empty() 
+                && m_UniqueGOTargetInfo.empty() 
+                && m_UniqueItemInfo.empty() 
+                && !m_targets.HasDst())
             {
                 SendCastResult(SPELL_FAILED_BAD_IMPLICIT_TARGETS);
                 finish(false);
