@@ -1,0 +1,2 @@
+-- Set immune to PC for all dark portal defenders
+UPDATE creature_template SET unit_flags = unit_flags | 0x00000100 WHERE entry IN (18970, 18971, 18969, 18950, 18972, 18965, 18949, 18966, 18986, 18948, 19225, 19222);

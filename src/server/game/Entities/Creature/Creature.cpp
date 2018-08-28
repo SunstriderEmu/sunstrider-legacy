@@ -3682,8 +3682,6 @@ void Creature::AtEnterCombat()
 {
     Unit::AtEnterCombat();
 
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC); // sun: remove immunity so players can fight back
-
     if (!(GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_MOUNTED_COMBAT_ALLOWED))
         Dismount();
 
