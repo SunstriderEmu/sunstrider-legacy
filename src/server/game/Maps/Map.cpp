@@ -4348,6 +4348,7 @@ bool Map::SpawnGroupSpawn(uint32 groupId, bool ignoreRespawn, bool force, std::v
         return false;
     }
 
+    SetSpawnGroupActive(groupId, true); // start processing respawns for the group
     for (auto& pair : sObjectMgr->GetSpawnDataForGroup(groupId))
     {
         SpawnData const* data = pair.second;
@@ -4398,7 +4399,6 @@ bool Map::SpawnGroupSpawn(uint32 groupId, bool ignoreRespawn, bool force, std::v
             return false;
         }
     }
-    SetSpawnGroupActive(groupId, true); // start processing respawns for the group
     return true;
 }
 
