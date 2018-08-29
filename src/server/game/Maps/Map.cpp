@@ -3261,7 +3261,7 @@ void TestMap::Update(const uint32& diff)
     {
         uint32 diff = GetMSTimeDiffToNow(startTimeMS);
         if(diff > warnThresholdMS)
-            TC_LOG_WARN("misc", "Test '%s' took %u ms to update", testThread->GetTest()->GetName().c_str(), diff);
+            TC_LOG_WARN("test.unit_test", "Test '%s' took %u ms to update", testThread->GetTest()->GetName().c_str(), diff);
     }
 
 #endif

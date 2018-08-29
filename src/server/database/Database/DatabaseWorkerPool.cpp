@@ -243,7 +243,7 @@ SQLTransaction DatabaseWorkerPool<T>::BeginTransaction()
 template <class T>
 QueryCallback DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transaction)
 {
-#ifdef TRINITY_DEBUG
+    //sun: removed debug ifdef. A lot of the code actually sends empty transactions, so this should be some time gained to stop here
     //! Only analyze transaction weaknesses in Debug mode.
     //! Ideally we catch the faults in Debug mode and then correct them,
     //! so there's no need to waste these CPU cycles in Release mode.
@@ -251,14 +251,13 @@ QueryCallback DatabaseWorkerPool<T>::CommitTransaction(SQLTransaction transactio
     {
     case 0:
         TC_LOG_DEBUG("sql.driver", "Transaction contains 0 queries. Not executing.");
-        ASSERT(false);
-    case 1:
+        return QueryCallback(TransactionCompleteFuture()); //dummy callback
+    /*case 1:
         TC_LOG_DEBUG("sql.driver", "Warning: Transaction only holds 1 query, consider removing Transaction context in code.");
-        break;
+        break;*/
     default:
         break;
     }
-#endif // TRINITY_DEBUG
 
     auto task = new TransactionTask(transaction);
     TransactionCompleteFuture result = task->GetFuture();
