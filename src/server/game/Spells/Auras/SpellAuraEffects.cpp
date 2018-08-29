@@ -3860,8 +3860,6 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
             }
         }
     }
-
-    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleForceReaction(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4161,7 +4159,6 @@ void AuraEffect::HandleModConfuse(AuraApplication const* aurApp, uint8 mode, boo
 
     Unit* m_target = aurApp->GetTarget();
     m_target->SetControlled(apply, UNIT_STATE_CONFUSED);
-    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4175,7 +4172,6 @@ void AuraEffect::HandleModFear(AuraApplication const* aurApp, uint8 mode, bool a
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_FLEEING);
-    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4370,7 +4366,8 @@ void AuraEffect::HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_STUNNED);
-    m_target->GetThreatManager().EvaluateSuppressed();
+    if (apply)
+        m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleModStealthDetect(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4558,7 +4555,6 @@ void AuraEffect::HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bo
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_ROOT);
-    m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4885,7 +4881,8 @@ void AuraEffect::HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint
         && GetSpellInfo()->HasAttribute(SPELL_ATTR2_DAMAGE_REDUCED_SHIELD))
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
-    m_target->GetThreatManager().EvaluateSuppressed();
+    if (apply)
+        m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4894,7 +4891,8 @@ void AuraEffect::HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 m
         return;
     Unit* m_target = aurApp->GetTarget();
     GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
-    m_target->GetThreatManager().EvaluateSuppressed();
+    if (apply)
+        m_target->GetThreatManager().EvaluateSuppressed();
 }
 
 void AuraEffect::HandleAuraModDispelImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const
