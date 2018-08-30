@@ -315,7 +315,7 @@ struct CreatureBaseStats
 
     uint32 GenerateHealth(CreatureTemplate const* info) const
     {
-        return uint32(ceil(BaseHealth[info->expansion] * info->ModHealth));
+        return std::max(1u, uint32(ceil(BaseHealth[info->expansion] * info->ModHealth))); //sun: min 1
     }
 
     uint32 GenerateMana(CreatureTemplate const* info) const
