@@ -18,7 +18,8 @@ class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovemen
         bool DoUpdate(T*, const uint32);
         MovementGeneratorType GetMovementGeneratorType() const override;
     private:
-        TimeTrackerSmall i_nextMoveTime;
+        TimeTrackerSmall _timer;
+        std::unique_ptr<PathGenerator> _path;
 
         float wander_distance;
 };

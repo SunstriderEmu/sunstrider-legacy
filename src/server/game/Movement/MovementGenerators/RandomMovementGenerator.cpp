@@ -15,7 +15,7 @@
 template<class T>
 RandomMovementGenerator<T>::RandomMovementGenerator(float spawn_dist /*= 0.0f*/) 
     : MovementGeneratorMedium<T, RandomMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
-    i_nextMoveTime(0), wander_distance(spawn_dist) { }
+    _timer(0), wander_distance(spawn_dist) { }
 
 template RandomMovementGenerator<Creature>::RandomMovementGenerator(float/* distance*/);
 
@@ -107,19 +107,31 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
         }
     }
 
-    if (!is_air_ok && roll_chance_i(50))
-        i_nextMoveTime.Reset(urand(5000, 10000));
-    else
-        i_nextMoveTime.Reset(urand(50, 400));
+    if (!_path)
+    {
+        _path = std::make_unique<PathGenerator>(owner);
+        _path->ExcludeSteepSlopes();
+        _path->SetPathLengthLimit(wander_distance * 1.5f);
+    }
+
+    bool result = _path->CalculatePath(destX, destY, destZ);
+    if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
+    {
+        _timer.Reset(100);
+        return;
+    }
     
     owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
     Movement::MoveSplineInit init(owner);
-    init.MoveTo(destX, destY, destZ);
+    init.MovebyPath(_path->GetPath());
     init.SetWalk(true);
     if(is_air_ok)
         init.SetFly();
-    init.Launch();
+    uint32 travelTime = init.Launch();
+
+    uint32 resetTimer = roll_chance_i(50) ? urand(5000, 10000) : urand(1000, 2000);
+    _timer.Reset(travelTime + resetTimer);
 
     //Call for creature group update
     owner->SignalFormationMovement(Position(destX, destY, destZ));
@@ -137,8 +149,8 @@ bool RandomMovementGenerator<Creature>::DoInitialize(Creature* owner)
     if (!wander_distance)
         wander_distance = owner->GetRespawnRadius();
 
-    owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
-    SetRandomLocation(owner);
+    _timer.Reset(0);
+    _path = nullptr;
     return true;
 }
 
@@ -168,15 +180,15 @@ bool RandomMovementGenerator<Creature>::DoUpdate(Creature* owner, const uint32 d
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
     {
         AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
-        i_nextMoveTime.Reset(0);  // Expire the timer
+        _timer.Reset(0);  // Expire the timer
         owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
         return true;
     }
     else
         RemoveFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
 
-    i_nextMoveTime.Update(diff);
-    if ((HasFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING) && !owner->movespline->Finalized()) || (i_nextMoveTime.Passed() && owner->movespline->Finalized()))
+    _timer.Update(diff);
+    if ((HasFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING) && !owner->movespline->Finalized()) || (_timer.Passed() && owner->movespline->Finalized()))
     {
         RemoveFlag(MOVEMENTGENERATOR_FLAG_TRANSITORY);
         SetRandomLocation(owner);
