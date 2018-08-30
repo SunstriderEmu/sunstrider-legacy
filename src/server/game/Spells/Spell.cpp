@@ -1491,7 +1491,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         {
             pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle);
         } else {
-            if (_unitCaster && 
+            if (m_caster->ToUnit() &&
                 (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_LEAP
                 || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_TELEPORT_UNITS
 #ifdef LICH_KING
@@ -1499,7 +1499,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
 #endif
                 || (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON))
                 )
-                pos = _unitCaster->GetLeapPosition(dist);
+                pos = m_caster->ToUnit()->GetLeapPosition(dist);
             else
                 pos = m_caster->GetNearPosition(dist, angle);
         }
