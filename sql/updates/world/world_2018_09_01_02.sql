@@ -1,0 +1,1 @@
+REPLACE INTO spell_script_names VALUES (33815, "spell_honor_hold_fear");
