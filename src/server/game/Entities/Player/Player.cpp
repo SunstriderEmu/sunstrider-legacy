@@ -20925,7 +20925,8 @@ void Player::DoPack58(uint8 step)
             m_taxi.SetTaximaskNode(TAXI_GADGETZAN_ALLIANCE);
             m_taxi.SetTaximaskNode(TAXI_HINTERLANDS);
             m_taxi.SetTaximaskNode(TAXI_STRANGLETHORN_REBEL_CAMP);
-            m_taxi.SetTaximaskNode(TAXI_EVERLOOK_ALLIANCE);
+            m_taxi.SetTaximaskNode(TAXI_EVERLOOK_ALLIANCE); 
+            m_taxi.SetTaximaskNode(TAXI_FEATHERMOON);
         } else {
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
             area_id = 1637; // Orgrimmar
@@ -20948,10 +20949,9 @@ void Player::DoPack58(uint8 step)
         }
         SetHomebind(loc, area_id);
 
+        // Also give some money
+        ModifyMoney(250 * GOLD);
     } else {
-        //also give some money
-        ModifyMoney(10 * GOLD); //10 gold
-
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         {
             Item* currentItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );

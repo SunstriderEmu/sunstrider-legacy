@@ -13,6 +13,7 @@ enum TaxiNodes
     TAXI_ASTRANAAR                  = 28,
     TAXI_THERAMODE                  = 32,
     TAXI_GADGETZAN_ALLIANCE         = 39,
+    TAXI_FEATHERMOON                = 41,
     TAXI_HINTERLANDS                = 43,
     TAXI_EVERLOOK_ALLIANCE          = 52,
     TAXI_EXODAR                     = 94,
