@@ -600,19 +600,21 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_CREATURE_BUFF_LIMIT);
 
     SelectLevel();
-    SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cInfo->faction);
+    SetFaction(cInfo->faction);
+
+    uint32 npcflag, unit_flags, dynamicflags;
+    ObjectMgr::ChooseCreatureFlags(cInfo, npcflag, unit_flags, dynamicflags, data);
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
-        SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag | sGameEventMgr->GetNPCFlag(this));
+        SetUInt32Value(UNIT_NPC_FLAGS, npcflag | sGameEventMgr->GetNPCFlag(this));
     else
-        SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag);
+        SetUInt32Value(UNIT_NPC_FLAGS, npcflag);
 
 
     SetAttackTime(BASE_ATTACK,  cInfo->baseattacktime);
     SetAttackTime(OFF_ATTACK,   cInfo->baseattacktime);
     SetAttackTime(RANGED_ATTACK,cInfo->rangeattacktime);
 
-    uint32 unit_flags = cInfo->unit_flags;
     // if unit is in combat, keep this flag
     unit_flags &= ~UNIT_FLAG_IN_COMBAT;
     if (IsInCombat())
@@ -620,7 +622,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
     SetUInt32Value(UNIT_FIELD_FLAGS, unit_flags);
     SetUInt32Value(UNIT_FIELD_FLAGS_2, cInfo->unit_flags2);
-    SetUInt32Value(UNIT_DYNAMIC_FLAGS,cInfo->dynamicflags);
+    SetUInt32Value(UNIT_DYNAMIC_FLAGS, dynamicflags);
 
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
@@ -2250,7 +2252,17 @@ void Creature::SetDeathState(DeathState s)
         if (!IsPet())
         {
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
-            SetUInt32Value(UNIT_NPC_FLAGS, GetCreatureTemplate()->npcflag);
+
+            CreatureData const* creatureData = GetCreatureData();
+            CreatureTemplate const* cinfo = GetCreatureTemplate();
+
+            uint32 npcflag, unit_flags, dynamicflags;
+            ObjectMgr::ChooseCreatureFlags(cinfo, npcflag, unit_flags, dynamicflags, creatureData);
+
+            SetUInt32Value(UNIT_NPC_FLAGS, npcflag);
+            SetUInt32Value(UNIT_FIELD_FLAGS, unit_flags);
+            SetUInt32Value(UNIT_DYNAMIC_FLAGS, dynamicflags);
+
             AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
             SetMeleeDamageSchool(SpellSchools(GetCreatureTemplate()->dmgschool));

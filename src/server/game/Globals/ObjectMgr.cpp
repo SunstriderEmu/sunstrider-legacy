@@ -900,6 +900,27 @@ uint32 ObjectMgr::ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureD
     return cinfo->GetFirstInvisibleModel();
 }
 
+void ObjectMgr::ChooseCreatureFlags(CreatureTemplate const* cinfo, uint32& npcflag, uint32& unit_flags, uint32& dynamicflags, CreatureData const* data /*= nullptr*/)
+{
+    npcflag = cinfo->npcflag;
+    unit_flags = cinfo->unit_flags;
+    dynamicflags = cinfo->dynamicflags;
+
+    if (data)
+    {
+        if (data->unit_flags)
+            unit_flags = data->unit_flags;
+
+        /*TC
+        if (data->npcflag)
+            npcflag = data->npcflag;
+
+        if (data->dynamicflags)
+            dynamicflags = data->dynamicflags;
+            */
+    }
+}
+
 CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32& displayID)
 {
     CreatureModelInfo const* modelInfo = GetCreatureModelInfo(displayID);
@@ -1129,8 +1150,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14            15         16     17       18                   19
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature.ScriptName, pool_entry "
+    //   12         13       14            15         16     17       18                   19          20
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature.ScriptName, pool_entry, unit_flags "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid "
@@ -1193,7 +1214,9 @@ void ObjectMgr::LoadCreatures()
             data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
         else
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
+
         uint32 poolId = fields[19].GetUInt32();
+        data.unit_flags = fields[20].GetUInt32();
 
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))

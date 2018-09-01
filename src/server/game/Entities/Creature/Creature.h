@@ -381,6 +381,7 @@ struct CreatureData : public SpawnData
     uint32 curmana = 0;
     uint8 movementType = 0;
     uint32 poolId = 0; //old windrunner link system
+    uint32 unit_flags = 0;
     uint32 scriptId = 0;
 };
 
