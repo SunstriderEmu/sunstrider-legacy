@@ -12,17 +12,17 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
     // capital and taxi hub masks
     switch(race)
     {
-        case RACE_HUMAN:    SetTaximaskNode(2);  break;     // Human
-        case RACE_ORC:      SetTaximaskNode(23); break;     // Orc
-        case RACE_DWARF:    SetTaximaskNode(6);  break;     // Dwarf
-        case RACE_NIGHTELF: SetTaximaskNode(26);
-                            SetTaximaskNode(27); break;     // Night Elf
-        case RACE_UNDEAD_PLAYER: SetTaximaskNode(11); break;// Undead
-        case RACE_TAUREN:   SetTaximaskNode(22); break;     // Tauren
-        case RACE_GNOME:    SetTaximaskNode(6);  break;     // Gnome
-        case RACE_TROLL:    SetTaximaskNode(23); break;     // Troll
-        case RACE_BLOODELF: SetTaximaskNode(82); break;     // Blood Elf
-        case RACE_DRAENEI:  SetTaximaskNode(94); break;     // Draenei
+        case RACE_HUMAN:         SetTaximaskNode(TAXI_STORMWIND);    break; 
+        case RACE_ORC:           SetTaximaskNode(TAXI_ORGRIMMAR);    break; 
+        case RACE_DWARF:         SetTaximaskNode(TAXI_IRONFORGE);    break; 
+        case RACE_NIGHTELF:      SetTaximaskNode(TAXI_AUBERDINE);    
+                                 SetTaximaskNode(TAXI_RUTHERAN);     break; 
+        case RACE_UNDEAD_PLAYER: SetTaximaskNode(TAXI_UNDERCITY);    break; 
+        case RACE_TAUREN:        SetTaximaskNode(TAXI_THUNDERBLUFF); break; 
+        case RACE_GNOME:         SetTaximaskNode(TAXI_IRONFORGE);    break; 
+        case RACE_TROLL:         SetTaximaskNode(TAXI_ORGRIMMAR);    break; 
+        case RACE_BLOODELF:      SetTaximaskNode(TAXI_SILVERMOON);   break; 
+        case RACE_DRAENEI:       SetTaximaskNode(TAXI_EXODAR);       break; 
     }
     // new continent starting masks (It will be accessible only at new map)
     switch(Player::TeamForRace(race))
@@ -63,7 +63,7 @@ void PlayerTaxi::AppendTaximaskTo( ByteBuffer& data, bool all )
         for (uint8 i = 0; i < TaxiMaskSize; i++)
         {
             if (!patch24active && i == 6)
-                data << uint32(m_taximask[i] & ~0x100000); //Shattered Sun Staging Area
+                data << uint32(m_taximask[i] & ~0x100000);      //Shattered Sun Staging Area
             else
                 data << uint32(m_taximask[i]);                  // known nodes
         }

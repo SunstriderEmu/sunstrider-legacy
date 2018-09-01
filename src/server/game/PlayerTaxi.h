@@ -1,6 +1,40 @@
 #ifndef __PLAYERTAXI_H__
 #define __PLAYERTAXI_H__
 
+enum TaxiNodes
+{
+    // Alliance
+    TAXI_STORMWIND                  = 2,
+    TAXI_IRONFORGE                  = 6,
+    TAXI_SOUTHSHORE                 = 14,
+    TAXI_BOOTY_BAY_ALLIANCE         = 19,
+    TAXI_AUBERDINE                  = 26,
+    TAXI_RUTHERAN                   = 27,
+    TAXI_ASTRANAAR                  = 28,
+    TAXI_THERAMODE                  = 32,
+    TAXI_GADGETZAN_ALLIANCE         = 39,
+    TAXI_HINTERLANDS                = 43,
+    TAXI_EVERLOOK_ALLIANCE          = 52,
+    TAXI_EXODAR                     = 94,
+    TAXI_STRANGLETHORN_REBEL_CAMP   = 195,
+    
+    // Horde
+    TAXI_UNDERCITY                  = 11,
+    TAXI_HAMMERFALL                 = 17,
+    TAXI_BOOTY_BAY_HORDE            = 18,
+    TAXI_KARGATH                    = 21,
+    TAXI_GROMGOL                    = 20,
+    TAXI_THUNDERBLUFF               = 22,
+    TAXI_ORGRIMMAR                  = 23,
+    TAXI_THOUSAND_NEEDLES           = 30,
+    TAXI_GADGETZAN_HORDE            = 40,
+    TAXI_EVERLOOK_HORDE             = 53,
+    TAXI_SPLINTERTREE               = 61,
+    TAXI_TAURAJO                    = 77,
+    TAXI_SILVERMOON                 = 82,
+    TAXI_TRAQUILIEN                 = 83,
+};
+
 class TC_GAME_API PlayerTaxi
 {
     public:

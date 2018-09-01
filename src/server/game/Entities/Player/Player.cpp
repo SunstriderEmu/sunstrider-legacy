@@ -20898,7 +20898,7 @@ void Player::DoPack58(uint8 step)
             }
             break;
         }
-
+         
         StoreNewItemInBestSlots(21841, addBags); //netherweave bags
 
         StoreNewItemInBestSlots(8932, 20); //food
@@ -20907,21 +20907,49 @@ void Player::DoPack58(uint8 step)
         LearnAllClassSpells();
         UpdateSkillsToMaxSkillsForLevel();
 
-        //relocate homebind
+        //relocate homebind + some taxis
         WorldLocation loc;
-        uint32 area_id = 0;
+        uint32 area_id;
         if (Player::TeamForRace(GetRace()) == ALLIANCE)
         {
             loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
             area_id = 1519; // Stormwind
+
+            m_taxi.SetTaximaskNode(TAXI_STORMWIND);
+            m_taxi.SetTaximaskNode(TAXI_IRONFORGE);
+            m_taxi.SetTaximaskNode(TAXI_SOUTHSHORE);
+            m_taxi.SetTaximaskNode(TAXI_BOOTY_BAY_ALLIANCE);
+            m_taxi.SetTaximaskNode(TAXI_AUBERDINE);
+            m_taxi.SetTaximaskNode(TAXI_RUTHERAN);
+            m_taxi.SetTaximaskNode(TAXI_ASTRANAAR);
+            m_taxi.SetTaximaskNode(TAXI_THERAMODE);
+            m_taxi.SetTaximaskNode(TAXI_GADGETZAN_ALLIANCE);
+            m_taxi.SetTaximaskNode(TAXI_HINTERLANDS);
+            m_taxi.SetTaximaskNode(TAXI_STRANGLETHORN_REBEL_CAMP);
+            m_taxi.SetTaximaskNode(TAXI_EVERLOOK_ALLIANCE);
         } else {
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
             area_id = 1637; // Orgrimmar
+
+            m_taxi.SetTaximaskNode(TAXI_ORGRIMMAR);
+            m_taxi.SetTaximaskNode(TAXI_UNDERCITY);
+            m_taxi.SetTaximaskNode(TAXI_HAMMERFALL);
+            m_taxi.SetTaximaskNode(TAXI_BOOTY_BAY_HORDE);
+            m_taxi.SetTaximaskNode(TAXI_KARGATH);
+            m_taxi.SetTaximaskNode(TAXI_GROMGOL);
+            m_taxi.SetTaximaskNode(TAXI_THUNDERBLUFF);
+            m_taxi.SetTaximaskNode(TAXI_ORGRIMMAR);
+            m_taxi.SetTaximaskNode(TAXI_THOUSAND_NEEDLES);
+            m_taxi.SetTaximaskNode(TAXI_GADGETZAN_HORDE);
+            m_taxi.SetTaximaskNode(TAXI_EVERLOOK_HORDE);
+            m_taxi.SetTaximaskNode(TAXI_SPLINTERTREE);
+            m_taxi.SetTaximaskNode(TAXI_TAURAJO);
+            m_taxi.SetTaximaskNode(TAXI_SILVERMOON);
+            m_taxi.SetTaximaskNode(TAXI_TRAQUILIEN);
         }
         SetHomebind(loc, area_id);
 
     } else {
-
         //also give some money
         ModifyMoney(10 * GOLD); //10 gold
 

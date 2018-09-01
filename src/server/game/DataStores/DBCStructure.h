@@ -1225,7 +1225,7 @@ typedef std::vector<TaxiPathNodeEntry const*> TaxiPathNodeList;
 typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 
 #define TaxiMaskSize 14
-typedef std::array<uint8, TaxiMaskSize> TaxiMask;
+typedef std::array<uint32, TaxiMaskSize> TaxiMask;
 
 enum BCLiquidTypeType : uint32
 {
