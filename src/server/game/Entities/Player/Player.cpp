@@ -20951,6 +20951,11 @@ void Player::DoPack58(uint8 step)
 
         // Also give some money
         ModifyMoney(250 * GOLD);
+
+        uint32 count = 4;
+        DestroyItemCount(4540, count, true); // Destroy starting bread
+        count = 2;
+        DestroyItemCount(159,  count, true); // Destroy starting water
     } else {
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         {
