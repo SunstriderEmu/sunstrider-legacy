@@ -1813,8 +1813,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     if (duel && GetMapId() != mapid && GetMap()->GetGameObject(GetGuidValue(PLAYER_DUEL_ARBITER)))
         DuelComplete(DUEL_FLED);
 
-    //same map teleport
-    if (GetMapId() == mapid)
+    if (GetMapId() == mapid && !(options & TELE_TO_FORCE_RELOAD))
     {
         //lets reset far teleport flag if it wasn't reset during chained teleports
         SetSemaphoreTeleportFar(false);

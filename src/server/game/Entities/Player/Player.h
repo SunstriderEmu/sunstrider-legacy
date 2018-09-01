@@ -923,6 +923,7 @@ enum TeleportToOptions
     TELE_TO_SPELL               = 0x10,
     TELE_TO_TRANSPORT_TELEPORT  = 0x20,
     TELE_TO_TEST_MODE           = 0x40,
+    TELE_TO_FORCE_RELOAD        = 0x80, // Force leaving and re entering world. Use this when joining another instance when unit is in the same map (mapid)
 };
 
 /// Type of environmental damages

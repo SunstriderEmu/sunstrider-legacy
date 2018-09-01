@@ -370,6 +370,7 @@ public:
 
         if (target)
         {
+            uint32 options = 0;
             if (target->IsBeingTeleported() == true)
             {
                 handler->PSendSysMessage(LANG_IS_TELEPORTED, target->GetName().c_str());
@@ -405,16 +406,19 @@ public:
             else if (pMap->IsDungeon())
             {
                 Map* cMap = target->GetMap();
-                if (cMap->Instanceable() && cMap->GetInstanceId() != pMap->GetInstanceId())
+                if (pMap && cMap->Instanceable() && cMap->GetInstanceId() != pMap->GetInstanceId())
                 {
+                    if (pMap->GetId() == cMap->GetId())
+                        options |= TELE_TO_FORCE_RELOAD; //always force reload if same dungeon, this fixes teleporting to the wrong instance.
+
                     // cannot summon from instance to instance
-                    handler->PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST, target->GetName().c_str());
+                    /*handler->PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST, target->GetName().c_str());
                     handler->SetSentErrorMessage(true);
-                    return false;
+                    return false;*/
                 }
 
                 // we are in instance, and can summon only player in our group with us as lead
-                if (!_player->GetGroup() || !target->GetGroup() ||
+                /*if (!_player->GetGroup() || !target->GetGroup() ||
                     (target->GetGroup()->GetLeaderGUID() != _player->GetGUID()) ||
                     (_player->GetGroup()->GetLeaderGUID() != _player->GetGUID()))
                     // the last check is a bit excessive, but let it be, just in case
@@ -422,7 +426,12 @@ public:
                     handler->PSendSysMessage(LANG_CANNOT_SUMMON_TO_INST, target->GetName().c_str());
                     handler->SetSentErrorMessage(true);
                     return false;
-                }
+                }*/
+
+                if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(_player->GetInstanceId()))
+                    target->BindToInstance(save, false);
+
+                target->SetDifficulty(_player->GetDifficulty(), false, false);
             }
 
             // stop flight if need
@@ -435,7 +444,7 @@ public:
             // before GM
             float x, y, z;
             _player->GetClosePoint(x, y, z, target->GetCombatReach());
-            if (target->TeleportTo(_player->GetMapId(), x, y, z, target->GetOrientation()))
+            if (target->TeleportTo(_player->GetMapId(), x, y, z, target->GetOrientation(), options))
             {
                 target->SetPhaseMask(_player->GetPhaseMask(), true);
                 handler->PSendSysMessage(LANG_SUMMONING, target->GetName().c_str(), "");
@@ -484,6 +493,7 @@ public:
         
         if (target)
         {
+            uint32 options = TELE_TO_GM_MODE;
             Map* cMap = target->GetMap();
             if (!cMap)
             {
@@ -539,8 +549,13 @@ public:
                     }
                 }
 
+                Map* pMap = _player->GetMap();
+                if (pMap && cMap->Instanceable() && pMap->GetId() == cMap->GetId() && cMap->GetInstanceId() != pMap->GetInstanceId())
+                    options |= TELE_TO_FORCE_RELOAD; //always force reload if same dungeon, this fixes teleporting to the wrong instance.
+
                 // if the player or the player's group is bound to another instance
                 // the player will not be bound to another one
+                /*sun: always bind appearing player to target instance, we want to appear next to target, not in our own instance.
                 InstancePlayerBind* pBind = _player->GetBoundInstance(target->GetMapId(), target->GetDifficulty());
                 if (!pBind)
                 {
@@ -548,11 +563,13 @@ public:
                     // if no bind exists, create a solo bind
                     InstanceGroupBind* gBind = group ? group->GetBoundInstance(target->GetDifficulty(), target->GetMapId()) : nullptr;
                     if (!gBind)
+                    */
                         if (InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(target->GetInstanceId()))
-                            _player->BindToInstance(save, !save->CanReset());
-                }
+                            _player->BindToInstance(save, false);
+                        /*
+                }*/
 
-                _player->SetDifficulty(target->GetDifficulty(), true, false);
+                _player->SetDifficulty(target->GetDifficulty(), false, false);
             }
 
             // stop flight if need
@@ -566,7 +583,7 @@ public:
             float x, y, z;
             target->GetContactPoint(handler->GetSession()->GetPlayer(), x, y, z);
 
-            if (_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAbsoluteAngle(target), TELE_TO_GM_MODE))
+            if (_player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAbsoluteAngle(target), options))
             {
                 _player->SetPhaseMask(target->GetPhaseMask(), true);
                 handler->PSendSysMessage(LANG_APPEARING_AT, target->GetName().c_str());

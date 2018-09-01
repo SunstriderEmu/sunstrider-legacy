@@ -216,7 +216,7 @@ bool TestMgr::GoToTest(Player* player, uint32 testId) const
     player->RemoveFromGroup();
     player->UnbindInstance(testMap->GetId(), testMap->GetDifficulty());
     player->SetTeleportingToTest(testMap->GetInstanceId());
-    player->TeleportTo(loc, TELE_TO_TEST_MODE);
+    player->TeleportTo(loc, TELE_TO_TEST_MODE | TELE_TO_FORCE_RELOAD);
     return true;
 }
 

@@ -31,7 +31,8 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 level)
         case HORDE:    SetTaximaskNode(99);  break;
     }
     // level dependent taxi hubs
-    if(level>=68)
+    bool patch24active = sGameEventMgr->IsActiveEvent(GAME_EVENT_2_4);
+    if (level >= 68 && patch24active)
         SetTaximaskNode(213);                               //Shattered Sun Staging Area
 }
 
