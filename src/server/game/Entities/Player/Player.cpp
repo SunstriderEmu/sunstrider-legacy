@@ -20846,6 +20846,7 @@ void Player::DoPack58(uint8 step)
 {
     if(step == PACK58_STEP1)
     {
+        uint32 destroyCount;
         GiveLevel(58);
         InitTalentForLevel();
         SetUInt32Value(PLAYER_XP,0);
@@ -20893,13 +20894,26 @@ void Player::DoPack58(uint8 step)
             }
             case CLASS_HUNTER:
             {
+                RemoveAmmo();
+                destroyCount = 10000;
+                DestroyItemCount(2512, destroyCount, true); //base arrows
+                destroyCount = 10000;
+                DestroyItemCount(2516, destroyCount, true); //base bullets
+                destroyCount = 1;
+                SwapItem(65299, 65317); //hacky hacky, try removing quiver if any found at first bag pos. Will fail if not empty.
+
                 StoreNewItemInBestSlots(19319, 1); //Harpy Hide Quiver
+                StoreNewItemInBestSlots(18042, 1400); //Thorium Headed Arrow (lvl 52)
+                SetAmmo(18042);
                 addBags = 3;
                 break;
             }
             break;
         }
-         
+
+        destroyCount = 2;
+        DestroyItemCount(159, destroyCount, true); // Destroy starting water
+
         StoreNewItemInBestSlots(21841, addBags); //netherweave bags
 
         StoreNewItemInBestSlots(27854, 20); //food
@@ -20953,11 +20967,6 @@ void Player::DoPack58(uint8 step)
 
         // Also give some money
         ModifyMoney(250 * GOLD);
-
-        uint32 count = 4;
-        DestroyItemCount(4540, count, true); // Destroy starting bread
-        count = 2;
-        DestroyItemCount(159,  count, true); // Destroy starting water
     } else {
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         {
