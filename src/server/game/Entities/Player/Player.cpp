@@ -230,6 +230,8 @@ Player::Player(WorldSession *session) :
     m_playerMovingMe = this;
 
     m_cinematic = 0;
+    if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
+        m_cinematic = true; //no cinematic on beta server, because we alter starting position
 
     PlayerTalkClass = new PlayerMenu( GetSession() );
     m_currentBuybackSlot = BUYBACK_SLOT_START;
