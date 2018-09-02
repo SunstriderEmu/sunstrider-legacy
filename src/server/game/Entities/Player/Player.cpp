@@ -20900,7 +20900,7 @@ void Player::DoPack58(uint8 step)
          
         StoreNewItemInBestSlots(21841, addBags); //netherweave bags
 
-        StoreNewItemInBestSlots(8932, 20); //food
+        StoreNewItemInBestSlots(27854, 20); //food
         StoreNewItemInBestSlots(8766, 20); //drink
 
         LearnAllClassSpells();
