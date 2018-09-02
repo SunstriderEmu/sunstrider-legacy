@@ -1,0 +1,1 @@
+replace into `updates_include` (`path`) values ('$/src/server/scripts/SunScripts/sql');
