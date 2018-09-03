@@ -23,11 +23,13 @@ CHANGEME Tell us what should happen instead.
 
 **rev. hash/commit:** 
 
-CHANGEME Copy the first line of the `worldserver`, `authserver` startup.
+CHANGEME
+If you're testing on the public server, do a `.server info` in game and copy the first line.
+If compiling the server yourself, copy the first line of the `worldserver` output.
 For example: Sunstrider rev. 0000000000 2000-01-09 11:31:41 +0100 (my branch) (Win64, RelWithDebInfo, Static) (worldserver)
 
-**Operating system:** CHANGEME OS
-
+**Operating system and compiler:** CHANGEME OS
+Delete this section if you're testing on the public servers.
 
 <!--- Notes
 - This template is for problem reports. For other types of report, edit it accordingly.
