@@ -529,7 +529,7 @@ enum PlayerBytes2Offsets : uint8
 enum PlayerBytes3Offsets : uint8
 {
     PLAYER_BYTES_3_OFFSET_GENDER = 0,
-    //BC OK ? PLAYER_BYTES_3_OFFSET_INEBRIATION = 1,
+    PLAYER_BYTES_3_OFFSET_INEBRIATION = 1,
     //BC OK ? PLAYER_BYTES_3_OFFSET_PVP_TITLE = 2,
     //BC OK ? PLAYER_BYTES_3_OFFSET_ARENA_FACTION = 3
 };
@@ -2031,9 +2031,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         //End of PvP System
 
-        void SetDrunkValue(uint16 newDrunkValue, uint32 itemid=0);
-        uint16 GetDrunkValue() const { return m_drunk; }
-        static DrunkenState GetDrunkenstateByValue(uint16 value);
+        void SetDrunkValue(uint16 newDrunkValue, uint32 itemid = 0);
+        uint8 GetDrunkValue() const { return GetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_INEBRIATION); }
+        static DrunkenState GetDrunkenstateByValue(uint8 value);
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
         uint32 GetDeathTime() const { return m_deathTime; }

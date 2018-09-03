@@ -1114,18 +1114,20 @@ void Player::HandleSobering()
 {
     m_drunkTimer = 0;
 
-    uint32 drunk = (m_drunk <= 256) ? 0 : (m_drunk - 256);
+    uint8 currentDrunkValue = GetDrunkValue();
+    uint8 drunk = currentDrunkValue ? --currentDrunkValue : 0;
     SetDrunkValue(drunk);
 }
 
-DrunkenState Player::GetDrunkenstateByValue(uint16 value)
+DrunkenState Player::GetDrunkenstateByValue(uint8 value)
 {
-    if(value >= 23000)
+    if (value >= 90)
         return DRUNKEN_SMASHED;
-    if(value >= 12800)
+    if (value >= 50)
         return DRUNKEN_DRUNK;
-    if(value & 0xFFFE)
+    if (value)
         return DRUNKEN_TIPSY;
+
     return DRUNKEN_SOBER;
 }
 
@@ -1141,13 +1143,11 @@ void Player::SetDrunkValue(uint16 newDrunkValue, uint32 itemId)
         m_invisibilityDetect.AddFlag(INVISIBILITY_DRUNK);
         m_invisibilityDetect.SetValue(INVISIBILITY_DRUNK, drunkPercent);
     }
-    /*
-    else if (!HasAuraType(SPELL_AURA_MOD_FAKE_INEBRIATE) && !newDrunkValue)
+    else if (/* TC !HasAuraType(SPELL_AURA_MOD_FAKE_INEBRIATE) &&*/ !newDrunkValue)
         m_invisibilityDetect.DelFlag(INVISIBILITY_DRUNK);
-    */
 
     m_drunk = newDrunkValue;
-    SetUInt32Value(PLAYER_BYTES_3,(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFF0001) | (m_drunk & 0xFFFE));
+    SetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_INEBRIATION, newDrunkValue);
     UpdateObjectVisibility();
 
     uint32 newDrunkenState = Player::GetDrunkenstateByValue(m_drunk);
@@ -15296,7 +15296,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2
     SetUInt32Value(PLAYER_FLAGS, fields[LOAD_DATA_PLAYERFLAGS].GetUInt32());   // PlayerFlags
     RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK);
-    SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_GENDER, fields[LOAD_DATA_GENDER].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, PLAYER_BYTES_3_OFFSET_INEBRIATION, fields[LOAD_DATA_DRUNK].GetUInt8());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[LOAD_DATA_ACTIONBARS].GetUInt8());
@@ -15705,13 +15706,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // set value, including drunk invisibility detection
     // calculate sobering. after 15 minutes logged out, the player will be sober again
-    float soberFactor;
-    if(time_diff > 15*MINUTE)
-        soberFactor = 0;
-    else
-        soberFactor = 1-time_diff/(15.0f*MINUTE);
-    uint16 newDrunkenValue = uint16(soberFactor*(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
-    SetDrunkValue(newDrunkenValue);
+    uint8 newDrunkValue = 0;
+    if (time_diff < uint32(GetDrunkValue()) * 9)
+        newDrunkValue = GetDrunkValue() - time_diff / 9;
+
+    SetDrunkValue(newDrunkValue);
 
     m_cinematic = fields[LOAD_DATA_CINEMATIC].GetUInt8();
     m_Played_time[0]= fields[LOAD_DATA_TOTALTIME].GetUInt32();

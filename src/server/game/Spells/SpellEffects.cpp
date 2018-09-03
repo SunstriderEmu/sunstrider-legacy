@@ -6267,24 +6267,20 @@ void Spell::EffectInebriate(uint32 /*i*/)
 
     Player *player = unitTarget->ToPlayer();
     uint16 currentDrunk = player->GetDrunkValue();
-#ifdef LICH_KING
+
     uint8 drunkMod = damage;
     if (currentDrunk + drunkMod > 100)
     {
         currentDrunk = 100;
+#ifdef LICH_KING
         if (rand_chance() < 25.0f)
             player->CastSpell(player, 67468, TRIGGERED_NONE);    // Drunken Vomit
+#endif
     }
     else
         currentDrunk += drunkMod;
-#else
-    uint16 drunkMod = damage * 256;
-    if (currentDrunk + drunkMod > 0xFFFF)
-        currentDrunk = 0xFFFF;
-    else
-        currentDrunk += drunkMod;
-#endif
-    player->SetDrunkValue(currentDrunk, m_CastItem?m_CastItem->GetEntry():0);
+
+    player->SetDrunkValue(currentDrunk, m_CastItem ? m_CastItem->GetEntry() : 0);
 }
 
 void Spell::EffectFeedPet(uint32 effIndex)
