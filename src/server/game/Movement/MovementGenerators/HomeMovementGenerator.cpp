@@ -7,6 +7,7 @@
 #include "MoveSpline.h"
 #include "G3DPosition.hpp"
 
+//Important diff with TC: this generator handle UNIT_STATE_EVADE itself
 
 template<class T>
 HomeMovementGenerator<T>::HomeMovementGenerator() : 
@@ -35,7 +36,7 @@ void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
     }
 
     owner->ClearUnitState(UNIT_STATE_ALL_ERASABLE & ~UNIT_STATE_EVADE);
-    owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
+    owner->AddUnitState(UNIT_STATE_EVADE | UNIT_STATE_ROAMING_MOVE); //sun: added evade handling
 
     Position destination = owner->GetHomePosition();
     Movement::MoveSplineInit init(owner);
@@ -94,7 +95,7 @@ template<>
 void HomeMovementGenerator<Creature>::DoDeactivate(Creature* owner)
 {
     AddFlag(MOVEMENTGENERATOR_FLAG_DEACTIVATED);
-    owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+    owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE | UNIT_STATE_EVADE);  //sun: added evade handling
 }
 
 template<class T>
@@ -105,7 +106,7 @@ void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner, bool active, b
 {
     AddFlag(MOVEMENTGENERATOR_FLAG_FINALIZED);
     if (active)
-        owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE | UNIT_STATE_EVADE);
+        owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE | UNIT_STATE_EVADE);  //sun: added evade handling
     
     if (movementInform && HasFlag(MOVEMENTGENERATOR_FLAG_INFORM_ENABLED))
     {

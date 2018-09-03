@@ -126,9 +126,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     } else {
         // else just enter combat with it if in melee range
         if(me->IsWithinMeleeRange(who))
-        {
             me->EngageWithTarget(who);
-        }
     }
 }
 
@@ -189,6 +187,7 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
         }
         else
         {
+            //UNIT_STATE_EVADE handled by HomeMovementGenerator
             me->GetMotionMaster()->MoveTargetedHome();
         }
     }
