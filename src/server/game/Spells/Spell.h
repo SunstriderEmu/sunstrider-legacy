@@ -773,6 +773,8 @@ class TC_GAME_API Spell
 		// effect helpers
 		void SummonGuardian(uint32 effectIndex, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
 
+        SpellCastResult CanOpenLock(uint32 effIndex, uint32 lockid, SkillType& skillid, int32& reqSkillValue, int32& skillValue);
+
         uint32 m_spellState;
         int32 m_timer; //remaining cast time
         SpellEvent* _spellEvent;

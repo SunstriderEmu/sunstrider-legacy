@@ -6005,117 +6005,37 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     !(m_caster->ToPlayer())->isAllowUseBattlegroundObject() )
                     return SPELL_FAILED_TRY_AGAIN;
 
+
                 // get the lock entry
-                LockEntry const *lockInfo = nullptr;
-                if (GameObject* go=m_targets.GetGOTarget())
-                    lockInfo = sLockStore.LookupEntry(go->GetLockId());
-                else if(Item* itm=m_targets.GetItemTarget())
-                    lockInfo = sLockStore.LookupEntry(itm->GetTemplate()->LockID);
-
-                // check lock compatibility
-                if (lockInfo)
+                uint32 lockId = 0;
+                if (GameObject* go = m_targets.GetGOTarget())
                 {
-                    // check for lock - key pair (checked by client also, just prevent cheating
-                    bool ok_key = false;
-                    for(int it = 0; it < 5; ++it)
-                    {
-                        switch(lockInfo->Type[it])
-                        {
-                            case LOCK_KEY_NONE:
-                                break;
-                            case LOCK_KEY_ITEM:
-                            {
-                                if(lockInfo->Index[it])
-                                {
-                                    if(m_CastItem && m_CastItem->GetEntry()==lockInfo->Index[it])
-                                        ok_key =true;
-                                    break;
-                                }
-                            }
-                            case LOCK_KEY_SKILL:
-                            {
-                                if(uint32(m_spellInfo->Effects[i].MiscValue)!=lockInfo->Index[it])
-                                    break;
-
-                                switch(lockInfo->Index[it])
-                                {
-                                    case LOCKTYPE_HERBALISM:
-                                        if((m_caster->ToPlayer())->HasSkill(SKILL_HERBALISM))
-                                            ok_key =true;
-                                        break;
-                                    case LOCKTYPE_MINING:
-                                        if((m_caster->ToPlayer())->HasSkill(SKILL_MINING))
-                                            ok_key =true;
-                                        break;
-                                    default:
-                                        ok_key =true;
-                                        break;
-                                }
-                            }
-                        }
-                        if(ok_key)
-                            break;
-                    }
-
-                    if(!ok_key)
+                    lockId = go->GetGOInfo()->GetLockId();
+                    if (!lockId)
                         return SPELL_FAILED_BAD_TARGETS;
                 }
+                else if (Item* itm = m_targets.GetItemTarget())
+                    lockId = itm->GetTemplate()->LockID;
 
-                // chance for fail at orange mining/herb/LockPicking gathering attempt
-                if (!m_selfContainer || ((*m_selfContainer) != this))
-                    break;
+                SkillType skillId = SKILL_NONE;
+                int32 reqSkillValue = 0;
+                int32 skillValue = 0;
 
-                // get the skill value of the player
-                int32 SkillValue = 0;
-                bool canFailAtMax = true;
-                if (m_spellInfo->Effects[i].MiscValue == LOCKTYPE_HERBALISM)
+                // check lock compatibility
+                SpellCastResult res = CanOpenLock(i, lockId, skillId, reqSkillValue, skillValue);
+                if (res != SPELL_CAST_OK)
+                    return res;
+
+                // chance for fail at lockpicking attempt
+                // second check prevent fail at rechecks
+                if (skillId != SKILL_NONE && (!m_selfContainer || ((*m_selfContainer) != this)))
                 {
-                    SkillValue = (m_caster->ToPlayer())->GetSkillValue(SKILL_HERBALISM);
-                    canFailAtMax = false;
+                    bool canFailAtMax = skillId == SKILL_LOCKPICKING;
+
+                    // chance for failure in orange lockpick
+                    if ((canFailAtMax || skillValue < sWorld->GetConfigMaxSkillValue()) && reqSkillValue > irand(skillValue - 25, skillValue + 37))
+                        return SPELL_FAILED_TRY_AGAIN;
                 }
-                else if (m_spellInfo->Effects[i].MiscValue == LOCKTYPE_MINING)
-                {
-                    SkillValue = (m_caster->ToPlayer())->GetSkillValue(SKILL_MINING);
-                    canFailAtMax = false;
-                }
-                else if (m_spellInfo->Effects[i].MiscValue == LOCKTYPE_PICKLOCK)
-                    SkillValue = (m_caster->ToPlayer())->GetSkillValue(SKILL_LOCKPICKING);
-
-                // castitem check: rogue using skeleton keys. the skill values should not be added in this case.
-                if(m_CastItem)
-                    SkillValue = 0;
-
-                // get the required lock value
-                int32 ReqValue=0;
-                if (lockInfo)
-                {
-                    // check for lock - key pair
-                    bool ok = false;
-                    for(int it = 0; it < 5; ++it)
-                    {
-                        if(lockInfo->Type[it]==LOCK_KEY_ITEM && lockInfo->Index[it] && m_CastItem && m_CastItem->GetEntry()==lockInfo->Index[it])
-                        {
-                            // if so, we're good to go
-                            ok = true;
-                            break;
-                        }
-                    }
-                    if(ok)
-                        break;
-
-                    if (m_spellInfo->Effects[i].MiscValue == LOCKTYPE_PICKLOCK)
-                        ReqValue = lockInfo->requiredlockskill;
-                    else
-                        ReqValue = lockInfo->requiredminingskill;
-                }
-
-                // skill doesn't meet the required value
-                if (ReqValue > SkillValue)
-                    return SPELL_FAILED_LOW_CASTLEVEL;
-
-                // chance for failure in orange gather / lockpick (gathering skill can't fail at maxskill)
-                if((canFailAtMax || SkillValue < sWorld->GetConfigMaxSkillValue()) && ReqValue > irand(SkillValue-25, SkillValue+37))
-                    return SPELL_FAILED_TRY_AGAIN;
 
                 break;
             }
@@ -8724,4 +8644,73 @@ void Spell::SetForceHitResult(SpellMissInfo result)
     }
 
     _forceHitResult = result; 
+}
+
+SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& skillId, int32& reqSkillValue, int32& skillValue)
+{
+    if (!lockId)                                             // possible case for GO and maybe for items.
+        return SPELL_CAST_OK;
+
+    // Get LockInfo
+    LockEntry const* lockInfo = sLockStore.LookupEntry(lockId);
+
+    if (!lockInfo)
+        return SPELL_FAILED_BAD_TARGETS;
+
+    bool reqKey = false;                                    // some locks not have reqs
+
+    for (int j = 0; j < MAX_LOCK_CASE; ++j)
+    {
+        switch (lockInfo->Type[j])
+        {
+            // check key item (many fit cases can be)
+        case LOCK_KEY_ITEM:
+            if (lockInfo->Index[j] && m_CastItem && m_CastItem->GetEntry() == lockInfo->Index[j])
+                return SPELL_CAST_OK;
+            reqKey = true;
+            break;
+            // check key skill (only single first fit case can be)
+        case LOCK_KEY_SKILL:
+        {
+            reqKey = true;
+
+            // wrong locktype, skip
+            if (uint32(m_spellInfo->Effects[effIndex].MiscValue) != lockInfo->Index[j])
+                continue;
+
+            skillId = SkillByLockType(LockType(lockInfo->Index[j]));
+
+            if (skillId != SKILL_NONE)
+            {
+#ifdef LICH_KING
+                reqSkillValue = lockInfo->Skill[j];
+#else
+                if (m_spellInfo->Effects[effIndex].MiscValue == LOCKTYPE_PICKLOCK)
+                    reqSkillValue = lockInfo->requiredlockskill;
+                else
+                    reqSkillValue = lockInfo->requiredminingskill;
+#endif
+
+                // castitem check: rogue using skeleton keys. the skill values should not be added in this case.
+                skillValue = m_CastItem || m_caster->GetTypeId() != TYPEID_PLAYER ?
+                    0 : m_caster->ToPlayer()->GetSkillValue(skillId);
+
+                // skill bonus provided by casting spell (mostly item spells)
+                // add the effect base points modifier from the spell cast (cheat lock / skeleton key etc.)
+                if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET || m_spellInfo->Effects[effIndex].TargetB.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET)
+                    skillValue += m_spellInfo->Effects[effIndex].CalcValue();
+
+                if (skillValue < reqSkillValue)
+                    return SPELL_FAILED_LOW_CASTLEVEL;
+            }
+
+            return SPELL_CAST_OK;
+        }
+        }
+    }
+
+    if (reqKey)
+        return SPELL_FAILED_BAD_TARGETS;
+
+    return SPELL_CAST_OK;
 }

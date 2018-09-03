@@ -577,11 +577,16 @@ struct ItemSetEntry
 struct LockEntry
 {
     uint32      ID;                                         // 0
-    uint32      Type[MAX_LOCK_CASE];                                 // 1-8 old "keytype"
-    uint32      Index[MAX_LOCK_CASE];                                     // 9-16 old "key"
+    uint32      Type[MAX_LOCK_CASE];                        // 1-8 old "keytype"
+    uint32      Index[MAX_LOCK_CASE];                       // 9-16 old "key"
+#ifdef LICH_KING
+    uint32      Skill[MAX_LOCK_CASE];                       // 17-24    m_Skill
+    //uint32      Action[MAX_LOCK_CASE];                    // 25-32    m_Action
+#else
     uint32      requiredminingskill;                        // 17
     uint32      requiredlockskill;                          // 18
                                                             // 19-32, not used
+#endif
 };
 
 struct MailTemplateEntry
