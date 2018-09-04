@@ -212,6 +212,7 @@ void SmartAI::StopPath(uint32 DespawnTime, uint32 quest, bool fail)
 
     GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_STOPPED, nullptr, _currentWaypointNode, GetScript()->GetPathId());
 
+    _repeatWaypointPath = false; //sun: prevent repeating in EndPath
     EndPath(fail);
 }
 
