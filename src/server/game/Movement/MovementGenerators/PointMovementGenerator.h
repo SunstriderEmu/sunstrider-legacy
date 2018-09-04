@@ -43,7 +43,7 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
 {
     public:
         explicit AssistanceMovementGenerator(uint32 id, float _x, float _y, float _z) :
-            PointMovementGenerator<Creature>(id, _x, _y, _z, 0.0f, true) { }
+            PointMovementGenerator<Creature>(id, _x, _y, _z, true, 0.0f) { }
 
         void Finalize(Unit*, bool, bool) override;
 
