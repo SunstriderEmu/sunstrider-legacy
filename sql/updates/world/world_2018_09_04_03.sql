@@ -1,1 +1,1 @@
-UPDATE pack58 WHERE SET item = 12940 WHERE item = 12939;
+UPDATE pack58 SET item = 12940 WHERE item = 12939;
