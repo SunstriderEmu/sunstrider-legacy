@@ -76,16 +76,6 @@ public:
 
             if (player->CanCompleteQuest(entry))
                 player->CompleteQuest(entry);
-
-            if (sWorld->getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE)
-                && !(pQuest->IsDaily())
-                && !(pQuest->GetType() == QUEST_TYPE_RAID)
-                && !(pQuest->GetType() == QUEST_TYPE_DUNGEON)
-                && pQuest->IsMarkedAsBugged()
-                )
-            {
-                player->AutoCompleteQuest(pQuest);
-            }
         }
 
         return true;

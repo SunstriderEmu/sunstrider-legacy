@@ -135,6 +135,10 @@ enum __QuestFlags
     QUEST_FLAGS_FLAGS_PVP               = 0x00002000,   // Having this quest in log forces PvP flag
     QUEST_FLAGS_UNAVAILABLE             = 0x00004000,   // Used on quests that are not generically available
     QUEST_FLAGS_WEEKLY                  = 0x00008000,
+    QUEST_FLAGS_AUTOCOMPLETE            = 0x00010000,   // auto complete
+    QUEST_FLAGS_DISPLAY_ITEM_IN_TRACKER = 0x00020000,   // Displays usable item in quest tracker
+    QUEST_FLAGS_OBJ_TEXT                = 0x00040000,   // use Objective text as Complete text
+    QUEST_FLAGS_AUTO_ACCEPT             = 0x00080000,   // The client recognizes this flag as auto-accept. However, NONE of the current quests (3.3.5a) have this flag. Maybe blizz used to use it, or will use it in the future.
 #endif
 
     //TODO move those flags into another variable
@@ -233,6 +237,7 @@ class TC_GAME_API Quest
         uint32 GetQuestCompleteScript() const { return QuestCompleteScript; }
         bool   IsRepeatable() const { return QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE; }
         bool   IsAutoComplete() const;
+        bool   IsAutoAccept() const { return false; } //tc compat
         uint32 GetFlags() const { return QuestFlags; }
         bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
 #ifdef LICH_KING
@@ -252,8 +257,6 @@ class TC_GAME_API Quest
 #endif
                    ) && !IsRepeatable(); 
         }
-
-        bool   IsMarkedAsBugged() const { return m_markedAsBugged; }
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
@@ -296,7 +299,6 @@ class TC_GAME_API Quest
         uint32 m_reqCreatureOrGOcount;
         uint32 m_rewchoiceitemscount;
         uint32 m_rewitemscount;
-        bool   m_markedAsBugged;
 
         // table data
     protected:

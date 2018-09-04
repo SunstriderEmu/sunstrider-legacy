@@ -3165,9 +3165,8 @@ void ObjectMgr::LoadQuests()
         "RewItemId1, RewItemId2, RewItemId3, RewItemId4, RewItemCount1, RewItemCount2, RewItemCount3, RewItemCount4,"
         "RewRepFaction1, RewRepFaction2, RewRepFaction3, RewRepFaction4, RewRepFaction5, RewRepValue1, RewRepValue2, RewRepValue3, RewRepValue4, RewRepValue5,"
         "RewHonorableKills, RewOrReqMoney, RewMoneyMaxLevel, RewSpell, RewSpellCast, RewMailTemplateId, RewMailDelaySecs, PointMapId, PointX, PointY, PointOpt,"
-        "StartScript, CompleteScript, quest_bugs.entry"
+        "StartScript, CompleteScript"
         " FROM quest_template "
-        " LEFT JOIN quest_bugs ON bugged = 1 and quest_bugs.entry = quest_template.entry "
     );
 
     if(result == nullptr)

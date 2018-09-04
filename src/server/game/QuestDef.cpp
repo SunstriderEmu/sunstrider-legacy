@@ -118,7 +118,6 @@ Quest::Quest(Field * questRecord)
 
     QuestStartScript = questRecord[i++].GetUInt32();
     QuestCompleteScript = questRecord[i++].GetUInt32();
-    m_markedAsBugged = questRecord[i++].GetBool();
 
     QuestFlags |= SpecialFlags << 16;
 

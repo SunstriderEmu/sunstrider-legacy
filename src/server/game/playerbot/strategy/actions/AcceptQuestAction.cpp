@@ -64,14 +64,14 @@ bool AcceptQuestShareAction::Execute(Event event)
     p >> quest;
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest);
 
-    if (!qInfo || !_bot->GetDivider())
+    if (!qInfo || !_bot->GetPlayerSharingQuest())
         return false;
 
     quest = qInfo->GetQuestId();
     if( !_bot->CanTakeQuest( qInfo, false ) )
     {
         // can't take quest
-        _bot->SetDivider( ObjectGuid() );
+        _bot->ClearQuestSharingInfo();
         ai->TellMaster("I can't take this quest");
 
         return false;
@@ -79,7 +79,7 @@ bool AcceptQuestShareAction::Execute(Event event)
 
     // send msg to quest giving player
     master->SendPushToPartyResponse(_bot, QUEST_PARTY_MSG_ACCEPT_QUEST );
-    _bot->SetDivider( ObjectGuid() );
+    _bot->ClearQuestSharingInfo();
 
     if(_bot->CanAddQuest( qInfo, false ) )
     {

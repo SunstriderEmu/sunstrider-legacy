@@ -1562,9 +1562,6 @@ CharDelete.KeepDays = 30
 #   Teleporter.MaxLevel
 #       Maximum level to use the npc_teleporter. If not found, default is 255.
 #
-#   BuggyQuests.AutoComplete
-#       Tells if the autocomplete quest system is activated. If not found, default to false.
-#
 #	BetaServer.Enabled
 #		Enable Beta server features, such as the custom spawning zone.
 #
@@ -1603,7 +1600,6 @@ ForbiddenMaps = ""
 Transports.DockingSounds = 0
 Teleporter.MinLevel = 1
 Teleporter.MaxLevel = 255
-BuggyQuests.AutoComplete = 0
 BetaServer.Enabled = 0
 BetaServer.Lvl70 = 0
 

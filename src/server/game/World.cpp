@@ -1265,8 +1265,6 @@ void World::LoadConfigSettings(bool reload)
     }
     delete[] forbiddenMaps;
 
-    m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfigMgr->GetBoolDefault("BuggyQuests.AutoComplete", false);
-
     m_configs[CONFIG_AUTOANNOUNCE_ENABLED] = sConfigMgr->GetBoolDefault("AutoAnnounce.Enable", false);
 
     // warden

@@ -441,9 +441,13 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
     }
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_DETAILS, 100);   // guess size
-    data << uint64(npcGUID);
 #ifdef LICH_KING
-    data << uint64(_session->GetPlayer()->GetDivider());
+    data << uint64(npcGUID);
+    data << uint64(_session->GetPlayer()->GetPlayerSharingQuest());
+#else 
+    bool sharing = _session->GetPlayer()->GetSharedQuestID() == quest->GetQuestId();
+    ObjectGuid sourceGUID(sharing ? _session->GetPlayer()->GetPlayerSharingQuest() : npcGUID);
+    data << sourceGUID;
 #endif
     data << uint32(quest->GetQuestId());
     data << questTitle;
