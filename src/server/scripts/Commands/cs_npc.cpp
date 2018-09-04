@@ -1625,25 +1625,30 @@ public:
         if (option >0.0f)
             mtype = RANDOM_MOTION_TYPE;
 
-        Creature *pCreature =  handler->GetSelectedCreature();
-        ObjectGuid::LowType u_guidlow = 0;
-
-        if (pCreature)
-            u_guidlow = pCreature->GetSpawnId();
-        else
+        Creature* pCreature = handler->GetSelectedCreature();
+        if (!pCreature)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
             return false;
+        }
+        ObjectGuid::LowType u_guidlow = pCreature->GetSpawnId();
+
+        //sun: also update creature data, new spawns also need to use the correct type (updating the current creature is not enough in case of non compat respawn)
+        if (CreatureData const* _data = sObjectMgr->GetCreatureData(pCreature->GetSpawnId()))
+            if (CreatureData* data = const_cast<CreatureData*>(_data))
+            {
+                data->movementType = mtype;
+                data->spawndist = option;
+            }
 
         pCreature->SetRespawnRadius((float)option);
         pCreature->SetDefaultMovementType(mtype);
         pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->IsAlive())                                // dead creature will reset movement generator at respawn
-        {
-            pCreature->SetDeathState(JUST_DIED);
-            pCreature->Respawn();
-        }
+        pCreature->Respawn(true);
 
-        WorldDatabase.PExecute("UPDATE creature SET spawndist=%f, MovementType=%i WHERE guid=%u",option,mtype,u_guidlow);
-        handler->PSendSysMessage(LANG_COMMAND_SPAWNDIST,option);
+        WorldDatabase.PExecute("UPDATE creature SET spawndist=%f, MovementType=%i WHERE guid=%u", option, mtype, u_guidlow);
+        handler->PSendSysMessage(LANG_COMMAND_SPAWNDIST, option);
         return true;
     }
 
