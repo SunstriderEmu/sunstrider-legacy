@@ -2652,18 +2652,18 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 
     Unit::AuraEffectList const& DummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
     for(auto DummyAura : DummyAuras)
-        if(DummyAura->GetId() == 32098 || DummyAura->GetId() == 32096)
+        if(DummyAura->GetId() == 32098 || DummyAura->GetId() == 32096) // Honor Hold's Favor || Thrallmar's Favor 
         {
            uint32 area_id = GetAreaId();
            if(area_id == 3483 || area_id == 3535 || area_id == 3562 || area_id == 3713)
-                   xp = uint32(xp*(1.0f + 5.0f / 100.0f));
+                xp = uint32(xp*(1.0f + 5.0f / 100.0f));
         }
 
 
     // XP resting bonus for kill
     uint32 rested_bonus_xp = victim ? GetXPRestBonus(xp) : 0;
 
-    SendLogXPGain(xp,victim,rested_bonus_xp);
+    SendLogXPGain(xp, victim, rested_bonus_xp);
 
     uint32 curXP = GetUInt32Value(PLAYER_XP);
     uint32 nextLvlXP = GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
@@ -2687,14 +2687,17 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 // Current player experience not update (must be update by caller)
 void Player::GiveLevel(uint32 level)
 {
-    if ( level == GetLevel() )
+    if (level == GetLevel())
         return;
 
+    if (Guild* guild = GetGuild())
+        guild->UpdateMemberData(this, GUILD_MEMBER_DATA_LEVEL, level);
+
     PlayerLevelInfo info;
-    sObjectMgr->GetPlayerLevelInfo(GetRace(),GetClass(),level,&info);
+    sObjectMgr->GetPlayerLevelInfo(GetRace(), GetClass(), level, &info);
 
     PlayerClassLevelInfo classInfo;
-    sObjectMgr->GetPlayerClassLevelInfo(GetClass(),level,&classInfo);
+    sObjectMgr->GetPlayerClassLevelInfo(GetClass(), level, &classInfo);
 
     // send levelup info to client
     WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS*4+MAX_STATS*4));
@@ -2706,8 +2709,12 @@ void Player::GiveLevel(uint32 level)
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
+#ifdef LICH_KING
+    data << uint32(0);
+    data << uint32(0);
+#endif
     // end for
-    for(int i = STAT_STRENGTH; i < MAX_STATS; ++i)          // Stats loop (0-4)
+    for(uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)          // Stats loop (0-4)
         data << uint32(int32(info.stats[i]) - GetCreateStat(Stats(i)));
 
     SendDirectMessage(&data);
@@ -2716,12 +2723,13 @@ void Player::GiveLevel(uint32 level)
 
     //update level, max level of skills
     if(GetLevel()!= level)
-        m_Played_time[1] = 0;                               // Level Played Time reset
+        m_Played_time[PLAYED_TIME_LEVEL] = 0;                   // Level Played Time reset
+
     SetLevel(level);
     UpdateSkillsForLevel();
 
     // save base values (bonuses already included in stored stats
-    for(int i = STAT_STRENGTH; i < MAX_STATS; ++i)
+    for(uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetCreateStat(Stats(i), info.stats[i]);
 
     SetCreateHealth(classInfo.basehealth);
@@ -6951,7 +6959,6 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     UpdateZoneDependentAuras(newZone);
 
-
     if (oldZoneId != newZone)
     {
         sOutdoorPvPMgr->HandlePlayerEnterZone(this, m_zoneUpdateId);
@@ -6959,10 +6966,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         sBattlefieldMgr->HandlePlayerEnterZone(this, newZone);
 #endif
         SendInitWorldStates(newZone, newArea);              // only if really enters to new zone, not just area change, works strange...
-        /* TC
         if (Guild* guild = GetGuild())
             guild->UpdateMemberData(this, GUILD_MEMBER_DATA_ZONEID, newZone);
-            */
     }
 }
 
@@ -20142,15 +20147,13 @@ void Player::SendInitialPacketsBeforeAddToMap()
     uint32 newzone, newarea;
     GetZoneAndAreaId(newzone, newarea);
     UpdateZone(newzone, newarea);
-    SendInitWorldStates();
-
-    // SMSG_SET_AURA_SINGLE
 
     data.Initialize(SMSG_LOGIN_SETTIMESPEED, 8);
     data << uint32(secsToTimeBitFields(GameTime::GetGameTime()));
-    data << (float)0.01666667f;                             // game speed
-    if(GetSession()->GetClientBuild() == BUILD_335)
-        data << uint32(0);                                  // added in 3.1.2
+    data << float(0.01666667f);                             // game speed
+#ifdef LICH_KING
+    data << uint32(0);                                      // added in 3.1.2
+#endif
     SendDirectMessage( &data );
 
     SendUpdateWorldState(3191, uint32(sWorld->getConfig(CONFIG_ARENA_SEASON)));
