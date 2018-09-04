@@ -72,9 +72,9 @@ bool OutdoorPvPHP::SetupOutdoorPvP()
     for(uint32 OutdoorPvPHPBuffZone : OutdoorPvPHPBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPHPBuffZone,this);
 
-    AddCapturePoint(new OPvPCapturePointHP(this,HP_TOWER_BROKEN_HILL));
-    AddCapturePoint(new OPvPCapturePointHP(this,HP_TOWER_OVERLOOK));
-    AddCapturePoint(new OPvPCapturePointHP(this,HP_TOWER_STADIUM));
+    AddCapturePoint(new OPvPCapturePointHP(this, HP_TOWER_BROKEN_HILL));
+    AddCapturePoint(new OPvPCapturePointHP(this, HP_TOWER_OVERLOOK));
+    AddCapturePoint(new OPvPCapturePointHP(this, HP_TOWER_STADIUM));
 
     SetMapFromZone(OutdoorPvPHPBuffZones[0]);
 
@@ -122,6 +122,7 @@ bool OutdoorPvPHP::Update(uint32 diff)
             BuffTeam(HORDE);
         else
             BuffTeam(0);
+
         SendUpdateWorldState(HP_UI_TOWER_COUNT_A, m_AllianceTowersControlled);
         SendUpdateWorldState(HP_UI_TOWER_COUNT_H, m_HordeTowersControlled);
     }
@@ -130,36 +131,51 @@ bool OutdoorPvPHP::Update(uint32 diff)
 
 void OutdoorPvPHP::SendRemoveWorldStates(Player *plr)
 {
-    plr->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_A,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_H,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_COUNT_H,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_COUNT_A,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_N,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_POS,0);
-    plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_DISPLAY,0);
-    for(int i = 0; i < HP_TOWER_NUM; ++i)
+    plr->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_A, WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_H, WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(HP_UI_TOWER_COUNT_H, WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(HP_UI_TOWER_COUNT_A, WORLD_STATE_REMOVE);
+    /*plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_N, WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_POS, WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(HP_UI_TOWER_SLIDER_DISPLAY, WORLD_STATE_REMOVE);*/
+    for (uint8 i = 0; i < HP_TOWER_NUM; ++i)
     {
-        plr->SendUpdateWorldState(HP_MAP_N[i],0);
-        plr->SendUpdateWorldState(HP_MAP_A[i],0);
-        plr->SendUpdateWorldState(HP_MAP_H[i],0);
+        plr->SendUpdateWorldState(HP_MAP_N[i], WORLD_STATE_REMOVE);
+        plr->SendUpdateWorldState(HP_MAP_A[i], WORLD_STATE_REMOVE);
+        plr->SendUpdateWorldState(HP_MAP_H[i], WORLD_STATE_REMOVE);
     }
 }
 
 void OutdoorPvPHP::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(HP_UI_TOWER_DISPLAY_A) << uint32(1);
-    data << uint32(HP_UI_TOWER_DISPLAY_H) << uint32(1);
+    /*
+    {
+        data << uint32(0x9ba) << uint32(0x1);           // 10 // add ally tower main gui icon       // maybe should be sent only on login?
+        data << uint32(0x9b9) << uint32(0x1);           // 11 // add horde tower main gui icon      // maybe should be sent only on login?
+        data << uint32(0x9b5) << uint32(0x0);           // 12 // show neutral broken hill icon      // 2485
+        data << uint32(0x9b4) << uint32(0x1);           // 13 // show icon above broken hill        // 2484
+        data << uint32(0x9b3) << uint32(0x0);           // 14 // show ally broken hill icon         // 2483
+        data << uint32(0x9b2) << uint32(0x0);           // 15 // show neutral overlook icon         // 2482
+        data << uint32(0x9b1) << uint32(0x1);           // 16 // show the overlook arrow            // 2481
+        data << uint32(0x9b0) << uint32(0x0);           // 17 // show ally overlook icon            // 2480
+        data << uint32(0x9ae) << uint32(0x0);           // 18 // horde pvp objectives captured      // 2478
+        data << uint32(0x9ac) << uint32(0x0);           // 19 // ally pvp objectives captured       // 2476
+        data << uint32(2475)  << uint32(100); //: ally / horde slider grey area                              // show only in direct vicinity!
+        data << uint32(2474)  << uint32(50);  //: ally / horde slider percentage, 100 for ally, 0 for horde  // show only in direct vicinity!
+        data << uint32(2473)  << uint32(0);   //: ally / horde slider display                                // show only in direct vicinity!
+        data << uint32(0x9a8) << uint32(0x0);           // 20 // show the neutral stadium icon      // 2472
+        data << uint32(0x9a7) << uint32(0x0);           // 21 // show the ally stadium icon         // 2471
+        data << uint32(0x9a6) << uint32(0x1);           // 22 // show the horde stadium icon        // 2470
+    }
+    */
+    data << uint32(HP_UI_TOWER_DISPLAY_A) << uint32(WORLD_STATE_ADD);
+    data << uint32(HP_UI_TOWER_DISPLAY_H) << uint32(WORLD_STATE_ADD);
     data << uint32(HP_UI_TOWER_COUNT_A) << uint32(m_AllianceTowersControlled);
     data << uint32(HP_UI_TOWER_COUNT_H) << uint32(m_HordeTowersControlled);
-    data << uint32(HP_UI_TOWER_SLIDER_DISPLAY) << uint32(0);
-    data << uint32(HP_UI_TOWER_SLIDER_POS) << uint32(50);
-    data << uint32(HP_UI_TOWER_SLIDER_N) << uint32(100);
-    for(auto & m_OPvPCapturePoint : m_capturePoints)
-    {
-        m_OPvPCapturePoint.second->FillInitialWorldStates(data);
-    }
-}
 
+    for(auto & m_OPvPCapturePoint : m_capturePoints)
+        m_OPvPCapturePoint.second->FillInitialWorldStates(data);
+}
 
 uint32 OutdoorPvPHP::GetAllianceTowersControlled() const
 {
@@ -296,23 +312,23 @@ void OPvPCapturePointHP::FillInitialWorldStates(WorldPacket &data)
     {
         case OBJECTIVESTATE_ALLIANCE:
         case OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE:
-            data << uint32(HP_MAP_N[m_TowerType]) << uint32(0);
-            data << uint32(HP_MAP_A[m_TowerType]) << uint32(1);
-            data << uint32(HP_MAP_H[m_TowerType]) << uint32(0);
+            data << uint32(HP_MAP_N[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
+            data << uint32(HP_MAP_A[m_TowerType]) << uint32(WORLD_STATE_ADD);
+            data << uint32(HP_MAP_H[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
             break;
         case OBJECTIVESTATE_HORDE:
         case OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE:
-            data << uint32(HP_MAP_N[m_TowerType]) << uint32(0);
-            data << uint32(HP_MAP_A[m_TowerType]) << uint32(0);
-            data << uint32(HP_MAP_H[m_TowerType]) << uint32(1);
+            data << uint32(HP_MAP_N[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
+            data << uint32(HP_MAP_A[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
+            data << uint32(HP_MAP_H[m_TowerType]) << uint32(WORLD_STATE_ADD);
             break;
         case OBJECTIVESTATE_NEUTRAL:
         case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
         case OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE:
         default:
-            data << uint32(HP_MAP_N[m_TowerType]) << uint32(1);
-            data << uint32(HP_MAP_A[m_TowerType]) << uint32(0);
-            data << uint32(HP_MAP_H[m_TowerType]) << uint32(0);
+            data << uint32(HP_MAP_N[m_TowerType]) << uint32(WORLD_STATE_ADD);
+            data << uint32(HP_MAP_A[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
+            data << uint32(HP_MAP_H[m_TowerType]) << uint32(WORLD_STATE_REMOVE);
             break;
     }
 }

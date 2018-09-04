@@ -3014,12 +3014,13 @@ bool InstanceMap::AddPlayerToMap(Player *player)
             }
         }
 
-        if(i_data) i_data->OnPlayerEnter(player);
+        if(i_data) 
+            i_data->OnPlayerEnter(player);
+
         // for normal instances cancel the reset schedule when the
         // first player enters (no players yet)
         SetResetSchedule(false);
 
-        player->SendInitWorldStates();
         //TC_LOG_DEBUG("maps","MAP: Player '%s' entered the instance '%u' of map '%s'", player->GetName(), GetInstanceId(), GetMapName());
         // initialize unload state
         m_unloadTimer = 0;

@@ -22,7 +22,7 @@ bool OPvPCapturePoint::HandlePlayerEnter(Player * player)
 {
     if (m_capturePoint)
     {
-        player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, 1);
+        player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, WORLD_STATE_ADD);
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate2, (uint32)ceil((m_value + m_maxValue) / (2 * m_maxValue) * 100.0f));
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate3, m_neutralValuePct);
     }
@@ -37,7 +37,7 @@ bool OPvPCapturePoint::HandlePlayerEnter(Player * player)
 void OPvPCapturePoint::HandlePlayerLeave(Player* player)
 {
     if (m_capturePoint)
-        player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, 0);
+        player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, WORLD_STATE_REMOVE);
 
     m_activePlayers[player->GetTeamId()].erase(player->GetGUID());
 }
@@ -98,7 +98,7 @@ void OPvPCapturePoint::SendChangePhase()
         return;
 
     // send this too, sometimes the slider disappears, dunno why :(
-    SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, 1);
+    SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, WORLD_STATE_ADD);
     // send these updates to only the ones in this objective
     SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate2, (uint32)ceil((m_value + m_maxValue) / (2 * m_maxValue) * 100.0f));
     // send this too, sometimes it resets :S

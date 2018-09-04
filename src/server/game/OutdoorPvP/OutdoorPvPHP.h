@@ -30,23 +30,21 @@ const uint32 HP_CapturePointEvent_Enter[HP_TOWER_NUM] = {11404,11396,11388};
 
 const uint32 HP_CapturePointEvent_Leave[HP_TOWER_NUM] = {11403,11395,11387};
 
-enum OutdoorPvPHPWorldStates{
-    HP_UI_TOWER_DISPLAY_A = 0x9ba,
-    HP_UI_TOWER_DISPLAY_H = 0x9b9,
+enum OutdoorPvPHPWorldStates
+{
+    HP_UI_TOWER_DISPLAY_A       = 2490,
+    HP_UI_TOWER_DISPLAY_H       = 2489,
 
-    HP_UI_TOWER_COUNT_H = 0x9ae,
-    HP_UI_TOWER_COUNT_A = 0x9ac,
-
-    HP_UI_TOWER_SLIDER_N = 2475,
-    HP_UI_TOWER_SLIDER_POS = 2474,
-    HP_UI_TOWER_SLIDER_DISPLAY = 2473
+    HP_UI_TOWER_COUNT_H         = 2478,
+    HP_UI_TOWER_COUNT_A         = 2476,
 };
 
-const uint32 HP_MAP_N[HP_TOWER_NUM] = {0x9b5,0x9b2,0x9a8};
+// Broken hill, overlook, stadium
+const uint32 HP_MAP_N[HP_TOWER_NUM] = { 2485,2482,2472 };
 
-const uint32 HP_MAP_A[HP_TOWER_NUM] = {0x9b3,0x9b0,0x9a7};
+const uint32 HP_MAP_A[HP_TOWER_NUM] = { 2483,2480,2471 };
 
-const uint32 HP_MAP_H[HP_TOWER_NUM] = {0x9b4,0x9b1,0x9a6};
+const uint32 HP_MAP_H[HP_TOWER_NUM] = { 2484,2481,2470 };
 
 const uint32 HP_TowerArtKit_A[HP_TOWER_NUM] = {65,62,67};
 
@@ -54,13 +52,15 @@ const uint32 HP_TowerArtKit_H[HP_TOWER_NUM] = {64,61,68};
 
 const uint32 HP_TowerArtKit_N[HP_TOWER_NUM] = {66,63,69};
 
-const go_type HPCapturePoints[HP_TOWER_NUM] = {
+const go_type HPCapturePoints[HP_TOWER_NUM] = 
+{
     {182175,530,-471.462f,3451.09f,34.6432f,0.1745330f,0.0f,0.0f,0.087156f,0.9961950f},      // 0 - Broken Hill
     {182174,530,-184.889f,3476.93f,38.2050f,-0.017453f,0.0f,0.0f,0.008727f,-0.999962f},     // 1 - Overlook
     {182173,530,-290.016f,3702.42f,56.6729f,0.0349070f,0.0f,0.0f,0.017452f,0.9998480f}     // 2 - Stadium
 };
 
-const go_type HPTowerFlags[HP_TOWER_NUM] = {
+const go_type HPTowerFlags[HP_TOWER_NUM] = 
+{
     {183514,530,-467.078f,3528.17f,64.7121f,3.14159f,0.0f,0.0f,1.0f,0.0f},  // 0 broken hill
     {182525,530,-187.887f,3459.38f,60.0403f,-3.12414f,0.0f,0.0f,0.999962f,-0.008727f}, // 1 overlook
     {183515,530,-289.610f,3696.83f,75.9447f,3.12414f,0.0f,0.0f,0.999962f,0.008727f} // 2 stadium

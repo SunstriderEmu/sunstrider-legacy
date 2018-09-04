@@ -467,10 +467,6 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 
     // use server side data, but only after update the player position. See Player::UpdatePosition().
     GetPlayer()->SetNeedsZoneUpdate(true);
-
-    //GetPlayer()->UpdateZone(newZone);
-
-    //GetPlayer()->SendInitWorldStates(true,newZone);
 }
 
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )

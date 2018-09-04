@@ -2671,6 +2671,12 @@ enum RemoveMethod : uint8
 #endif
 };
 
+enum WorldStateType
+{
+    WORLD_STATE_REMOVE              = 0,
+    WORLD_STATE_ADD                 = 1
+};
+
 enum ActivateTaxiReply : uint32
 {
     ERR_TAXIOK                      = 0,
