@@ -1,6 +1,7 @@
 
 void AddSC_test_dummy();
 void AddSC_test_loot_chance();
+void AddSC_test_quest_misc();
 void AddSC_test_quest_spells();
 void AddSC_test_movement_point();
 void AddSC_test_spells_druid();
@@ -29,6 +30,7 @@ void AddTestsScripts()
 {
     AddSC_test_dummy();
     AddSC_test_loot_chance();
+    AddSC_test_quest_misc();
     AddSC_test_quest_spells();
     AddSC_test_creature();
 	AddSC_test_pools();
