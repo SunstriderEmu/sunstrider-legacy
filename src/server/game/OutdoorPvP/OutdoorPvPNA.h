@@ -26,15 +26,12 @@ const uint32 NA_RESPAWN_TIME = 3600000; // one hour to capture after defeating a
 
 const uint32 NA_GUARD_CHECK_TIME = 500; // every half second
 
-enum OutdoorPvPNAWorldStates {
+enum OutdoorPvPNAWorldStates 
+{
     NA_UI_HORDE_GUARDS_SHOW = 2503,
     NA_UI_ALLIANCE_GUARDS_SHOW = 2502,
     NA_UI_GUARDS_MAX = 2493,
     NA_UI_GUARDS_LEFT = 2491,
-
-    NA_UI_TOWER_SLIDER_DISPLAY = 2495,
-    NA_UI_TOWER_SLIDER_POS = 2494,
-    NA_UI_TOWER_SLIDER_N = 2497,
 
     NA_MAP_WYVERN_NORTH_NEU_H = 2762,
     NA_MAP_WYVERN_NORTH_NEU_A = 2662,

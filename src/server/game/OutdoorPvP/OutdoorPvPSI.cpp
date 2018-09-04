@@ -27,9 +27,9 @@ void OutdoorPvPSI::FillInitialWorldStates(WorldPacket &data)
 
 void OutdoorPvPSI::SendRemoveWorldStates(Player *plr)
 {
-    plr->SendUpdateWorldState(SI_GATHERED_A,0);
-    plr->SendUpdateWorldState(SI_GATHERED_H,0);
-    plr->SendUpdateWorldState(SI_SILITHYST_MAX,0);
+    plr->SendUpdateWorldState(SI_GATHERED_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(SI_GATHERED_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(SI_SILITHYST_MAX,WORLD_STATE_REMOVE);
 }
 
 void OutdoorPvPSI::UpdateWorldState()

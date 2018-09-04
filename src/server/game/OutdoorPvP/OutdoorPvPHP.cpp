@@ -236,7 +236,7 @@ void OPvPCapturePointHP::ChangeState()
     // send world state update
     if (field)
     {
-        m_PvP->SendUpdateWorldState(field, 0);
+        m_PvP->SendUpdateWorldState(field, WORLD_STATE_REMOVE);
         field = 0;
     }
     uint32 artkit = 21;
@@ -299,7 +299,7 @@ void OPvPCapturePointHP::ChangeState()
 
     // send world state update
     if (field)
-        m_PvP->SendUpdateWorldState(field, 1);
+        m_PvP->SendUpdateWorldState(field, WORLD_STATE_ADD);
 
     // complete quest objective
     if (m_State == OBJECTIVESTATE_ALLIANCE || m_State == OBJECTIVESTATE_HORDE)

@@ -398,31 +398,25 @@ void OutdoorPvPZM::FillInitialWorldStates(WorldPacket &data)
 
 void OutdoorPvPZM::SendRemoveWorldStates(Player *plr)
 {
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_N_W,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_POS_W,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_DISPLAY_W,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_N_E,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_POS_E,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_DISPLAY_E,0);
-    plr->SendUpdateWorldState(ZM_WORLDSTATE_UNK_1,1);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_N,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_H,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_A,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_N,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_H,0);
-    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_A,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_N,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_H,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_A,0);
-    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_H,0);
-    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_A,0);
-    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_N,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_N,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_H,0);
-    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_A,0);
-    plr->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_READY,0);
-    plr->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_NOT_READY,0);
-    plr->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_NOT_READY,0);
-    plr->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_READY,0);
+    plr->SendUpdateWorldState(ZM_WORLDSTATE_UNK_1,WORLD_STATE_ADD);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_EAST_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_UI_TOWER_WEST_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_EAST_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_GRAVEYARD_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_TOWER_WEST_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_READY,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_HORDE_FLAG_NOT_READY,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_NOT_READY,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(ZM_MAP_ALLIANCE_FLAG_READY,WORLD_STATE_REMOVE);
 }
 

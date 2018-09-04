@@ -22,14 +22,16 @@ const uint32 EP_PWT_CM = 17698;
 
 const uint32 EPBuffZones[EPBuffZonesNum] = {139, 2017, 2057};
 
-enum EP_TaxiNodes {
+enum EP_TaxiNodes 
+{
     EP_CGT_Taxi = 87,
     EP_EWT_Taxi = 86,
     EP_NPT_Taxi = 85,
     EP_PWT_Taxi = 84
 };
 
-enum EP_EastwallTowerWorldStates {
+enum EP_EastwallTowerWorldStates 
+{
     EP_EWT_A = 2354,
     EP_EWT_H = 2356,
     EP_EWT_A_P = 2357, // ally progressing
@@ -39,7 +41,8 @@ enum EP_EastwallTowerWorldStates {
     EP_EWT_N = 2361
 };
 
-enum EP_NorthpassTowerWorldStates {
+enum EP_NorthpassTowerWorldStates 
+{
     EP_NPT_N = 2352,
     EP_NPT_N_A = 2362,
     EP_NPT_N_H = 2363,
@@ -49,7 +52,8 @@ enum EP_NorthpassTowerWorldStates {
     EP_NPT_H = 2373
 };
 
-enum EP_PlagewoodTowerWorldStates {
+enum EP_PlagewoodTowerWorldStates 
+{
     EP_PWT_N_A = 2366,
     EP_PWT_N_H = 2353, //2367 not present! use neutral!
     EP_PWT_A_P = 2368,
@@ -59,7 +63,8 @@ enum EP_PlagewoodTowerWorldStates {
     EP_PWT_N = 2353
 };
 
-enum EP_CrownGuardTowerWorldStates {
+enum EP_CrownGuardTowerWorldStates 
+{
     EP_CGT_N_A = 2374,
     EP_CGT_N_H = 2375,
     EP_CGT_A_P = 2376,
@@ -69,16 +74,14 @@ enum EP_CrownGuardTowerWorldStates {
     EP_CGT_N = 2355
 };
 
-enum EP_WorldStates {
-    EP_UI_TOWER_SLIDER_DISPLAY = 2426,
-    EP_UI_TOWER_SLIDER_POS = 2427,
-    EP_UI_TOWER_SLIDER_N = 2428,
-
+enum EP_WorldStates 
+{
     EP_UI_TOWER_COUNT_A = 2327,
     EP_UI_TOWER_COUNT_H = 2328
 };
 
-enum EP_Summons {
+enum EP_Summons 
+{
     EP_EWT_COMMANDER = 0,
     EP_EWT_SOLDIER1,
     EP_EWT_SOLDIER2,
@@ -87,7 +90,8 @@ enum EP_Summons {
     EP_PWT_FLIGHTMASTER,
 };
 
-enum EP_GoSummons {
+enum EP_GoSummons 
+{
     EP_NPT_BUFF = 0,
     EP_NPT_FLAGS,
     EP_EWT_FLAGS,
@@ -95,7 +99,8 @@ enum EP_GoSummons {
     EP_PWT_FLAGS
 };
 
-enum EP_Towers {
+enum EP_Towers 
+{
     EP_EWT = 0, // plaguelands 03
     EP_NPT,// plaguelands 01
     EP_PWT,// plaguelands 04
@@ -103,14 +108,16 @@ enum EP_Towers {
     EP_TOWER_NUM
 };
 
-const go_type EPCapturePoints[EP_TOWER_NUM] = {
+const go_type EPCapturePoints[EP_TOWER_NUM] =
+{
     {182097,0,2574.51f,-4794.89f,144.704f,-1.45003f,-0.097056f, 0.095578f,-0.656229f, 0.742165f},
     {181899,0,3181.08f,-4379.36f,174.123f,-2.03472f,-0.065392f, 0.119494f,-0.842275f, 0.521553f},
     {182098,0,2962.71f,-3042.31f,154.789f, 2.08426f,-0.074807f,-0.113837f, 0.855928f, 0.498830f},
     {182096,0,1860.85f,-3731.23f,196.716f,-2.53214f, 0.033967f,-0.131914f, 0.944741f,-0.298177f}
 };
 
-const go_type EPTowerFlags[EP_TOWER_NUM] = {
+const go_type EPTowerFlags[EP_TOWER_NUM] = 
+{
     {182106,0,2569.60f,-4772.93f,115.399f,2.722710f,0.0f,0.0f,0.978148f,0.207912f},
     {182106,0,3148.17f,-4365.51f,145.029f,1.535890f,0.0f,0.0f,0.694658f,0.719340f},
     {182106,0,2992.63f,-3022.95f,125.593f,3.036870f,0.0f,0.0f,0.998630f,0.052336f},

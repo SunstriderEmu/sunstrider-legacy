@@ -33,13 +33,15 @@ const creature_type ZM_HordeFieldScout = {18564,67,530,296.625f,7818.4f,42.6294f
 // alliance field scout spawn data
 const creature_type ZM_AllianceFieldScout = {18581,469,530,374.395f,6230.08f,22.8351f,0.593412f};
 
-enum ZMCreatureTypes{
+enum ZMCreatureTypes
+{
     ZM_ALLIANCE_FIELD_SCOUT = 0,
     ZM_HORDE_FIELD_SCOUT,
     ZM_CREATURE_NUM
 };
 
-struct zm_beacon {
+struct zm_beacon 
+{
     uint32 slider_disp;
     uint32 slider_n;
     uint32 slider_pos;
@@ -53,52 +55,51 @@ struct zm_beacon {
     uint32 event_leave;
 };
 
-enum ZM_BeaconType{
+enum ZM_BeaconType
+{
     ZM_BEACON_EAST = 0,
     ZM_BEACON_WEST,
     ZM_NUM_BEACONS
 };
 
-const zm_beacon ZMBeaconInfo[ZM_NUM_BEACONS] = {
+const zm_beacon ZMBeaconInfo[ZM_NUM_BEACONS] = 
+{
     {2533,2535,2534,2560,2559,2558,2652,2651,2650,11807,11806},
     {2527,2529,2528,2557,2556,2555,2646,2645,2644,11805,11804}
 };
 
-const uint32 ZMBeaconCaptureA[ZM_NUM_BEACONS] = {
+const uint32 ZMBeaconCaptureA[ZM_NUM_BEACONS] = 
+{
     LANG_OPVP_ZM_CAPTURE_EAST_A,
     LANG_OPVP_ZM_CAPTURE_WEST_A
 };
 
-const uint32 ZMBeaconCaptureH[ZM_NUM_BEACONS] = {
+const uint32 ZMBeaconCaptureH[ZM_NUM_BEACONS] = 
+{
     LANG_OPVP_ZM_CAPTURE_EAST_H,
     LANG_OPVP_ZM_CAPTURE_WEST_H
 };
 
-const uint32 ZMBeaconLooseA[ZM_NUM_BEACONS] = {
+const uint32 ZMBeaconLooseA[ZM_NUM_BEACONS] = 
+{
     LANG_OPVP_ZM_LOOSE_EAST_A,
     LANG_OPVP_ZM_LOOSE_WEST_A
 };
 
-const uint32 ZMBeaconLooseH[ZM_NUM_BEACONS] = {
+const uint32 ZMBeaconLooseH[ZM_NUM_BEACONS] = 
+{
     LANG_OPVP_ZM_LOOSE_EAST_H,
     LANG_OPVP_ZM_LOOSE_WEST_H
 };
 
-const go_type ZMCapturePoints[ZM_NUM_BEACONS] = {
+const go_type ZMCapturePoints[ZM_NUM_BEACONS] = 
+{
     {182523,530,303.243f,6841.36f,40.1245f,-1.58825f,0.0f,0.0f,0.71325f,-0.700909f},
     {182522,530,336.466f,7340.26f,41.4984f,-1.58825f,0.0f,0.0f,0.71325f,-0.700909f}
 };
 
 enum OutdoorPvPZMWorldStates
 {
-    ZM_UI_TOWER_SLIDER_N_W = 2529,
-    ZM_UI_TOWER_SLIDER_POS_W = 2528,
-    ZM_UI_TOWER_SLIDER_DISPLAY_W = 2527,
-
-    ZM_UI_TOWER_SLIDER_N_E = 2535,
-    ZM_UI_TOWER_SLIDER_POS_E = 2534,
-    ZM_UI_TOWER_SLIDER_DISPLAY_E = 2533,
-
     ZM_WORLDSTATE_UNK_1 = 2653,
 
     ZM_UI_TOWER_EAST_N = 2560,

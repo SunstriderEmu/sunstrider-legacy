@@ -53,11 +53,8 @@ const uint32 TFTowerPlayerEnterEvents[TF_TOWER_NUM] = {12226, 12497, 12486, 1249
 
 const uint32 TFTowerPlayerLeaveEvents[TF_TOWER_NUM] = {12225, 12496, 12487, 12498, 12500};
 
-enum TFWorldStates{
-    TF_UI_TOWER_SLIDER_POS = 0xa41,
-    TF_UI_TOWER_SLIDER_N = 0xa40,
-    TF_UI_TOWER_SLIDER_DISPLAY = 0xa3f,
-
+enum TFWorldStates
+{
     TF_UI_TOWER_COUNT_H = 0xa3e,
     TF_UI_TOWER_COUNT_A = 0xa3d,
     TF_UI_TOWERS_CONTROLLED_DISPLAY = 0xa3c,
@@ -70,7 +67,8 @@ enum TFWorldStates{
     TF_UI_LOCKED_DISPLAY_ALLIANCE = 0xacf
 };
 
-enum TFTowerStates {
+enum TFTowerStates 
+{
     TF_TOWERSTATE_N = 1,
     TF_TOWERSTATE_H = 2,
     TF_TOWERSTATE_A = 4

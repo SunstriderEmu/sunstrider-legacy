@@ -642,53 +642,45 @@ void OutdoorPvPEP::FillInitialWorldStates(WorldPacket & data)
 {
     data << EP_UI_TOWER_COUNT_A << m_AllianceTowersControlled;
     data << EP_UI_TOWER_COUNT_H << m_HordeTowersControlled;
-    data << EP_UI_TOWER_SLIDER_DISPLAY << uint32(0);
-    data << EP_UI_TOWER_SLIDER_POS << uint32(50);
-    data << EP_UI_TOWER_SLIDER_N << uint32(100);
     for(auto & m_OPvPCapturePoint : m_capturePoints)
-    {
         m_OPvPCapturePoint.second->FillInitialWorldStates(data);
-    }
 }
 
 void OutdoorPvPEP::SendRemoveWorldStates(Player *plr)
 {
-    plr->SendUpdateWorldState(EP_UI_TOWER_COUNT_A,0);
-    plr->SendUpdateWorldState(EP_UI_TOWER_COUNT_H,0);
-    plr->SendUpdateWorldState(EP_UI_TOWER_SLIDER_DISPLAY,0);
-    plr->SendUpdateWorldState(EP_UI_TOWER_SLIDER_POS,0);
-    plr->SendUpdateWorldState(EP_UI_TOWER_SLIDER_N,0);
+    plr->SendUpdateWorldState(EP_UI_TOWER_COUNT_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_UI_TOWER_COUNT_H,WORLD_STATE_REMOVE);
 
-    plr->SendUpdateWorldState(EP_EWT_A,0);
-    plr->SendUpdateWorldState(EP_EWT_H,0);
-    plr->SendUpdateWorldState(EP_EWT_N,0);
-    plr->SendUpdateWorldState(EP_EWT_A_P,0);
-    plr->SendUpdateWorldState(EP_EWT_H_P,0);
-    plr->SendUpdateWorldState(EP_EWT_N_A,0);
-    plr->SendUpdateWorldState(EP_EWT_N_H,0);
+    plr->SendUpdateWorldState(EP_EWT_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_A_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_H_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_N_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_EWT_N_H,WORLD_STATE_REMOVE);
 
-    plr->SendUpdateWorldState(EP_PWT_A,0);
-    plr->SendUpdateWorldState(EP_PWT_H,0);
-    plr->SendUpdateWorldState(EP_PWT_N,0);
-    plr->SendUpdateWorldState(EP_PWT_A_P,0);
-    plr->SendUpdateWorldState(EP_PWT_H_P,0);
-    plr->SendUpdateWorldState(EP_PWT_N_A,0);
-    plr->SendUpdateWorldState(EP_PWT_N_H,0);
+    plr->SendUpdateWorldState(EP_PWT_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_A_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_H_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_N_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_PWT_N_H,WORLD_STATE_REMOVE);
 
-    plr->SendUpdateWorldState(EP_NPT_A,0);
-    plr->SendUpdateWorldState(EP_NPT_H,0);
-    plr->SendUpdateWorldState(EP_NPT_N,0);
-    plr->SendUpdateWorldState(EP_NPT_A_P,0);
-    plr->SendUpdateWorldState(EP_NPT_H_P,0);
-    plr->SendUpdateWorldState(EP_NPT_N_A,0);
-    plr->SendUpdateWorldState(EP_NPT_N_H,0);
+    plr->SendUpdateWorldState(EP_NPT_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_A_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_H_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_N_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_NPT_N_H,WORLD_STATE_REMOVE);
 
-    plr->SendUpdateWorldState(EP_CGT_A,0);
-    plr->SendUpdateWorldState(EP_CGT_H,0);
-    plr->SendUpdateWorldState(EP_CGT_N,0);
-    plr->SendUpdateWorldState(EP_CGT_A_P,0);
-    plr->SendUpdateWorldState(EP_CGT_H_P,0);
-    plr->SendUpdateWorldState(EP_CGT_N_A,0);
-    plr->SendUpdateWorldState(EP_CGT_N_H,0);
+    plr->SendUpdateWorldState(EP_CGT_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_H,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_N,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_A_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_H_P,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_N_A,WORLD_STATE_REMOVE);
+    plr->SendUpdateWorldState(EP_CGT_N_H,WORLD_STATE_REMOVE);
 }
 

@@ -28,7 +28,8 @@ const uint32 SI_TURNIN_QUEST_CM_H = 18199;
 
 const uint32 SI_SILITHYST_MOUND = 181597;
 
-enum SI_WorldStates{
+enum SI_WorldStates
+{
     SI_GATHERED_A = 2313,
     SI_GATHERED_H = 2314,
     SI_SILITHYST_MAX = 2317
