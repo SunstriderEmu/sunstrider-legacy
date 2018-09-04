@@ -156,18 +156,18 @@ enum CreatureFlagsExtra
 
 enum class CreatureGroundMovementType : uint8
 {
-    None,
-    Run,
-    Hover,
+    None            = 0,
+    Run             = 1,
+    Hover           = 2,
 
     Max
 };
 
 enum class CreatureFlightMovementType : uint8
 {
-    None,
-    DisableGravity,
-    CanFly,
+    None             = 0,
+    DisableGravity   = 1,
+    CanFly           = 2,
 
     Max
 };

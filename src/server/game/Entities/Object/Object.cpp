@@ -1946,52 +1946,6 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
     Position pos;
     pos.Relocate(x, y, z, ang);
     return SummonCreature(id, pos, spwtype, despwtime);
-
-    /*
-    auto pCreature = new TempSummon(GetGUID());
-
-    if (!pCreature->Create(GetMap()->GenerateLowGuid<HighGuid::Unit>(), GetMap(), GetPhaseMask(), id, x, y, z, ang))
-    {
-        delete pCreature;
-        return nullptr;
-    }
-
-    if (x == 0.0f && y == 0.0f && z == 0.0f)
-        GetClosePoint(x, y, z, pCreature->GetCombatReach());
-
-    pCreature->Relocate(x, y, z, ang);
-
-    if(!pCreature->IsPositionValid())
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUID().GetCounter(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
-        delete pCreature;
-        return nullptr;
-    }
-
-    pCreature->SetHomePosition(x, y, z, ang);
-    pCreature->Summon(spwtype, despwtime, GetMap());
-    
-    //script hooks
-    if(pCreature->AI())
-        pCreature->AI()->IsSummonedBy(((Unit*)this)->ToUnit());
-
-    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
-        (((Unit*)this)->ToCreature())->AI()->JustSummoned(pCreature);
-    // --
-
-    if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
-    {
-        if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
-            pCreature->SetFaction(((Unit*)this)->GetFaction());
-        pCreature->CastSpell(pCreature, pCreature->m_spells[0], TRIGGERED_NONE, nullptr, nullptr, GetGUID());
-    }
-
-    // allow summoned creatures to keep grids active for 2 minutes, so that we may use AI summoning creatures far away and coming to them
-    pCreature->SetKeepActiveTimer(2 * MINUTE * IN_MILLISECONDS);
-
-    //return the creature therewith the summoner has access to it
-    return pCreature;
-    */
 }
 
 Pet* Player::GetPet() const
