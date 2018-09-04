@@ -1691,6 +1691,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             uint32 quest = e.action.wpStop.quest;
             bool fail = e.action.wpStop.fail;
             ENSURE_AI(SmartAI, me->AI())->StopPath(DespawnTime, quest, fail);
+            ENSURE_AI(SmartAI, me->AI())->SetRepeatWaypointPath(false); //sun: prevent repeating in EndPath
             break;
         }
         case SMART_ACTION_WP_RESUME:

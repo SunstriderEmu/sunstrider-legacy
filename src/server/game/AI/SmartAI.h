@@ -187,6 +187,8 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void FriendlyKilled(Creature const* c, float range) override;
 
+        void SetRepeatWaypointPath(bool set) { _repeatWaypointPath = set; }
+
     private:
         bool mIsCharmed;
         uint32 mFollowCreditType;
