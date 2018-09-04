@@ -270,7 +270,7 @@ void SmartAI::EndPath(bool fail)
         }
     }
 
-    // End Path events should be only processed if it was SUCCESSFUL stop or stop called by SMART_ACTION_WAYPOINT_STOP
+    // End Path events should be only processed if it was SUCCESSFUL stop or stop called by SMART_ACTION_WP_STOP
     if (fail)
         return;
 
