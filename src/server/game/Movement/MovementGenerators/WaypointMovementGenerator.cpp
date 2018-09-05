@@ -148,8 +148,9 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
     _nextMoveTime.Reset(1000); //movement will start after 1s
 
     // inform AI
-    if (CreatureAI* AI = creature->AI())
-        AI->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
+    if(!_path->nodes.empty())
+        if (CreatureAI* AI = creature->AI())
+            AI->WaypointPathStarted(_path->nodes[_currentNode].id, _path->id);
 
     return true;
 }
