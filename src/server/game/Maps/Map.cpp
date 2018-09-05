@@ -1901,42 +1901,6 @@ float Map::GetVMapFloor(float x, float y, float z, float maxSearchDist, float co
     return VMAP::VMapFactory::createOrGetVMapManager()->getHeight(GetId(), x, y, z + collisionHeight, maxSearchDist);
 }
 
-/*
-old sunstrider code, may be used to tweak IsInWMOInterior and GetFullTerrainStatusForPosition if problems arise (commented 14/04/2018)
-inline bool IsOutdoorWMO(uint32 mogpFlags, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry, uint32 mapId)
-{
-    // If this flag is set we are outdoors and can mount up
-    if (mogpFlags & 0x8000)
-        return true;
-    
-    if (mogpFlags == 0x809 || mogpFlags == 0x849) // From observations, these zones are actually outdoor
-        return true;
-    
-    // If flag 0x800 is set and we are in non-flyable areas we cannot mount up even if we are physically outdoors
-    if (mapId != 530 && (mogpFlags & 0x800))
-        return false;
-
-    if (wmoEntry && atEntry)
-    {
-        if (atEntry->flags & AREA_FLAG_OUTSIDE)
-            return true;
-        if (atEntry->flags & AREA_FLAG_INSIDE)
-            return false;
-    }
-
-    if (wmoEntry)
-    {
-        if (wmoEntry->Flags & 4)
-            return true;
-        if (wmoEntry->Flags & 2)
-            return false;
-    }
-
-    // If this flag is set we are physically outdoors, mounting up is allowed if previous check failed
-    return mogpFlags & 0x8;
-}
-*/
-
 static inline bool IsInWMOInterior(uint32 mogpFlags)
 {
     return (mogpFlags & 0x2000) != 0;
@@ -2103,10 +2067,16 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
             data.areaInfo = boost::in_place(vmapData.areaInfo->adtId, vmapData.areaInfo->rootId, vmapData.areaInfo->groupId, vmapData.areaInfo->mogpFlags);
             // wmo found
             WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId);
-            data.outdoors = (vmapData.areaInfo->mogpFlags & 0x8) != 0;
+            uint32 mogpFlags = vmapData.areaInfo->mogpFlags;
+#ifndef LICH_KING
+            if (GetId() == 530) // in flyable areas mounting up is also allowed if 0x0008 flag is set
+                data.outdoors = mogpFlags & 0x8008;
+            else
+#endif
+                data.outdoors = mogpFlags & 0x8;
+
             if (wmoEntry)
             {
-                //sun: if more tweaks are needed for bc, check commented function IsOutdoorWMO above in this file, if its still there
                 data.areaId = wmoEntry->areaId;
                 if (wmoEntry->Flags & 4)
                     data.outdoors = true;
