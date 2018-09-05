@@ -2,6 +2,8 @@
 #include "Management/MMapManager.h"
 #include "Management/MMapFactory.h"
 #include "PathGenerator.h"
+#include "Transport.h"
+#include "MoveSplineInit.h"
 
 class mmaps_commandscript : public CommandScript
 {
@@ -66,6 +68,9 @@ public:
         path.SetUseStraightPath(useStraightPath);
         if (excludeSteep)
             path.ExcludeSteepSlopes();
+        Transport* transport = player->GetTransport();
+        path.SetTransport(transport);
+
         bool result = path.CalculatePath(x, y, z);
 
         Movement::PointsArray const& pointPath = path.GetPath();
@@ -84,8 +89,21 @@ public:
         if (!player->IsGameMaster())
             handler->PSendSysMessage("Enable GM mode to see the path points.");
 
-        for (const auto & i : pointPath)
-            player->SummonCreature(VISUAL_WAYPOINT, i.x, i.y, i.z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+        for (auto const & i : pointPath)
+        {
+            G3D::Vector3 targetPos(i);
+            if (transport)
+                transport->CalculatePassengerPosition(targetPos.x, targetPos.y, targetPos.z);
+            if (Creature* wp = player->SummonCreature(VISUAL_WAYPOINT, targetPos.x, targetPos.y, targetPos.z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
+                wp->SetDisableGravity(true);
+                if (transport)
+                {
+                    transport->AddPassenger(wp, true);
+                    wp->StopMovingOnCurrentPos(); //update position on client
+                }
+            }
+        }
 
         return true;
     }

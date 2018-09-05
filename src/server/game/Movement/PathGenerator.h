@@ -11,6 +11,7 @@
 #include "Object.h"
 
 class Unit;
+class Transport;
 
 // 74*4.0f=296y  number_of_points*interval = max_path_len
 // this is way more than actual evade range
@@ -76,6 +77,8 @@ class TC_GAME_API PathGenerator
         void ShortenPathUntilDist(G3D::Vector3 const& point, float dist);
 
         void ExcludeSteepSlopes() { _filter.setExcludeFlags(NAV_STEEP_SLOPES); }
+        void SetTransport(Transport* t);
+        Transport* GetTransport() const;
 
         uint32 GetOptions() { return _options; }
         /** Update fly/walk/swim options from the generator owner */
@@ -105,6 +108,8 @@ class TC_GAME_API PathGenerator
         G3D::Vector3 _endPosition;          // {x, y, z} of the destination
         G3D::Vector3 _actualEndPosition;    // {x, y, z} of the closest possible point to given destination
 
+        Transport* _transport;
+
         const Unit* _sourceUnit;          // the unit that is moving
         dtNavMesh const* _navMesh;              // the nav mesh
         dtNavMeshQuery const* _navMeshQuery;    // the nav mesh query used to find the path
@@ -113,6 +118,7 @@ class TC_GAME_API PathGenerator
         //force using _forceSourcePos
         bool _forceSourcePos;
         uint32 _sourceMapId;
+        uint32 _sourceInstanceId;
         PathOptions _options;
 
         dtQueryFilter _filter;  // use single filter for all movements, update it when needed

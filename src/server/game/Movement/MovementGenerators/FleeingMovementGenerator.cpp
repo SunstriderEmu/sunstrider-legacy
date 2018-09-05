@@ -56,6 +56,8 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
         _path->SetPathLengthLimit(30.0f);
         _path->ExcludeSteepSlopes();
     }
+    Transport* ownerTransport = owner->GetTransport();
+    _path->SetTransport(ownerTransport);
 
     bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
@@ -65,7 +67,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     }
 
     Movement::MoveSplineInit init(owner);
-    init.MovebyPath(_path->GetPath());
+    init.MovebyPath(_path->GetPath(), 0, ownerTransport);
     init.SetWalk(false);
     int32 traveltime = init.Launch();
     i_nextCheckTime.Reset(traveltime + urand(800, 1500));

@@ -20,6 +20,7 @@
 #include "MoveSpline.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
+#include "MMapFactory.h"
 #include "InstanceScript.h"
 
 TransportTemplate::~TransportTemplate()
@@ -77,6 +78,7 @@ void TransportMgr::LoadTransportTemplates()
         TransportTemplate& transport = _transportTemplates[entry];
         transport.entry = entry;
         GeneratePath(goInfo, &transport);
+        MMAP::MMapFactory::createOrGetMMapManager()->loadGameObject(goInfo->displayId);
 
         // transports in instance are only on one map
         if (transport.inInstance)

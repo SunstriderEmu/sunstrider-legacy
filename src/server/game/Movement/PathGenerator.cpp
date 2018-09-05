@@ -4,9 +4,10 @@
 #include "MapInstanced.h"
 #include "MapManager.h"
 #include "Creature.h"
-#include "Management/MMapFactory.h"
-#include "Management/MMapManager.h"
+#include "MMapFactory.h"
+#include "MMapManager.h"
 #include "Log.h"
+#include "Transport.h"
 
 #include "DetourCommon.h"
 #include "DetourNavMeshQuery.h"
@@ -26,18 +27,14 @@ PathGenerator::PathGenerator(const Unit* owner) :
 PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options) :
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH), _straightLine(false),
-    _endPosition(G3D::Vector3::zero()), _sourceUnit(nullptr), _navMesh(NULL), _navMeshQuery(NULL),
-    _sourceMapId(mapId), _forceSourcePos(false)
+    _endPosition(G3D::Vector3::zero()), _sourceUnit(nullptr), _navMesh(nullptr), _navMeshQuery(nullptr),
+    _sourceMapId(mapId), _sourceInstanceId(instanceId), _forceSourcePos(false), _transport(nullptr)
 {
     _options = options == 0 ? PATHFIND_OPTION_CANWALK : (PathOptions)options; //default to land path. Needed if we directly call to PathGenerator. Will be overriden in PathGenerator(const Unit* owner) constructor if called
     _sourcePos.Relocate(startPos);
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
     TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator from position %f %f %f (map:%u)\n", _sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ(), mapId);
-
-    MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
-    _navMesh = mmap->GetNavMesh(mapId);
-    _navMeshQuery = mmap->GetNavMeshQuery(mapId, instanceId);
 
     CreateFilter();
 }
@@ -51,7 +48,7 @@ void PathGenerator::UpdateOptions()
         options |= PATHFIND_OPTION_CANFLY;
     if(_sourceUnit->CanSwim())
         options |= PATHFIND_OPTION_CANSWIM;
-    if(_sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING) || _sourceUnit->GetTransport())
+    if(_sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING))
         options |= PATHFIND_OPTION_IGNOREPATHFINDING;
     if(_sourceUnit->HasAuraType(SPELL_AURA_WATER_WALK))
         options |= (PATHFIND_OPTION_WATERWALK);
@@ -72,10 +69,37 @@ PathGenerator::~PathGenerator()
         TC_LOG_DEBUG("maps", "++ PathGenerator::~PathGenerator()");
 }
 
+void PathGenerator::SetTransport(Transport* t)
+{
+    _transport = t;
+    _navMesh = nullptr;
+    _navMeshQuery = nullptr;
+}
+
+Transport* PathGenerator::GetTransport() const
+{
+    return _transport;
+}
+
 bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool forceDest, bool straightLine)
 {
     if (!Trinity::IsValidMapCoord(destX, destY, destZ) || !Trinity::IsValidMapCoord(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ()))
         return false;
+
+    if (_transport)
+        _transport->CalculatePassengerOffset(destX, destY, destZ);
+
+    if (!_navMeshQuery || !_navMesh)
+    {
+        MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+        if (_transport)
+            _navMeshQuery = mmap->GetModelNavMeshQuery(_transport->GetDisplayId());
+        else
+            _navMeshQuery = mmap->GetNavMeshQuery(_sourceMapId, _sourceInstanceId);
+
+        if (_navMeshQuery)
+            _navMesh = _navMeshQuery->getAttachedNavMesh();
+    }
 
     //reset last result if any
     _type = PATHFIND_BLANK;
@@ -83,8 +107,17 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     G3D::Vector3 dest(destX, destY, destZ);
     SetEndPosition(dest);
 
-    if(_sourceUnit && !_forceSourcePos)
+    if (_sourceUnit && !_forceSourcePos)
+    {
         _sourcePos.Relocate(_sourceUnit->GetPosition());
+        Transport* sourceTransport = _sourceUnit->GetTransport(); //May be a different one than the target one
+        if(sourceTransport)
+            sourceTransport->CalculatePassengerOffset(_sourcePos.m_positionX, _sourcePos.m_positionY, _sourcePos.m_positionZ);
+
+        // Always force destination if target is on transport and we're not, or we are on a transport and target is not
+         if (_transport != _sourceUnit->GetTransport()) 
+             forceDest = true;
+    }
 
     G3D::Vector3 start(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
     SetStartPosition(start);
@@ -694,6 +727,9 @@ NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 
 bool PathGenerator::HaveTile(const G3D::Vector3& p) const
 {
+    if (_transport)
+        return true;
+
     int tx = -1, ty = -1;
     float point[VERTEX_SIZE] = {p.y, p.z, p.x};
 

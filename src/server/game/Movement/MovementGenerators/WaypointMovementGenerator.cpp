@@ -409,6 +409,7 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
 {
     //generate mmaps path to next point
     PathGenerator path(creature);
+    path.SetTransport(creature->GetTransport()); // If creature is on transport, we assume waypoints set in DB are already transport offsets
     path.SetSourcePosition(from);
     bool result = path.CalculatePath(nextNode.x, nextNode.y, nextNode.z, true);
     if (!result || (path.GetPathType() & PATHFIND_NOPATH))
@@ -586,7 +587,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if(finalOrientation)
         init.SetFacing(finalOrientation);
 
-    init.MovebyPath(_precomputedPath);
+    init.MovebyPath(_precomputedPath, 0, creature->GetTransport());
 
     init.Launch();
     _splineId = creature->movespline->GetId(); //used by SplineHandler class to do movement inform's

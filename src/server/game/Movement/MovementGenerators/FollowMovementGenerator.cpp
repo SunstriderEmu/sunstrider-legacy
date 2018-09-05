@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "Unit.h"
 #include "Util.h"
+#include "Transport.h"
 
 static void DoMovementInform(Unit* owner, Unit* target)
 {
@@ -101,6 +102,10 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             if (!_path)
                 _path = std::make_unique<PathGenerator>(owner);
 
+            Transport* targetTransport = target->GetTransport();
+            // Creature will always use target mmaps
+            _path->SetTransport(targetTransport);
+
             float x, y, z;
 
             // select angle
@@ -125,8 +130,8 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
 
             // pets are allowed to "cheat" on pathfinding when following their master
             bool allowShortcut = false;
-            if (Pet* oPet = owner->ToPet())
-                if (target->GetGUID() == oPet->GetOwnerGUID())
+            if (ObjectGuid ownerGUID = owner->GetOwnerGUID())
+                if (target->GetGUID() == ownerGUID)
                     allowShortcut = true;
 
             bool success = _path->CalculatePath(x, y, z, allowShortcut);
@@ -139,18 +144,12 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_FOLLOW_MOVE);
 
             Movement::MoveSplineInit init(owner);
-            init.MovebyPath(_path->GetPath());
+            init.MovebyPath(_path->GetPath(), 0, targetTransport);
             init.SetWalk(target->IsWalking());
-            init.SetFacing(target->GetOrientation());
-
-            // sun: use player orientation for spline if player pet
-            if (owner->IsPet() && owner->GetOwnerGUID().IsPlayer())
-                if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
-                    if (!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
-                        init.SetFacing(p->GetOrientation());
+            if (!target->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD) && !targetTransport) //sun: don't do it if target is currently going backwards, as this is visually ugly + don't do it on transport for now, we'd need to translate orientation 
+                init.SetFacing(target->GetOrientation());
 
             init.Launch();
-
         }
     }
     return true;
