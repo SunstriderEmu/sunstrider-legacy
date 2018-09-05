@@ -87,10 +87,7 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
         return false;
 
     if (_transport)
-    {
-        //if (!offsets)
         _transport->CalculatePassengerOffset(destX, destY, destZ);
-    }
 
     if (!_navMeshQuery || !_navMesh)
     {
@@ -113,8 +110,13 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     if (_sourceUnit && !_forceSourcePos)
     {
         _sourcePos.Relocate(_sourceUnit->GetPosition());
-        if(_transport)
-            _transport->CalculatePassengerOffset(_sourcePos.m_positionX, _sourcePos.m_positionY, _sourcePos.m_positionZ);
+        Transport* sourceTransport = _sourceUnit->GetTransport(); //May be a different one than the target one
+        if(sourceTransport)
+            sourceTransport->CalculatePassengerOffset(_sourcePos.m_positionX, _sourcePos.m_positionY, _sourcePos.m_positionZ);
+
+        // Always force destination if target is on transport and we're not, or we are on a transport and target is not
+         if (_transport != _sourceUnit->GetTransport()) 
+             forceDest = true;
     }
 
     G3D::Vector3 start(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
@@ -736,7 +738,6 @@ bool PathGenerator::HaveTile(const G3D::Vector3& p) const
     /// Workaround
     /// For some reason, often the tx and ty variables wont get a valid value
     /// Use this check to prevent getting negative tile coords and crashing on getTileAt
-    if (tx < 0 || ty < 0)
     if (tx < 0 || ty < 0)
         return false;
 

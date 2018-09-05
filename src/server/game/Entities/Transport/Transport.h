@@ -11,7 +11,9 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
 {
 public:
     Transport() : GameObject() {}
+    //Convert passenger position to world position
     void CalculatePassengerPosition(float& x, float& y, float& z, float* o = nullptr) const override { TransportBase::CalculatePassengerPosition(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation()); }
+    //Convert world position to passenger position
     void CalculatePassengerOffset(float& x, float& y, float& z, float* o = nullptr) const override { TransportBase::CalculatePassengerOffset(x, y, z, o, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation()); }
 
     typedef std::set<WorldObject*> PassengerSet;

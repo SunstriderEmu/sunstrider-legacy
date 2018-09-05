@@ -551,7 +551,6 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         return false;
 
     Movement::MoveSplineInit init(creature);
-    init.DisableTransportPathTransformations();
     creature->UpdateMovementFlags(); //restore disable gravity if needed
 
     //Set move type. Path is ended at move type change in the filling of _precomputedPath up there so this is valid for the whole spline array. 
@@ -588,7 +587,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if(finalOrientation)
         init.SetFacing(finalOrientation);
 
-    init.MovebyPath(_precomputedPath);
+    init.MovebyPath(_precomputedPath, 0, creature->GetTransport());
 
     init.Launch();
     _splineId = creature->movespline->GetId(); //used by SplineHandler class to do movement inform's

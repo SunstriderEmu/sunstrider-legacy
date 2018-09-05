@@ -68,7 +68,7 @@ public:
         path.SetUseStraightPath(useStraightPath);
         if (excludeSteep)
             path.ExcludeSteepSlopes();
-        Transport* transport = target->GetTransport() ? target->GetTransport() : player->GetTransport();
+        Transport* transport = player->GetTransport();
         path.SetTransport(transport);
 
         bool result = path.CalculatePath(x, y, z);
@@ -91,10 +91,18 @@ public:
 
         for (auto const & i : pointPath)
         {
-            /*if (transport)
-                transport->CalculatePassengerPosition(i.x, i.y, i.z);*/
-            if (Creature* wp = player->SummonCreature(VISUAL_WAYPOINT, i.x, i.y, i.z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            G3D::Vector3 targetPos(i);
+            if (transport)
+                transport->CalculatePassengerPosition(targetPos.x, targetPos.y, targetPos.z);
+            if (Creature* wp = player->SummonCreature(VISUAL_WAYPOINT, targetPos.x, targetPos.y, targetPos.z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+            {
                 wp->SetDisableGravity(true);
+                if (transport)
+                {
+                    transport->AddPassenger(wp, true);
+                    wp->StopMovingOnCurrentPos(); //update position on client
+                }
+            }
         }
 
         return true;

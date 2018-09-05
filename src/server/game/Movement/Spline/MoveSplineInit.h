@@ -4,6 +4,7 @@
 
 #include "MoveSplineInitArgs.h"
 #include "PathGenerator.h"
+#include "Transport.h"
 
 class Unit;
 
@@ -78,8 +79,10 @@ namespace Movement
         /* Initializes movement by path
          * @param path - array of points, shouldn't be empty
          * @param pointId - Id of fisrt point of the path. Example: when third path point will be done it will notify that pointId + 3 done
+         * @param pathTransport - Specify if given path is already on a transport. If given, this function will ensure source unit and target are on the same transport
+                                  and assume given point are transport offsets (no further transformation needed)
          */
-        void MovebyPath(const PointsArray& path, int32 pointId = 0);
+        void MovebyPath(PointsArray const& path, int32 pointId = 0, Transport* pathTransport = nullptr);
 
         /* Initializes simple A to B motion, A is current unit's position, B is destination
          */
@@ -151,8 +154,19 @@ namespace Movement
     inline void MoveSplineInit::SetTransportExit() { args.flags.EnableTransportExit(); }
     inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable;} */
 
-    inline void MoveSplineInit::MovebyPath(const PointsArray& controls, int32 path_offset)
+    inline void MoveSplineInit::MovebyPath(PointsArray const& controls, int32 path_offset /* = 0*/, Transport* pathTransport /*= nullptr*/)
     {
+        if (pathTransport) //always set unit on the same transport than target
+        {
+            Transport* currentTransport = unit->GetTransport();
+            if (currentTransport != pathTransport)
+            {
+                if (currentTransport)
+                    currentTransport->RemovePassenger(unit);
+                pathTransport->AddPassenger(unit);
+            }
+            args.TransformForTransport = false;  //if PathGenerator has a transport, coords are already transport offset
+        }
         args.path_Idx_offset = path_offset;
         args.path.resize(controls.size());
         std::transform(controls.begin(), controls.end(), args.path.begin(), TransportPathTransform(unit, args.TransformForTransport));
@@ -163,7 +177,7 @@ namespace Movement
         MoveTo(G3D::Vector3(x, y, z), generatePath, forceDestination);
     }
 
-    /*
+#ifdef LICH_KING
     inline void MoveSplineInit::SetParabolic(float amplitude, float time_shift)
     {
         args.time_perc = time_shift;
@@ -175,7 +189,8 @@ namespace Movement
     {
         args.time_perc = 0.f;
         args.flags.EnableAnimation((uint8)anim);
-    }*/
+    }
+#endif
 
     inline void MoveSplineInit::SetFacing(G3D::Vector3 const& spot)
     {

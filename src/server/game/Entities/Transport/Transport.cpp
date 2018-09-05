@@ -405,10 +405,6 @@ Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, Creature
     creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR | UNIT_NPC_FLAG_VENDOR_REAGENT | UNIT_NPC_FLAG_VENDOR_AMMO | UNIT_NPC_FLAG_VENDOR_FOOD | UNIT_NPC_FLAG_VENDOR_POISON | UNIT_NPC_FLAG_REPAIR);
 #endif
 
-    /// @HACK - transport models are not added to map's dynamic LoS calculations
-    ///         because the current GameObjectModel cannot be moved without recreating
-    creature->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
-
     if (!creature->IsPositionValid())
     {
         TC_LOG_ERROR("entities.transport", "Creature (guidlow %d, entry %d) not created. Suggested coordinates aren't valid (X: %f Y: %f)", creature->GetGUID().GetCounter(), creature->GetEntry(), creature->GetPositionX(), creature->GetPositionY());

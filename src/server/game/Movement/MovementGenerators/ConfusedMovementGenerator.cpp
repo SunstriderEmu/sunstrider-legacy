@@ -82,10 +82,11 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
         if (!_path)
         {
             _path = std::make_unique<PathGenerator>(owner);
-            _path->SetTransport(owner->GetTransport());
             _path->SetPathLengthLimit(10.0f);
             _path->ExcludeSteepSlopes();
         }
+        Transport* ownerTransport = owner->GetTransport();
+        _path->SetTransport(ownerTransport);
 
         bool result = _path->CalculatePath(destination.m_positionX, destination.m_positionY, destination.m_positionZ);
         if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
@@ -97,8 +98,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
         owner->AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
         Movement::MoveSplineInit init(owner);
-        init.DisableTransportPathTransformations();
-        init.MovebyPath(_path->GetPath());
+        init.MovebyPath(_path->GetPath(), 0, ownerTransport);
         init.SetWalk(true);
         int32 traveltime = init.Launch();
         _nextMoveTime.Reset(traveltime + urand(800, 1500));

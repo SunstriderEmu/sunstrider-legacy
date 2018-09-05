@@ -172,7 +172,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             else 
                 _path->UpdateOptions(); //sun: also update generator fly/walk/swim, they could have changed
 
-            _path->SetTransport(owner->GetTransport());
+            Transport* targetTransport = target->GetTransport();
+            _path->SetTransport(targetTransport);
 
             float x, y, z;
             bool shortenPath;
@@ -217,8 +218,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_CHASE_MOVE);
 
             Movement::MoveSplineInit init(owner);
-            init.DisableTransportPathTransformations();
-            init.MovebyPath(_path->GetPath());
+            init.MovebyPath(_path->GetPath(), 0, targetTransport);
             init.SetWalk(false);
             init.SetFacing(target);
 
