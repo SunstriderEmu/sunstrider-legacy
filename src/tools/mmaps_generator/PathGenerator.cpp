@@ -232,8 +232,8 @@ int main(int argc, char** argv)
          silent = false,
          bigBaseUnit = false,
          quick = false;
-    char* offMeshInputPath = NULL;
-    char* file = NULL;
+    char* offMeshInputPath = nullptr;
+    char* file = nullptr;
 
     bool validParam = handleArgs(argc, argv, mapnum,
                                  tileX, tileY, skipLiquid, skipContinents, skipJunkMaps, skipBattlegrounds,
@@ -268,7 +268,10 @@ int main(int argc, char** argv)
     else if (mapnum >= 0)
         builder.buildMap(uint32(mapnum));
     else
+    {
+        builder.buildTransports();
         builder.buildAllMaps(threads);
+    }
 
     if (!silent)
         printf("Finished. MMAPS were built in %u ms!\n", GetMSTimeDiffToNow(start));

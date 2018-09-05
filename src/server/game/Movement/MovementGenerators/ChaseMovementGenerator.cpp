@@ -172,6 +172,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             else 
                 _path->UpdateOptions(); //sun: also update generator fly/walk/swim, they could have changed
 
+            _path->SetTransport(owner->GetTransport());
+
             float x, y, z;
             bool shortenPath;
             // if we want to move toward the target and there's no fixed angle...
@@ -193,10 +195,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
                 owner->UpdateAllowedPositionZ(x, y, z);
 
             // -- sun logic 
-            bool transportImplied = owner->GetTransport() || target->GetTransport();
-            bool forceDest =
-                (owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature()->IsWorldBoss() || owner->ToCreature()->IsDungeonBoss()))  // force for all bosses, even not in instances
-                || transportImplied; // until transports at dock are handled by mmaps, this should help
+            bool forceDest = (owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature()->IsWorldBoss() || owner->ToCreature()->IsDungeonBoss())); // force for all bosses, even not in instances
             // --
 
             bool success = _path->CalculatePath(x, y, z, forceDest);
@@ -218,6 +217,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_CHASE_MOVE);
 
             Movement::MoveSplineInit init(owner);
+            init.DisableTransportPathTransformations();
             init.MovebyPath(_path->GetPath());
             init.SetWalk(false);
             init.SetFacing(target);

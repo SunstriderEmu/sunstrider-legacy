@@ -53,6 +53,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     if (!_path)
     {
         _path = std::make_unique<PathGenerator>(owner);
+        _path->SetTransport(owner->GetTransport());
         _path->SetPathLengthLimit(30.0f);
         _path->ExcludeSteepSlopes();
     }
@@ -65,6 +66,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
     }
 
     Movement::MoveSplineInit init(owner);
+    init.DisableTransportPathTransformations();
     init.MovebyPath(_path->GetPath());
     init.SetWalk(false);
     int32 traveltime = init.Launch();

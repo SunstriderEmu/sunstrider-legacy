@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "Unit.h"
 #include "Util.h"
+#include "Transport.h"
 
 static void DoMovementInform(Unit* owner, Unit* target)
 {
@@ -101,6 +102,9 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             if (!_path)
                 _path = std::make_unique<PathGenerator>(owner);
 
+            Transport* targetTransport = target->GetTransport();
+            _path->SetTransport(targetTransport);
+
             float x, y, z;
 
             // select angle
@@ -139,18 +143,18 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
             owner->AddUnitState(UNIT_STATE_FOLLOW_MOVE);
 
             Movement::MoveSplineInit init(owner);
+            init.DisableTransportPathTransformations();
             init.MovebyPath(_path->GetPath());
             init.SetWalk(target->IsWalking());
             init.SetFacing(target->GetOrientation());
 
             // sun: use player orientation for spline if player pet
-            if (owner->IsPet() && owner->GetOwnerGUID().IsPlayer())
+            if (owner->IsPet() && owner->GetOwnerGUID().IsPlayer() && !owner->GetTransport()) //don't do it on transport, we'd need to translate orientation
                 if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
                     if (!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
                         init.SetFacing(p->GetOrientation());
 
             init.Launch();
-
         }
     }
     return true;

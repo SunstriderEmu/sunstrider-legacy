@@ -409,6 +409,7 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
 {
     //generate mmaps path to next point
     PathGenerator path(creature);
+    path.SetTransport(creature->GetTransport()); // If creature is on transport, we assume waypoints set in DB are already transport offsets
     path.SetSourcePosition(from);
     bool result = path.CalculatePath(nextNode.x, nextNode.y, nextNode.z, true);
     if (!result || (path.GetPathType() & PATHFIND_NOPATH))
@@ -550,6 +551,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         return false;
 
     Movement::MoveSplineInit init(creature);
+    init.DisableTransportPathTransformations();
     creature->UpdateMovementFlags(); //restore disable gravity if needed
 
     //Set move type. Path is ended at move type change in the filling of _precomputedPath up there so this is valid for the whole spline array. 

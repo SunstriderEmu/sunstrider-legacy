@@ -66,12 +66,14 @@ namespace MMAP
 
             void InitializeThreadUnsafe(const std::vector<uint32>& mapIds);
             bool loadMap(const std::string& basePath, uint32 mapId, int32 x, int32 y);
+            bool loadGameObject(uint32 displayId);
             bool unloadMap(uint32 mapId, int32 x, int32 y);
             bool unloadMap(uint32 mapId);
             bool unloadMapInstance(uint32 mapId, uint32 instanceId);
 
             // the returned [dtNavMeshQuery const*] is NOT threadsafe
             dtNavMeshQuery const* GetNavMeshQuery(uint32 mapId, uint32 instanceId);
+            dtNavMeshQuery const* GetModelNavMeshQuery(uint32 displayId);
             dtNavMesh const* GetNavMesh(uint32 mapId);
 
             uint32 getLoadedTilesCount() const { return loadedTiles; }
@@ -82,6 +84,7 @@ namespace MMAP
 
             MMapDataSet::const_iterator GetMMapData(uint32 mapId) const;
             MMapDataSet loadedMMaps;
+            MMapDataSet loadedModels;
             uint32 loadedTiles;
             bool thread_safe_environment;
     };
