@@ -1,1 +1,1 @@
-ALTER TABLE characters DROP COLUMN IF EXISTS lastGenderChange;
+ALTER TABLE characters DROP COLUMN lastGenderChange;

@@ -10,4 +10,4 @@ INSERT INTO `command` (`name`, `security`, `help`) VALUES
 Lists all pending respawns within <distance> yards, or within current zone if not specified.');
 
 -- Drop now obsolete column
-ALTER TABLE command DROP COLUMN IF EXISTS ircAllowed;
+ALTER TABLE command DROP COLUMN ircAllowed;
