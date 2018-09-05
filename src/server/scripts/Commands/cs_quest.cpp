@@ -271,16 +271,6 @@ public:
             CharacterDatabase.PExecute("UPDATE completed_quests SET count = count + 1 WHERE guid = %u", player->GetGUID());
         }
 
-        // Check if quest already exists in bugged quests
-        QueryResult questbug = WorldDatabase.PQuery("SELECT bugged FROM quest_bugs WHERE entry = %u", entry);
-        if (questbug)
-        {
-            WorldDatabase.PExecute("UPDATE quest_bugs SET completecount = completecount+1 WHERE entry = %u", entry);
-        }
-        else {
-            WorldDatabase.PExecute("INSERT INTO quest_bugs VALUES (%u, 1, 0, '')", entry);
-        }
-
         return true;
     }
 
