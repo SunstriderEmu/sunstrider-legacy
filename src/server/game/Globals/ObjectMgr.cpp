@@ -1286,22 +1286,23 @@ void ObjectMgr::LoadCreatures()
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creatures", _creatureDataStore.size());
 }
 
-void ObjectMgr::DeleteCreatureData(ObjectGuid::LowType guid)
+void ObjectMgr::DeleteCreatureData(ObjectGuid::LowType spawnId)
 {
     // remove mapid*cellid -> guid_set map
-    CreatureData const* data = GetCreatureData(guid);
+    CreatureData const* data = GetCreatureData(spawnId);
     if (data)
     {
-        RemoveCreatureFromGrid(guid, data);
+        RemoveCreatureFromGrid(spawnId, data);
         OnDeleteSpawnData(data);
     }
 
-    _creatureDataStore.erase(guid);
+    _creatureDataStore.erase(spawnId);
 }
 
-void ObjectMgr::AddCreatureToGrid(ObjectGuid::LowType guid, CreatureData const* data)
+bool ObjectMgr::AddCreatureToGrid(ObjectGuid::LowType spawnId, CreatureData const* data)
 {
     uint8 mask = data->spawnMask;
+    bool inserted = false;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
     {
         if(mask & 1)
@@ -1310,12 +1311,17 @@ void ObjectMgr::AddCreatureToGrid(ObjectGuid::LowType guid, CreatureData const* 
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
             CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(), i)][cell_id];
-            cell_guids.creatures.insert(guid);
+            if (cell_guids.creatures.find(spawnId) == cell_guids.creatures.end()) //sun: check existence. Currently needed by GameEventMgr.
+            {
+                cell_guids.creatures.insert(spawnId);
+                inserted = true;
+            }
         }
     }
+    return inserted;
 }
 
-void ObjectMgr::RemoveCreatureFromGrid(ObjectGuid::LowType guid, CreatureData const* data)
+void ObjectMgr::RemoveCreatureFromGrid(ObjectGuid::LowType spawnId, CreatureData const* data)
 {
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -1326,7 +1332,7 @@ void ObjectMgr::RemoveCreatureFromGrid(ObjectGuid::LowType guid, CreatureData co
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
             CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
-            cell_guids.creatures.erase(guid);
+            cell_guids.creatures.erase(spawnId);
         }
     }
 }
@@ -1670,11 +1676,12 @@ void ObjectMgr::OnDeleteSpawnData(SpawnData const* data)
     ASSERT(false, "Spawn data (%u,%u) being removed is member of spawn group %u, but not actually listed in the lookup table for that group!", uint32(data->type), data->spawnId, data->spawnGroupData->groupId);
 }
 
-void ObjectMgr::AddGameobjectToGrid(ObjectGuid::LowType guid, GameObjectData const* data)
+bool ObjectMgr::AddGameobjectToGrid(ObjectGuid::LowType spawnId, GameObjectData const* data)
 {
     assert(data);
 
     uint8 mask = data->spawnMask;
+    bool inserted = false;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
     {
         if(mask & 1)
@@ -1682,13 +1689,18 @@ void ObjectMgr::AddGameobjectToGrid(ObjectGuid::LowType guid, GameObjectData con
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->spawnPoint.GetPositionX(), data->spawnPoint.GetPositionY());
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
-            cell_guids.gameobjects.insert(guid);
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(), i)][cell_id];
+            if (cell_guids.gameobjects.find(spawnId) == cell_guids.gameobjects.end()) //sun: check existence. Currently needed by GameEventMgr.
+            {
+                cell_guids.gameobjects.insert(spawnId);
+                inserted = true;
+            }
         }
     }
+    return inserted;
 }
 
-void ObjectMgr::RemoveGameobjectFromGrid(ObjectGuid::LowType guid, GameObjectData const* data)
+void ObjectMgr::RemoveGameobjectFromGrid(ObjectGuid::LowType spawnId, GameObjectData const* data)
 {
     uint8 mask = data->spawnMask;
     for(uint8 i = 0; mask != 0; i++, mask >>= 1)
@@ -1699,7 +1711,7 @@ void ObjectMgr::RemoveGameobjectFromGrid(ObjectGuid::LowType guid, GameObjectDat
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
             CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->spawnPoint.GetMapId(),i)][cell_id];
-            cell_guids.gameobjects.erase(guid);
+            cell_guids.gameobjects.erase(spawnId);
         }
     }
 }

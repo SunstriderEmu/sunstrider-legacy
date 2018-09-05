@@ -978,10 +978,9 @@ public:
     {
         ARGS_CHECK
 
-            ObjectGuid::LowType leaderGUID = (ObjectGuid::LowType) atoi((char*)args);
+        ObjectGuid::LowType leaderSpawnID = (ObjectGuid::LowType) atoi((char*)args);
 
-        Creature *pCreature =  handler->GetSelectedCreature();
-
+        Creature* pCreature = handler->GetSelectedCreature();
         if(!pCreature || !pCreature->GetSpawnId())
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -995,30 +994,25 @@ public:
             return true;
         }
 
-        uint32 lowguid = pCreature->GetSpawnId();
-        if (!lowguid)
+        uint32 targetSpawnId = pCreature->GetSpawnId();
+        if (!targetSpawnId)
         {
-            handler->PSendSysMessage("Creature may not be a summon", leaderGUID);
+            handler->SendSysMessage("Target creature may not be a summon");
             return true;
         }
 
-        CreatureData const* data = sObjectMgr->GetCreatureData(leaderGUID);
+        CreatureData const* data = sObjectMgr->GetCreatureData(leaderSpawnID);
         if (!data)
         {
-            handler->PSendSysMessage("Could not find creature data for guid %u", leaderGUID);
+            handler->PSendSysMessage("Could not find creature data for spawnID %u", leaderSpawnID);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        Creature* leader;
-        if (pCreature->GetMap()->Instanceable())
-            leader = pCreature->GetMap()->GetCreatureBySpawnId(leaderGUID);
-        else
-            leader = pCreature->GetMap()->GetCreature(ObjectGuid(HighGuid::Unit, data->id, leaderGUID));
-
+        Creature* leader = pCreature->GetMap()->GetCreatureBySpawnId(leaderSpawnID);
         if (!leader)
         {
-            handler->PSendSysMessage("Could not find leader (guid %u) in map.", leaderGUID);
+            handler->PSendSysMessage("Could not find leader (spawnID %u) in map.", leaderSpawnID);
             return true;
         }
 
@@ -1026,31 +1020,31 @@ public:
         {
             FormationInfo* group_member;
             group_member = new FormationInfo;
-            group_member->leaderGUID = leaderGUID;
-            sCreatureGroupMgr->AddGroupMember(leaderGUID, group_member);
+            group_member->leaderGUID = leader->GetGUID();
+            sCreatureGroupMgr->AddGroupMember(leaderSpawnID, group_member);
             pCreature->SearchFormation();
 
             WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
-                leaderGUID, leaderGUID, uint32(group_member->groupAI));
+                leaderSpawnID, leaderSpawnID, uint32(group_member->groupAI));
 
-            handler->PSendSysMessage("Created formation with leader %u", leaderGUID);
+            handler->PSendSysMessage("Created formation with leader %u", leaderSpawnID);
         }
 
-        Player *chr = handler->GetSession()->GetPlayer();
+        Player* chr = handler->GetSession()->GetPlayer();
         FormationInfo* group_member;
 
         group_member                  = new FormationInfo;
         group_member->follow_angle    = pCreature->GetAbsoluteAngle(chr) - chr->GetOrientation();
         group_member->follow_dist     = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
-        group_member->leaderGUID      = leaderGUID;
+        group_member->leaderGUID      = leader->GetGUID();
 
-        sCreatureGroupMgr->AddGroupMember(lowguid, group_member);
+        sCreatureGroupMgr->AddGroupMember(targetSpawnId, group_member);
         pCreature->SearchFormation();
 
         WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u','%f', '%f', '%u')",
-            leaderGUID, lowguid, group_member->follow_dist, group_member->follow_angle, uint32(group_member->groupAI));
+            leaderSpawnID, targetSpawnId, group_member->follow_dist, group_member->follow_angle, uint32(group_member->groupAI));
 
-        handler->PSendSysMessage("Creature %u added to formation with leader %u.", lowguid, leaderGUID);
+        handler->PSendSysMessage("Creature %u added to formation with leader %u.", targetSpawnId, leaderSpawnID);
 
         return true;
      }
@@ -1071,13 +1065,13 @@ public:
         CreatureGroup* formation = pCreature->GetFormation();
         if(!formation)
         {
-            handler->PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetGUID().GetCounter());
+            handler->PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetSpawnId());
             return true;
         }
 
         formation->RemoveMember(pCreature);
         pCreature->SetFormation(nullptr);
-        WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u",pCreature->GetGUID().GetCounter());
+        WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u", pCreature->GetSpawnId());
 
         handler->PSendSysMessage("Creature removed from formation.");
 
@@ -1319,44 +1313,41 @@ public:
     {
         CreatureData const* data = nullptr;
         char* cEvent = strtok((char*)args, " ");
-        char* cCreatureGUID = strtok(nullptr, " ");
+        char* cCreatureSpawnId = strtok(nullptr, " ");
         int16 event = 0;
-        ObjectGuid::LowType creatureGUID = 0;
+        ObjectGuid::LowType creatureSpawnId = 0;
         bool justShowInfo = false;
         if(!cEvent) // No params given
         {
             justShowInfo = true;
         } else {
             event = atoi(cEvent);
-            if(cCreatureGUID) // erase selected creature if guid explicitely given
-                creatureGUID = atoi(cCreatureGUID);
+            if(cCreatureSpawnId) // erase selected creature if guid explicitely given
+                creatureSpawnId = atoi(cCreatureSpawnId);
         }
 
-        if(!creatureGUID)
+        if(!creatureSpawnId)
         {
             Creature* creature =  handler->GetSelectedCreature();
             if(creature)
-                creatureGUID = creature->GetSpawnId();
+                creatureSpawnId = creature->GetSpawnId();
         }
 
-        data = sObjectMgr->GetCreatureData(creatureGUID);
+        data = sObjectMgr->GetCreatureData(creatureSpawnId);
         if(!data)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             return true;
         }
 
-        ObjectGuid fullGUID = ObjectGuid(HighGuid::Unit, data->id, creatureGUID);
-        int16 currentEventId = sGameEventMgr->GetCreatureEvent(fullGUID);
+        int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureSpawnId);
 
         if (justShowInfo)
         {
             if(currentEventId)
-                //PSendSysMessage("La creature (guid : %u) est liée à l'event %i.",creatureGUID,currentEventId);
-                handler->PSendSysMessage("Creature (guid: %u) bound to event %i.",creatureGUID, currentEventId);
+                handler->PSendSysMessage("Creature (spawnID: %u) bound to event %i.", creatureSpawnId, currentEventId);
             else
-                //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
-                handler->PSendSysMessage("Creature (guid : %u) is not bound to an event.", creatureGUID);
+                handler->PSendSysMessage("Creature (spawnID : %u) is not bound to an event.", creatureSpawnId);
         } else {
             if(currentEventId)
             {
@@ -1366,12 +1357,10 @@ public:
                 return true;
             }
 
-            if(sGameEventMgr->AddCreatureToEvent(fullGUID, event))
-                //PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
-                handler->PSendSysMessage("Creature (guid: %u) is now bound to the event %i.",creatureGUID,event);
+            if(sGameEventMgr->AddCreatureToEvent(creatureSpawnId, event))
+                handler->PSendSysMessage("Creature (spawnID: %u) is now bound to the event %i.", creatureSpawnId, event);
             else
-                //PSendSysMessage("Erreur : La creature (guid : %u) n'a pas pu être liée à l'event %d (event inexistant ?).",creatureGUID,event);
-                handler->PSendSysMessage("Error: creature (guid: %u) could not be linked to the event %d (event nonexistent?).",creatureGUID,event);
+                handler->PSendSysMessage("Error: creature (spawnID: %u) could not be linked to the event %d (event nonexistent?).", creatureSpawnId, event);
         }
 
         return true;
@@ -1382,12 +1371,12 @@ public:
     {
         Creature* creature = nullptr;
         CreatureData const* data = nullptr;
-        char* cCreatureGUID = strtok((char*)args, " ");
-        ObjectGuid::LowType creatureGUID = 0;
+        char* cCreatureSpawnID = strtok((char*)args, " ");
+        ObjectGuid::LowType creatureSpawnId = 0;
 
-        if(cCreatureGUID) //Guid given
+        if(cCreatureSpawnID) //Guid given
         {
-            creatureGUID = atoi(cCreatureGUID);
+            creatureSpawnId = atoi(cCreatureSpawnID);
         } else { //else, try to get selected creature
             creature =  handler->GetSelectedCreature();
             if(!creature)
@@ -1396,31 +1385,25 @@ public:
                 handler->SetSentErrorMessage(true);
                 return false;
             }           
-            creatureGUID = creature->GetGUID().GetCounter();
+            creatureSpawnId = creature->GetSpawnId();
         }
 
-        data = sObjectMgr->GetCreatureData(creatureGUID);
+        data = sObjectMgr->GetCreatureData(creatureSpawnId);
         if(!data)
         {
-            //PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
-            handler->PSendSysMessage("Creature with guid %u not found.",creatureGUID);
+            handler->PSendSysMessage("Creature with spawnId %u not found.", creatureSpawnId);
             return true;
         } 
 
-        ObjectGuid fullGUID = ObjectGuid(HighGuid::Unit, data->id, creatureGUID);
-        int16 currentEventId = sGameEventMgr->GetCreatureEvent(fullGUID);
-
+        int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureSpawnId);
         if (!currentEventId)
         {
-            //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
-            handler->PSendSysMessage("Creature (guid: %u) is not linked to any event.",creatureGUID);
+            handler->PSendSysMessage("Creature (spawnId: %u) is not linked to any event.", creatureSpawnId);
         } else {
-            if(sGameEventMgr->RemoveCreatureFromEvent(fullGUID))
-                //PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
-                handler->PSendSysMessage("Creature (guid: %u) is not anymore linked to the event %i.",creatureGUID,currentEventId);
+            if(sGameEventMgr->RemoveCreatureFromEvent(creatureSpawnId))
+                handler->PSendSysMessage("Creature (spawnId: %u) is not anymore linked to the event %i.", creatureSpawnId, currentEventId);
             else
-                //PSendSysMessage("Erreur lors de la suppression de la créature (guid : %u) de l'event %i.",creatureGUID,currentEventId);
-                handler->PSendSysMessage("Error on removing creature (guid: %u) from the event %i.",creatureGUID,currentEventId);
+                handler->PSendSysMessage("Error on removing creature (spawnId: %u) from the event %i.", creatureSpawnId, currentEventId);
         }
 
         return true;

@@ -112,16 +112,16 @@ class TC_GAME_API GameEventMgr
         Event can be negative to have the creature spawned when event is inactive.
 		If map is given, this function will also add/remove the creature from the map if found
         */
-        bool AddCreatureToEvent(ObjectGuid guid, int16 event_id, Map* map = nullptr);
+        bool AddCreatureToEvent(uint32 spawnId, int16 event_id, Map* map = nullptr);
         /* Add a gobject of given guid to an event (both in DB + in live memory).  Return success.
         Event can be negative to have the gameobject spawned when event is inactive.
 		If map is given, this function will also add/remove the gobject from the map if found
          */
-        bool AddGameObjectToEvent(ObjectGuid guid, int16 event_id, Map* map = nullptr);
+        bool AddGameObjectToEvent(uint32 spawnId, int16 event_id, Map* map = nullptr);
         /* Remove a creature of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
-        bool RemoveCreatureFromEvent(ObjectGuid guid, Map* map = nullptr);
+        bool RemoveCreatureFromEvent(uint32 spawnId, Map* map = nullptr);
         /* Remove a gameobject of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
-        bool RemoveGameObjectFromEvent(ObjectGuid guid, Map* map = nullptr);
+        bool RemoveGameObjectFromEvent(uint32 spawnId, Map* map = nullptr);
         /* Create a new game event, both in database and live memory, return success & the id of the created event in reference */
         bool CreateGameEvent(const char* name, int16& event_id);
         /* Set start time of a game event, both in database and live memory, return success */
@@ -129,9 +129,9 @@ class TC_GAME_API GameEventMgr
         /* Set end time of a game event, both in database and live memory, return success */
         //bool SetEventEndTime(uint16 event_id,time_t endTime);
         /* Return an event_id if a given creature is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
-        int16 GetCreatureEvent(ObjectGuid guid);
+        int16 GetCreatureEvent(uint32 spawnId);
         /* Return an event_id if a given gameobject is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
-        int16 GetGameObjectEvent(ObjectGuid guid);
+        int16 GetGameObjectEvent(uint32 spawnId);
 
         /* just a helper function returning wheter object of this event should be spawned depending if event is active or not
         Negative events can be used here too.
@@ -143,11 +143,11 @@ class TC_GAME_API GameEventMgr
         void RemoveActiveEvent(uint16 event_id) { m_ActiveEvents.erase(event_id); }
         void ApplyNewEvent(uint16 event_id);
         void UnApplyEvent(uint16 event_id);
-        void SpawnCreature(uint32 guid);
-        void SpawnGameObject(uint32 guid);
+        void SpawnCreature(uint32 spawnId);
+        void SpawnGameObject(uint32 spawnId);
         void GameEventSpawn(int16 event_id);
-        void UnspawnCreature(uint32 guid,uint16 event_id); //despawn due to event_id
-        void UnspawnGameObject(uint32 guid);
+        void DespawnCreature(uint32 spawnId, uint16 event_id); //despawn due to event_id
+        void DespawnGameObject(uint32 guid);
         void GameEventUnspawn(int16 event_id);
         void ChangeEquipOrModel(int16 event_id, bool activate);
         void UpdateEventQuests(uint16 event_id, bool Activate);

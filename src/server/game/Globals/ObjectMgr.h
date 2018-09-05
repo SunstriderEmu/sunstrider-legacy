@@ -1026,10 +1026,10 @@ class TC_GAME_API ObjectMgr
 		*/
 
         // grid objects. Grids object are only used to load new cells
-        void AddCreatureToGrid(ObjectGuid::LowType guid, CreatureData const* data);
-        void RemoveCreatureFromGrid(ObjectGuid::LowType guid, CreatureData const* data);
-        void AddGameobjectToGrid(ObjectGuid::LowType guid, GameObjectData const* data);
-        void RemoveGameobjectFromGrid(ObjectGuid::LowType guid, GameObjectData const* data);
+        bool AddCreatureToGrid(ObjectGuid::LowType spawnId, CreatureData const* data);
+        void RemoveCreatureFromGrid(ObjectGuid::LowType spawnId, CreatureData const* data);
+        bool AddGameobjectToGrid(ObjectGuid::LowType spawnId, GameObjectData const* data);
+        void RemoveGameobjectFromGrid(ObjectGuid::LowType spawnId, GameObjectData const* data);
         uint32 AddGameObjectData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0, float rotation0 = 0, float rotation1 = 0, float rotation2 = 0, float rotation3 = 0);
         uint32 AddCreatureData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0);
 
