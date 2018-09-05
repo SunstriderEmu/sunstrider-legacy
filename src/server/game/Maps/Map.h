@@ -534,6 +534,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
 		uint32 GetLastMapUpdateTime() const { return _lastMapUpdate; }
 
+        void ReloadMMap(int gx, int gy);
+
     private:
 
         void LoadMapAndVMap(int gx, int gy);

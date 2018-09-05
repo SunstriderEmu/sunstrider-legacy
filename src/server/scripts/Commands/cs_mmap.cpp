@@ -18,11 +18,12 @@ public:
             { "loc",            SEC_GAMEMASTER3,     false, &HandleMmapLocCommand,             "" },
             { "loadedtiles",    SEC_GAMEMASTER3,     false, &HandleMmapLoadedTilesCommand,     "" },
             { "stats",          SEC_GAMEMASTER3,     false, &HandleMmapStatsCommand,           "" },
-            { "testarea",       SEC_GAMEMASTER3,     false, &HandleMmapTestArea,               "" },
+            { "testarea",       SEC_GAMEMASTER3,     false, &HandleMmapTestAreaCommand,        "" },
+            { "reload",         SEC_GAMEMASTER3,     false, &handleMmapReloadCommand,          "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
-            { "mmap",           SEC_GAMEMASTER2,  false, nullptr,                                        "", mmapCommandTable },
+            { "mmap",           SEC_GAMEMASTER2,  false, nullptr,                              "", mmapCommandTable },
         };
         return commandTable;
     }
@@ -250,7 +251,7 @@ public:
         return true;
     }
 
-    static bool HandleMmapTestArea(ChatHandler* handler, char const* /*args*/)
+    static bool HandleMmapTestAreaCommand(ChatHandler* handler, char const* /*args*/)
     {
         float radius = 40.0f;
         WorldObject* object = handler->GetSession()->GetPlayer();
@@ -283,6 +284,18 @@ public:
         else
             handler->PSendSysMessage("No creatures in %f yard range.", radius);
 
+        return true;
+    }
+
+    static bool handleMmapReloadCommand(ChatHandler* handler, char const* args)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+
+        int32 gx = 32 - player->GetPositionX() / SIZE_OF_GRIDS;
+        int32 gy = 32 - player->GetPositionY() / SIZE_OF_GRIDS;
+
+        player->GetMap()->ReloadMMap(gx, gy);
+        handler->PSendSysMessage("Triggered reload from mmap at coord (%i,%i)", gx, gy);
         return true;
     }
 };

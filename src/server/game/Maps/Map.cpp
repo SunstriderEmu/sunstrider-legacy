@@ -81,6 +81,12 @@ Map::~Map()
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
 }
 
+void Map::ReloadMMap(int gx, int gy)
+{
+    MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(GetId(), gx, gy);
+    LoadMMap(gx, gy);
+}
+
 void Map::LoadMMap(int gx, int gy)
 {
     /*if (!DisableMgr::IsPathfindingEnabled(GetId()))
