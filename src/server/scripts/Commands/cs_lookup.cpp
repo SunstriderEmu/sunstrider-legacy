@@ -624,18 +624,6 @@ public:
                             else
                                 handler->PSendSysMessage(LANG_QUEST_LIST_CONSOLE, qinfo->GetQuestId(), title.c_str(), statusStr);
 
-                            QueryResult result = WorldDatabase.PQuery("SELECT bugged, comment FROM quest_bugs WHERE entry = %u", qinfo->GetQuestId());
-                            if (result)
-                            {
-                                Field* fields = result->Fetch();
-                                if (fields[0].GetUInt8())
-                                    //PSendSysMessage(" -> L'autovalidation est activée pour cette quête.");
-                                    handler->PSendSysMessage(" -> Auto validation is activated for this quest.");
-
-                                std::string x = "";
-                                if (fields[1].GetString() != x)
-                                    handler->PSendSysMessage(" -> BUG: %s", fields[1].GetString().c_str());
-                            }
                             ++counter;
                             continue;
                         }

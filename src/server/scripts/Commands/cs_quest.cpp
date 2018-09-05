@@ -17,7 +17,6 @@ public:
             { "countcomplete",  SEC_GAMEMASTER3,  false, &HandleQuestCountCompleteCommand,         "" },
             { "totalcount",     SEC_GAMEMASTER3,  false, &HandleQuestTotalCountCommand,            "" },
             { "remove",         SEC_GAMEMASTER3,  false, &HandleQuestRemoveCommand,                "" },
-            { "report",         SEC_GAMEMASTER2,  false, &HandleQuestReportCommand,                "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -270,26 +269,6 @@ public:
         {
             CharacterDatabase.PExecute("UPDATE completed_quests SET count = count + 1 WHERE guid = %u", player->GetGUID());
         }
-
-        return true;
-    }
-
-    static bool HandleQuestReportCommand(ChatHandler* handler, char const* args)
-    {
-        ARGS_CHECK
-
-            char* questIdStr = strtok((char*)args, " ");
-        if (!questIdStr)
-            return false;
-        uint32 questId = atoi(questIdStr);
-        if (!questId)
-            return false;
-
-        char* comment = strtok(nullptr, "");
-        if (!comment)
-            return false;
-
-        WorldDatabase.PQuery("UPDATE quest_bugs SET comment = \"%s\" WHERE entry = %u", comment, questId);
 
         return true;
     }
