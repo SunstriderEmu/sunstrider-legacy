@@ -5,7 +5,7 @@
 #include "DetourNavMesh.h"
 
 const uint32 MMAP_MAGIC = 0x4d4d4150; // 'MMAP'
-#define MMAP_VERSION 71 //+second number is sunstrider subversion
+#define MMAP_VERSION 72 //+second number is sunstrider subversion
 
 struct MmapTileHeader
 {

@@ -776,13 +776,13 @@ namespace MMAP
                 }
             }
 
-            //from here, code adapted from Nost! This will remove terrain (adt) geometry inside m2/wmx and wmo objects
+            // Sun: from here, code adapted from Nost! This will remove terrain (adt) geometry inside m2/wmx and wmo objects
+            /// remove from terrain all triangles inside any model.
             meshData.vmapLastTriangle = meshData.solidTris.size() / 3;
             if (m_quick)
                 break;
 
-            /// remove from terrain all triangles inside any model.
-            if (!mapVertsCount || !mapTrisCount)  //sun addition
+            if (!mapVertsCount || !mapTrisCount)
                 break;
 
             float* terrainInsideModelsVerts = new float[mapVertsCount]; //terrain vertices inside any model. Positives values mean inside model.

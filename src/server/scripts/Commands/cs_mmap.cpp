@@ -99,10 +99,9 @@ public:
             {
                 wp->SetDisableGravity(true);
                 if (transport)
-                {
                     transport->AddPassenger(wp, true);
-                    wp->StopMovingOnCurrentPos(); //update position on client
-                }
+
+                wp->StopMovingOnCurrentPos(); //update position on client
             }
         }
 

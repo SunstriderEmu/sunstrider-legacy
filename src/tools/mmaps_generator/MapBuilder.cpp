@@ -652,18 +652,30 @@ namespace MMAP
         rcVcopy(config.bmin, bmin);
         rcVcopy(config.bmax, bmax);
 
-        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        bool continent = (mapID <= 1 || mapID == 530);
+        // Should be able to pass here .go xyz -4930 -999 502 0
+        float agentHeight = 1.5f;
+        // Fences should not be passable
+        static const float agentMaxClimbModelTerrainTransition = 1.2f;
+        static const float agentMaxClimbTerrain = 1.8f;
+
         config.cs = BASE_UNIT_DIM;
-        config.ch = BASE_UNIT_DIM;
-        //config.walkableSlopeAngle = maxClimbLimitTerrain;
+        config.ch = 0.1f;
+        // .go xyz 9612 410 1328
+        // Prevent z overflow at big heights. We need at least 0.16 to handle teldrassil.
+        if (continent)
+            config.ch = 0.2f;
+
+        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        config.walkableSlopeAngle = 75.0f;
         config.tileSize = VERTEX_PER_TILE;
-        config.walkableRadius = m_bigBaseUnit ? 1 : 2;
+        config.walkableRadius = m_bigBaseUnit ? 1 : 2; //using nost value here (0.75 for continent) does break pathing, unit start taking weird detour
         config.borderSize = config.walkableRadius + 3;
         config.maxEdgeLen = VERTEX_PER_TILE + 1;        // anything bigger than tileSize
-        config.walkableHeight = m_bigBaseUnit ? 3 : 6;
+        config.walkableHeight = (int)ceilf(agentHeight / config.ch);
         // a value >= 3|6 allows npcs to walk over some fences
         // a value >= 4|8 allows npcs to walk over all fences
-        config.walkableClimb = m_bigBaseUnit ? 4 : 8;
+        config.walkableClimb = (int)floorf(agentMaxClimbModelTerrainTransition / config.ch); // For models
         config.minRegionArea = rcSqr(60);
         config.mergeRegionArea = rcSqr(50);
         config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
@@ -701,7 +713,6 @@ namespace MMAP
                 tileCfg.bmax[0] = config.bmin[0] + float((x+1)*config.tileSize + config.borderSize)*config.cs;
                 tileCfg.bmax[2] = config.bmin[2] + float((y+1)*config.tileSize + config.borderSize)*config.cs;
 
-                // build heightfield
                 /// 1. Alloc heightfield for walkable areas
                 tile.solid = rcAllocHeightfield();
                 if (!tile.solid || !rcCreateHeightfield(m_rcContext, *tile.solid, tileCfg.width, tileCfg.height, tileCfg.bmin, tileCfg.bmax, tileCfg.cs, tileCfg.ch))
@@ -718,32 +729,43 @@ namespace MMAP
                     printf("%sFailed building liquids heightfield!            \n", tileString);
                     continue;
                 }
-                rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *liquidsTile.solid, 0);
 
                 /// 3. Mark all triangles with correct flags:
                 // Can't use rcMarkWalkableTriangles. We need something really more specific.
                 // mark all walkable tiles, both liquids and solids
                 unsigned char* triFlags = new unsigned char[tTriCount];
-                memset(triFlags, NAV_EMPTY, tTriCount*sizeof(unsigned char)); //start empty instead of NAV_GROUND
-                //rcClearUnwalkableTriangles(m_rcContext, tileCfg.walkableSlopeAngle, tVerts, tVertCount, tTris, tTriCount, triFlags);
+                memset(triFlags, NAV_EMPTY, tTriCount * sizeof(unsigned char)); //sun: start empty instead of NAV_GROUND
                 markWalkableTriangles(meshData, triFlags, tVerts, tTris, tTriCount); // sun addition, replaces rcClearUnwalkableTriangles (adapted from nost)
                 // Now we remove terrain triangles under the mesh (actually set flags to 0)
                 if(!m_quick)
                     removeVMAPTrianglesUnderTerrain(mapID, meshData, triFlags, tVerts, tTris, tTriCount);
 
+                /// 4. Every triangle is correctly marked now, we can rasterize everything
                 rcRasterizeTriangles(m_rcContext, tVerts, tVertCount, tTris, triFlags, tTriCount, *tile.solid, config.walkableClimb);
                 delete[] triFlags;
 
+                // 5. Don't walk over too high Obstacles.
+                // We can pass higher terrain obstacles, or model obstacles.
+                // But for terrain->vmap->terrain kind of obstacles, it's harder to climb.
+                // (Why? No idea, ask Blizzard. Empirically confirmed on retail)
+                // 5.1 walkableClimbTerrain >= walkableClimbModelTransition so do it first
                 rcFilterLowHangingWalkableObstacles(m_rcContext, config.walkableClimb, *tile.solid);
-                rcFilterLedgeSpans(m_rcContext, tileCfg.walkableHeight, tileCfg.walkableClimb, *tile.solid);
+                rcFilterLedgeSpans(m_rcContext, tileCfg.walkableHeight, config.walkableClimb, *tile.solid);
+                /// 6. Now we are happy because we have the correct flags.
+                // Set's cleanup tmp flags used by the generator, so we don't have a too
+                // complicated navmesh in the end.
+                // (We dont care if a poly comes from Terrain or Model at runtime)
                 rcFilterWalkableLowHeightSpans(m_rcContext, tileCfg.walkableHeight, *tile.solid);
                 
-                // sun addition (adapted from nost)
+                /// 7. Let's process water now.
                 // When water is not deep, we have a transition area (AREA_WATER_TRANSITION)
                 // Both ground and water creatures can be there.
-                // Otherwise, the terrain in deeper waters is considered as actual swim/water terrain.
+                // Otherwise, the terrain in shallow waters is considered as actual swim/water terrain.
                 filterWalkableLowHeightSpansWith(*liquidsTile.solid, *tile.solid, inWaterGround, stepForGroundInheriteWater);
 
+                rcRasterizeTriangles(m_rcContext, lVerts, lVertCount, lTris, lTriFlags, lTriCount, *tile.solid, config.walkableClimb);
+
+                /// 8. Now let's move on with the last and more generic steps of navmesh generation.
                 // compact heightfield spans
                 tile.chf = rcAllocCompactHeightfield();
                 if (!tile.chf || !rcBuildCompactHeightfield(m_rcContext, tileCfg.walkableHeight, tileCfg.walkableClimb, *tile.solid, *tile.chf))
@@ -797,11 +819,11 @@ namespace MMAP
                 // we may want to keep them in the future for debug
                 // but right now, we don't have the code to merge them
                 rcFreeHeightField(tile.solid);
-                tile.solid = NULL;
+                tile.solid = nullptr;
                 rcFreeCompactHeightfield(tile.chf);
-                tile.chf = NULL;
+                tile.chf = nullptr;
                 rcFreeContourSet(tile.cset);
-                tile.cset = NULL;
+                tile.cset = nullptr;
 
                 pmmerge[nmerge] = tile.pmesh;
                 dmmerge[nmerge] = tile.dmesh;
@@ -839,8 +861,10 @@ namespace MMAP
         // set polygons as walkable
         // TODO: special flags for DYNAMIC polygons, ie surfaces that can be turned on and off
         for (int i = 0; i < iv.polyMesh->npolys; ++i)
+        {
             //if (iv.polyMesh->areas[i] & RC_WALKABLE_AREA) //sun: we use NavTerrain as flags... makes no sense to compare to RC_WALKABLE_AREA. + This has actually no effect
                 iv.polyMesh->flags[i] = iv.polyMesh->areas[i];
+        }
 
         // setup mesh parameters
         dtNavMeshCreateParams params;
@@ -865,9 +889,9 @@ namespace MMAP
         params.offMeshConAreas = meshData.offMeshConnectionsAreas.getCArray();
         params.offMeshConFlags = meshData.offMeshConnectionsFlags.getCArray();
 
-        params.walkableHeight = BASE_UNIT_DIM*config.walkableHeight;    // agent height
-        params.walkableRadius = BASE_UNIT_DIM*config.walkableRadius;    // agent radius
-        params.walkableClimb = BASE_UNIT_DIM*config.walkableClimb;      // keep less that walkableHeight (aka agent height)!
+        params.walkableHeight = agentHeight;  // agent height
+        params.walkableRadius = BASE_UNIT_DIM * config.walkableRadius;  // agent radius
+        params.walkableClimb = agentMaxClimbTerrain;    // keep less that walkableHeight (aka agent height)!
         params.tileX = (((bmin[0] + bmax[0]) / 2) - navMesh->getParams()->orig[0]) / GRID_SIZE;
         params.tileY = (((bmin[2] + bmax[2]) / 2) - navMesh->getParams()->orig[2]) / GRID_SIZE;
         rcVcopy(params.bmin, bmin);
@@ -1400,6 +1424,7 @@ namespace MMAP
         // List here Transport gameobjects you want to extract.
         buildGameObject("Transportship.wmo.vmo", 3015);
         buildGameObject("Transport_Zeppelin.wmo.vmo", 3031);
+        buildGameObject("Transportship_Ne.wmo.vmo", 7087);
     }
     /**************************************************************************/
     uint32 MapBuilder::percentageDone(uint32 totalTiles, uint32 totalTilesBuilt)
