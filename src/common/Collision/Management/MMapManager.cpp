@@ -347,7 +347,7 @@ namespace MMAP
 
         if (fileHeader.mmapMagic != MMAP_MAGIC)
         {
-            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Bad header in mmap %s", fileName);
+            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Bad header in mmap %s", fileName.c_str());
             fclose(file);
             return false;
         }
@@ -355,7 +355,7 @@ namespace MMAP
         if (fileHeader.mmapVersion != MMAP_VERSION)
         {
             TC_LOG_ERROR("maps", "MMAP:loadGameObject: %s was built with generator v%i, expected v%i",
-                fileName, fileHeader.mmapVersion, MMAP_VERSION);
+                fileName.c_str(), fileHeader.mmapVersion, MMAP_VERSION);
             fclose(file);
             return false;
         }
@@ -365,7 +365,7 @@ namespace MMAP
         size_t result = fread(data, fileHeader.size, 1, file);
         if (!result)
         {
-            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName);
+            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Bad header or data in mmap %s", fileName.c_str());
             fclose(file);
             return false;
         }
@@ -378,10 +378,10 @@ namespace MMAP
         if (dtStatusFailed(r))
         {
             dtFreeNavMesh(mesh);
-            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName, r);
+            TC_LOG_ERROR("maps", "MMAP:loadGameObject: Failed to initialize dtNavMesh from file %s. Result 0x%x.", fileName.c_str(), r);
             return false;
         }
-        TC_LOG_TRACE("maps", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName, fileHeader.size);
+        TC_LOG_TRACE("maps", "MMAP:loadGameObject: Loaded file %s [size=%u]", fileName.c_str(), fileHeader.size);
 
         // Check again after load. We allow threads to load independently for performance if
         // none is found, but we only want one instance to be managed. Saves other threads
