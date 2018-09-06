@@ -2641,6 +2641,8 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 
     uint32 level = GetLevel();
 
+    sScriptMgr->OnGivePlayerXP(this, xp, victim);
+
     // XP to money conversion processed in Player::RewardQuest
     if(level >= sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
         return;
@@ -2687,6 +2689,7 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 // Current player experience not update (must be update by caller)
 void Player::GiveLevel(uint32 level)
 {
+    uint8 oldLevel = GetLevel();
     if (level == GetLevel())
         return;
 
@@ -2751,7 +2754,7 @@ void Player::GiveLevel(uint32 level)
     if (Pet* pet = GetPet())
         pet->SynchronizeLevelWithOwner();
 
-    //TC sScriptMgr->OnPlayerLevelChanged(this, oldLevel);
+    sScriptMgr->OnPlayerLevelChanged(this, oldLevel);
 }
 
 void Player::InitTalentForLevel()
@@ -3762,6 +3765,8 @@ uint32 Player::ResetTalentsCost() const
 
 bool Player::ResetTalents(bool no_cost)
 {
+    sScriptMgr->OnPlayerTalentsReset(this, no_cost);
+
     // not need after this call
     if(HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
@@ -3848,6 +3853,12 @@ bool Player::ResetTalents(bool no_cost)
     RemovePet(nullptr,PET_SAVE_NOT_IN_SLOT, true);
 
     return true;
+}
+
+void Player::SetFreeTalentPoints(uint32 points)
+{
+    sScriptMgr->OnPlayerFreeTalentPointsChanged(this, points);
+    SetUInt32Value(PLAYER_CHARACTER_POINTS1, points);
 }
 
 bool Player::_removeSpell(uint16 spell_id)
@@ -6959,6 +6970,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         SetGroupUpdateFlag(GROUP_UPDATE_FLAG_ZONE);
 
     UpdateZoneDependentAuras(newZone);
+    sScriptMgr->OnPlayerUpdateZone(this, newZone, newArea);
 
     if (oldZoneId != newZone)
     {
@@ -7040,6 +7052,8 @@ void Player::DuelComplete(DuelCompleteType type)
         data << GetName();
         SendMessageToSet(&data,true);
     }
+
+    sScriptMgr->OnPlayerDuelEnd(duel->opponent, this, type);
 
     // cool-down duel spell
     /*data.Initialize(SMSG_SPELL_COOLDOWN, 17);
@@ -15453,7 +15467,7 @@ bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
     if (!amount)
         return true;
 
-    //sScriptMgr->OnPlayerMoneyChanged(this, amount);
+    sScriptMgr->OnPlayerMoneyChanged(this, amount);
 
     if (amount < 0)
         SetMoney (GetMoney() > uint32(-amount) ? GetMoney() + amount : 0);
@@ -16410,7 +16424,7 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
         if (!load)
             TC_LOG_DEBUG("maps", "Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName().c_str(), GetGUID().GetCounter(), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
 
-        //sScriptMgr->OnPlayerBindToInstance(this, save->GetDifficulty(), save->GetMapId(), permanent, uint8(extendState));
+        sScriptMgr->OnPlayerBindToInstance(this, save->GetDifficulty(), save->GetMapId(), permanent);
 
         return &bind;
     }
@@ -16706,8 +16720,8 @@ void Player::SaveToDB(bool create /*=false*/)
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
-    /*if (!create)
-        sScriptMgr->OnPlayerSave(this); */
+    if (!create)
+        sScriptMgr->OnPlayerSave(this); 
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     PreparedStatement* stmt = nullptr;
@@ -17784,6 +17798,8 @@ void Player::UpdateDuelFlag(time_t currTime)
 {
     if(!duel || duel->startTimer == 0 ||currTime < duel->startTimer + 3)
         return;
+
+    sScriptMgr->OnPlayerDuelStart(this, duel->opponent);
 
     SetUInt32Value(PLAYER_DUEL_TEAM, 1);
     duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 2);

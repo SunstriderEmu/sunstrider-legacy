@@ -6110,6 +6110,7 @@ void Spell::EffectDuel(uint32 i)
 
     caster->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
     target->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
+    sScriptMgr->OnPlayerDuelRequest(target, caster);
 }
 
 void Spell::EffectStuck(uint32 /*i*/)

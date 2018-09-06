@@ -515,7 +515,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUID().GetCounter());
-            //sScriptMgr->OnPlayerCreate(&newChar);
+            sScriptMgr->OnPlayerCreate(&newChar);
             sCharacterCache->AddCharacterCacheEntry(newChar.GetGUID().GetCounter(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0);
 
             newChar.CleanupsBeforeDelete();
@@ -583,7 +583,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     std::string IP_str = GetRemoteAddress();
     TC_LOG_DEBUG("entities.player","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),guid.GetCounter());
 
-    //    sScriptMgr->OnPlayerDelete(guid, initAccountId); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
+    sScriptMgr->OnPlayerDelete(guid, GetAccountId()); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
 
     std::string fname = sConfigMgr->GetStringDefault("LogsDir", "");
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
@@ -973,8 +973,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     }
 #endif
 
-    //Hook for OnLogin Event
-    //    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
+    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
 
     delete holder;
 

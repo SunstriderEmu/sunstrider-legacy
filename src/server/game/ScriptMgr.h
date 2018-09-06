@@ -238,6 +238,168 @@ public:
     virtual std::vector<ChatCommand> GetCommands() const = 0;
 };
 
+class TC_GAME_API PlayerScript : public ScriptObject
+{
+protected:
+    PlayerScript(const char* name);
+
+public:
+
+    virtual void OnPlayerRealeasedGhost(Player* /*player*/) {}
+
+    //Called when player kills another Player
+    virtual void OnPVPKill(Player* /*killer*/, Player* /*killed*/) {}
+
+    // Called when Player kills a creature
+            // Called when a player kills a creature
+    virtual void OnCreatureKill(Player* /*killer*/, Creature* /*killed*/) { }
+
+    // Called when a player's pet kills a creature
+    virtual void OnCreatureKilledByPet(Player* /*PetOwner*/, Creature* /*killed*/) { }
+
+    // Called when a player is killed by a creature
+    virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
+
+    // Called when a player's level changes (right after the level is applied)
+    virtual void OnLevelChanged(Player* /*player*/, uint8 /*oldlevel*/) { }
+
+    // Called when a player's free talent points change (right before the change is applied)
+    virtual void OnFreeTalentPointsChanged(Player* /*player*/, uint32 /*points*/) { }
+
+    // Called when a player's talent points are reset (right before the reset is done)
+    virtual void OnTalentsReset(Player* /*player*/, bool /*noCost*/) { }
+
+    // Called for player::update
+    virtual void OnBeforeUpdate(Player* /*player*/, uint32 /*p_time*/) { }
+
+    // Called when a player's money is modified (before the modification is done)
+    virtual void OnMoneyChanged(Player* /*player*/, int32& /*amount*/) { }
+
+    // Called when a player gains XP (before anything is given)
+    virtual void OnGiveXP(Player* /*player*/, uint32& /*amount*/, Unit* /*victim*/) { }
+
+    // Called when a player's reputation changes (before it is actually changed)
+    virtual void OnReputationChange(Player* /*player*/, uint32 /*factionId*/, int32& /*standing*/, bool /*incremental*/) { }
+
+    // Called when a duel is requested
+    virtual void OnDuelRequest(Player* /*target*/, Player* /*challenger*/) { }
+
+    // Called when a duel starts (after 3s countdown)
+    virtual void OnDuelStart(Player* /*player1*/, Player* /*player2*/) { }
+
+    // Called when a duel ends
+    virtual void OnDuelEnd(Player* /*winner*/, Player* /*loser*/, DuelCompleteType /*type*/) { }
+
+    // The following methods are called when a player sends a chat message.
+    virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/) { }
+
+    virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Player* /*receiver*/) { }
+
+    virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Group* /*group*/) { }
+
+    virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Guild* /*guild*/) { }
+
+    // Both of the below are called on emote opcodes.
+    virtual void OnEmote(Player* /*player*/, uint32 /*emote*/) { }
+
+    virtual void OnTextEmote(Player* /*player*/, uint32 /*textEmote*/, uint32 /*emoteNum*/, uint64 /*guid*/) { }
+
+    // Called in Spell::Cast.
+    virtual void OnSpellCast(Player* /*player*/, Spell* /*spell*/, bool /*skipCheck*/) { }
+
+    // Called during data loading
+    virtual void OnLoadFromDB(Player* /*player*/) { }
+
+    // Called when a player logs in.
+    virtual void OnLogin(Player* /*player*/) { }
+
+    // Called when a player logs out.
+    virtual void OnLogout(Player* /*player*/) { }
+
+    // Called when a player is created.
+    virtual void OnCreate(Player* /*player*/) { }
+
+    // Called when a player is deleted.
+    virtual void OnDelete(uint64 /*guid*/) { }
+
+    // Called when a player is about to be saved.
+    virtual void OnSave(Player* /*player*/) { }
+
+    // Called when a player is bound to an instance
+    virtual void OnBindToInstance(Player* /*player*/, Difficulty /*difficulty*/, uint32 /*mapId*/, bool /*permanent*/) { }
+
+    // Called when a player switches to a new zone
+    virtual void OnUpdateZone(Player* /*player*/, uint32 /*newZone*/, uint32 /*newArea*/) { }
+
+    // Called when a player switches to a new area (more accurate than UpdateZone)
+    virtual void OnUpdateArea(Player* /*player*/, uint32 /*oldArea*/, uint32 /*newArea*/) { }
+
+    // Called when a player changes to a new map (after moving to new map)
+    virtual void OnMapChanged(Player* /*player*/) { }
+
+    // Called before a player is being teleported to new coords
+    virtual bool OnBeforeTeleport(Player* /*player*/, uint32 /*mapid*/, float /*x*/, float /*y*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit* /*target*/) { return true; }
+
+    // Called when team/faction is set on player
+    virtual void OnUpdateFaction(Player* /*player*/) { }
+
+    // Called when a player is added to battleground
+    virtual void OnAddToBattleground(Player* /*player*/, Battleground* /*bg*/) { }
+
+    // Called when a player is removed from battleground
+    virtual void OnRemoveFromBattleground(Player* /*player*/, Battleground* /*bg*/) { }
+
+    // Called when a player selects an option in a player gossip window
+    virtual void OnGossipSelect(Player* /*player*/, uint32 /*menu_id*/, uint32 /*sender*/, uint32 /*action*/) { }
+
+    // Called when a player selects an option in a player gossip window
+    virtual void OnGossipSelectCode(Player* /*player*/, uint32 /*menu_id*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
+
+    // On player getting charmed
+    virtual void OnBeingCharmed(Player* /*player*/, Unit* /*charmer*/, uint32 /*oldFactionId*/, uint32 /*newFactionId*/) { }
+
+    // To change behaviour of set visible item slot
+    virtual void OnAfterSetVisibleItemSlot(Player* /*player*/, uint8 /*slot*/, Item* /*item*/) { }
+
+    // After an item has been moved from inventory
+    virtual void OnAfterMoveItemFromInventory(Player* /*player*/, Item* /*it*/, uint8 /*bag*/, uint8 /*slot*/, bool /*update*/) { }
+
+    // After an item has been equipped
+    virtual void OnEquip(Player* /*player*/, Item* /*it*/, uint8 /*bag*/, uint8 /*slot*/, bool /*update*/) { }
+
+    // After player enters queue for BG
+    virtual void OnPlayerJoinBG(Player* /*player*/) { }
+
+    // After player enters queue for Arena
+    virtual void OnPlayerJoinArena(Player* /*player*/) { }
+
+    //After looting item
+    virtual void OnLootItem(Player* /*player*/, Item* /*item*/, uint32 /*count*/, uint64 /*lootguid*/) { }
+
+    //After creating item (eg profession item creation)
+    virtual void OnCreateItem(Player* /*player*/, Item* /*item*/, uint32 /*count*/) { }
+
+    //After receiving item as a quest reward
+    virtual void OnQuestRewardItem(Player* /*player*/, Item* /*item*/, uint32 /*count*/) { }
+
+    //Before buying something from any vendor
+    virtual void OnBeforeBuyItemFromVendor(Player* /*player*/, uint64 /*vendorguid*/, uint32 /*vendorslot*/, uint32 &/*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/) { };
+
+    //Before buying something from any vendor
+    virtual void OnAfterStoreOrEquipNewItem(Player* /*player*/, uint32 /*vendorslot*/, uint32& /*item*/, uint8 /*count*/, uint8 /*bag*/, uint8 /*slot*/, ItemTemplate const* /*pProto*/, Creature* /*pVendor*/, VendorItem const* /*crItem*/, bool /*bStore*/) { };
+
+    virtual void OnAfterUpdateMaxPower(Player* /*player*/, Powers& /*power*/, float& /*value*/) { }
+
+    virtual void OnAfterUpdateMaxHealth(Player* /*player*/, float& /*value*/) { }
+
+    virtual void OnBeforeUpdateAttackPowerAndDamage(Player* /*player*/, float& /*level*/, float& /*val2*/, bool /*ranged*/) { }
+    virtual void OnAfterUpdateAttackPowerAndDamage(Player* /*player*/, float& /*level*/, float& /*base_attPower*/, float& /*attPowerMod*/, float& /*attPowerMultiplier*/, bool /*ranged*/) { }
+
+    virtual void OnBeforeInitTalentForLevel(Player* /*player*/, uint8& /*level*/, uint32& /*talentPointsForLevel*/) { }
+
+    virtual void OnFirstLogin(Player* /*player*/) { }
+};
+
 // Manages registration, loading, and execution of scripts.
 class TC_GAME_API ScriptMgr
 {
@@ -373,37 +535,33 @@ public: /* Script contexts */
 
     public: /* PlayerScript */
 
-        //void OnPVPKill(Player* killer, Player* killed);
-        //void OnCreatureKill(Player* killer, Creature* killed);
-        //void OnPlayerKilledByCreature(Creature* killer, Player* killed);
-        //void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
-        //void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
-        //void OnPlayerTalentsReset(Player* player, bool noCost);
-        //void OnPlayerMoneyChanged(Player* player, int32& amount);
-        //void OnPlayerMoneyLimit(Player* player, int32& amount);
-        //void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
-        //void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
-        //void OnPlayerDuelRequest(Player* target, Player* challenger);
-        //void OnPlayerDuelStart(Player* player1, Player* player2);
-        //void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
-        /*void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
+        void OnPVPKill(Player* killer, Player* killed);
+        void OnCreatureKill(Player* killer, Creature* killed);
+        void OnPlayerKilledByCreature(Creature* killer, Player* killed);
+        void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+        void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
+        void OnPlayerTalentsReset(Player* player, bool noCost);
+        void OnPlayerMoneyChanged(Player* player, int32& amount);
+        void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
+        void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
+        void OnPlayerDuelRequest(Player* target, Player* challenger);
+        void OnPlayerDuelStart(Player* player1, Player* player2);
+        void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
-        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
-        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);*/
-        /*void OnPlayerEmote(Player* player, uint32 emote);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);        
+        void OnPlayerEmote(Player* player, uint32 emote);
         void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, ObjectGuid guid);
         void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
         void OnPlayerLogin(Player* player, bool firstLogin);
         void OnPlayerLogout(Player* player);
         void OnPlayerCreate(Player* player);
         void OnPlayerDelete(ObjectGuid guid, uint32 accountId);
-        void OnPlayerFailedDelete(ObjectGuid guid, uint32 accountId);
         void OnPlayerSave(Player* player);
-//        void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
+        void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
         void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
-        bool OnPlayerChat(Player *pPlayer, const char *text); //old, to replace
-        */
+        
     public: /* ServerScript */
 
         /*

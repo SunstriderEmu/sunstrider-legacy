@@ -9896,6 +9896,23 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
                 bg->HandleKillUnit(pVictim->ToCreature(), player);
         }
     }
+
+    // Hook for OnPVPKill Event
+    if (attacker)
+    {
+        if (Player* killerPlr = attacker->ToPlayer())
+        {
+            if (Player* killedPlr = pVictim->ToPlayer())
+                sScriptMgr->OnPVPKill(killerPlr, killedPlr);
+            else if (Creature* killedCre = pVictim->ToCreature())
+                sScriptMgr->OnCreatureKill(killerPlr, killedCre);
+        }
+        else if (Creature* killerCre = attacker->ToCreature())
+        {
+            if (Player* killed = pVictim->ToPlayer())
+                sScriptMgr->OnPlayerKilledByCreature(killerCre, killed);
+        }
+    }
 }
 
 void Unit::SetControlled(bool apply, UnitState state)

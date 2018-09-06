@@ -287,7 +287,7 @@ void ReputationMgr::Initialize()
 
 bool ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental, bool spillOverOnly)
 {
-    //sScriptMgr->OnPlayerReputationChange(_player, factionEntry->ID, standing, incremental);
+    sScriptMgr->OnPlayerReputationChange(_player, factionEntry->ID, standing, incremental);
     bool res = false;
     /* TC - Spillover handling. Still need implementation on BC.
     // if spillover definition exists in DB, override DBC

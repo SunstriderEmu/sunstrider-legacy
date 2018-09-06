@@ -311,6 +311,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
             #endif
 
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             group->BroadcastPacket(&data, false, group->GetMemberGroup(GetPlayer()->GetGUID()));
@@ -326,6 +327,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             Guild* guild = sGuildMgr->GetGuildById(guildId);
             if (guild) {
+                sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
                 guild->BroadcastToGuild(this, false, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
             }
             #ifdef PLAYERBOT
@@ -350,7 +352,10 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         {
             if (GetPlayer()->GetGuildId())
                 if (Guild *guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                {
+                    sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
                     guild->BroadcastToGuild(this, true, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                }
             break;
         }
         case CHAT_MSG_RAID:
@@ -384,7 +389,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 }
             }
             #endif
-
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, currentGroup);
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             targetGroup->BroadcastPacket(&data, false);
@@ -396,7 +401,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
                 return;
-
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
             WorldPacket data;
             // in battleground, raid warning is sent only to players in battleground - code is ok
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
@@ -491,9 +496,9 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
     if(!GetPlayer()->IsAlive())
         return;
 
-
     uint32 emote;
     recvData >> emote;
+    sScriptMgr->OnPlayerEmote(GetPlayer(), emote);
     GetPlayer()->HandleEmoteCommand(emote);
 }
 

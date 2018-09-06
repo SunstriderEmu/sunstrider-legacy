@@ -695,8 +695,7 @@ void WorldSession::LogoutPlayer(bool Save)
         CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'", GetAccountId());
     }
 
-    //Hook for OnLogout Event
-    //    sScriptMgr->OnPlayerLogout(_player);
+    sScriptMgr->OnPlayerLogout(_player);
 
     m_playerLogout = false;
     m_playerSave = false;

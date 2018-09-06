@@ -3591,7 +3591,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
     {
         // now that we've done the basic check, now run the scripts
         // should be done before the spell is actually executed
-        // sScriptMgr->OnPlayerSpellCast(playerCaster, this, skipCheck);
+        sScriptMgr->OnPlayerSpellCast(playerCaster, this, skipCheck);
 
         // As of 3.0.2 pets begin attacking their owner's target immediately (sun: we're keeping that change despite being on BC)
         // Let any pets know we've attacked something. Check DmgClass for harmful spells only
