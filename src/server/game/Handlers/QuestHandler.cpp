@@ -371,7 +371,10 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             }
             */
 
-            _player->SetQuestStatus(questId, QUEST_STATUS_NONE);
+            _player->AbandonQuest(questId);
+            _player->SetQuestStatus(questId, QUEST_STATUS_NONE); //_player->RemoveActiveQuest(questId);
+
+            //sScriptMgr->OnQuestStatusChange(_player, questId);
         }
 
         _player->SetQuestSlot(slot, 0);
