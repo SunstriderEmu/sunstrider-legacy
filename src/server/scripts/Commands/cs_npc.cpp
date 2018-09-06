@@ -1030,12 +1030,11 @@ public:
             handler->PSendSysMessage("Created formation with leader %u", leaderSpawnID);
         }
 
-        Player* chr = handler->GetSession()->GetPlayer();
         FormationInfo* group_member;
 
         group_member                  = new FormationInfo;
-        group_member->follow_angle    = pCreature->GetAbsoluteAngle(chr) - chr->GetOrientation();
-        group_member->follow_dist     = sqrtf(pow(chr->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(chr->GetPositionY()-pCreature->GetPositionY(),int(2)));
+        group_member->follow_angle    = pCreature->GetAbsoluteAngle(leader) - leader->GetOrientation();
+        group_member->follow_dist     = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(leader->GetPositionY()-pCreature->GetPositionY(),int(2)));
         group_member->leaderGUID      = leader->GetGUID();
 
         sCreatureGroupMgr->AddGroupMember(targetSpawnId, group_member);
