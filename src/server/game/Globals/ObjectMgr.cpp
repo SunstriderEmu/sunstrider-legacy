@@ -642,6 +642,13 @@ void ObjectMgr::LoadCreatureAddons()
         if(_creatureDataStore.find(guid)==_creatureDataStore.end())
             TC_LOG_ERROR("sql.sql","Creature (SpawnId: %u) does not exist but has a record in `creature_addon`",guid);
 
+        //sun: check move flags
+        if (creatureAddon.move_flags & MOVEMENTFLAG_SPLINE_ENABLED)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (SpawnId: %u) have invalid flag MOVEMENTFLAG_SPLINE_ENABLED in moveflags, removed", guid);
+            creatureAddon.move_flags = creatureAddon.move_flags & ~MOVEMENTFLAG_SPLINE_ENABLED;
+        }
+
         ++count;
     }
     while (result->NextRow());
@@ -715,11 +722,20 @@ void ObjectMgr::LoadCreatureTemplateAddons()
                 creatureAddon.mount = 0;
             }
         }
+
         if (!sEmotesStore.LookupEntry(creatureAddon.emote))
         {
             TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid emote (%u) defined in `creature_template_addon`.", entry, creatureAddon.emote);
             creatureAddon.emote = 0;
         }
+
+        //sun: check move flags
+        if (creatureAddon.move_flags & MOVEMENTFLAG_SPLINE_ENABLED)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) have invalid flag MOVEMENTFLAG_SPLINE_ENABLED in moveflags, removed", entry);
+            creatureAddon.move_flags = creatureAddon.move_flags & ~MOVEMENTFLAG_SPLINE_ENABLED;
+        }
+
         ++count;
     }
     while (result->NextRow());
