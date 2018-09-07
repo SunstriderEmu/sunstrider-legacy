@@ -405,7 +405,6 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
 
         Position memberDest = CalculateMemberDestination(member, Position(x, y, z), m_member.second->follow_angle, m_member.second->follow_dist, pathAngle);
 
-        member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         // sunwell: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
         if (run && member->IsWalking())
             member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
