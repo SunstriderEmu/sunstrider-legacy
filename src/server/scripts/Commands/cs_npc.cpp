@@ -977,8 +977,20 @@ public:
     static bool HandleNpcAddFormationCommand(ChatHandler* handler, char const* args)
     {
         ARGS_CHECK
+        Tokenizer tokens(std::string(args), ' ');
+        if (tokens.size() < 1)
+            return false;
 
-        ObjectGuid::LowType leaderSpawnID = (ObjectGuid::LowType) atoi((char*)args);
+        uint32 leaderSpawnID = atoi(tokens[0]);
+        GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
+        if (tokens.size() >= 2)
+        {
+            uint32 _groupAI = atoi(tokens[1]);
+            if (_groupAI < GROUP_AI_TOTAL)
+                groupAI = GroupAI(_groupAI);
+            else
+                handler->PSendSysMessage("Invalid group id %u (Max is %u)", _groupAI, GROUP_AI_TOTAL);
+        }
 
         Creature* pCreature = handler->GetSelectedCreature();
         if(!pCreature || !pCreature->GetSpawnId())
@@ -1020,7 +1032,8 @@ public:
         {
             FormationInfo* group_member;
             group_member = new FormationInfo;
-            group_member->leaderGUID = leader->GetGUID();
+            group_member->leaderGUID = leader->GetGUID().GetCounter();
+            group_member->groupAI = groupAI;
             sCreatureGroupMgr->AddGroupMember(leaderSpawnID, group_member);
             pCreature->SearchFormation();
 
@@ -1034,8 +1047,8 @@ public:
 
         group_member                  = new FormationInfo;
         group_member->follow_angle    = pCreature->GetAbsoluteAngle(leader) - leader->GetOrientation();
-        group_member->follow_dist     = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(),int(2))+pow(leader->GetPositionY()-pCreature->GetPositionY(),int(2)));
-        group_member->leaderGUID      = leader->GetGUID();
+        group_member->follow_dist     = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(), int(2)) + pow(leader->GetPositionY() - pCreature->GetPositionY(), int(2)));
+        group_member->leaderGUID      = leader->GetGUID().GetCounter();
 
         sCreatureGroupMgr->AddGroupMember(targetSpawnId, group_member);
         pCreature->SearchFormation();

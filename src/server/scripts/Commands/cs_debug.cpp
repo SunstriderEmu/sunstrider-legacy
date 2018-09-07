@@ -1600,6 +1600,7 @@ public:
             bool _init = false; //true if successfully initialized
         };
 
+        ARGS_CHECK
         Tokenizer tokens(args, ' ');
         if (tokens.size() < 1)
             return false;

@@ -400,9 +400,6 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         if (M_PI - fabs(fabs(m_leader->GetOrientation() - pathAngle) - M_PI) > M_PI*0.50f)
         {
             // sunwell: in both cases should be 2*M_PI - follow_angle
-            // sunwell: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
-            // sunwell: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
-            // if (m_leader->GetCurrentWaypointID()+1 == itr->second->point_1 || m_leader->GetCurrentWaypointID()+1 == itr->second->point_2)
             m_member.second->follow_angle = Position::NormalizeOrientation(m_member.second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
         }
 
@@ -415,7 +412,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         else if (!run && !member->IsWalking())
             member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
             
-        // sunwell: if we move members to position without taking care of sizes, we should compare distance without sizes
+        // sunwell: since we place members to position without taking care of sizes, we should compare distance without sizes
         // sunwell: change members speed basing on distance - if too far speed up, if too close slow down
         UnitMoveType mtype = Movement::SelectSpeedType(member->GetUnitMovementFlags());
         member->SetSpeedRate(mtype, m_leader->GetSpeedRate(mtype) * member->GetExactDist(POSITION_GET_X_Y_Z(&memberDest)) / pathDist);

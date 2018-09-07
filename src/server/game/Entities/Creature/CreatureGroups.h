@@ -4,11 +4,13 @@
 
 class CreatureGroup;
 
-enum GroupAI
+enum GroupAI : uint8
 {
     GROUP_AI_NONE           = 0, //no follow leader, no automatic mutual support
     GROUP_AI_LEADER_SUPPORT = 1, //follow leader, leader start attacking if a member start attacking
     GROUP_AI_FULL_SUPPORT   = 2, //follow leader, while group start attacking if any member start attacking
+
+    GROUP_AI_TOTAL
 };
 
 struct FormationInfo

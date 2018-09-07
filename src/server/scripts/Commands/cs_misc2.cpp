@@ -43,7 +43,7 @@ public:
             { "gpss",           SEC_GAMEMASTER1,  false, &HandleGPSSCommand,                "" },
             { "help",           SEC_PLAYER,       true,  &HandleHelpCommand,                "" },
             { "heroday",        SEC_PLAYER,       true,  &HandleHerodayCommand,             "" },
-            { "loadpath",       SEC_GAMEMASTER3,  false, &HandleReloadAllPaths,             "" },
+            { "loadpath",       SEC_GAMEMASTER3,  false, &HandleWpReloadCommand,            "" },
             { "lockaccount",    SEC_PLAYER,       false, &HandleLockAccountCommand,         "" },
             { "summon",         SEC_GAMEMASTER1,  false, &HandleSummonCommand,              "" },
             { "notify",         SEC_GAMEMASTER1,  true,  &HandleNotifyCommand,              "" },
@@ -1083,7 +1083,7 @@ public:
         return true;
     }
 
-    static bool HandleReloadAllPaths(ChatHandler* handler, char const* args)
+    static bool HandleWpReloadCommand(ChatHandler* handler, char const* args)
     {
         ARGS_CHECK
 
