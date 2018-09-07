@@ -9795,20 +9795,25 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
         
         if(!cVictim->IsPet())
         {
-            //save threat list before deleting it
+            // Save threat list before deleting it
             if(cVictim->IsWorldBoss())
                 cVictim->ConvertThreatListIntoPlayerListAtDeath();
 
             cVictim->GetThreatManager().ClearAllThreat();
-            if(!cVictim->GetFormation() || !cVictim->GetFormation()->isLootLinked(cVictim)) //the flag is set when whole group is dead for those with linked loot 
-                cVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+
+            // must be after setDeathState which resets dynamic flags
+            if (!creature->loot.isLooted())
+            {
+                if (!cVictim->GetFormation() || !cVictim->GetFormation()->IsLootLinked(cVictim)) // else the flag is set when whole group is dead for those with linked loot 
+                    creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            }
+            else
+                creature->AllLootRemovedFromCorpse();
         }
 
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
         if (attacker && attacker->GetTypeId() == TYPEID_UNIT && attacker->IsAIEnabled()) 
-        {
             (attacker->ToCreature())->AI()->KilledUnit(pVictim);
-        }
             
         if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
         {

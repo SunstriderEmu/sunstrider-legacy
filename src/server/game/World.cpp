@@ -1761,7 +1761,7 @@ void World::SetInitialWorldSettings()
     sSmartWaypointMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading Creature Formations..." );
-    sCreatureGroupMgr->LoadCreatureFormations();
+    sFormationMgr->LoadCreatureFormations();
 
     TC_LOG_INFO("server.loading","Loading Conditions...");
     sConditionMgr->LoadConditions();

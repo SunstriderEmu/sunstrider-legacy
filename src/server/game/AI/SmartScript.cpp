@@ -2561,11 +2561,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_ADD_TO_FORMATION:
         {
             if(!me->GetFormation())
-                sCreatureGroupMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), me);
+                sFormationMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), me);
 
             for (auto target : targets)
                 if (Creature* creatureTarget = target->ToCreature())
-                    sCreatureGroupMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), creatureTarget);
+                    sFormationMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), creatureTarget);
 
             break;
         }
@@ -2573,12 +2573,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             for (auto target : targets)
                 if (Creature* creatureTarget = target->ToCreature())
-                    sCreatureGroupMgr->RemoveCreatureFromGroup(me->GetGUID().GetCounter(), creatureTarget);
+                    sFormationMgr->RemoveCreatureFromGroup(me->GetGUID().GetCounter(), creatureTarget);
 
             break;
         }
         case SMART_ACTION_BREAK_FORMATION:
-            sCreatureGroupMgr->BreakFormation(me);
+            sFormationMgr->BreakFormation(me);
             break;
         case SMART_ACTION_SET_MECHANIC_IMMUNITY:
         {

@@ -340,12 +340,11 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if(IsInWorld())
     {
-        if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-                ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
+        if (GetZoneScript())
+            GetZoneScript()->OnCreatureRemove(this);
 
         if(m_formation)
-            sCreatureGroupMgr->RemoveCreatureFromGroup(m_formation, this);
+            sFormationMgr->RemoveCreatureFromGroup(m_formation, this);
 
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
@@ -374,18 +373,15 @@ bool Creature::IsReturningHome() const
 
 void Creature::SearchFormation()
 {
-    if(IsPet())
+    if(IsSummon())
         return;
 
     ObjectGuid::LowType lowguid = GetSpawnId();
     if(!lowguid)
         return;
 
-    auto CreatureGroupMap = sCreatureGroupMgr->GetGroupMap();
-    auto frmdata = CreatureGroupMap.find(lowguid);
-    if(frmdata != CreatureGroupMap.end())
-        sCreatureGroupMgr->AddCreatureToGroup(frmdata->second->leaderGUID, this);
-
+    if (FormationInfo const* formationInfo = sFormationMgr->GetFormationInfo(lowguid))
+        sFormationMgr->AddCreatureToGroup(formationInfo->leaderSpawnId, this);
 }
 
 bool Creature::IsFormationLeader() const
@@ -404,8 +400,7 @@ void Creature::SignalFormationMovement(Position const& destination, uint32 id/* 
     if (!m_formation->IsLeader(this))
         return;
 
-    m_formation->LeaderMoveTo(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ(), 
-        moveType == WAYPOINT_MOVE_TYPE_RUN);
+    m_formation->LeaderMoveTo(destination, id, moveType, orientation);
 }
 
 bool Creature::IsFormationLeaderMoveAllowed() const
@@ -2224,7 +2219,7 @@ void Creature::SetDeathState(DeathState s)
         SetKeepActive(false);
 
         //Dismiss group if is leader
-        if (m_formation && m_formation->getLeader() == this)
+        if (m_formation && m_formation->GetLeader() == this)
             m_formation->FormationReset(true);
 
         bool needsFalling = ((CanFly() || IsFlying() || IsHovering()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING));
@@ -2990,6 +2985,11 @@ void Creature::AllLootRemovedFromCorpse()
     m_respawnTime = std::max<time_t>(m_corpseRemoveTime + m_respawnDelay, m_respawnTime);
 }
 
+void Creature::ResetCorpseRemoveTime()
+{
+    m_corpseRemoveTime = GameTime::GetGameTime() + m_corpseDelay;
+}
+
 uint8 Creature::GetLevelForTarget( WorldObject const* target ) const
 {
     if(!IsWorldBoss() || !target->ToUnit())
@@ -3205,17 +3205,18 @@ float Creature::GetDistanceFromHome() const
 
 void Creature::Motion_Initialize()
 {
-    if (!m_formation)
-        GetMotionMaster()->Initialize();
-    else if (m_formation->getLeader() == this)
+    if (m_formation)
     {
-        m_formation->FormationReset(false);
-        GetMotionMaster()->Initialize();
+        if (m_formation->GetLeader() == this)
+            m_formation->FormationReset(false);
+        else if (m_formation->IsFormed())
+        {
+            GetMotionMaster()->MoveIdle(); // wait the order of leader
+            return;
+        }
     }
-    else if (m_formation->isFormed())
-        GetMotionMaster()->MoveIdle(); //wait the order of leader
-    else
-        GetMotionMaster()->Initialize();
+
+    GetMotionMaster()->Initialize();
 }
 
 void Creature::SetTarget(ObjectGuid guid)

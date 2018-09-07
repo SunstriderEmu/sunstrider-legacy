@@ -849,7 +849,7 @@ public:
             handler->PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
         if(target->GetFormation())
-            handler->PSendSysMessage("Member of formation %u", target->GetFormation()->GetId());
+            handler->PSendSysMessage("Member of formation %u", target->GetFormation()->GetLeaderSpawnId());
 
         SpawnData const* data = sObjectMgr->GetSpawnData(SPAWN_TYPE_CREATURE, target->GetSpawnId());
         if (data && data->spawnGroupData)
@@ -985,11 +985,12 @@ public:
         GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
         if (tokens.size() >= 2)
         {
-            uint32 _groupAI = atoi(tokens[1]);
-            if (_groupAI < GROUP_AI_TOTAL)
-                groupAI = GroupAI(_groupAI);
-            else
-                handler->PSendSysMessage("Invalid group id %u (Max is %u)", _groupAI, GROUP_AI_TOTAL);
+            groupAI = GroupAI(atoi(tokens[1]));
+            if (groupAI >= GROUP_AI_TOTAL)
+            {
+                handler->PSendSysMessage("Invalid group id %u (Max is %u)", uint32(groupAI), GROUP_AI_TOTAL);
+                return false;
+            }
         }
 
         Creature* pCreature = handler->GetSelectedCreature();
@@ -1002,7 +1003,7 @@ public:
     
         if(pCreature->GetFormation())
         {
-            handler->PSendSysMessage("Selected creature is already member of group %u.", pCreature->GetFormation()->GetId());
+            handler->PSendSysMessage("Selected creature is already member of group %u.", pCreature->GetFormation()->GetLeaderSpawnId());
             return true;
         }
 
@@ -1030,31 +1031,28 @@ public:
 
         if (!leader->GetFormation())
         {
-            FormationInfo* group_member;
-            group_member = new FormationInfo;
-            group_member->leaderGUID = leader->GetGUID().GetCounter();
-            group_member->groupAI = groupAI;
-            sCreatureGroupMgr->AddGroupMember(leaderSpawnID, group_member);
+            FormationInfo group_member;
+            group_member.leaderSpawnId = leader->GetGUID().GetCounter();
+            group_member.groupAI = groupAI;
+            sFormationMgr->AddFormationMember(leaderSpawnID, std::move(group_member));
             pCreature->SearchFormation();
 
             WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
-                leaderSpawnID, leaderSpawnID, uint32(group_member->groupAI));
+                leaderSpawnID, leaderSpawnID, uint32(groupAI));
 
             handler->PSendSysMessage("Created formation with leader %u", leaderSpawnID);
         }
 
-        FormationInfo* group_member;
+        FormationInfo group_member;
+        group_member.followAngle   = pCreature->GetAbsoluteAngle(leader) - leader->GetOrientation();
+        group_member.followDist    = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(), int(2)) + pow(leader->GetPositionY() - pCreature->GetPositionY(), int(2)));
+        group_member.leaderSpawnId = leader->GetGUID().GetCounter();
 
-        group_member                  = new FormationInfo;
-        group_member->follow_angle    = pCreature->GetAbsoluteAngle(leader) - leader->GetOrientation();
-        group_member->follow_dist     = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(), int(2)) + pow(leader->GetPositionY() - pCreature->GetPositionY(), int(2)));
-        group_member->leaderGUID      = leader->GetGUID().GetCounter();
-
-        sCreatureGroupMgr->AddGroupMember(targetSpawnId, group_member);
+        sFormationMgr->AddFormationMember(targetSpawnId, group_member);
         pCreature->SearchFormation();
 
         WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u','%f', '%f', '%u')",
-            leaderSpawnID, targetSpawnId, group_member->follow_dist, group_member->follow_angle, uint32(group_member->groupAI));
+            leaderSpawnID, targetSpawnId, group_member.followDist, group_member.followAngle, uint32(group_member.groupAI));
 
         handler->PSendSysMessage("Creature %u added to formation with leader %u.", targetSpawnId, leaderSpawnID);
 

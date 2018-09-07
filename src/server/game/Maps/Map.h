@@ -122,7 +122,7 @@ struct ZoneDynamicInfo
 #pragma pack(pop)
 #endif
 
-typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
+typedef std::map<ObjectGuid::LowType /*leaderSpawnId*/, CreatureGroup*> CreatureGroupHolderType;
 struct RespawnInfo; // forward declaration
 struct CompareRespawnInfo
 {

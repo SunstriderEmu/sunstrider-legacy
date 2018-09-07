@@ -3,6 +3,7 @@
 #define _FORMATIONS_H
 
 class CreatureGroup;
+enum WaypointPathType : uint32;
 
 enum GroupAI : uint8
 {
@@ -15,57 +16,41 @@ enum GroupAI : uint8
 
 struct FormationInfo
 {
-    ObjectGuid::LowType leaderGUID = 0;
-    float follow_dist = 0.0f;
-    float follow_angle = 0.0f;
+    ObjectGuid::LowType leaderSpawnId = 0;
+    float followDist = 0.0f;
+    float followAngle = 0.0f;
     GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
     bool respawn = false;
     bool linkedLoot = false;
+    uint32 leaderWaypointIDs[2] = { }; //formation does a 180° on these points. // NYI, this is somewhat automated for now
 
     Position originalHome; //home before being in the formation
 };
 
-typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
-
-struct MemberPosition
+class TC_GAME_API FormationMgr
 {
-    float follow_angle;
-    float follow_dist;
-};
+public:
+    typedef std::unordered_map<uint32/*spawnID*/, FormationInfo> CreatureGroupInfoType;
 
-class TC_GAME_API CreatureGroupManager
-{
-    public:
+    static FormationMgr* instance();
 
-        static CreatureGroupManager* instance()
-        {
-            static CreatureGroupManager instance;
-            return &instance;
-        }
+    void AddCreatureToGroup(ObjectGuid::LowType leaderSpawnId, Creature* creature);
+    void RemoveCreatureFromGroup(ObjectGuid::LowType leaderSpawnId, Creature* member);
+    void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
 
-        ~CreatureGroupManager();
-        
-        //add creature to group (or create it if it does not exists), with current relative position to leader as position in formation, OR with position instead if specified
-        void AddCreatureToGroup(uint32 group_id, Creature* member, MemberPosition* position = nullptr);
-        void RemoveCreatureFromGroup(uint32 group_id, Creature* member);
-        void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
-        //empty group then delete it
-        void BreakFormation(Creature* leader);
-        void LoadCreatureFormations();
+    //empty group then delete it
+    void BreakFormation(Creature* leader);
 
-        void AddGroupMember(ObjectGuid::LowType creature_lowguid, FormationInfo* group_member);
+    void LoadCreatureFormations();
+    FormationInfo* GetFormationInfo(ObjectGuid::LowType spawnId);
 
-        CreatureGroupInfoType const& GetGroupMap()
-        {
-            return CreatureGroupMap;
-        };
+    void AddFormationMember(ObjectGuid::LowType creature_lowguid, FormationInfo const& group_member);
+private:
 
-        //get guid for storing in group map
-        static ObjectGuid::LowType GetCreatureGUIDForStore(Creature* member);
-    private:
-        CreatureGroupInfoType CreatureGroupMap;
+    FormationMgr();
+    ~FormationMgr();
 
-        void Clear(); //clear memory from CreatureGroupMap
+    CreatureGroupInfoType _creatureGroupMap;
 };
 
 
@@ -73,42 +58,45 @@ class TC_GAME_API CreatureGroupManager
 
 class TC_GAME_API CreatureGroup
 {
-    friend CreatureGroupManager;
+    friend FormationMgr;
     private:
-        Creature* m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
-        typedef std::map<Creature*, FormationInfo*>  CreatureGroupMemberType;
-        CreatureGroupMemberType m_members;
+        Creature* _leader;
+        typedef std::unordered_map<Creature*, FormationInfo*>  CreatureGroupMemberType;
+        CreatureGroupMemberType _members;
 
-        uint32 m_groupID;
-        bool m_Formed;
-        bool inCombat;
-        bool justAlive;
-        uint32 respawnTimer;
+        ObjectGuid::LowType _leaderSpawnId;
+        bool _formed;
+        bool _engaging;
+        bool _justAlive; //group was alive at last update
+        uint32 _respawnTimer; //time left before respawning group members with respawn flag (only decreases when out of combat)
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(nullptr), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
+        explicit CreatureGroup(uint32 id);
         ~CreatureGroup();
         
-        Creature* getLeader() const { return m_leader; }
-        uint32 GetId() const { return m_groupID; }
-        bool isEmpty() const { return m_members.empty(); }
-        bool isFormed() const { return m_Formed; }
+        Creature* GetLeader() const { return _leader; }
+        ObjectGuid::LowType GetLeaderSpawnId() const { return _leaderSpawnId; }
+        bool IsEmpty() const { return _members.empty(); }
+        bool IsFormed() const { return _formed; }
         bool IsAlive() const; //true if any member is alive
-        bool isLootLinked(Creature* c);
-        bool IsLeader(Creature const* creature) const { return m_leader == creature; }
+        bool IsEngaged() const; //true if any member is engaged
+        bool IsLootLinked(Creature* c);
+        bool IsLeader(Creature const* creature) const { return _leader == creature; }
 
+        bool HasMember(Creature* member) const { return _members.count(member) > 0; }
         //add creature to group, with current relative position to leader as position in formation, OR with position instead if specified
-        void AddMember(Creature *member, MemberPosition* pos = nullptr);
+        void AddMember(Creature *member);
         void RemoveMember(Creature *member);
+        // Reset movement for formation members (not leader)
         void FormationReset(bool dismiss);
+        // Restore UNIT_DYNFLAG_LOOTABLE on creatures with linkedLoot flag
         void SetLootable(bool lootable);
 
-        void LeaderMoveTo(float x, float y, float z, bool run);
+        void LeaderMoveTo(Position const& destination, uint32 id = 0, uint32 moveType = 0, bool orientation = false);
         void MemberEngagingTarget(Creature* member, Unit *target);
         bool CanLeaderStartMoving() const;
 
-        void UpdateCombat();
         void Respawn();
         void Update(uint32 diff);
         void ForEachMember(std::function<void(Creature*)> const& apply);
@@ -121,6 +109,6 @@ private:
         Position CalculateMemberDestination(Creature* member, Position const& leaderPos, float followAngle, float followDist, float pathAngle, uint8 depth = 0) const;
 };
 
-#define sCreatureGroupMgr CreatureGroupManager::instance()
+#define sFormationMgr FormationMgr::instance()
 
 #endif

@@ -798,7 +798,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool IsReturningHome() const;
 
-        //check if creature is present in a formation from CreatureGroupManager, and adds it to it if one is found
+        //check if creature is present in a formation from FormationMgr, and adds it to it if one is found
         void SearchFormation();
         CreatureGroup *GetFormation(){return m_formation;}
         void SetFormation(CreatureGroup *formation) {m_formation = formation;}
@@ -832,7 +832,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         // Respawned since less than 5 secs
         bool HasJustAppeared() const { return (m_timeSinceSpawn < 5000); }
-        void SetCorpseRemoveTime(uint32 removeTime) { m_corpseRemoveTime = removeTime; }
+        void ResetCorpseRemoveTime(); //set corpse remove time at max time
         uint32 GetCorpseDelay() const { return m_corpseDelay; }
         
         // Scripting tools
