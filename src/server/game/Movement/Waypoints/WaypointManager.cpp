@@ -128,6 +128,8 @@ void WaypointMgr::ReloadPath(uint32 id)
         waypoint.delay = fields[6].GetUInt32();
         waypoint.eventId = fields[7].GetUInt32();
         waypoint.eventChance = fields[8].GetUInt8();
+
+        values.push_back(std::move(waypoint));
     }
     while (result->NextRow());
 
