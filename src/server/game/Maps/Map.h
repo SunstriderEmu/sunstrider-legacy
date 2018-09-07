@@ -122,6 +122,7 @@ struct ZoneDynamicInfo
 #pragma pack(pop)
 #endif
 
+//sun: map instead of unordered, we want to be able to get max key in AddCreatureToGroup
 typedef std::map<ObjectGuid::LowType /*leaderSpawnId*/, CreatureGroup*> CreatureGroupHolderType;
 struct RespawnInfo; // forward declaration
 struct CompareRespawnInfo
@@ -474,6 +475,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         template<class T> void SwitchGridContainers(T* obj, bool active);
         CreatureGroupHolderType CreatureGroupHolder;
+
+        CreatureGroup* GetCreatureGroup(uint32 groupID) const;
 
         /*
         int32 irand(int32 min, int32 max)

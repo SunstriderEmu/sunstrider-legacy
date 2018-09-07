@@ -849,7 +849,7 @@ public:
             handler->PSendSysMessage("PathID : %u", target->GetWaypointPath());
 
         if(target->GetFormation())
-            handler->PSendSysMessage("Member of formation %u", target->GetFormation()->GetLeaderSpawnId());
+            handler->PSendSysMessage("Member of formation %u", target->GetFormation()->GetGroupId());
 
         SpawnData const* data = sObjectMgr->GetSpawnData(SPAWN_TYPE_CREATURE, target->GetSpawnId());
         if (data && data->spawnGroupData)
@@ -974,6 +974,7 @@ public:
         return true;
     }
 
+    // Does not handle summons, only creature with a spawnId
     static bool HandleNpcAddFormationCommand(ChatHandler* handler, char const* args)
     {
         ARGS_CHECK
@@ -981,7 +982,7 @@ public:
         if (tokens.size() < 1)
             return false;
 
-        uint32 leaderSpawnID = atoi(tokens[0]);
+        uint32 groupID = atoi(tokens[0]);
         GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
         if (tokens.size() >= 2)
         {
@@ -993,68 +994,69 @@ public:
             }
         }
 
-        Creature* pCreature = handler->GetSelectedCreature();
-        if(!pCreature || !pCreature->GetSpawnId())
+        Creature* member = handler->GetSelectedCreature();
+        if(!member)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);
             return true;
         }
-    
-        if(pCreature->GetFormation())
-        {
-            handler->PSendSysMessage("Selected creature is already member of group %u.", pCreature->GetFormation()->GetLeaderSpawnId());
-            return true;
-        }
 
-        uint32 targetSpawnId = pCreature->GetSpawnId();
+        uint32 targetSpawnId = member->GetSpawnId();
         if (!targetSpawnId)
         {
             handler->SendSysMessage("Target creature may not be a summon");
             return true;
         }
 
-        CreatureData const* data = sObjectMgr->GetCreatureData(leaderSpawnID);
-        if (!data)
+        if(member->GetFormation())
         {
-            handler->PSendSysMessage("Could not find creature data for spawnID %u", leaderSpawnID);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        Creature* leader = pCreature->GetMap()->GetCreatureBySpawnId(leaderSpawnID);
-        if (!leader)
-        {
-            handler->PSendSysMessage("Could not find leader (spawnID %u) in map.", leaderSpawnID);
+            handler->PSendSysMessage("Selected creature is already member of group %u.", member->GetFormation()->GetGroupId());
             return true;
         }
 
-        if (!leader->GetFormation())
+        // For non summon case, groupID is actually leader spawnId
+        Creature* leader = member->GetMap()->GetCreatureBySpawnId(groupID);
+        if (!leader)
         {
+            handler->PSendSysMessage("Could not find leader (spawnID %u) in map.", groupID);
+            return true;
+        }
+
+        CreatureGroup* creatureGroup = member->GetMap()->GetCreatureGroup(groupID);
+        if (!creatureGroup)
+        {
+            // no creature group has been found with this groudID, but it may be that this is the wrong map
+            // make sure there is no other formation with this groupId in db
+            if (sFormationMgr->GetFormationInfo(groupID))
+            {
+                handler->PSendSysMessage("Error: Formation %u not found in map but exists in db", groupID);
+                return true;
+            }
+
             FormationInfo group_member;
-            group_member.leaderSpawnId = leader->GetGUID().GetCounter();
+            group_member.groupID = groupID;
             group_member.groupAI = groupAI;
-            sFormationMgr->AddFormationMember(leaderSpawnID, std::move(group_member));
-            pCreature->SearchFormation();
+            creatureGroup = sFormationMgr->AddCreatureToGroup(groupID, leader);
+            leader->SearchFormation();
 
             WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
-                leaderSpawnID, leaderSpawnID, uint32(groupAI));
+                groupID, groupID, uint32(groupAI));
 
-            handler->PSendSysMessage("Created formation with leader %u", leaderSpawnID);
+            handler->PSendSysMessage("Created formation with leader %u", groupID);
         }
 
         FormationInfo group_member;
-        group_member.followAngle   = pCreature->GetAbsoluteAngle(leader) - leader->GetOrientation();
-        group_member.followDist    = sqrtf(pow(leader->GetPositionX() - pCreature->GetPositionX(), int(2)) + pow(leader->GetPositionY() - pCreature->GetPositionY(), int(2)));
-        group_member.leaderSpawnId = leader->GetGUID().GetCounter();
-
-        sFormationMgr->AddFormationMember(targetSpawnId, group_member);
-        pCreature->SearchFormation();
+        group_member.groupID       = groupID;
+        group_member.followAngle   = member->GetAbsoluteAngle(leader) - leader->GetOrientation();
+        group_member.followDist    = sqrtf(pow(leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(leader->GetPositionY() - member->GetPositionY(), int(2)));
+        group_member.groupAI       = groupAI;
+        creatureGroup->AddMember(member);
 
         WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u','%f', '%f', '%u')",
-            leaderSpawnID, targetSpawnId, group_member.followDist, group_member.followAngle, uint32(group_member.groupAI));
+            groupID, targetSpawnId, group_member.followDist, group_member.followAngle, uint32(group_member.groupAI));
 
-        handler->PSendSysMessage("Creature %u added to formation with leader %u.", targetSpawnId, leaderSpawnID);
+        handler->PSendSysMessage("Creature %u added to formation with leader %u.", targetSpawnId, groupID);
 
         return true;
      }

@@ -2561,11 +2561,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_ADD_TO_FORMATION:
         {
             if(!me->GetFormation())
-                sFormationMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), me);
+                sFormationMgr->AddCreatureToGroup(me, me);
 
             for (auto target : targets)
                 if (Creature* creatureTarget = target->ToCreature())
-                    sFormationMgr->AddCreatureToGroup(me->GetGUID().GetCounter(), creatureTarget);
+                    sFormationMgr->AddCreatureToGroup(me, creatureTarget);
 
             break;
         }

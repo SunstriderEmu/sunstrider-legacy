@@ -373,15 +373,12 @@ bool Creature::IsReturningHome() const
 
 void Creature::SearchFormation()
 {
-    if(IsSummon())
+    ObjectGuid::LowType spawnId = GetSpawnId();
+    if(!spawnId)
         return;
 
-    ObjectGuid::LowType lowguid = GetSpawnId();
-    if(!lowguid)
-        return;
-
-    if (FormationInfo const* formationInfo = sFormationMgr->GetFormationInfo(lowguid))
-        sFormationMgr->AddCreatureToGroup(formationInfo->leaderSpawnId, this);
+    if (FormationInfo const* formationInfo = sFormationMgr->GetFormationInfo(spawnId))
+        sFormationMgr->AddCreatureToGroup(formationInfo->groupID, this);
 }
 
 bool Creature::IsFormationLeader() const

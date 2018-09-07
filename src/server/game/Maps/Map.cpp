@@ -4473,3 +4473,12 @@ bool Map::ContainsGameObjectModel(GameObjectModel const& model) const
 { 
     return _dynamicTree.contains(model); 
 }
+
+CreatureGroup* Map::GetCreatureGroup(uint32 groupID) const
+{
+    auto itr = CreatureGroupHolder.find(groupID);
+    if (itr != CreatureGroupHolder.end())
+        return itr->second;
+
+    return nullptr;
+}

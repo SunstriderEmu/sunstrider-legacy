@@ -16,7 +16,7 @@ enum GroupAI : uint8
 
 struct FormationInfo
 {
-    ObjectGuid::LowType leaderSpawnId = 0;
+    uint32 groupID = 0;
     float followDist = 0.0f;
     float followAngle = 0.0f;
     GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
@@ -29,42 +29,49 @@ struct FormationInfo
 
 class TC_GAME_API FormationMgr
 {
+    friend class CreatureGroup;
 public:
-    typedef std::unordered_map<uint32/*spawnID*/, FormationInfo> CreatureGroupInfoType;
+    /*internalId is usually internalId, but is lowguid + SUMMON_OFFSET for summons*/
+    typedef std::unordered_map<uint32 /*internalId*/, FormationInfo> CreatureGroupInfoType;
 
     static FormationMgr* instance();
 
-    void AddCreatureToGroup(ObjectGuid::LowType leaderSpawnId, Creature* creature);
-    void RemoveCreatureFromGroup(ObjectGuid::LowType leaderSpawnId, Creature* member);
+    //return nullptr on failure. Prefer using this first one
+    CreatureGroup* AddCreatureToGroup(Creature* leader, Creature* creature);
+    //return nullptr on failure
+    CreatureGroup* AddCreatureToGroup(uint32 groupID, Creature* creature);
+    void RemoveCreatureFromGroup(uint32 groupId, Creature* member);
     void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
+
+    FormationInfo* GetFormationInfo(uint32 spawnId);
 
     //empty group then delete it
     void BreakFormation(Creature* leader);
 
     void LoadCreatureFormations();
-    FormationInfo* GetFormationInfo(ObjectGuid::LowType spawnId);
 
-    void AddFormationMember(ObjectGuid::LowType creature_lowguid, FormationInfo const& group_member);
+    static uint32 GetInternalGroupId(Creature const* leader);
+
 private:
+    void AddFormationMember(uint32 spawnId, FormationInfo const& group_member);
 
     FormationMgr();
     ~FormationMgr();
 
-    CreatureGroupInfoType _creatureGroupMap;
+    CreatureGroupInfoType _creatureGroupMap; //data from database, contains member infos for when a new group is created
 };
-
-
-#define RESPAWN_TIMER 15000
 
 class TC_GAME_API CreatureGroup
 {
     friend FormationMgr;
     private:
+        static uint32 const RESPAWN_TIMER = 15000;
+
         Creature* _leader;
-        typedef std::unordered_map<Creature*, FormationInfo*>  CreatureGroupMemberType;
+        typedef std::unordered_map<Creature*, FormationInfo>  CreatureGroupMemberType;
         CreatureGroupMemberType _members;
 
-        ObjectGuid::LowType _leaderSpawnId;
+        uint32 _groupId; // = leader internal id from _creatureGroupMap
         bool _formed;
         bool _engaging;
         bool _justAlive; //group was alive at last update
@@ -76,7 +83,7 @@ class TC_GAME_API CreatureGroup
         ~CreatureGroup();
         
         Creature* GetLeader() const { return _leader; }
-        ObjectGuid::LowType GetLeaderSpawnId() const { return _leaderSpawnId; }
+        uint32 GetGroupId() const { return _groupId; }
         bool IsEmpty() const { return _members.empty(); }
         bool IsFormed() const { return _formed; }
         bool IsAlive() const; //true if any member is alive
@@ -85,8 +92,7 @@ class TC_GAME_API CreatureGroup
         bool IsLeader(Creature const* creature) const { return _leader == creature; }
 
         bool HasMember(Creature* member) const { return _members.count(member) > 0; }
-        //add creature to group, with current relative position to leader as position in formation, OR with position instead if specified
-        void AddMember(Creature *member);
+        FormationInfo& AddMember(Creature *member);
         void RemoveMember(Creature *member);
         // Reset movement for formation members (not leader)
         void FormationReset(bool dismiss);
