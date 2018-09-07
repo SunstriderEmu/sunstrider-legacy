@@ -523,7 +523,7 @@ void GameObject::Update(uint32 diff)
                     break;
             }
         }
-        /* no break for switch (m_lootState)*/
+        [[fallthrough]]; /* no break for switch (m_lootState)*/
         case GO_READY:
         {
             if (m_respawnCompatibilityMode)
@@ -559,6 +559,7 @@ void GameObject::Update(uint32 diff)
                             if (!GetGoState())
                                 SwitchDoorOrButton(false);
                             //flags in AB are type_button and we need to add them here so no break!
+                            [[fallthrough]];
                         case GAMEOBJECT_TYPE_FISHINGHOLE:
                             // Initialize a new max fish count on respawn
                             m_goValue.FishingHole.MaxOpens = urand(GetGOInfo()->fishinghole.minSuccessOpens, GetGOInfo()->fishinghole.maxSuccessOpens);

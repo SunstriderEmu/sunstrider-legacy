@@ -334,7 +334,7 @@ void MotionTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPos
     if (!IsInWorld())
         return;
 
-    std::lock_guard<std::mutex> guard(Lock); //do we really need a lock?
+    ASSERT(Lock.try_lock()); //almost sure we don't need this lock anymore, but lets do this for a while, this will crash if there is any concurrency for this function
     if (_passengers.insert(passenger).second)
     {
         passenger->SetTransport(this);
@@ -351,11 +351,12 @@ void MotionTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPos
         if (Player* plr = passenger->ToPlayer())
             sScriptMgr->OnAddPassenger(ToTransport(), plr);
     }
+    Lock.unlock();
 }
 
 void MotionTransport::RemovePassenger(WorldObject* passenger)
 {
-    std::lock_guard<std::mutex> guard(Lock); //do we really need a lock?
+    ASSERT(Lock.try_lock()); //almost sure we don't need this lock anymore, but lets do this for a while, this will crash if there is any concurrency for this function
     if (_passengers.erase(passenger) || _staticPassengers.erase(passenger))
 {
         passenger->SetTransport(nullptr);
@@ -369,6 +370,7 @@ void MotionTransport::RemovePassenger(WorldObject* passenger)
             plr->SetFallInformation(time(nullptr), plr->GetPositionZ());
         }
     }
+    Lock.unlock();
 }
 
 Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data)

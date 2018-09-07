@@ -5586,7 +5586,7 @@ void Player::UpdateWeaponSkill(WeaponAttackType attType)
             break;
         case ITEM_SUBCLASS_WEAPON_FIST:
             UpdateSkill(SKILL_UNARMED, weapon_skill_gain);
-            // no break intended
+            [[fallthrough]];
         default:
             UpdateSkill(tmpitem->GetSkill(), weapon_skill_gain);
             break;
@@ -22897,7 +22897,8 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
                         TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
                             GetName().c_str(), GetGUID().GetCounter(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
-                    // no break;
+
+                    [[fallthrough]];
                 case GOSSIP_OPTION_GOSSIP:
                 case GOSSIP_OPTION_SPIRITGUIDE:
                 case GOSSIP_OPTION_INNKEEPER:

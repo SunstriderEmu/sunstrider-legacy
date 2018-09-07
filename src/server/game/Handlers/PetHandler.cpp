@@ -163,7 +163,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
                     /* sun: TC disabled, we don't want pets to stop attacking on setting passive. Passive is not a non-combat mode but a fine pet control mode.
                     pet->AttackStop();
                     */
-                    // no break;
+                    [[fallthrough]];
                 case REACT_DEFENSIVE:                       //recovery
                 case REACT_AGGRESSIVE:                      //activete
                     if(pet->GetTypeId() == TYPEID_UNIT)

@@ -3487,7 +3487,7 @@ void Spell::cancel()
     {
         case SPELL_STATE_PREPARING:
             CancelGlobalCooldown();
-            // No break
+            [[fallthrough]];
         case SPELL_STATE_DELAYED:
         {
             SendInterrupted(0);
@@ -8201,7 +8201,7 @@ namespace Trinity
                     return false;
                 if (refUnit->GetClass() != unitTarget->GetClass())
                     return false;
-                // nobreak;
+                [[fallthrough]];
             case TARGET_CHECK_RAID:
                 if (!refUnit)
                     return false;

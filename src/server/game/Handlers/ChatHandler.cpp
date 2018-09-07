@@ -416,7 +416,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Group* group = GetPlayer()->GetGroup();
             if (!group || !group->isBGGroup() || !group->IsLeader(GetPlayer()->GetGUID()))
                 return;
-        } //no break !
+        }
+        [[fallthrough]];
         case CHAT_MSG_BATTLEGROUND:
         {
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
