@@ -2074,12 +2074,14 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
             // wmo found
             WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId);
             uint32 mogpFlags = vmapData.areaInfo->mogpFlags;
-#ifndef LICH_KING
+#ifdef LICH_KING
+            data.outdoors = mogpFlags & 0x8;
+#else
             if (GetId() == 530) // in flyable areas mounting up is also allowed if 0x0008 flag is set
                 data.outdoors = mogpFlags & 0x8008;
             else
+                data.outdoors = mogpFlags & 0x8000;
 #endif
-                data.outdoors = mogpFlags & 0x8;
 
             if (wmoEntry)
             {
