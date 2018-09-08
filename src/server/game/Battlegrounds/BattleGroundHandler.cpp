@@ -275,8 +275,8 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv
     switch (bg->GetTypeID())
     {
     case BATTLEGROUND_WS:
-        allianceFlagCarrier = ObjectAccessor::FindPlayer(((BattlegroundWS*)bg)->GetAllianceFlagPickerGUID());
-        hordeFlagCarrier    = ObjectAccessor::FindPlayer(((BattlegroundWS*)bg)->GetHordeFlagPickerGUID());
+        allianceFlagCarrier = ObjectAccessor::FindPlayer(((BattlegroundWS*)bg)->GetFlagPickerGUID(TEAM_ALLIANCE));
+        hordeFlagCarrier    = ObjectAccessor::FindPlayer(((BattlegroundWS*)bg)->GetFlagPickerGUID(TEAM_HORDE));
         break;
     case BATTLEGROUND_EY:
         allianceFlagCarrier = ObjectAccessor::FindPlayer(((BattlegroundEY*)bg)->GetFlagPickerGUID()); //not actually always alliance... But not important and keeping this to keep compat with TC

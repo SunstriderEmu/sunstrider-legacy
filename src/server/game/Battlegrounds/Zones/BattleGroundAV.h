@@ -1507,8 +1507,8 @@ class BattlegroundAV : public Battleground
         void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj) override;
         void HandleKillPlayer(Player* player, Player *killer) override;
         void HandleKillUnit(Creature *unit, Player *killer) override;
-        void HandleQuestComplete(uint32 questid, Player *player);
-        bool PlayerCanDoMineQuest(int32 GOId,uint32 team);
+        void HandleQuestComplete(uint32 questid, Player *player) override;
+        bool CanActivateGO(int32 GOId, uint32 team) const override;
 
         uint32 GetAuraFromMarshalEntry(uint32 entry);
         void RemoveMarshalAura(Unit *killer, uint32 entry);

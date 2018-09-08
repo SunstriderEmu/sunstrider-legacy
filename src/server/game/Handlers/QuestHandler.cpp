@@ -436,11 +436,8 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
     if (!_player->CanInteractWithQuestGiver(object))
         return;
 
-    // TODO: need a virtual function
-    if(GetPlayer()->InBattleground())
-        if(Battleground* bg = GetPlayer()->GetBattleground())
-            if(bg->GetTypeID() == BATTLEGROUND_AV)
-                ((BattlegroundAV*)bg)->HandleQuestComplete(questID, GetPlayer());
+    if (Battleground* bg = _player->GetBattleground())
+        bg->HandleQuestComplete(questID, _player);
 
     if( _player->GetQuestStatus( questID ) != QUEST_STATUS_COMPLETE )
     {

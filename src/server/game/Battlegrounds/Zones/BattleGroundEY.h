@@ -286,7 +286,7 @@ class BattlegroundEY : public Battleground
         void AddPlayer(Player *plr) override;
 
         /* BG Flags */
-        ObjectGuid GetFlagPickerGUID() const    { return m_FlagKeeper; }
+        ObjectGuid GetFlagPickerGUID(int32 /*team*/ = -1) const override   { return m_FlagKeeper; }
         void SetFlagPicker(ObjectGuid guid)     { m_FlagKeeper = guid; }
         bool IsFlagPickedup() const         { return m_FlagKeeper != 0; }
         uint8 GetFlagState() const          { return m_FlagState; }
@@ -294,7 +294,6 @@ class BattlegroundEY : public Battleground
         void RespawnFlagAfterDrop();
 
         void RemovePlayer(Player *plr,ObjectGuid guid) override;
-        void HandleBuffUse(ObjectGuid const& buff_guid);
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         void HandleKillPlayer(Player *player, Player *killer) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
@@ -303,7 +302,7 @@ class BattlegroundEY : public Battleground
         void UpdateTeamScore(uint32 Team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
         void FillInitialWorldStates(WorldPacket& data) override;
-        void SetDroppedFlagGUID(ObjectGuid guid)       { m_DroppedFlagGUID = guid;}
+        void SetDroppedFlagGUID(ObjectGuid guid, int32 /*TeamID*/ = -1) override { m_DroppedFlagGUID = guid; }
         ObjectGuid GetDroppedFlagGUID() const          { return m_DroppedFlagGUID;}
 
         /* Battleground Events */

@@ -481,6 +481,10 @@ class TC_GAME_API Battleground
         bool isSpectator(ObjectGuid guid);
         bool canEnterSpectator(Player *spectator);
 
+        virtual ObjectGuid GetFlagPickerGUID(int32 /*team*/ = -1) const { return ObjectGuid::Empty; }
+        virtual void SetDroppedFlagGUID(ObjectGuid /*guid*/, int32 /*team*/ = -1) { }
+        virtual void HandleQuestComplete(uint32 /*questid*/, Player* /*player*/) { }
+        virtual bool CanActivateGO(int32 /*entry*/, uint32 /*team*/) const { return true; }
         virtual bool IsSpellAllowed(uint32 /*spellId*/, Player const* /*player*/) const { return true; }
 
         // because BattleGrounds with different types and same level range has different m_BracketId

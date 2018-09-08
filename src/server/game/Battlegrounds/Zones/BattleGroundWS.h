@@ -138,8 +138,12 @@ class BattlegroundWS : public Battleground
         void AddPlayer(Player *plr) override;
 
         /* BG Flags */
-        ObjectGuid GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[TEAM_ALLIANCE]; }
-        ObjectGuid GetHordeFlagPickerGUID() const       { return m_FlagKeepers[TEAM_HORDE]; }
+        ObjectGuid GetFlagPickerGUID(int32 team) const override
+        {
+            if (team == TEAM_ALLIANCE || team == TEAM_HORDE)
+                return m_FlagKeepers[team];
+            return ObjectGuid::Empty;
+        }
         void SetAllianceFlagPicker(ObjectGuid guid)     { m_FlagKeepers[TEAM_ALLIANCE] = guid; }
         void SetHordeFlagPicker(ObjectGuid guid)        { m_FlagKeepers[TEAM_HORDE] = guid; }
         bool IsAllianceFlagPickedup() const         { return m_FlagKeepers[TEAM_ALLIANCE] != 0; }
@@ -147,8 +151,6 @@ class BattlegroundWS : public Battleground
         void RespawnFlag(uint32 Team, bool captured);
         void RespawnFlagAfterDrop(uint32 Team);
         uint8 GetFlagState(uint32 team)             { return m_FlagState[GetTeamIndexByTeamId(team)]; }
-        void AddTimedAura(uint32 aura);
-        void RemoveTimedAura(uint32 aura);
         bool IsBrutalTimerDone;
         bool IsForceTimerDone;
 
@@ -166,7 +168,11 @@ class BattlegroundWS : public Battleground
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
-        void SetDroppedFlagGUID(ObjectGuid guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
+        void SetDroppedFlagGUID(ObjectGuid guid, int32 team = -1) override
+        {
+            if (team == TEAM_ALLIANCE || team == TEAM_HORDE)
+                m_DroppedFlagGUID[team] = guid;
+        }
         ObjectGuid GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
         void FillInitialWorldStates(WorldPacket& data) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;

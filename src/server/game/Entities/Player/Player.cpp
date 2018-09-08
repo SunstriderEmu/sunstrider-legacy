@@ -8115,17 +8115,13 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
 
         if(go->getLootState() == GO_READY)
         {
-            uint32 lootid =  go->GetGOInfo()->GetLootId();
-
-            //TODO: fix this big hack
-            if((go->GetEntry() == BG_AV_OBJECTID_MINE_N || go->GetEntry() == BG_AV_OBJECTID_MINE_S))
-                if( Battleground *bg = GetBattleground())
-                    if(bg->GetTypeID() == BATTLEGROUND_AV)
-                        if(!(((BattlegroundAV*)bg)->PlayerCanDoMineQuest(go->GetEntry(),GetTeam())))
-                        {
-                            SendLootRelease(guid);
-                            return;
-                        }
+            uint32 lootid = go->GetGOInfo()->GetLootId();
+            if (Battleground* bg = GetBattleground())
+                if (!bg->CanActivateGO(go->GetEntry(), GetTeam()))
+                {
+                    SendLootRelease(guid);
+                    return;
+                }
 
             if(lootid)
             {
