@@ -173,6 +173,12 @@ void TempSummon::UnSummon(uint32 msTime)
     AddObjectToRemoveList();
 }
 
+void TempSummon::SetTimer(uint32 duration)
+{
+    m_timer = duration;
+    m_lifetime = duration;
+}
+
 void TempSummon::InitStats(uint32 duration)
 {
     ASSERT(!IsPet());

@@ -23,6 +23,7 @@ public:
     ObjectGuid GetSummonerGUID() const { return m_summonerGUID; }
     TempSummonType GetSummonType() { return m_type; }
 	uint32 GetTimer() const { return m_timer; }
+    void SetTimer(uint32 duration);
 
 	const SummonPropertiesEntry* const m_Properties;
 private:
