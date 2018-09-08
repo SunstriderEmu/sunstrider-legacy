@@ -130,6 +130,10 @@ WorldPacket const* WorldPackets::Quest::QueryQuestInfoResponse::Write()
 #ifdef LICH_KING
         _worldPacket << uint32(Info.ItemDrop[i]);
         _worldPacket << uint32(0);                                     // req source count?
+#else
+        //On TBC, one loop does both require npc and item, instead of having it in two loops on LK
+        _worldPacket << uint32(Info.RequiredItemId[i]);
+        _worldPacket << uint32(Info.RequiredItemCount[i]);
 #endif
     }
 
