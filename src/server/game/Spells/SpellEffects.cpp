@@ -903,7 +903,7 @@ void Spell::EffectDummy(uint32 i)
                             if (!root->isSpawned())
                                 break;
                             _unitCaster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
-                            _unitCaster->SummonGameObject(187072, root->GetPosition(), G3D::Quat(), (root->GetRespawnTime()-time(nullptr)));
+                            _unitCaster->SummonGameObject(187072, root->GetPosition(), G3D::Quat(), (root->GetRespawnTime() - GameTime::GetGameTime()));
                             root->SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
@@ -1293,7 +1293,7 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->RemoveCorpse();
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
 
-                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), G3D::Quat(), creatureTarget->GetRespawnTime()-time(nullptr));
+                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), G3D::Quat(), creatureTarget->GetRespawnTime() - GameTime::GetGameTime());
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
@@ -3086,7 +3086,7 @@ void Spell::EffectSendEvent(uint32 effIndex)
 
             cell.Visit(pair, visitor, *m_caster->GetMap());
             
-            for (std::list<Creature*>::iterator itr = ogres.begin(); itr != ogres.end(); itr++)
+            for (std::list<Creature*>::iterator itr = ogres.begin(); itr != ogres.end(); ++itr)
                 (*itr)->CastSpell((*itr), 39914, true);*/
             m_caster->CastSpell(m_caster, 39914, TRIGGERED_NONE);
         }
@@ -4654,7 +4654,7 @@ void Spell::EffectSummonPet(uint32 effIndex)
 
     // this enables popup window (pet dismiss, cancel), hunter pet additional flags set later
     pet->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
+    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, GameTime::GetGameTime());
 
     // generate new name for summon pet
     std::string new_name=sObjectMgr->GeneratePetName(petentry);

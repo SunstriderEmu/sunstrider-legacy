@@ -1771,7 +1771,7 @@ void ScriptMgr::FillSpellSummary()
     SpellInfo const* TempSpell;
 
     //for (int i=0; i < GetSpellStore()->GetNumRows(); i++ )
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         int i = itr->first;
         SpellSummary[i].Effects = 0;

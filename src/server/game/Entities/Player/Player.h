@@ -1134,18 +1134,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             return TeleportTo(loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation, options);
         }
 
-        void SetSummonPoint(uint32 mapid, float x, float y, float z)
-        {
-            m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY;
-            m_summon_mapid = mapid;
-            m_summon_x = x;
-            m_summon_y = y;
-            m_summon_z = z;
-            m_invite_summon = true;
-        }
+        void SetSummonPoint(uint32 mapid, float x, float y, float z);
         void SummonIfPossible(bool agree);
         bool IsBeingInvitedForSummon() { return m_invite_summon; }
-        void UpdateSummonExpireTime() { m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY; }
+        void UpdateSummonExpireTime();
         time_t GetSummonExpireTimer() const { return m_summon_expire; }
 
         bool Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo);
@@ -1885,7 +1877,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const override;
         void DestroyForPlayer(Player *target, bool onDeath = false) const override;
-        void SendDelayResponse(const uint32);
         void SendLogXPGain(uint32 GivenXP,Unit* victim,uint32 RestXP);
 
         //Low Level Packets

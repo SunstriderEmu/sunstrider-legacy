@@ -647,7 +647,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     data << (uint32) (bid ? GetAuctionOutBid() : 0);
     //minimal outbid
     data << (uint32) buyout;                                //auction->buyout
-    data << (uint32) (expire_time - time(nullptr))* 1000;      //time left
+    data << (uint32) (expire_time - GameTime::GetGameTime())* 1000;      //time left
     data << (uint64) bidder;                                //auction->bidder current
     data << (uint32) bid;                                   //current bid
     return true;
@@ -704,7 +704,7 @@ std::string AuctionEntry::BuildAuctionMailBody(ObjectGuid::LowType lowGuid, uint
     if (includeDeliveryTime)
     { //Not sure this is present on LK
         //does not seem to be working, mail show 12:00 AM by default regardless of this
-        time_t distrTime = time(nullptr) + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
+        time_t distrTime = GameTime::GetGameTime() + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
         strm << ':' << secsToTimeBitFields(distrTime);
     }
     return strm.str();

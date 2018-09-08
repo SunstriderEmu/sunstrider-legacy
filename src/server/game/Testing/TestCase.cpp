@@ -454,7 +454,7 @@ void TestCase::_GetRandomClassAndRace(Classes& cls, Races& race, bool forcePower
         std::map<uint8, std::vector<uint8>> availableRacesForClasses = RandomPlayerbotFactory::GetAvailableRacesForClasses();
         //List all available classes for given race
         std::vector<Classes> availableClassesForRace;
-        for (auto itr = availableRacesForClasses.begin(); itr != availableRacesForClasses.end(); itr++)
+        for (auto itr = availableRacesForClasses.begin(); itr != availableRacesForClasses.end(); ++itr)
         {
             Classes _class = Classes(itr->first);
             //exclude this class if it was ruled out by force power 

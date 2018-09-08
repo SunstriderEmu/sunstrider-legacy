@@ -533,14 +533,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         }
 
         time_t GetRespawnTime() const { return m_respawnTime; }
-        time_t GetRespawnTimeEx() const
-        {
-            time_t now = time(nullptr);
-            if(m_respawnTime > now)
-                return m_respawnTime;
-            else
-                return now;
-        }
+        time_t GetRespawnTimeEx() const;
         uint32 GetDespawnDelay() const { return m_despawnDelay; }
 
         //Force despawn after specified time 

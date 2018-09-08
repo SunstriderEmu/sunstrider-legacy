@@ -515,7 +515,6 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 
         if (sWorld->IsQuestInAPool(questId)) {
             if (!sWorld->IsQuestCurrentOfAPool(questId)) {
-                //ChatHandler(sender).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
                 ChatHandler(sender).PSendSysMessage("This quest is not available today, you can't share it.");
                 break;  // Quest cannot be shared today, no point continuing
             }

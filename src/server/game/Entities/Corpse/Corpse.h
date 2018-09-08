@@ -50,7 +50,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         uint32 GetFaction() const override;
 
         time_t const& GetGhostTime() const { return m_time; }
-        void ResetGhostTime() { m_time = time(nullptr); }
+        void ResetGhostTime();
         CorpseType GetType() const { return m_type; }
 
 		CellCoord const& GetCellCoord() const { return _cellCoord; }

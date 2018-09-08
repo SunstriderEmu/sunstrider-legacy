@@ -3863,7 +3863,7 @@ void ObjectMgr::LoadQuests()
 
     // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
     //for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 i = itr->first;
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(i);
@@ -4344,7 +4344,7 @@ void ObjectMgr::LoadEventScripts()
     }
     // Load all possible script entries from spells
     //for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 i = itr->first;
         SpellInfo const * spell = sSpellMgr->GetSpellInfo(i);

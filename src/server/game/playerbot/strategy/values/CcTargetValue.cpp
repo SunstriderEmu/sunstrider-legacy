@@ -55,7 +55,7 @@ public:
         }
 
         Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
-        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+        for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); ++itr)
         {
             Player *member = ObjectAccessor::FindPlayer(itr->guid);
             if( !member || !member->IsAlive() || member == bot)

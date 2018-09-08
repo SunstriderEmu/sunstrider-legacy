@@ -21,6 +21,7 @@
 #include "ScriptMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "GuildMgr.h"
+#include "GameTime.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -130,7 +131,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             GetPlayer()->UpdateSpeakTime();
             if ( !_player->CanSpeak() )
             {
-                std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
+                std::string timeStr = secsToTimeString(m_muteTime - GameTime::GetGameTime());
                 SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
                 return;
             }
@@ -511,7 +512,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
     GetPlayer()->UpdateSpeakTime();
     if (!GetPlayer()->CanSpeak())
     {
-        std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
+        std::string timeStr = secsToTimeString(m_muteTime - GameTime::GetGameTime());
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
         return;
     }

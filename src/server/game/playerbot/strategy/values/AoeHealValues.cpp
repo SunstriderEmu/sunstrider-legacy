@@ -21,7 +21,7 @@ uint8 AoeHealValue::Calculate()
 
     uint8 count = 0;
     Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
-    for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+    for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); ++itr)
     {
         Player *player = ObjectAccessor::FindPlayer(itr->guid);
         if( !player || !player->IsAlive())

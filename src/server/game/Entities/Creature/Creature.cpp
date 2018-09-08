@@ -2266,6 +2266,11 @@ void Creature::SetDeathState(DeathState s)
     }
 }
 
+void Creature::SetRespawnTime(uint32 respawn)
+{ 
+    m_respawnTime = respawn ? GameTime::GetGameTime() + respawn : 0;
+}
+
 void Creature::Respawn(bool force /* = false */)
 {
     if (force)
@@ -3776,3 +3781,9 @@ bool Creature::IsEscortNPC(bool onlyIfActive)
 
     return false;
 }
+
+VendorItemCount::VendorItemCount(uint32 _item, uint32 _count) : 
+    itemId(_item), 
+    count(_count), 
+    lastIncrementTime(GameTime::GetGameTime()) 
+{}

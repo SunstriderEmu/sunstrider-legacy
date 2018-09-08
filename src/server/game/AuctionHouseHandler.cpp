@@ -12,6 +12,7 @@
 #include "LogsDatabaseAccessor.h"
 #include "Mail.h"
 #include "CharacterCache.h"
+#include "GameTime.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -250,10 +251,10 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     AH->bidder = 0;
     AH->bid = 0;
     AH->buyout = buyout;
-    AH->expire_time = time(nullptr) + auction_time;
+    AH->expire_time = GameTime::GetGameTime() + auction_time;
     AH->deposit = deposit;
     AH->auctionHouseEntry = auctionHouseEntry;
-    AH->deposit_time = time(nullptr);
+    AH->deposit_time = GameTime::GetGameTime();
 
     TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", itemGUID.GetCounter(), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
@@ -312,9 +313,9 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
     
     // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
-    if ((auction->deposit_time + 60) > time(nullptr)) {
+    if ((auction->deposit_time + 60) > GameTime::GetGameTime()) {
         if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
-            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - time(nullptr)));
+            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - GameTime::GetGameTime()));
             return;
         }
     }

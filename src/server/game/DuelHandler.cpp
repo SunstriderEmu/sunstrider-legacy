@@ -8,6 +8,7 @@
 #include "UpdateData.h"
 #include "MapManager.h"
 #include "Player.h"
+#include "GameTime.h"
 
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
@@ -35,7 +36,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
         plTarget->RemoveArenaSpellCooldowns();
     }
 
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
     pl->duel->startTimer = now;
     plTarget->duel->startTimer = now;
 

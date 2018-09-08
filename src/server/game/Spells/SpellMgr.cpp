@@ -517,7 +517,7 @@ void SpellMgr::LoadSpellAffects(bool reload)
     //in reload case, clear all SpellClassMask previously set
     if (reload)
     {
-        for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+        for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
         {
             SpellInfo* spellInfo = sSpellMgr->_GetSpellInfo(itr->first);
             if (spellInfo)
@@ -527,7 +527,7 @@ void SpellMgr::LoadSpellAffects(bool reload)
     }
 
     //missing spell affect check
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 id = itr->first;
 
@@ -1511,7 +1511,7 @@ void SpellMgr::LoadSpellLearnSkills()
     // search auto-learned skills and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
     //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 spellId = itr->first;
         SpellInfo const* entry = sSpellMgr->GetSpellInfo(spellId);
@@ -1597,7 +1597,7 @@ void SpellMgr::LoadSpellLearnSpells()
     // search auto-learned spells and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
     //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 spellId = itr->first;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -1733,7 +1733,7 @@ void SpellMgr::LoadSpellCustomAttr()
     //TODO, migrate most of this to spell_override in DB
 
     SpellEntry* spellInfo;
-    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); ++itr)
     {
         uint32 i = itr->first;
         spellInfo = itr->second;

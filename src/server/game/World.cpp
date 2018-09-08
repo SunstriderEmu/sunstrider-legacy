@@ -119,7 +119,7 @@ World::World()
     _guidWarn = false;
     _guidAlert = false;
     _warnDiff = 0;
-    _warnShutdownTime = time(nullptr);
+    _warnShutdownTime = GameTime::GetGameTime();
 }
 
 /// World destructor
@@ -349,7 +349,7 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
     {
         for(auto i = m_disconnects.begin(); i != m_disconnects.end(); ++i)
         {
-            if(difftime(i->second, time(nullptr)) < tolerance)
+            if(difftime(i->second, GameTime::GetGameTime()) < tolerance)
             {
                 if(i->first == session->GetAccountId())
                     return true;
@@ -1986,22 +1986,12 @@ uint32 World::GetCurrentQuestForPool(uint32 poolId)
 
 bool World::IsQuestInAPool(uint32 questId)
 {
-    for (std::vector<uint32>::const_iterator itr = m_questInPools.begin(); itr != m_questInPools.end(); itr++) {
-        if (*itr == questId)
-            return true;
-    }
-
-    return false;
+    return std::any_of(m_questInPools.begin(), m_questInPools.end(), [&](uint32 const itr) { return itr == questId; });
 }
 
 bool World::IsQuestCurrentOfAPool(uint32 questId)
 {
-    for (std::map<uint32, uint32>::const_iterator itr = m_currentQuestInPools.begin(); itr != m_currentQuestInPools.end(); itr++) {
-        if (itr->second == questId)
-            return true;
-    }
-
-    return false;
+    return std::any_of(m_currentQuestInPools.begin(), m_currentQuestInPools.end(), [&](auto const& itr) { return itr.second == questId; });
 }
 
 void World::LoadQuestPoolsData()
@@ -2192,7 +2182,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_ANNOUNCES].Reset();
 
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
-            time_t curTime = time(nullptr);
+            time_t curTime = GameTime::GetGameTime();
             for (auto & autoAnnounce : autoAnnounces) {
                 if (autoAnnounce.second->nextAnnounce <= curTime) {
                     SendWorldText(LANG_AUTO_ANN, autoAnnounce.second->message.c_str());
@@ -2293,7 +2283,7 @@ void World::SendGlobalMessage(WorldPacket *packet, WorldSession *self, uint32 te
 void World::SendGlobalGMMessage(WorldPacket *packet, WorldSession *self, uint32 team)
 {
     SessionMap::iterator itr;
-    for (itr = m_sessions.begin(); itr != m_sessions.end(); itr++)
+    for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
         if (itr->second &&
             itr->second->GetPlayer() &&
@@ -2764,7 +2754,7 @@ void World::UpdateSessions(uint32 diff)
         if (!pSession->Update(diff, updater))    // As interval = 0
         {
             if (!RemoveQueuedPlayer(itr->second) && itr->second && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = time(nullptr);
+                m_disconnects[itr->second->GetAccountId()] = GameTime::GetGameTime();
             RemoveQueuedPlayer(pSession);
             m_sessions.erase(itr);
             delete pSession;
@@ -2891,7 +2881,7 @@ void World::InitDailyQuestResetTime(bool loading)
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = 6;
     localTm.tm_min  = 0;
@@ -2927,7 +2917,7 @@ void World::ResetDailyQuests()
     TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
 
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     bool reinitConsortium = false;
     if (localTm.tm_mday == 1) {
@@ -3147,7 +3137,7 @@ void World::LoadAutoAnnounce()
         uint32 hour = fields[2].GetUInt32();
         uint32 mins = fields[3].GetUInt32();
 
-        time_t curTime = time(nullptr);
+        time_t curTime = GameTime::GetGameTime();
         tm localTm = *localtime(&curTime);
         localTm.tm_hour = hour;
         localTm.tm_min  = mins;

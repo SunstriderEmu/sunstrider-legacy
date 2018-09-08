@@ -262,7 +262,7 @@ Player::Player(WorldSession *session) :
     }
     m_bgTeam = 0;
 
-    m_logintime = time(nullptr);
+    m_logintime = GameTime::GetGameTime();
     m_Last_tick = m_logintime;
     m_WeaponProficiency = 0;
     m_ArmorProficiency = 0;
@@ -326,7 +326,7 @@ Player::Player(WorldSession *session) :
     }
 
     // Honor System
-    m_lastHonorUpdateTime = time(nullptr);
+    m_lastHonorUpdateTime = GameTime::GetGameTime();
 
     // Player summoning
     m_summon_expire = 0;
@@ -584,7 +584,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
     }
 
     // Played time
-    m_Last_tick = time(nullptr);
+    m_Last_tick = GameTime::GetGameTime();
     m_Played_time[0] = 0;
     m_Played_time[1] = 0;
 
@@ -1175,7 +1175,7 @@ void Player::Update( uint32 p_time )
     }
 
     // undelivered mail
-    if(m_nextMailDelivereTime && m_nextMailDelivereTime <= time(nullptr))
+    if(m_nextMailDelivereTime && m_nextMailDelivereTime <= GameTime::GetGameTime())
     {
         SendNewMail();
         ++unReadMails;
@@ -3139,7 +3139,7 @@ void Player::UpdateNextMailTimeAndUnreads()
 {
     // calculate next delivery time (min. from non-delivered mails
     // and recalculate unReadMail
-    time_t cTime = time(nullptr);
+    time_t cTime = GameTime::GetGameTime();
     m_nextMailDelivereTime = 0;
     unReadMails = 0;
     for(auto & itr : m_mail)
@@ -3156,7 +3156,7 @@ void Player::UpdateNextMailTimeAndUnreads()
 
 void Player::AddNewMailDeliverTime(time_t deliver_time)
 {
-    if(deliver_time <= time(nullptr))                          // ready now
+    if(deliver_time <= GameTime::GetGameTime())                          // ready now
     {
         ++unReadMails;
         SendNewMail();
@@ -3743,7 +3743,7 @@ uint32 Player::ResetTalentsCost() const
         return 10*GOLD;
     else
     {
-        uint32 months = (time(nullptr) - m_resetTalentsTime)/MONTH;
+        uint32 months = (GameTime::GetGameTime() - m_resetTalentsTime)/MONTH;
         if(months > 0)
         {
             // This cost will be reduced by a rate of 5 gold per month
@@ -4045,7 +4045,7 @@ void Player::DeleteOldCharacters()
     TC_LOG_INFO("entities.player", "Player::DeleteOldCharacters: Deleting all characters which have been deleted %u days before...", keepDays);
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_OLD_CHARS);
-    stmt->setUInt32(0, uint32(time(nullptr) - time_t(keepDays * DAY)));
+    stmt->setUInt32(0, uint32(GameTime::GetGameTime() - time_t(keepDays * DAY)));
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
     if (result)
@@ -4360,15 +4360,6 @@ void Player::BuildPlayerRepop()
     //sScriptMgr->OnPlayerRepop(this);
 }
 
-void Player::SendDelayResponse(const uint32 ml_seconds)
-{
-    //FIXME: is this delay time arg really need? 50msec by default in code
-    WorldPacket data( SMSG_QUERY_TIME_RESPONSE, 4+4 );
-    data << (uint32)time(nullptr);
-    data << (uint32)0;
-    SendDirectMessage( &data );
-}
-
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 {
     WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);          // remove spirit healer position
@@ -4466,7 +4457,7 @@ void Player::KillPlayer()
     // 6 minutes until repop at graveyard
     m_deathTimer = 6*MINUTE*1000;
 
-    m_deathTime = time(nullptr);
+    m_deathTime = GameTime::GetGameTime();
 
     UpdateCorpseReclaimDelay();                             // dependent at use SetDeathPvP() call before kill
 
@@ -6443,8 +6434,8 @@ void Player::UpdateArenaFields()
 void Player::UpdateHonorFields()
 {
     /// called when rewarding honor and at each save
-    uint64 now = time(nullptr);
-    uint64 today = uint64(time(nullptr) / DAY) * DAY;
+    uint64 now = GameTime::GetGameTime();
+    uint64 today = uint64(GameTime::GetGameTime() / DAY) * DAY;
 
     if(m_lastHonorUpdateTime < today)
     {
@@ -6799,7 +6790,7 @@ void Player::UpdatePvPState(bool onlyFFA)
     else                                                    // in friendly area
     {
         if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.endTimer)
-            pvpInfo.endTimer = time(nullptr);                  // start toggle-off
+            pvpInfo.endTimer = GameTime::GetGameTime();                  // start toggle-off
     }
 }
 
@@ -6928,7 +6919,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
             SetRestType(REST_TYPE_IN_CITY);
 
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        InnEnter(time(nullptr), GetMapId(), 0, 0, 0);
+        InnEnter(GameTime::GetGameTime(), GetMapId(), 0, 0, 0);
 
         pvpInfo.IsInNoPvPArea = true;
     }
@@ -12082,7 +12073,7 @@ void Player::AddItemToBuyBackSlot(Item *pItem)
         RemoveItemFromBuyBackSlot(slot, true);
 
         m_items[slot] = pItem;
-        time_t base = time(nullptr);
+        time_t base = GameTime::GetGameTime();
         uint32 etime = uint32(base - m_logintime + (30 * 3600));
         uint32 eslot = slot - BUYBACK_SLOT_START;
 
@@ -13207,7 +13198,7 @@ void Player::AddQuest(Quest const *pQuest, Object* questGiver)
 
         AddTimedQuest( quest_id );
         questStatusData.m_timer = limittime * 1000;
-        qtime = static_cast<uint32>(time(nullptr)) + limittime;
+        qtime = static_cast<uint32>(GameTime::GetGameTime()) + limittime;
     }
     else
         questStatusData.m_timer = 0;
@@ -15241,7 +15232,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     // this must help in case next save after mass player load after server startup
     m_nextSave = urand(m_nextSave / 2, m_nextSave * 3 / 2);
 
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
     time_t logoutTime = time_t(fields[LOAD_DATA_LOGOUT_TIME].GetUInt64());
 
     // since last logout (in seconds)
@@ -16458,7 +16449,7 @@ void Player::SendRaidInfo()
 
     data << counter;
 
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
 
     for(i = 0; i < MAX_DIFFICULTY; i++)
     {
@@ -18961,7 +18952,7 @@ void Player::UpdatePvP(bool state, bool ovrride)
     else
     {
         if(pvpInfo.endTimer != 0)
-            pvpInfo.endTimer = time(nullptr);
+            pvpInfo.endTimer = GameTime::GetGameTime();
         else
         {
             SetPvP(state);
@@ -20593,7 +20584,7 @@ void Player::SetDailyQuestStatus( uint32 quest_id )
         if(!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
         {
             SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,quest_id);
-            m_lastDailyQuestTime = time(nullptr);              // last daily quest time
+            m_lastDailyQuestTime = GameTime::GetGameTime();              // last daily quest time
             m_DailyQuestChanged = true;
             break;
         }
@@ -20903,10 +20894,20 @@ void Player::UpdateForQuestWorldObjects()
     SendDirectMessage(&packet);
 }
 
+void Player::SetSummonPoint(uint32 mapid, float x, float y, float z)
+{
+    m_summon_expire = GameTime::GetGameTime() + MAX_PLAYER_SUMMON_DELAY;
+    m_summon_mapid = mapid;
+    m_summon_x = x;
+    m_summon_y = y;
+    m_summon_z = z;
+    m_invite_summon = true;
+}
+
 void Player::SummonIfPossible(bool agree)
 {
     // expire and auto declined
-    if(m_summon_expire < time(nullptr))
+    if(m_summon_expire < GameTime::GetGameTime())
         return;
 
     if(!agree)
@@ -20926,6 +20927,11 @@ void Player::SummonIfPossible(bool agree)
 
     TeleportTo(m_summon_mapid, m_summon_x, m_summon_y, m_summon_z,GetOrientation());
     m_invite_summon = false;
+}
+
+void Player::UpdateSummonExpireTime() 
+{ 
+    m_summon_expire = GameTime::GetGameTime() + MAX_PLAYER_SUMMON_DELAY; 
 }
 
 void Player::RemoveItemDurations( Item *item )
@@ -21395,7 +21401,7 @@ uint32 Player::GetCorpseReclaimDelay(bool pvp) const
     else if(!sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE) )
         return 0;
 
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
     // 0..2 full period
     // should be ceil(x)-1 but not floor(x)
     uint32 count = (now < m_deathExpireTime - 1) ? (m_deathExpireTime - 1 - now)/DEATH_EXPIRE_STEP : 0;
@@ -21410,7 +21416,7 @@ void Player::UpdateCorpseReclaimDelay()
         (!pvp && !sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)) )
         return;
 
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
     if(now < m_deathExpireTime)
     {
         // full and partly periods 1..3
@@ -21455,7 +21461,7 @@ int32 Player::CalculateCorpseReclaimDelay(bool load) const
 
         //time_t expected_time = corpse->GetGhostTime()+copseReclaimDelay[count];
         time_t expected_time = m_deathTime + copseReclaimDelay[count];
-        time_t now = time(nullptr);
+        time_t now = GameTime::GetGameTime();
 
         if (now >= expected_time)
             return -1;
@@ -22228,7 +22234,7 @@ void Player::addSpamReport(ObjectGuid reporterGUID, std::string message)
 
     // Trash expired reports according to world config
     uint32 period = sWorld->getConfig(CONFIG_SPAM_REPORT_PERIOD);
-    for (auto itr = _spamReports.begin(); itr != _spamReports.end(); itr++) {
+    for (auto itr = _spamReports.begin(); itr != _spamReports.end(); ++itr) {
         if (itr->second.time < (now - period)) {
             _spamReports.erase(itr);
             itr = _spamReports.begin();

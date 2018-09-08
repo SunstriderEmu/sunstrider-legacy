@@ -388,7 +388,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    LogoutRequest(time(nullptr));
+    LogoutRequest(GameTime::GetGameTime());
 }
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
@@ -454,7 +454,7 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     else
     {
         if(!GetPlayer()->pvpInfo.IsHostile && GetPlayer()->IsPvP())
-            GetPlayer()->pvpInfo.endTimer = time(nullptr);     // start toggle-off
+            GetPlayer()->pvpInfo.endTimer = GameTime::GetGameTime();     // start toggle-off
     }
 }
 
@@ -548,7 +548,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
         return;
 
     // prevent resurrect before 30-sec delay after body release not finished
-    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(nullptr))
+    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > GameTime::GetGameTime())
         return;
 
     float dist = corpse->GetDistance2d(GetPlayer());
@@ -671,7 +671,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     {
         // set resting flag we are in the inn
         GetPlayer()->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        GetPlayer()->InnEnter(time(nullptr), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
+        GetPlayer()->InnEnter(GameTime::GetGameTime(), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
         GetPlayer()->SetRestType(REST_TYPE_IN_TAVERN);
 
         if(sWorld->IsFFAPvPRealm())
