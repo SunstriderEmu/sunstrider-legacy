@@ -5,11 +5,25 @@
 
 #include "DBCStructure.h"
 
+enum DefenseMessages
+{
+    TEXT_PLAGUEWOOD_TOWER_TAKEN_ALLIANCE    = 13629, // '|cffffff00The Plaguewood Tower has been taken by the Alliance!|r'
+    TEXT_NORTHPASS_TOWER_TAKEN_ALLIANCE     = 13630, // '|cffffff00Northpass Tower has been taken by the Alliance!|r'
+    TEXT_EASTWALL_TOWER_TAKEN_ALLIANCE      = 13631, // '|cffffff00Eastwall Tower has been taken by the Alliance!|r'
+    TEXT_CROWN_GUARD_TOWER_TAKEN_ALLIANCE   = 13632, // '|cffffff00Crown Guard Tower has been taken by the Alliance!|r'
+    TEXT_PLAGUEWOOD_TOWER_TAKEN_HORDE       = 13634, // '|cffffff00The Plaguewood Tower has been taken by the Horde!|r'
+    TEXT_NORTHPASS_TOWER_TAKEN_HORDE        = 13635, // '|cffffff00Northpass Tower has been taken by the Horde!|r'
+    TEXT_EASTWALL_TOWER_TAKEN_HORDE         = 13636, // '|cffffff00Eastwall Tower has been taken by the Horde!|r'
+    TEXT_CROWN_GUARD_TOWER_TAKEN_HORDE      = 13633, // '|cffffff00Crown Guard Tower has been taken by the Horde!|r'
+    TEXT_ALL_TOWERS_IN_CONTROL_ALLIANCE     = 13638, // (NYI) '|cff33ccffAll four towers are now in control of the Alliance!|r'
+    TEXT_ALL_TOWERS_IN_CONTROL_HORDE        = 13637, // (NYI) '|cffff0000All four towers are now in control of the Horde!|r'
+};
+
 const uint32 EP_AllianceBuffs[4] = {11413, 11414, 11415, 1386};
 
 const uint32 EP_HordeBuffs[4] = {30880, 30683, 30682, 29520};
 
-const uint32 EP_GraveYardZone = 139;
+const uint32 EP_GraveyardZone = 139;
 
 const uint32 EP_GraveYardId = 927;
 

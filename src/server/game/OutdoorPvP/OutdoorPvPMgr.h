@@ -54,15 +54,23 @@ public:
 
     void HandleDropFlag(Player * plr, uint32 spellId);
 
+    std::string GetDefenseMessage(uint32 zoneId, uint32 id, LocaleConstant locale) const;
+private:
     typedef std::vector<OutdoorPvP*> OutdoorPvPSet;
     typedef std::map<uint32 /* zoneid */, OutdoorPvP*> OutdoorPvPMap;
-private:
+    typedef std::array<uint32, MAX_OUTDOORPVP_TYPES> OutdoorPvPScriptIds;
+
     // contains all initiated outdoor pvp events
     // used when initing / cleaning up
     OutdoorPvPSet  m_OutdoorPvPSet;
+
     // maps the zone ids to an outdoor pvp event
     // used in player event handling
     OutdoorPvPMap   m_OutdoorPvPMap;
+
+    // Holds the outdoor PvP templates
+    OutdoorPvPScriptIds m_OutdoorPvPDatas;
+
     // update interval
     float m_UpdateTimer;
 };

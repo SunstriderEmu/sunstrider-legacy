@@ -5,11 +5,12 @@
 #include "GameObject.h"
 #include "ObjectMgr.h"
 #include "ObjectAccessor.h"
-#include "OutdoorPvPMgr.h"
 #include "Creature.h"
 #include "Language.h"
 #include "World.h"
 #include "GossipDef.h"
+#include "ScriptMgr.h"
+#include "MapManager.h"
 
 OPvPCapturePointEP_EWT::OPvPCapturePointEP_EWT(OutdoorPvP *pvp)
 : OPvPCapturePoint(pvp), m_TowerState(EP_TS_N), m_UnitsSummonedSide(0)
@@ -22,15 +23,9 @@ void OPvPCapturePointEP_EWT::ChangeState()
 {
     // if changing from controlling alliance to horde or vice versa
     if (m_OldState == OBJECTIVESTATE_ALLIANCE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_EWT_A));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = 0;
-    }
     else if (m_OldState == OBJECTIVESTATE_HORDE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_EWT_H));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = 0;
-    }
 
     uint32 artkit = 21;
 
@@ -44,7 +39,8 @@ void OPvPCapturePointEP_EWT::ChangeState()
         artkit = 2;
         SummonSupportUnitAtNorthpassTower(ALLIANCE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = ALLIANCE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_EWT_A));
+        if (m_OldState != m_State)
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_EASTWALL_TOWER_TAKEN_ALLIANCE);
         break;
     case OBJECTIVESTATE_HORDE:
         if (m_value == -m_maxValue)
@@ -54,7 +50,8 @@ void OPvPCapturePointEP_EWT::ChangeState()
         artkit = 1;
         SummonSupportUnitAtNorthpassTower(HORDE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_EWT] = HORDE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_EWT_H));
+        if (m_OldState != m_State)
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_EASTWALL_TOWER_TAKEN_HORDE);
         break;
     case OBJECTIVESTATE_NEUTRAL:
         m_TowerState = EP_TS_N;
@@ -150,15 +147,9 @@ void OPvPCapturePointEP_NPT::ChangeState()
 {
     // if changing from controlling alliance to horde or vice versa
     if (m_OldState == OBJECTIVESTATE_ALLIANCE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_NPT_A));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = 0;
-    }
     else if (m_OldState == OBJECTIVESTATE_HORDE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_NPT_H));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = 0;
-    }
 
     uint32 artkit = 21;
 
@@ -172,7 +163,8 @@ void OPvPCapturePointEP_NPT::ChangeState()
         artkit = 2;
         SummonGO(ALLIANCE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = ALLIANCE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_NPT_A));
+        if (m_OldState != m_State) 
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_NORTHPASS_TOWER_TAKEN_ALLIANCE);
         break;
     case OBJECTIVESTATE_HORDE:
         if (m_value == -m_maxValue)
@@ -182,7 +174,8 @@ void OPvPCapturePointEP_NPT::ChangeState()
         artkit = 1;
         SummonGO(HORDE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_NPT] = HORDE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_NPT_H));
+        if (m_OldState != m_State) 
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_NORTHPASS_TOWER_TAKEN_HORDE);
         break;
     case OBJECTIVESTATE_NEUTRAL:
         m_TowerState = EP_TS_N;
@@ -262,15 +255,9 @@ void OPvPCapturePointEP_CGT::ChangeState()
 {
     // if changing from controlling alliance to horde or vice versa
     if (m_OldState == OBJECTIVESTATE_ALLIANCE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_CGT_A));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = 0;
-    }
     else if (m_OldState == OBJECTIVESTATE_HORDE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_CGT_H));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = 0;
-    }
 
     uint32 artkit = 21;
 
@@ -284,8 +271,7 @@ void OPvPCapturePointEP_CGT::ChangeState()
         artkit = 2;
         LinkGraveYard(ALLIANCE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = ALLIANCE;
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_CGT_A));
-        //m_PvP->SendDefenseMessage(EP_GraveYardZone, TEXT_CROWN_GUARD_TOWER_TAKEN_ALLIANCE);
+        m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_CROWN_GUARD_TOWER_TAKEN_ALLIANCE);
         break;
     case OBJECTIVESTATE_HORDE:
         if (m_value == -m_maxValue)
@@ -295,8 +281,7 @@ void OPvPCapturePointEP_CGT::ChangeState()
         artkit = 1;
         LinkGraveYard(HORDE);
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_CGT] = HORDE;
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_CGT_H));
-        //m_PvP->SendDefenseMessage(EP_GraveYardZone, TEXT_CROWN_GUARD_TOWER_TAKEN_HORDE);
+        m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_CROWN_GUARD_TOWER_TAKEN_HORDE);
         break;
     case OBJECTIVESTATE_NEUTRAL:
         m_TowerState = EP_TS_N;
@@ -354,8 +339,8 @@ void OPvPCapturePointEP_CGT::LinkGraveYard(uint32 team)
     if(m_GraveyardSide != team)
     {
         m_GraveyardSide = team;
-        sObjectMgr->RemoveGraveYardLink(EP_GraveYardId,EP_GraveYardZone,team,false);
-        sObjectMgr->AddGraveYardLink(EP_GraveYardId,EP_GraveYardZone,team,false);
+        sObjectMgr->RemoveGraveYardLink(EP_GraveYardId,EP_GraveyardZone,team,false);
+        sObjectMgr->AddGraveYardLink(EP_GraveYardId,EP_GraveyardZone,team,false);
     }
 }
 
@@ -371,15 +356,9 @@ void OPvPCapturePointEP_PWT::ChangeState()
 {
     // if changing from controlling alliance to horde or vice versa
     if (m_OldState == OBJECTIVESTATE_ALLIANCE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_PWT_A));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = 0;
-    }
     else if (m_OldState == OBJECTIVESTATE_HORDE && m_OldState != m_State)
-    {
-        sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_LOOSE_PWT_H));
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = 0;
-    }
 
     uint32 artkit = 21;
 
@@ -393,7 +372,8 @@ void OPvPCapturePointEP_PWT::ChangeState()
         SummonFlightMaster(ALLIANCE);
         artkit = 2;
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = ALLIANCE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_PWT_A));
+        if (m_OldState != m_State)
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_EASTWALL_TOWER_TAKEN_ALLIANCE);
         break;
     case OBJECTIVESTATE_HORDE:
         if (m_value == -m_maxValue)
@@ -403,7 +383,8 @@ void OPvPCapturePointEP_PWT::ChangeState()
         SummonFlightMaster(HORDE);
         artkit = 1;
         ((OutdoorPvPEP*)m_PvP)->EP_Controls[EP_PWT] = HORDE;
-        if (m_OldState != m_State) sWorld->SendZoneText(EP_GraveYardZone, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_CAPTURE_PWT_H));
+        if (m_OldState != m_State)
+            m_PvP->SendDefenseMessage(EP_GraveyardZone, TEXT_EASTWALL_TOWER_TAKEN_HORDE);
         break;
     case OBJECTIVESTATE_NEUTRAL:
         m_TowerState = EP_TS_N;
@@ -551,7 +532,7 @@ OutdoorPvPEP::OutdoorPvPEP()
 bool OutdoorPvPEP::SetupOutdoorPvP()
 {
     for(uint32 EPBuffZone : EPBuffZones)
-        sOutdoorPvPMgr->AddZone(EPBuffZone,this);
+        RegisterZone(EPBuffZone);
 
     AddCapturePoint(new OPvPCapturePointEP_EWT(this));
     AddCapturePoint(new OPvPCapturePointEP_PWT(this));
@@ -684,3 +665,18 @@ void OutdoorPvPEP::SendRemoveWorldStates(Player *plr)
     plr->SendUpdateWorldState(EP_CGT_N_H,WORLD_STATE_REMOVE);
 }
 
+class OutdoorPvP_eastern_plaguelands : public OutdoorPvPScript
+{
+    public:
+        OutdoorPvP_eastern_plaguelands() : OutdoorPvPScript("outdoorpvp_ep") { }
+
+        OutdoorPvP* GetOutdoorPvP() const override
+        {
+            return new OutdoorPvPEP();
+        }
+};
+
+void AddSC_outdoorpvp_ep()
+{
+    new OutdoorPvP_eastern_plaguelands();
+}

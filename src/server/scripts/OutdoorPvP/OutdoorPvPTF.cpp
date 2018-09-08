@@ -1,11 +1,12 @@
 
 #include "OutdoorPvPTF.h"
-#include "OutdoorPvPMgr.h"
 #include "WorldPacket.h"
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "Language.h"
 #include "World.h"
+#include "ScriptMgr.h"
+#include "MapManager.h"
 
 OutdoorPvPTF::OutdoorPvPTF()
 {
@@ -247,7 +248,7 @@ bool OutdoorPvPTF::SetupOutdoorPvP()
 
     // add the zones affected by the pvp buff
     for(uint32 OutdoorPvPTFBuffZone : OutdoorPvPTFBuffZones)
-        sOutdoorPvPMgr->AddZone(OutdoorPvPTFBuffZone,this);
+        RegisterZone(OutdoorPvPTFBuffZone);
 
     AddCapturePoint(new OPvPCapturePointTF(this,TF_TOWER_NW));
     AddCapturePoint(new OPvPCapturePointTF(this,TF_TOWER_N));
@@ -275,16 +276,14 @@ void OPvPCapturePointTF::ChangeState()
     {
         if (((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled)
             ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled--;
-        sWorld->SendZoneText(OutdoorPvPTFBuffZones[0], sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_A));
-        //m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_LOSE_ALLIANCE);
+        m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_LOSE_ALLIANCE);
     }
     // if changing from controlling horde to alliance
     else if (m_OldState == OBJECTIVESTATE_HORDE)
     {
         if (((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled)
             ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled--;
-        sWorld->SendZoneText(OutdoorPvPTFBuffZones[0], sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_LOOSE_H));
-        //m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_LOSE_HORDE);
+        m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_LOSE_HORDE);
     }
 
     uint32 artkit = 21;
@@ -296,8 +295,7 @@ void OPvPCapturePointTF::ChangeState()
         artkit = 2;
         if (((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled<TF_TOWER_NUM)
             ((OutdoorPvPTF*)m_PvP)->m_AllianceTowersControlled++;
-        //m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_TAKEN_ALLIANCE);
-        sWorld->SendZoneText(OutdoorPvPTFBuffZones[0], sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_A));
+        m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_TAKEN_ALLIANCE);
         RewardDailyQuest(ALLIANCE);
         break;
     case OBJECTIVESTATE_HORDE:
@@ -305,8 +303,7 @@ void OPvPCapturePointTF::ChangeState()
         artkit = 1;
         if (((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled<TF_TOWER_NUM)
             ((OutdoorPvPTF*)m_PvP)->m_HordeTowersControlled++;
-        sWorld->SendZoneText(OutdoorPvPTFBuffZones[0], sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_TF_CAPTURE_H));
-        //m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_TAKEN_HORDE);
+        m_PvP->SendDefenseMessage(OutdoorPvPTFBuffZones[0], TEXT_SPIRIT_TOWER_TAKEN_HORDE);
         RewardDailyQuest(HORDE);
         break;
     case OBJECTIVESTATE_NEUTRAL:
@@ -323,4 +320,20 @@ void OPvPCapturePointTF::ChangeState()
         itr->second->SetGoArtKit(artkit);
 
     UpdateTowerState();
+}
+
+class OutdoorPvP_terokkar_forest : public OutdoorPvPScript
+{
+    public:
+        OutdoorPvP_terokkar_forest() : OutdoorPvPScript("outdoorpvp_tf") { }
+
+        OutdoorPvP* GetOutdoorPvP() const override
+        {
+            return new OutdoorPvPTF();
+        }
+};
+
+void AddSC_outdoorpvp_tf()
+{
+    new OutdoorPvP_terokkar_forest();
 }

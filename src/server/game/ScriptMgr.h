@@ -48,6 +48,7 @@ class SpellScript;
 class AuraScript;
 class ModuleReference;
 class TestCase;
+class OutdoorPvP;
 
 class TC_GAME_API ScriptObject
 {
@@ -224,6 +225,18 @@ public:
     // Called when loading tests
     virtual std::unique_ptr<TestCase> GetTest() const;
 #endif
+};
+
+class TC_GAME_API OutdoorPvPScript : public ScriptObject
+{
+protected:
+
+    OutdoorPvPScript(char const* name);
+
+public:
+
+    // Should return a fully valid OutdoorPvP object for the type ID.
+    virtual OutdoorPvP* GetOutdoorPvP() const = 0;
 };
 
 class TC_GAME_API CommandScript : public ScriptObject
@@ -601,6 +614,10 @@ public: /* Script contexts */
     public: /* AreaTriggerScript */
 
         bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
+
+    public: /* OutdoorPvPScript */
+
+        OutdoorPvP * CreateOutdoorPvP(uint32 scriptId);
 
     public: /* CommandScript */
 

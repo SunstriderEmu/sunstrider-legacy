@@ -25,10 +25,10 @@ enum OutdoorPvPTypes{
     OUTDOOR_PVP_TF = 3,
     OUTDOOR_PVP_ZM = 4,
     OUTDOOR_PVP_SI = 5,
-    OUTDOOR_PVP_EP = 6
-};
+    OUTDOOR_PVP_EP = 6,
 
-#define MAX_OUTDOORPVP_TYPES 7
+    MAX_OUTDOORPVP_TYPES,
+};
 
 // struct for go spawning
 struct go_type{
@@ -235,10 +235,15 @@ protected:
 
 	OPvPCapturePoint * GetCapturePoint(ObjectGuid::LowType guid) const;
 
+    void RegisterZone(uint32 zoneid);
+
 	void AddCapturePoint(OPvPCapturePoint* cp)
 	{
 		m_capturePoints[cp->m_capturePointSpawnId] = cp;
 	}
+
+    template<class Worker>
+    void BroadcastWorker(Worker& _worker, uint32 zoneId);
 
 	// Hack to store map because this code is just shit
 	void SetMapFromZone(uint32 zone);

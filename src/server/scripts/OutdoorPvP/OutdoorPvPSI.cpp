@@ -5,7 +5,6 @@
 #include "GameObject.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
-#include "OutdoorPvPMgr.h"
 #include "Language.h"
 #include "World.h"
 #include "ReputationMgr.h"
@@ -44,7 +43,7 @@ bool OutdoorPvPSI::SetupOutdoorPvP()
     SetMapFromZone(OutdoorPvPSIBuffZones[0]);
 
     for(uint32 OutdoorPvPSIBuffZone : OutdoorPvPSIBuffZones)
-        sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZone,this);
+        RegisterZone(OutdoorPvPSIBuffZone);
     return true;
 }
 
@@ -255,3 +254,18 @@ bool OutdoorPvPSI::HandleCustomSpell(Player *plr, uint32 spellId, GameObject *go
     return true;
 }
 
+class OutdoorPvP_silithus : public OutdoorPvPScript
+{
+    public:
+        OutdoorPvP_silithus() : OutdoorPvPScript("outdoorpvp_si") { }
+
+        OutdoorPvP* GetOutdoorPvP() const override
+        {
+            return new OutdoorPvPSI();
+        }
+};
+
+void AddSC_outdoorpvp_si()
+{
+    new OutdoorPvP_silithus();
+}

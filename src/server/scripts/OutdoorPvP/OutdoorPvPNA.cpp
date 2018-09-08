@@ -19,10 +19,11 @@
 #include "OutdoorPvPNA.h"
 #include "Player.h"
 #include "ObjectMgr.h"
-#include "OutdoorPvPMgr.h"
 #include "WorldPacket.h"
 #include "Language.h"
 #include "World.h"
+#include "MapManager.h"
+#include "ScriptMgr.h"
 
 OutdoorPvPNA::OutdoorPvPNA()
 {
@@ -180,10 +181,6 @@ void OPvPCapturePointNA::FactionTakeOver(uint32 team)
 {
     if (m_ControllingFaction)
         sObjectMgr->RemoveGraveYardLink(NA_HALAA_GRAVEYARD, NA_HALAA_GRAVEYARD_ZONE, m_ControllingFaction, false);
-    if (m_ControllingFaction == TEAM_ALLIANCE)
-        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_A));
-    else if (m_ControllingFaction == TEAM_HORDE)
-        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_LOOSE_H));
 
     m_ControllingFaction = team;
     if (m_ControllingFaction)
@@ -206,7 +203,7 @@ void OPvPCapturePointNA::FactionTakeOver(uint32 team)
         m_PvP->SendUpdateWorldState(NA_UI_HORDE_GUARDS_SHOW, WORLD_STATE_REMOVE);
         m_PvP->SendUpdateWorldState(NA_UI_ALLIANCE_GUARDS_SHOW, WORLD_STATE_ADD);
         m_PvP->SendUpdateWorldState(NA_UI_GUARDS_LEFT, m_GuardsAlive);
-        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_A));
+        m_PvP->SendDefenseMessage(NA_HALAA_GRAVEYARD_ZONE, TEXT_HALAA_TAKEN_ALLIANCE);
     }
     else {
         m_WyvernStateSouth = WYVERN_NEU_ALLIANCE;
@@ -216,7 +213,7 @@ void OPvPCapturePointNA::FactionTakeOver(uint32 team)
         m_PvP->SendUpdateWorldState(NA_UI_HORDE_GUARDS_SHOW, WORLD_STATE_ADD);
         m_PvP->SendUpdateWorldState(NA_UI_ALLIANCE_GUARDS_SHOW, WORLD_STATE_REMOVE);
         m_PvP->SendUpdateWorldState(NA_UI_GUARDS_LEFT, m_GuardsAlive);
-        sWorld->SendZoneText(NA_HALAA_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_NA_CAPTURE_H));
+        m_PvP->SendDefenseMessage(NA_HALAA_GRAVEYARD_ZONE, TEXT_HALAA_TAKEN_HORDE);
     }
 
     this->UpdateWyvernRoostWorldState(NA_ROOST_S);
@@ -239,8 +236,8 @@ bool OutdoorPvPNA::SetupOutdoorPvP()
 {
 //    m_TypeId = OUTDOOR_PVP_NA; _MUST_ be set in ctor, because of spawns cleanup
     // add the zones affected by the pvp buff
-    sOutdoorPvPMgr->AddZone(NA_BUFF_ZONE, this);
     SetMapFromZone(NA_BUFF_ZONE);
+    RegisterZone(NA_BUFF_ZONE);
 
     // halaa
     m_obj = new OPvPCapturePointNA(this);
@@ -668,4 +665,20 @@ void OPvPCapturePointNA::UpdateWyvernRoostWorldState(uint32 roost)
         m_PvP->SendUpdateWorldState(NA_MAP_WYVERN_EAST_A, uint32(bool(m_WyvernStateEast & WYVERN_ALLIANCE)));
         break;
     }
+}
+
+class OutdoorPvP_nagrand : public OutdoorPvPScript
+{
+    public:
+        OutdoorPvP_nagrand() : OutdoorPvPScript("outdoorpvp_na") { }
+
+        OutdoorPvP* GetOutdoorPvP() const override
+        {
+            return new OutdoorPvPNA();
+        }
+};
+
+void AddSC_outdoorpvp_na()
+{
+    new OutdoorPvP_nagrand();
 }

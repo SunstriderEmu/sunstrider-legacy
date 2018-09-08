@@ -12,6 +12,7 @@
 #include "SpellScript.h"
 #include "ScriptReloadMgr.h"
 #include "SmartAI.h"
+#include "OutdoorPvPMgr.h"
 #ifdef TESTS
 #include "TestCase.h"
 #endif
@@ -73,11 +74,11 @@ struct is_script_database_bound<TestCaseScript>
 template<>
 struct is_script_database_bound<BattlegroundScript>
     : std::true_type { };
-
+    */
 template<>
 struct is_script_database_bound<OutdoorPvPScript>
     : std::true_type { };
-
+/*
 template<>
 struct is_script_database_bound<WeatherScript>
     : std::true_type { };
@@ -828,6 +829,44 @@ public:
     {
         ChatHandler::invalidateCommandTable();
     }
+};
+
+/// This hook is responsible for swapping OutdoorPvP's
+template<typename Base>
+class ScriptRegistrySwapHooks<OutdoorPvPScript, Base>
+    : public ScriptRegistrySwapHookBase
+{
+public:
+    ScriptRegistrySwapHooks() : swapped(false) { }
+
+    void BeforeReleaseContext(std::string const& context) final override
+    {
+        auto const bounds = static_cast<Base*>(this)->_ids_of_contexts.equal_range(context);
+
+        if ((!swapped) && (bounds.first != bounds.second))
+        {
+            swapped = true;
+            sOutdoorPvPMgr->Die();
+        }
+    }
+
+    void BeforeSwapContext(bool initialize) override
+    {
+        // Never swap outdoor pvp scripts when initializing
+        if ((!initialize) && swapped)
+        {
+            sOutdoorPvPMgr->InitOutdoorPvP();
+            swapped = false;
+        }
+    }
+
+    void BeforeUnload() final override
+    {
+        ASSERT(!swapped);
+    }
+
+private:
+    bool swapped;
 };
 
 // Database unbound script registry
@@ -1632,6 +1671,12 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
     return tmpscript->OnExpire(player, proto);
 }
 
+OutdoorPvP* ScriptMgr::CreateOutdoorPvP(uint32 scriptId)
+{
+    GET_SCRIPT_RET(OutdoorPvPScript, scriptId, tmpscript, nullptr);
+    return tmpscript->GetOutdoorPvP();
+}
+
 std::vector<ChatCommand> ScriptMgr::GetChatCommands()
 {
     std::vector<ChatCommand> table;
@@ -1739,6 +1784,12 @@ TestCaseScript::TestCaseScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<TestCaseScript>::Instance()->AddScript(this);
+}
+
+OutdoorPvPScript::OutdoorPvPScript(char const* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<OutdoorPvPScript>::Instance()->AddScript(this);
 }
 
 CommandScript::CommandScript(char const* name)
@@ -1882,7 +1933,9 @@ template class TC_GAME_API ScriptRegistry<TestCaseScript>;
 template class TC_GAME_API ScriptRegistry<CommandScript>;
 /*
 template class TC_GAME_API ScriptRegistry<BattlegroundScript>;
+*/
 template class TC_GAME_API ScriptRegistry<OutdoorPvPScript>;
+/*
 template class TC_GAME_API ScriptRegistry<WeatherScript>;
 template class TC_GAME_API ScriptRegistry<AuctionHouseScript>;
 template class TC_GAME_API ScriptRegistry<ConditionScript>;
