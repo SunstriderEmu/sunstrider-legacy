@@ -330,12 +330,11 @@ void Object::DestroyForPlayer(Player *target, bool onDeath /*= false*/) const
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8 + 1);
     data << GetGUID();
-    if(target->GetSession()->GetClientBuild() == BUILD_335)
-    {
-        //! If the following bool is true, the client will call "void CGUnit_C::OnDeath()" for this object.
-        //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
-        data << uint8(onDeath ? 1 : 0);
-    }
+#ifdef LICH_KING
+    //! If the following bool is true, the client will call "void CGUnit_C::OnDeath()" for this object.
+    //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
+    data << uint8(onDeath ? 1 : 0);
+#endif
     target->SendDirectMessage( &data );
 }
 
