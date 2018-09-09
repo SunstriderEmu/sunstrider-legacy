@@ -5604,8 +5604,38 @@ void AuraEffect::HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode
 {
     if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
         return;
-    Unit* m_target = aurApp->GetTarget();
-    m_target->ApplyCastTimePercentMod(GetAmount(), apply);
+
+    Unit* target = aurApp->GetTarget();
+
+    // Do not apply such auras in normal way
+    if (GetAmount() >= 1000)
+    {
+        if (apply)
+            target->SetInstantCast(true);
+        else
+        {
+            // only SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK can have this high amount
+            // it's some rare case that you have 2 auras like that, but just in case ;)
+
+            bool remove = true;
+            Unit::AuraEffectList const& castingSpeedNotStack = target->GetAuraEffectsByType(SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK);
+            for (AuraEffect const* aurEff : castingSpeedNotStack)
+            {
+                if (aurEff != this && aurEff->GetAmount() >= 1000)
+                {
+                    remove = false;
+                    break;
+                }
+            }
+
+            if (remove)
+                target->SetInstantCast(false);
+        }
+
+        return;
+    }
+
+    target->ApplyCastTimePercentMod((float)GetAmount(), apply);
 }
 
 void AuraEffect::HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
