@@ -641,17 +641,17 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         
         float GetInteractionDistance() const;
 
-        bool IsStaticTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT; }
-        bool IsMotionTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT; }
+        inline bool IsStaticTransport() const { return GetGoType() == GAMEOBJECT_TYPE_TRANSPORT; }
+        inline bool IsMotionTransport() const { return GetGoType() == GAMEOBJECT_TYPE_MO_TRANSPORT; }
 
-        Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport*>(this); else return nullptr; }
-        Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return nullptr; }
+        Transport* ToTransport() { if (IsMotionTransport() || IsStaticTransport()) return reinterpret_cast<Transport*>(this); else return nullptr; }
+        Transport const* ToTransport() const { if (IsMotionTransport() || IsStaticTransport()) return reinterpret_cast<Transport const*>(this); else return nullptr; }
 
-        StaticTransport* ToStaticTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport*>(this); else return nullptr; }
-        StaticTransport const* ToStaticTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport const*>(this); else return nullptr; }
+        StaticTransport* ToStaticTransport() { if (IsStaticTransport()) return reinterpret_cast<StaticTransport*>(this); else return nullptr; }
+        StaticTransport const* ToStaticTransport() const { if (IsStaticTransport()) return reinterpret_cast<StaticTransport const*>(this); else return nullptr; }
 
-        MotionTransport* ToMotionTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport*>(this); else return nullptr; }
-        MotionTransport const* ToMotionTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport const*>(this); else return nullptr; }
+        MotionTransport* ToMotionTransport() { if (IsMotionTransport()) return reinterpret_cast<MotionTransport*>(this); else return nullptr; }
+        MotionTransport const* ToMotionTransport() const { if (IsMotionTransport()) return reinterpret_cast<MotionTransport const*>(this); else return nullptr; }
 
         void UpdateModelPosition();
 

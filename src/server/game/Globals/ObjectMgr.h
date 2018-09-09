@@ -614,34 +614,23 @@ class TC_GAME_API ObjectMgr
         }
 
         typedef std::unordered_map<uint32, Item*> ItemMap;
-
         typedef std::set<Group*> GroupSet;
-
         typedef std::unordered_map<uint32, Quest> QuestContainer;
-
         typedef std::unordered_map<uint32, AreaTrigger> AreaTriggerMap;
-
         typedef std::unordered_map<uint32, uint32> AreaTriggerScriptMap;
-
         typedef std::unordered_map<uint32, AccessRequirement> AccessRequirementContainer;
-
         typedef std::unordered_map<uint32, ReputationOnKillEntry> RepOnKillMap;
-
         typedef std::unordered_map<uint32, WeatherZoneChances> WeatherZoneMap;
-
         typedef std::unordered_map<uint32, PointOfInterest> PointOfInterestContainer;
-
         typedef std::vector<std::string> ScriptNameContainer;
-
         typedef std::unordered_map<uint32, PetCreateSpellEntry> PetCreateSpellMap;
-
         typedef std::vector<std::string> ScriptNameMap;
 
         std::unordered_map<uint32, uint32> TransportEventMap;
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
         GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
-        bool IsGameObjectStaticTransport(uint32 entry);
+        GameObject* CreateGameObject(uint32 entry);
 
         void LoadGameObjectTemplate();
 

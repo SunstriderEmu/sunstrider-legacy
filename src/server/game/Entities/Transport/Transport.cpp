@@ -109,8 +109,8 @@ bool MotionTransport::CreateMoTrans(ObjectGuid::LowType guidlow, uint32 entry, u
     SetGoAnimProgress(animprogress);
     SetName(goinfo->name);
 
-    // sunwell: no WorldRotation for MotionTransports
 #ifdef LICH_KING
+    // sunwell: no WorldRotation for MotionTransports
     SetWorldRotation(G3D::Quat());
 #endif
     // sunwell: no PathRotation for MotionTransports
@@ -433,7 +433,7 @@ GameObject* MotionTransport::CreateGOPassenger(ObjectGuid::LowType guid, GameObj
         return nullptr;
 
     GameObject* go = new GameObject();
-    ASSERT(!sObjectMgr->IsGameObjectStaticTransport(data->id));
+    ASSERT(m_goInfo->type != GAMEOBJECT_TYPE_TRANSPORT));
 
     if (!go->LoadGameObjectFromDB(guid, map, false))
     {
@@ -857,8 +857,7 @@ bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* m
     if (!m_model)
         m_model = CreateModel();
 
-    SetGoType(GameobjectTypes(goinfo->type));
-    SetGoState(GOState(go_state));
+    SetGoType(GAMEOBJECT_TYPE_TRANSPORT);
     //SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
     SetGoAnimProgress(animprogress);
 

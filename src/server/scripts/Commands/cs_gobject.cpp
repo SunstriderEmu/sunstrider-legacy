@@ -241,7 +241,7 @@ public:
         // this is required to avoid weird behavior and memory leaks
         delete pGameObj;
 
-        pGameObj = sObjectMgr->IsGameObjectStaticTransport(goI->entry) ? new StaticTransport() : new GameObject();
+        pGameObj = sObjectMgr->CreateGameObject(goI->entry);
         // this will generate a new guid if the object is in an instance
         if (!pGameObj->LoadFromDB(guidLow, map, true))
         {

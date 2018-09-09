@@ -2095,7 +2095,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D
         return nullptr;
     }
     Map *map = GetMap();
-    GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
+    GameObject* go = sObjectMgr->CreateGameObject(entry);
 
     if(!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), entry, map, GetPhaseMask(), pos, rot, 255, GO_STATE_READY))
     {

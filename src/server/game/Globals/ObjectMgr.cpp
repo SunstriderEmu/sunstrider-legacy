@@ -8868,10 +8868,13 @@ void ObjectMgr::LoadBroadcastTextLocales()
     TC_LOG_INFO("server.loading", ">> Loaded %u broadcast text locales in %u ms", uint32(_broadcastTextStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
-bool ObjectMgr::IsGameObjectStaticTransport(uint32 entry)
+GameObject* ObjectMgr::CreateGameObject(uint32 entry)
 {
-    GameObjectTemplate const* goinfo = GetGameObjectTemplate(entry);
-    return goinfo && goinfo->type == GAMEOBJECT_TYPE_TRANSPORT;
+    GameObjectTemplate const* goInfo = GetGameObjectTemplate(entry);
+    if (goInfo && goInfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+        return new StaticTransport;
+    else
+        return new GameObject;
 }
 
 std::string ScriptInfo::GetDebugInfo() const

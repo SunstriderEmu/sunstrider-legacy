@@ -393,7 +393,16 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
 
     SetDisplayId(goinfo->displayId);
 
-    SetGoType(GameobjectTypes(goinfo->type));
+    if (goinfo->type == GAMEOBJECT_TYPE_MO_TRANSPORT || goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+    {
+        // Transports should use their own class (StaticTransport and MotionTransport). 
+        // Moving transports should be created by TransportMgr only
+        // if we get here we have a transport that was not in transports table. No use handling it, use GAMEOBJECT_TYPE_GENERIC instead. (aand crash if we don't because of incorrect casts to MotionTransport)
+        SetGoType(GAMEOBJECT_TYPE_GENERIC);
+    }
+    else
+        SetGoType(GameobjectTypes(goinfo->type));
+
     m_model = CreateModel();
     
     m_prevGoState = go_state;

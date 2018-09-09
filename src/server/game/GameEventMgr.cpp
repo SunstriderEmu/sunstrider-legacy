@@ -1092,7 +1092,7 @@ void GameEventMgr::SpawnGameObject(uint32 spawnId)
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
         if(!map->Instanceable() && map->IsGridLoaded(data->spawnPoint))
         {
-            GameObject* pGameobject = sObjectMgr->IsGameObjectStaticTransport(data->id) ? new StaticTransport() : new GameObject();
+            GameObject* pGameobject = sObjectMgr->CreateGameObject(data->id);
             //TC_LOG_DEBUG("gameevent","Spawning gameobject %u", *itr);
             if (!pGameobject->LoadFromDB(spawnId, map, true, false))
             {

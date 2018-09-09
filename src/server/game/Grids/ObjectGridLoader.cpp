@@ -155,13 +155,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<Gam
             if (!map->IsSpawnGroupActive(godata->spawnGroupData->groupId))
                 continue;
       
-        GameObject* obj = nullptr;
-        if (sObjectMgr->IsGameObjectStaticTransport(godata->id))   //ugly hack :/
-            obj = (GameObject*)(new StaticTransport()); 
-
-        if (!obj)
-            obj = new GameObject;
-
+        GameObject* obj = sObjectMgr->CreateGameObject(godata->id); //create a Transport instead of needed
         if (!obj->LoadFromDB(guid, map, false, false))
         {
             delete obj;
