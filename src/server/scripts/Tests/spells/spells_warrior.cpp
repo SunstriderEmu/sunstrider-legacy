@@ -296,8 +296,6 @@ public:
             - Ciderhelm: 290
         Decided: 290
         */
-
-
         void Test() override
         {
             TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
@@ -312,7 +310,7 @@ public:
             TestPlayer* ally = SpawnPlayer(CLASS_WARRIOR, RACE_UNDEAD_PLAYER);
             Creature* creature2 = SpawnCreature(20777, true); // Talbuk Sire
             ally->AttackerStateUpdate(creature2, BASE_ATTACK);
-            creature2->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature2->GetTarget() == ally->GetGUID());
 
             // Rage cost
@@ -332,11 +330,12 @@ public:
             TEST_ASSERT(Between<float>(creature2->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
 
             // Taunt
-            creature2->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature2->GetTarget() == warrior->GetGUID());
             for (uint32 i = 0; i < 30; i++)
                 ally->AttackerStateUpdate(creature2, BASE_ATTACK);
-            Wait(6500); //let taunt fade
+            Wait(6500); //let taunt fade (max duration 6s)
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature2->GetTarget() == ally->GetGUID());
 
             // Damage
@@ -819,13 +818,13 @@ public:
             TEST_HAS_NOT_AURA(creature11m, ClassSpells::Warrior::CHALLENGING_SHOUT_RNK_1);
 
             // Target changed
-            creature3m->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature3m->GetTarget() == warrior->GetGUID());
-            creature6m->AI()->UpdateVictim();
             TEST_ASSERT(creature6m->GetTarget() == warrior->GetGUID());
 
             // Back to original target
-            Wait(6500);
+            Wait(6500); // Max duration 6 seconds
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature3m->GetTarget() == player3m->GetGUID());
             TEST_ASSERT(creature6m->GetTarget() == player6m->GetGUID());
 
@@ -2233,7 +2232,7 @@ public:
             FORCE_CAST(warlock, kobold, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_DEBUG_MASK);
             float const warlockThreat = kobold->GetThreatManager().GetThreat(warlock);
             TEST_ASSERT(warlockThreat > 0);
-            kobold->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(kobold->GetTarget() == warlock->GetGUID());
 
             // Acquire threat, aura duration, cooldown
@@ -2241,18 +2240,18 @@ public:
             TEST_AURA_MAX_DURATION(kobold, ClassSpells::Warrior::TAUNT_RNK_1, Seconds(3));
             TEST_HAS_COOLDOWN(warrior, ClassSpells::Warrior::TAUNT_RNK_1, Seconds(10));
             TEST_ASSERT(kobold->GetThreatManager().GetThreat(warrior) == warlockThreat);
-            kobold->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(kobold->GetTarget() == warrior->GetGUID());
 
             // Keep aggro
             FORCE_CAST(warlock, kobold, ClassSpells::Warlock::SHADOW_BOLT_RNK_11, SPELL_MISS_NONE, TRIGGERED_FULL_DEBUG_MASK);
             TEST_ASSERT(kobold->GetThreatManager().GetThreat(warlock) > kobold->GetThreatManager().GetThreat(warrior) * 1.1f);
-            kobold->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(kobold->GetTarget() == warrior->GetGUID());
 
             // Lose aggro
             Wait(3000);
-            kobold->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(kobold->GetTarget() == warlock->GetGUID());
         }
     };

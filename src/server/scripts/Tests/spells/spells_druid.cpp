@@ -644,7 +644,7 @@ public:
             FORCE_CAST(warlock, creature, ClassSpells::Warlock::SEARING_PAIN_RNK_8, SPELL_MISS_NONE, TRIGGERED_FULL_DEBUG_MASK);
             uint32 warlockThreat = creature->GetThreatManager().GetThreat(warlock);
             TEST_ASSERT(warlockThreat > 0);
-            creature->AI()->UpdateVictim(); //update immediately to avoid waiting an update
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature->GetVictim() == warlock);
 
             // Acquire threat, aura duration, cooldown
@@ -653,7 +653,7 @@ public:
             TEST_AURA_MAX_DURATION(creature, ClassSpells::Druid::GROWL_RNK_1, Seconds(3));
             TEST_HAS_COOLDOWN(druid, ClassSpells::Druid::GROWL_RNK_1, Seconds(10));
             TEST_ASSERT(creature->GetThreatManager().GetThreat(druid) == warlockThreat);
-            creature->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature->GetVictim() == druid);
 
             // Make some more instant threat
@@ -662,7 +662,7 @@ public:
             TEST_ASSERT(warlockThreat > creature->GetThreatManager().GetThreat(druid) * 1.1f); //1.1 is the retake aggro threshold
                                                                                                //warlock now has higher threat but target should stay unchanged
 
-            creature->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature->GetVictim() == druid);
 
             Wait(3300); //taunt aura last 3000, let it expire
@@ -710,10 +710,7 @@ public:
             creature3m->GetThreatManager().AddThreat(player3m, 1000);
             creature6m->GetThreatManager().AddThreat(player6m, 1000);
             creature15m->GetThreatManager().AddThreat(player15m, 1000);
-            //force update victim immediately to avoid waiting more updates
-            creature3m->AI()->UpdateVictim();
-            creature6m->AI()->UpdateVictim();
-            creature15m->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
             TEST_ASSERT(creature3m->GetVictim() == player3m);
             TEST_ASSERT(creature6m->GetVictim() == player6m);
             TEST_ASSERT(creature15m->GetVictim() == player15m);
@@ -730,9 +727,7 @@ public:
             TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1, Seconds(6));
             TEST_HAS_NOT_AURA(creature15m, ClassSpells::Druid::CHALLENGING_ROAR_RNK_1);
 
-            //force update victim immediately to avoid waiting more updates
-            creature3m->AI()->UpdateVictim();
-            creature6m->AI()->UpdateVictim();
+            Wait(ThreatManager::THREAT_UPDATE_INTERVAL); // For threat manager to update
 		
 			// Target changed
 			TEST_ASSERT(creature3m->GetVictim() == druid);
