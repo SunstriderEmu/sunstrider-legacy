@@ -3124,6 +3124,30 @@ int32 WorldObject::ModSpellDuration(SpellInfo const* spellProto, WorldObject con
     return std::max(duration, 0);
 }
 
+void WorldObject::ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, Spell* spell /*= nullptr*/) const
+{
+    if (!spellInfo || castTime < 0)
+        return;
+
+    // called from caster
+    if (Player* modOwner = GetSpellModOwner())
+        modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+
+    Unit const* unitCaster = ToUnit();
+    if (!unitCaster)
+        return;
+
+    if (!(spellInfo->HasAttribute(SPELL_ATTR0_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_TRADESPELL) || spellInfo->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS)) &&
+        ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
+        castTime = unitCaster->CanInstantCast() ? 0 : int32(float(castTime) * unitCaster->GetFloatValue(UNIT_MOD_CAST_SPEED));
+    else if (spellInfo->HasAttribute(SPELL_ATTR0_RANGED) && !spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG))
+        castTime = int32(float(castTime) * unitCaster->m_modAttackSpeedPct[RANGED_ATTACK]);
+#ifdef LICH_KING
+    else if (spellInfo->SpellVisual[0] == 3881 && unitCaster->HasAura(67556)) // cooking with Chef Hat.
+        castTime = 500;
+#endif
+}
+
 void WorldObject::ModSpellDurationTime(SpellInfo const* spellInfo, int32& castTime, Spell* spell /*= nullptr*/) const
 {
     if (!spellInfo || castTime < 0)

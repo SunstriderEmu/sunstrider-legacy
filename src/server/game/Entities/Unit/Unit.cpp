@@ -244,6 +244,7 @@ Unit::Unit(bool isWorldObject)
     _last_in_water_status(false),
     _last_isunderwater_status(false),
     m_duringRemoveFromWorld(false),
+    _instantCast(false),
     m_disabledRegen(false),
     m_cleanupDone(false),
     m_regenTimer(0),
@@ -9108,7 +9109,7 @@ void InitTriggerAuraData()
     IsTriggerAura[SPELL_AURA_DAMAGE_IMMUNITY] = true;
     IsTriggerAura[SPELL_AURA_PROC_TRIGGER_SPELL] = true;
     IsTriggerAura[SPELL_AURA_PROC_TRIGGER_DAMAGE] = true;
-    IsTriggerAura[SPELL_AURA_MOD_CASTING_SPEED] = true;
+    IsTriggerAura[SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK] = true;
     IsTriggerAura[SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT] = true;
     IsTriggerAura[SPELL_AURA_MOD_POWER_COST_SCHOOL] = true;
     IsTriggerAura[SPELL_AURA_REFLECT_SPELLS_SCHOOL] = true;

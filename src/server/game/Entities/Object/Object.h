@@ -589,7 +589,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float ApplyEffectModifiers(SpellInfo const* spellInfo, uint8 effIndex, float value) const;
         int32 CalcSpellDuration(SpellInfo const* spellInfo) const;
         int32 ModSpellDuration(SpellInfo const* spellInfo, WorldObject const* target, int32 duration, bool positive, uint32 effectMask) const;
-        //void ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, Spell* spell = nullptr) const;
+        void ModSpellCastTime(SpellInfo const* spellInfo, int32& castTime, Spell* spell = nullptr) const;
         void ModSpellDurationTime(SpellInfo const* spellInfo, int32& durationTime, Spell* spell = nullptr) const;
 
         virtual float MeleeSpellMissChance(Unit const* victim, WeaponAttackType attType, int32 skillDiff, uint32 spellId) const;

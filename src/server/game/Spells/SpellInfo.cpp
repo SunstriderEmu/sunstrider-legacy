@@ -1326,19 +1326,14 @@ uint32 SpellInfo::CalcCastTime(Spell* spell) const
 
     int32 castTime = CastTimeEntry->CastTime;
 
-    //todo, remove hack !
-    if (spell && spell->m_spellInfo->Id == 8690) //heartstone
-        return castTime;
-
     if (spell)
-        spell->GetCaster()->ModSpellDurationTime(this, castTime, spell);
-    
+        spell->GetCaster()->ModSpellCastTime(this, castTime, spell);
+
     if (HasAttribute(SPELL_ATTR0_RANGED) && (!IsAutoRepeatRangedSpell()))
         castTime += 500;
 
     return (castTime > 0) ? uint32(castTime) : 0;
 }
-
 
 bool SpellInfo::HasInitialAggro() const
 {
@@ -3018,8 +3013,8 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case SPELL_AURA_OBS_MOD_POWER:
 #ifdef LICH_KING
         case SPELL_AURA_MOD_CRIT_PCT:
-        case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
 #endif
+        case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
         case SPELL_AURA_MOD_DETECT_RANGE:
         case SPELL_AURA_MOD_HIT_CHANCE:
         case SPELL_AURA_MOD_SPELL_HIT_CHANCE:

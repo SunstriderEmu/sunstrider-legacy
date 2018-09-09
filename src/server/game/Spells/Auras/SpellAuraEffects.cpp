@@ -106,7 +106,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS] =
     &AuraEffect::HandleNULL,                                      // 62 SPELL_AURA_PERIODIC_HEALTH_FUNNEL
     &AuraEffect::HandleUnused,                                    // 63 SPELL_AURA_PERIODIC_MANA_FUNNEL obsolete?
     &AuraEffect::HandleNoImmediateEffect,                         // 64 SPELL_AURA_PERIODIC_MANA_LEECH implemented in AuraEffect::PeriodicTick
-    &AuraEffect::HandleModCastingSpeed,                           // 65 SPELL_AURA_MOD_CASTING_SPEED
+    &AuraEffect::HandleModCastingSpeed,                           // 65 SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK
     &AuraEffect::HandleFeignDeath,                                // 66 SPELL_AURA_FEIGN_DEATH
     &AuraEffect::HandleAuraModDisarm,                             // 67 SPELL_AURA_MOD_DISARM
     &AuraEffect::HandleAuraModStalked,                            // 68 SPELL_AURA_MOD_STALKED
@@ -2428,12 +2428,12 @@ bool AuraEffect::CheckEffectProc(AuraApplication* aurApp, ProcEventInfo& eventIn
         if (!spellInfo || static_cast<int32>(spellInfo->Mechanic) != GetMiscValue())
             return false;
         break;
-#ifdef LICH_KING
     case SPELL_AURA_MOD_CASTING_SPEED_NOT_STACK:
         // skip melee hits and instant cast spells
         if (!spellInfo || !spellInfo->CalcCastTime())
             return false;
         break;
+#ifdef LICH_KING
     case SPELL_AURA_MOD_DAMAGE_FROM_CASTER:
         // Compare casters
         if (GetCasterGUID() != eventInfo.GetActor()->GetGUID())
