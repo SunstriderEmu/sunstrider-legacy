@@ -126,13 +126,6 @@ void Spell::EffectSummonType(uint32 effIndex)
         case SUMMON_TYPE_GUARDIAN2:
         case SUMMON_TYPE_MINION:
             SummonGuardian(effIndex, entry, properties, numSummons);
-            //sun: attack target
-            if (_unitCaster && properties->Category == SUMMON_CATEGORY_ALLY)
-                if (_unitCaster->GetVictim())
-                {
-                    if (m_caster->GetDistance(_unitCaster->GetVictim()) < 40.0f) //arbitrary distance, not based on any source
-                        summon->EngageWithTarget(_unitCaster->GetVictim());
-                }
             break;
 #ifdef LICH_KING
             // Summons a vehicle, but doesn't force anyone to enter it (see SUMMON_CATEGORY_VEHICLE)
