@@ -75,17 +75,15 @@ void Spell::EffectSummonType(uint32 effIndex)
     // determine how many units should be summoned
     uint32 numSummons = 1;
 
-#ifdef LICH_KING
     // some spells need to summon many units, for those spells number of summons is stored in effect value
     // however so far noone found a generic check to find all of those (there's no related data in summonproperties.dbc
     // and in spell attributes, possibly we need to add a table for those)
     // so here's a list of MiscValueB values, which is currently most generic check
     switch (properties->Id)
     {
-    case 64:
-    case 61:
+#ifdef LICH_KING
+    // no spell on BC with both this id and damage > 1
     case 1101:
-    case 66:
     case 648:
     case 2301:
     case 1061:
@@ -97,13 +95,16 @@ void Spell::EffectSummonType(uint32 effIndex)
     case 833:
     case 1161:
     case 713:
+    case 66:
+#endif
+    case 64: //various spells
+    case 61: //various spells
         numSummons = (damage > 0) ? damage : 1;
         break;
     default:
         numSummons = 1;
         break;
     }
-#endif
 
     switch (properties->Category)
     {
