@@ -10,11 +10,17 @@
 ## npc_snake_trap_serpents
 ####*/
 
+/* To improve:
+- Attacks closest target "When the trap is activated, snakes start to attack the nearest targets. It is possible that some snakes will attack one target and some will attack other. After the target is dead, snakes attacks next target (in close range)."
+- "Snakes apply poisons with spit, not a melee attack (about 8 foot range). Also, if there are unpoisoned targets nearby, snakes will not melee, but will instead spit more poisons on that target, making snakes an excellent AoE boost. For example, if the hunter knows where a mage's AoE will be, they can place a snake trap there and most mobs at this location will get poisoned."
+(wowwiki)
+*/
+
 enum HunterSpells
 {
-    SPELL_HUNTER_CRIPPLING_POISON = 30981, // Viper
-    SPELL_HUNTER_DEADLY_POISON_PASSIVE = 34657, // Venomous Snake
-    SPELL_HUNTER_MIND_NUMBING_POISON = 25810  // Viper
+    SPELL_HUNTER_CRIPPLING_POISON       = 30981, // Viper
+    SPELL_HUNTER_DEADLY_POISON_PASSIVE  = 34657, // Venomous Snake
+    SPELL_HUNTER_MIND_NUMBING_POISON    = 25810  // Viper
 };
 
 enum HunterCreatures
