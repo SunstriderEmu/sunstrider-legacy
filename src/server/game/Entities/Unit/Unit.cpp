@@ -3944,8 +3944,6 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
         data << float(log->GlanceChance);
         data << float(log->CrushChance);
     }*/
-#endif
-
     SendMessageToSet( &data, true );
 }
 
