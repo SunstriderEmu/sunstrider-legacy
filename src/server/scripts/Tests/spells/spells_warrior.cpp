@@ -1016,51 +1016,66 @@ public:
 
         void Test() override
         {
-            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
+            uint32 const demoralizingShoutMalus = 300;
 
+            TestPlayer* warrior = SpawnPlayer(CLASS_WARRIOR, RACE_TAUREN);
             Position spawn3m(_location);
             spawn3m.MoveInFront(_location, 3.0f);
-            TestPlayer* player3m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 1, spawn3m);
-            Creature* creature3m = SpawnCreatureWithPosition(spawn3m, 6);
 
-            Position spawn6m(_location);
-            spawn6m.MoveInFront(_location, 6.0f);
-            Creature* creature6m = SpawnCreatureWithPosition(spawn6m, 6);
+            SECTION("On player", [&] 
+            {
+                TestPlayer* player3m = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN, 1, spawn3m);
+                float const startAP3m = player3m->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const expectedAP3m = (startAP3m - demoralizingShoutMalus > 0) ? startAP3m - demoralizingShoutMalus : 0;
 
-            Position spawn15m(_location);
-            spawn15m.MoveInFront(_location, 15.0f);
-            Creature* creature15m = SpawnCreatureWithPosition(spawn15m, 6);
+                warrior->SetFullPower(POWER_RAGE);
+                FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7);
+                // Aura
+                TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
+                // AP loss
+                TEST_ASSERT(Between<float>(player3m->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP3m - 0.1f, expectedAP3m + 0.1f));
+                // Cleaning up
+                player3m->KillSelf();
+            });
 
-            uint32 const demoralizingShoutMalus = 300;
-            float const startAP3m = player3m->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const startAP6m = creature6m->GetTotalAttackPowerValue(BASE_ATTACK);
-            float const expectedAP3m = (startAP3m - demoralizingShoutMalus > 0) ? startAP3m - demoralizingShoutMalus : 0;
-            float const expectedAP6m = (startAP6m - demoralizingShoutMalus > 0) ? startAP6m - demoralizingShoutMalus : 0;
+            SECTION("On creatures", [&] {
+                Position spawn3m(_location);
+                Creature* creature3m = SpawnCreatureWithPosition(spawn3m, 6);
 
-            // Rage cost
-            uint32 const expectedDemoralizingShoutRage = 10 * 10;
-            TEST_POWER_COST(warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
+                Position spawn6m(_location);
+                spawn6m.MoveInFront(_location, 6.0f);
+                Creature* creature6m = SpawnCreatureWithPosition(spawn6m, 6);
 
-            warrior->SetFullPower(POWER_RAGE);
-            FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7);
+                Position spawn15m(_location);
+                spawn15m.MoveInFront(_location, 15.0f);
+                Creature* creature15m = SpawnCreatureWithPosition(spawn15m, 6);
 
-            // Aura
-            TEST_AURA_MAX_DURATION(player3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
-            TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
-            TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
-            TEST_HAS_NOT_AURA(creature15m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7);
-            uint32 const affectedTargets = 3;
+                float const startAP6m = creature6m->GetTotalAttackPowerValue(BASE_ATTACK);
+                float const expectedAP6m = (startAP6m - demoralizingShoutMalus > 0) ? startAP6m - demoralizingShoutMalus : 0;
 
-            // AP loss
-            TEST_ASSERT(Between<float>(player3m->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP3m - 0.1f, expectedAP3m + 0.1f));
-            TEST_ASSERT(Between<float>(creature6m->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP6m - 0.1f, expectedAP6m + 0.1f));
+                // Rage cost
+                uint32 const expectedDemoralizingShoutRage = 10 * 10;
+                TEST_POWER_COST(warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, POWER_RAGE, expectedDemoralizingShoutRage);
 
-            // Threat -- 56 split per target hit
-            float const expectedThreat = 56 / float(affectedTargets) * WARRIOR_STANCE_THREAT_MOD;
-            ASSERT_INFO("Warrior has %f threat on Creature3m but %f was expected.", creature3m->GetThreatManager().GetThreat(warrior), expectedThreat);
-            TEST_ASSERT(Between<float>(creature3m->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
-            ASSERT_INFO("Warrior has %f threat on Creature6m but %f was expected.", creature6m->GetThreatManager().GetThreat(warrior), expectedThreat);
-            TEST_ASSERT(Between<float>(creature6m->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
+                warrior->SetFullPower(POWER_RAGE);
+                FORCE_CAST(warrior, warrior, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, SPELL_MISS_NONE, TRIGGERED_IGNORE_GCD);
+
+                // Aura
+                TEST_AURA_MAX_DURATION(creature3m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
+                TEST_AURA_MAX_DURATION(creature6m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7, Seconds(30));
+                TEST_HAS_NOT_AURA(creature15m, ClassSpells::Warrior::DEMORALIZING_SHOUT_RNK_7);
+                uint32 const affectedTargets = 2;
+
+                // AP loss
+                TEST_ASSERT(Between<float>(creature6m->GetTotalAttackPowerValue(BASE_ATTACK), expectedAP6m - 0.1f, expectedAP6m + 0.1f));
+
+                // Threat -- 56 split per target hit
+                float const expectedThreat = 56 / float(affectedTargets) * WARRIOR_STANCE_THREAT_MOD;
+                ASSERT_INFO("Warrior has %f threat on Creature3m but %f was expected.", creature3m->GetThreatManager().GetThreat(warrior), expectedThreat);
+                TEST_ASSERT(Between<float>(creature3m->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
+                ASSERT_INFO("Warrior has %f threat on Creature6m but %f was expected.", creature6m->GetThreatManager().GetThreat(warrior), expectedThreat);
+                TEST_ASSERT(Between<float>(creature6m->GetThreatManager().GetThreat(warrior), expectedThreat - 0.1f, expectedThreat + 0.1f));
+            });
         }
     };
 
