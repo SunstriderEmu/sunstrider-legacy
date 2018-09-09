@@ -135,7 +135,7 @@ void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
     if (!target || !me->IsAlive())
         return;
 
-    if (!me->HasReactState(REACT_PASSIVE) && me->CanAggro(target, true) == CAN_ATTACK_RESULT_OK && me->CanCreatureAttack(target, true))
+    if (!me->HasReactState(REACT_PASSIVE) && me->CanAggro(target, true) == CAN_ATTACK_RESULT_OK && me->_CanCreatureAttack(target, true))
     {
         me->EngageWithTarget(target);
     }

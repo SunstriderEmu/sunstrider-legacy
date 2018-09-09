@@ -84,7 +84,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
 
 void FollowerAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!me->HasUnitState(UNIT_STATE_STUNNED) && me->CanCreatureAttack(pWho) == CAN_ATTACK_RESULT_OK && pWho->isInAccessiblePlaceFor(me))
+    if (!me->HasUnitState(UNIT_STATE_STUNNED) && me->_CanCreatureAttack(pWho) == CAN_ATTACK_RESULT_OK && pWho->isInAccessiblePlaceFor(me))
     {
         if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombat(pWho))
             return;

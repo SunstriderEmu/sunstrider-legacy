@@ -203,7 +203,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) 
     {
         target = owner->ToPlayer()->GetVictim();
-        if (target && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+        if (target && _CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
         {
             target->GetClosePoint(px, py, pz, PET_FOLLOW_DIST, this->GetFollowAngle());
             UpdateAllowedPositionZ(px, py, pz); //prevent it spawning on flying targets

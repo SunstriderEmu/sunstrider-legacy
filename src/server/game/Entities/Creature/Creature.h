@@ -596,7 +596,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
             uint32 rank = GetCreatureTemplate()->rank;
             return rank != CREATURE_ELITE_NORMAL && rank != CREATURE_ELITE_RARE;
         }
-        CanAttackResult CanCreatureAttack(Unit const* target, bool force = true) const;
+        //same as CanCreatureAttack from TC but returns a CanAttackResult instead. Added a _ to the name to avoid confusion.
+        CanAttackResult _CanCreatureAttack(Unit const* target, bool force = true) const;
         bool IsWorldBoss() const
         {
             if(IsPet())

@@ -3001,7 +3001,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         default:
             break;
     }
-
+    
     if (spellInfo->Effects[effIndex].IsAura())
     {
         // non-positive aura use

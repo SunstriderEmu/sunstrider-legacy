@@ -1548,7 +1548,7 @@ public:
             TEST_AURA_MAX_DURATION(priest, Talents::Priest::SPIRIT_OF_REDEMPTION_RNK_1_TRIGGER, Seconds(15)); // Becomes Spirit of Redemption upon death
             TEST_ASSERT(priest->IsInRoots()); // Priest is rooted, cant move
             TEST_ASSERT(!dummy->IsInCombatWith(priest));
-            TEST_ASSERT(dummy->CanCreatureAttack(priest) != CAN_ATTACK_RESULT_OK);
+            TEST_ASSERT(dummy->_CanCreatureAttack(priest) != CAN_ATTACK_RESULT_OK);
             TEST_ASSERT(!dummy->GetTarget());
             priest->RemoveAurasDueToSpell(Talents::Priest::SPIRIT_OF_REDEMPTION_RNK_1_TRIGGER);
             WaitNextUpdate(); //Wait for JUST_DIED to be handled?

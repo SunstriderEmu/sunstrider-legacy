@@ -661,7 +661,7 @@ void GameObject::Update(uint32 diff)
                 }
 
                 if (target)
-                    SetLootState(GO_ACTIVATED, target);
+                    SetLootState(GO_ACTIVATED, target); //make target activate this gameobject. This will trigger trap spell in GO_ACTIVATED.
             }
 
             if (m_charges && m_usetimes >= m_charges)

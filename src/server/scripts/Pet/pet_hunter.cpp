@@ -66,7 +66,7 @@ public:
                 for (std::pair<ObjectGuid const, PvPCombatReference*> const& pair : summoner->GetCombatManager().GetPvPCombatRefs())
                 {
                     Unit* enemy = pair.second->GetOther(summoner);
-                    if (!enemy->HasBreakableByDamageCrowdControlAura() && me->CanCreatureAttack(enemy) && me->IsWithinDistInMap(enemy, me->GetAggroRange(enemy)))
+                    if (!enemy->HasBreakableByDamageCrowdControlAura() && me->_CanCreatureAttack(enemy) == CAN_ATTACK_RESULT_OK && me->IsWithinDistInMap(enemy, me->GetAggroRange(enemy)))
                         targets.push_back(enemy);
                 }
 
@@ -74,7 +74,7 @@ public:
                     for (std::pair<ObjectGuid const, CombatReference*> const& pair : summoner->GetCombatManager().GetPvECombatRefs())
                     {
                         Unit* enemy = pair.second->GetOther(summoner);
-                        if (!enemy->HasBreakableByDamageCrowdControlAura() && me->CanCreatureAttack(enemy) && me->IsWithinDistInMap(enemy, me->GetAggroRange(enemy)))
+                        if (!enemy->HasBreakableByDamageCrowdControlAura() && me->_CanCreatureAttack(enemy) == CAN_ATTACK_RESULT_OK && me->IsWithinDistInMap(enemy, me->GetAggroRange(enemy)))
                             targets.push_back(enemy);
                     }
 

@@ -1196,7 +1196,7 @@ Unit* Creature::SelectVictim(bool evade /*= true*/)
     else
         return nullptr;
 
-    if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+    if (target && _IsTargetAcceptable(target) && _CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
     {
         if (!IsFocusing(nullptr, true))
             SetInFront(target);
@@ -2026,7 +2026,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
             return CAN_ATTACK_RESULT_NOT_IN_LOS;
     }
 
-    CanAttackResult result = CanCreatureAttack(who, false);
+    CanAttackResult result = _CanCreatureAttack(who, false);
     if(result != CAN_ATTACK_RESULT_OK)
         return result;
 
@@ -2038,7 +2038,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
 
 // force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
 // force also ignore feign death
-CanAttackResult Creature::CanCreatureAttack(Unit const* target, bool force /*= true*/) const
+CanAttackResult Creature::_CanCreatureAttack(Unit const* target, bool force /*= true*/) const
 {
     ASSERT(target);
 
@@ -3130,7 +3130,7 @@ void Creature::AreaCombat()
         for(const auto & i : PlayerList)
         {
             if (Player* i_pl = i.GetSource())
-                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanCreatureAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && _CanCreatureAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
                     GetThreatManager().AddThreat(i_pl, 0.0f);
         }
     }
