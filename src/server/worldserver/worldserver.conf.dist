@@ -947,13 +947,6 @@ Creature.MovingStopTimeForPlayer = 60000
 ###################################################################################################################
 # CHAT SETTINGS
 #
-#    ChatFakeMessagePreventing
-#        Chat protection from creating fake messages using a lot spaces (other invisible symbols),
-#        not applied to addon language messages, but can prevent working old addons
-#        that use normal languages for sending data to another clients.
-#        Default: 0 (disible fake messages preventing)
-#                 1 (enabled fake messages preventing)
-#
 #    ChatFlood.MessageCount
 #        Chat anti-flood protection, haste message count to activate protection
 #        Default: 10
@@ -979,7 +972,38 @@ Creature.MovingStopTimeForPlayer = 60000
 #
 ###################################################################################################################
 
-ChatFakeMessagePreventing = 0
+#    ChatFakeMessagePreventing
+#        Description: Chat protection from creating fake messages using a lot spaces or other
+#                     invisible symbols. Not applied to the addon language, but may break old
+#                     addons that use normal languages for sending data to other clients.
+#        Default:     1 - (Enabled, Blizzlike)
+#                     0 - (Disabled)
+
+ChatFakeMessagePreventing = 1
+
+#
+#    ChatStrictLinkChecking.Severity
+#        Description: Check chat messages for ingame links to spells, items, quests, etc.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled, Check if only valid pipe commands are used, Prevents posting
+#                         pictures.)
+#                     2 - (Enabled, Verify that pipe commands are used in a correct order)
+#                     3 - (Check if color, entry and name don't contradict each other. For this to
+#                         work correctly, please assure that you have extracted locale DBCs of
+#                         every language specific client playing on this server)
+
+ChatStrictLinkChecking.Severity = 1
+
+#
+#    ChatStrictLinkChecking.Kick
+#        Description: Defines what should be done if a message is considered to contain invalid
+#                     pipe commands.
+#        Default:     0 - (Silently ignore message)
+#                     1 - (Disconnect players who sent malformed messages)
+
+ChatStrictLinkChecking.Kick = 0
+
+
 ChatFlood.MessageCount = 10
 ChatFlood.MessageDelay = 1
 ChatFlood.MuteTime = 10

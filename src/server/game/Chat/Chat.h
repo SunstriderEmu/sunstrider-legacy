@@ -4,6 +4,7 @@
 #define TRINITYCORE_CHAT_H
 
 #include "SharedDefines.h"
+#include "ChatCommand.h"
 
 class ChatHandler;
 class WorldSession;
@@ -13,21 +14,6 @@ class Unit;
 struct GameTele;
 struct GM_Ticket;
 class GameObject;
-
-class TC_GAME_API ChatCommand
-{
-    typedef bool(*pHandler)(ChatHandler*, char const*);
-
-    public:
-        ChatCommand(char const* name, uint32 security, bool allowConsole, pHandler handler, std::string help, std::vector<ChatCommand> childCommands = std::vector<ChatCommand>());
-
-        const char *                  Name;
-        uint32                        SecurityLevel;                   // function pointer required correct align (use uint32)
-        bool                          AllowConsole;
-        pHandler Handler;
-        std::string                   Help;
-        std::vector<ChatCommand>      ChildCommands;
-};
 
 class TC_GAME_API ChatHandler
 {
@@ -106,6 +92,7 @@ class TC_GAME_API ChatHandler
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
 
+        bool IsValidChatMessage(char const* msg);
         static void SendGlobalSysMessage(const char *str);
         static void SendGlobalGMSysMessage(const char *str);
 

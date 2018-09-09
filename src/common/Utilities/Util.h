@@ -400,6 +400,10 @@ TC_COMMON_API uint32 CreatePIDFile(const std::string& filename);
 TC_COMMON_API std::string ByteArrayToHexStr(uint8 const* bytes, uint32 length, bool reverse = false);
 TC_COMMON_API void HexStrToByteArray(std::string const& str, uint8* out, bool reverse = false);
 
+TC_COMMON_API bool StringToBool(std::string const& str);
+
+TC_COMMON_API bool StringContainsStringI(std::string const& haystack, std::string const& needle);
+
 class TC_COMMON_API Tokenizer
 {
 public:

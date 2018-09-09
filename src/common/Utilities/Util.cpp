@@ -98,6 +98,8 @@ void stripLineInvisibleChars(std::string &str)
 
     if(wpos < str.size())
         str.erase(wpos,str.size());
+    if (str.find("|TInterface") != std::string::npos)
+        str.clear();
 }
 
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
@@ -115,7 +117,6 @@ std::string secsToTimeString(uint32 timeInSecs, bool shortText, bool hoursOnly)
     uint32 hours   = timeInSecs % DAY  / HOUR;
     uint32 days    = timeInSecs / DAY;
 
-    //TODO translate
     std::ostringstream ss;
     if(days)
         ss << days << (shortText ? "d" : " Day(s) ");
@@ -530,4 +531,17 @@ void HexStrToByteArray(std::string const& str, uint8* out, bool reverse /*= fals
         char buffer[3] = { str[i], str[i + 1], '\0' };
         out[j++] = uint8(strtoul(buffer, NULL, 16));
     }
+}
+
+bool StringToBool(std::string const& str)
+{
+    std::string lowerStr = str;
+    std::transform(str.begin(), str.end(), lowerStr.begin(), ::tolower);
+    return lowerStr == "1" || lowerStr == "true" || lowerStr == "yes";
+}
+
+bool StringContainsStringI(std::string const& haystack, std::string const& needle)
+{
+    return haystack.end() !=
+        std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end(), [](char c1, char c2) { return std::toupper(c1) == std::toupper(c2); });
 }

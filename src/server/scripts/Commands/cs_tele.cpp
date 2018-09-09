@@ -157,23 +157,19 @@ public:
     }
 
     //Teleport group to given game_tele.entry
-    static bool HandleTeleGroupCommand(ChatHandler* handler, char const* args)
+    static bool HandleTeleGroupCommand(ChatHandler* handler, GameTele const* tele)
     {
-        ARGS_CHECK
-
-            Player *player = handler->GetSelectedPlayerOrSelf();
-        if (!player)
-        {
-            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
-        GameTele const* tele = handler->extractGameTeleFromLink((char*)args);
         if (!tele)
         {
             handler->SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
+            handler->SetSentErrorMessage(true);
+            return false;	           
+        }
+
+        Player *player = handler->GetSelectedPlayerOrSelf();
+        if (!player)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -315,25 +311,19 @@ public:
         return true;
     }
 
-    static bool HandleTeleCommand(ChatHandler* handler, char const* args)
+    static bool HandleTeleCommand(ChatHandler* handler, GameTele const* tele)
     {
-        ARGS_CHECK
-
-            Player* _player = handler->GetSession()->GetPlayer();
-
-        if (_player->IsBeingTeleported())
+        if (!tele)
         {
-            handler->PSendSysMessage(LANG_IS_TELEPORTED, _player->GetName().c_str());
+            handler->SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
-        GameTele const* tele = handler->extractGameTeleFromLink((char*)args);
-
-        if (!tele)
+        Player* _player = handler->GetSession()->GetPlayer();
+        if (_player->IsBeingTeleported())
         {
-            handler->SendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
+            handler->PSendSysMessage(LANG_IS_TELEPORTED, _player->GetName().c_str());
             handler->SetSentErrorMessage(true);
             return false;
         }

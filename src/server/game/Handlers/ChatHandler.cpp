@@ -158,9 +158,23 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
    recvData >> msg;
 
-   // strip invisible characters for non-addon messages
-   if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-       stripLineInvisibleChars(msg);
+    // strip invisible characters for non-addon messages
+    if (lang != LANG_ADDON)
+    {
+        if(sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+            stripLineInvisibleChars(msg);
+
+        if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && !ChatHandler(this).IsValidChatMessage(msg.c_str()))
+        {
+            TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName().c_str(),
+                GetPlayer()->GetGUID().GetCounter(), msg.c_str());
+
+            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+                KickPlayer();
+
+            return;
+        }
+    }
 
    //message can only be empty for those types
    if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND && msg.empty())
