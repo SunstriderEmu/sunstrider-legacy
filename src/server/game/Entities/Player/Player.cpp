@@ -20474,6 +20474,7 @@ void Player::DoPack58(uint8 step)
             m_taxi.SetTaximaskNode(TAXI_STRANGLETHORN_REBEL_CAMP);
             m_taxi.SetTaximaskNode(TAXI_EVERLOOK_ALLIANCE); 
             m_taxi.SetTaximaskNode(TAXI_FEATHERMOON);
+            m_taxi.SetTaximaskNode(TAXI_NETHERGARDE_KEEP);
         } else {
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
             area_id = 1637; // Orgrimmar
@@ -20493,6 +20494,7 @@ void Player::DoPack58(uint8 step)
             m_taxi.SetTaximaskNode(TAXI_TAURAJO);
             m_taxi.SetTaximaskNode(TAXI_SILVERMOON);
             m_taxi.SetTaximaskNode(TAXI_TRAQUILIEN);
+            m_taxi.SetTaximaskNode(TAXI_STONARD);
         }
         SetHomebind(loc, area_id);
 
