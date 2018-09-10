@@ -628,21 +628,19 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     if (wardenActive)
         _worldSession->InitWarden(&account.SessionKey, account.OS);
 
-#ifdef TRINITYCORE
-    _queryProcessor.AddQuery(_worldSession->LoadPermissionsAsync().WithPreparedCallback(std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1)));
-#else
+    //TC _queryProcessor.AddQuery(_worldSession->LoadPermissionsAsync().WithPreparedCallback(std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1)));
     sWorld->AddSession(_worldSession); //this is in LoadSessionPermissionsCallback in TC, but no use having it there if there is not data to get before
-#endif
+
     AsyncRead();
 }
 
 void WorldSocket::LoadSessionPermissionsCallback(PreparedQueryResult result)
 {
+    /*TC
     // RBAC must be loaded before adding session to check for skip queue permission
-#ifdef TRINITYCORE
     _worldSession->GetRBACData()->LoadFromDBCallback(result);
     sWorld->AddSession(_worldSession);
-#endif
+    */
 }
 
 void WorldSocket::SendAuthResponseError(uint8 code)
