@@ -6,8 +6,12 @@ Wants=network.target
 [Service]
 User=suncore
 Group=suncore
-Environment="PATH=/usr/lib/llvm-3.5/bin/:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/usr/lib/llvm-5.0/bin/:/usr/local/bin:/usr/bin:/bin"
 #Environment="CPUPROFILE=/tmp/prof.out"
+
+LimitAS=infinity
+LimitRSS=infinity
+LimitCORE=infinity
 
 WorkingDirectory=/srv/suncore/dumps
 ExecStartPre=-/srv/suncore/sources/contrib/sunstrider/systemd/logrotate.sh /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf
@@ -17,7 +21,7 @@ ExecStartPre=-/bin/bash -c 'mv /tmp/prof.out /tmp/prof.$(date +"%Y%m%d%H%M").out
 ExecStart=/srv/suncore/bin/worldserver
 
 Restart=always
-RestartSec=3
+RestartSec=5
 
 LimitCORE=infinity
 
