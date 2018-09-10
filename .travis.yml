@@ -59,9 +59,9 @@ script:
   - make -j 10 -k && make install && make clean
   - cd check_install
   - mkdir data && cd data
-  - wget https://blob.allumeciga.re/2018_08_06_data.7z
-  - 7zr x 2018_08_06_data.7z -y > /dev/null
-  - rm 2018_08_06_data.7z
+  - wget https://blob.allumeciga.re/2018_09_10_data.7z
+  - 7zr x 2018_09_10_data.7z -y > /dev/null
+  - rm 2018_09_10_data.7z
   - cd ..
   - ls
   - cd bin
