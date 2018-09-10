@@ -344,8 +344,8 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         //-------INDX------------------------------------
         //-------MOPY--------
         MoviEx = new uint16[nTriangles*3]; // "worst case" size...
-        uint16 *IndexRenum = new uint16[nVertices]; //sunstrider: changed int to uint16
-        memset(IndexRenum, 0xFF, nVertices*sizeof(uint16));
+        int *IndexRenum = new int[nVertices];
+        memset(IndexRenum, 0xFF, nVertices*sizeof(int));
         for (int i=0; i<nTriangles; ++i)
         {
             // Skip no collision triangles
@@ -364,7 +364,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         }
 
         // assign new vertex index numbers
-        uint16 nColVertices = 0;
+        int nColVertices = 0;
         for (uint32 i=0; i<nVertices; ++i)
         {
             if (IndexRenum[i] == 1)
@@ -388,7 +388,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
 
         // write vertices
         int VERT[] = {0x54524556, nColVertices*3*static_cast<int>(sizeof(float))+4, nColVertices};// "VERT"
-        size_t check = 3*nColVertices;
+        int check = 3*nColVertices;
         fwrite(VERT,4,3,output);
         for (uint32 i=0; i<nVertices; ++i)
             if(IndexRenum[i] >= 0)
@@ -503,18 +503,18 @@ WMOGroup::~WMOGroup()
 }
 
 WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile)
-    : currx(0), curry(0), wmo(NULL), doodadset(0), pos(), indx(0), id(0)
+    : currx(0), curry(0), wmo(nullptr), doodadset(0), pos(), indx(0), id(0)
 {
     float ff[3];
     f.read(&id, 4);
-    f.read(ff,12);
-    pos = Vec3D(ff[0],ff[1],ff[2]);
-    f.read(ff,12);
-    rot = Vec3D(ff[0],ff[1],ff[2]);
-    f.read(ff,12);
-    pos2 = Vec3D(ff[0],ff[1],ff[2]); // bounding box corners
-    f.read(ff,12);
-    pos3 = Vec3D(ff[0],ff[1],ff[2]); // bounding box corners
+    f.read(ff, 12);
+    pos = Vec3D(ff[0], ff[1], ff[2]);
+    f.read(ff, 12);
+    rot = Vec3D(ff[0], ff[1], ff[2]);
+    f.read(ff, 12);
+    pos2 = Vec3D(ff[0], ff[1], ff[2]); // bounding box corners
+    f.read(ff, 12);
+    pos3 = Vec3D(ff[0], ff[1], ff[2]); // bounding box corners
 
     uint16 fflags;
     f.read(&fflags, 2);
@@ -522,9 +522,9 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     uint16 doodadSet;
     f.read(&doodadSet, 2);
 
-    uint16 trash,adtId;
-    f.read(&adtId,2);
-    f.read(&trash,2);
+    uint16 trash, adtId;
+    f.read(&adtId, 2);
+    f.read(&trash, 2);
 
     // destructible wmo, do not dump. we can handle the vmap for these
     // in dynamic tree (gameobject vmaps)
@@ -538,7 +538,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     FILE *input;
     input = fopen(tempname, "r+b");
 
-    if(!input)
+    if (!input)
     {
         printf("WMOInstance::WMOInstance: couldn't open %s\n", tempname);
         return;
@@ -546,19 +546,19 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices
     int nVertices;
-    size_t count = fread(&nVertices, sizeof (int), 1, input);
+    int count = fread(&nVertices, sizeof(int), 1, input);
     fclose(input);
 
     if (count != 1 || nVertices == 0)
         return;
 
-    float x,z;
+    float x, z;
     x = pos.x;
     z = pos.z;
-    if(x==0 && z == 0)
+    if (x == 0 && z == 0)
     {
-        pos.x = 533.33333f*32;
-        pos.z = 533.33333f*32;
+        pos.x = 533.33333f * 32;
+        pos.z = 533.33333f * 32;
     }
     pos = fixCoords(pos);
     pos2 = fixCoords(pos2);
@@ -566,7 +566,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
 
     float scale = 1.0f;
     uint32 flags = MOD_HAS_BOUND;
-    if(tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
+    if (tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, Bound_lo, Bound_hi, name
     fwrite(&mapID, sizeof(uint32), 1, pDirfile);
     fwrite(&tileX, sizeof(uint32), 1, pDirfile);
@@ -579,7 +579,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     fwrite(&scale, sizeof(float), 1, pDirfile);
     fwrite(&pos2, sizeof(float), 3, pDirfile);
     fwrite(&pos3, sizeof(float), 3, pDirfile);
-    size_t nlen=strlen(WmoInstName);
+    uint32 nlen = strlen(WmoInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(WmoInstName, sizeof(char), nlen, pDirfile);
 

@@ -28,8 +28,16 @@ bool checkDirectories(bool debugOutput)
     dirFiles.clear();
     if (getDirContents(dirFiles, "mmaps") == LISTFILE_DIRECTORY_NOT_FOUND)
     {
-        printf("'mmaps' directory does not exist\n");
-        return false;
+        //sun: create if now existing
+        if (boost::filesystem::create_directory("mmaps"))
+        {
+            printf("Created 'mmaps' directory\n");
+        }
+        else 
+        {
+            printf("Could not create 'mmaps' directory\n");
+            return false;
+        }
     }
 
     dirFiles.clear();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,13 +19,13 @@
 #ifndef _TILEASSEMBLER_H_
 #define _TILEASSEMBLER_H_
 
-#include "ModelInstance.h"
-#include "WorldModel.h"
-
 #include <G3D/Vector3.h>
 #include <G3D/Matrix3.h>
 #include <map>
 #include <set>
+
+#include "ModelInstance.h"
+#include "WorldModel.h"
 
 namespace VMAP
 {
@@ -46,7 +46,7 @@ namespace VMAP
             float iScale;
             void init()
             {
-                iRotation = G3D::Matrix3::fromEulerAnglesZYX( (float) G3D::pi()*iDir.y/180.f, (float) G3D::pi()*iDir.x/180.f, (float) G3D::pi()*iDir.z/180.f);
+                iRotation = G3D::Matrix3::fromEulerAnglesZYX(G3D::pif()*iDir.y/180.f, G3D::pif()*iDir.x/180.f, G3D::pif()*iDir.z/180.f);
             }
             G3D::Vector3 transform(const G3D::Vector3& pIn) const;
             void moveToBasePos(const G3D::Vector3& pBasePos) { iPos -= pBasePos; }
@@ -55,7 +55,7 @@ namespace VMAP
     typedef std::map<uint32, ModelSpawn> UniqueEntryMap;
     typedef std::multimap<uint32, uint32> TileMap;
 
-    struct MapSpawns
+    struct TC_COMMON_API MapSpawns
     {
         UniqueEntryMap UniqueEntries;
         TileMap TileEntries;
@@ -64,7 +64,7 @@ namespace VMAP
     typedef std::map<uint32, MapSpawns*> MapData;
     //===============================================
 
-    struct GroupModel_Raw
+    struct TC_COMMON_API GroupModel_Raw
     {
         uint32 mogpflags;
         uint32 GroupWMOID;
@@ -76,13 +76,13 @@ namespace VMAP
         class WmoLiquid* liquid;
 
         GroupModel_Raw() : mogpflags(0), GroupWMOID(0), liquidflags(0),
-            liquid(NULL) { }
+            liquid(nullptr) { }
         ~GroupModel_Raw();
 
         bool Read(FILE* f);
     };
 
-    struct WorldModel_Raw
+    struct TC_COMMON_API WorldModel_Raw
     {
         uint32 RootWMOID;
         std::vector<GroupModel_Raw> groupsArray;
@@ -102,7 +102,7 @@ namespace VMAP
             std::set<std::string> spawnedModelFiles;
 
         public:
-            TileAssembler(std::string  pSrcDirName, std::string  pDestDirName);
+            TileAssembler(const std::string& pSrcDirName, const std::string& pDestDirName);
             virtual ~TileAssembler();
 
             bool convertWorld2();
