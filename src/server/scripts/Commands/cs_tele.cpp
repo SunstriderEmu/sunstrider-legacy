@@ -343,7 +343,9 @@ public:
         else
             _player->SaveRecallPosition();
 
-        _player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+        bool ok = _player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
+        if (!ok)
+            handler->SendSysMessage("Teleportation failed");
         return true;
     }
 };
