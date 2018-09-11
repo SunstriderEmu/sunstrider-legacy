@@ -249,7 +249,7 @@ struct SpellImmune
     uint32 spellId;
 };
 
-typedef std::list<SpellImmune> SpellImmuneList;
+typedef std::unordered_multimap<uint32 /*type*/, uint32 /*spellId*/> SpellImmuneContainer;
 
 typedef std::list<Unit*> UnitList;
 
@@ -1989,7 +1989,7 @@ class TC_GAME_API Unit : public WorldObject
 		void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite WorldObject::SetPhaseMask
 		void UpdateObjectVisibility(bool forced = true) override;
 
-        SpellImmuneList m_spellImmune[MAX_SPELL_IMMUNITY];
+        SpellImmuneContainer m_spellImmune[MAX_SPELL_IMMUNITY];
         uint32 m_lastSanctuaryTime;
 
         int32 GetTotalAuraModifier(AuraType auraType) const;

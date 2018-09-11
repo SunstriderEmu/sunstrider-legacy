@@ -21947,11 +21947,15 @@ bool Player::HasLevelInRangeForTeleport() const
 /*-----------------------TRINITY--------------------------*/
 bool Player::isTotalImmunity()
 {
-    SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
-    for(auto itr : schoolList)
-        if( itr.type & SPELL_SCHOOL_MASK_ALL || itr.type & SPELL_SCHOOL_MASK_MAGIC || itr.type & SPELL_SCHOOL_MASK_NORMAL)
-            return true;
+    AuraEffectList const& immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY);
 
+    uint32 immuneMask = 0;
+    for (AuraEffectList::const_iterator itr = immune.begin(); itr != immune.end(); ++itr)
+    {
+        immuneMask |= (*itr)->GetMiscValue();
+        if (immuneMask & SPELL_SCHOOL_MASK_ALL)            // total immunity
+            return true;
+    }
     return false;
 }
 
