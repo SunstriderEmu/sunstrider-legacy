@@ -204,13 +204,13 @@ bool ArenaTeam::LoadMembersFromDB(QueryResult const result)
 
         ArenaTeamMember newMember;
         newMember.Guid            = ObjectGuid(HighGuid::Player, fields[1].GetUInt32());
-        newMember.WeekGames      = fields[2].GetUInt32();
-        newMember.WeekWins       = fields[3].GetUInt32();
-        newMember.SeasonGames    = fields[4].GetUInt32();
-        newMember.SeasonWins     = fields[5].GetUInt32();
+        newMember.WeekGames      = fields[2].GetUInt16();
+        newMember.WeekWins       = fields[3].GetUInt16();
+        newMember.SeasonGames    = fields[4].GetUInt16();
+        newMember.SeasonWins     = fields[5].GetUInt16();
         newMember.Name           = fields[6].GetString();
         newMember.Class          = fields[7].GetUInt8();
-        newMember.PersonalRating = fields[8].GetUInt32();
+        newMember.PersonalRating = fields[8].GetUInt16();
 
         // Check if team team has a valid captain
         if (newMember.Guid == GetCaptain())
