@@ -285,7 +285,9 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_boundaryCheckTime(2500), 
     _pickpocketLootRestore(0),
     m_combatPulseTime(0), 
-    m_combatPulseDelay(0)
+    m_combatPulseDelay(0),
+    m_lastDamagedTime(0),
+    m_movementFlagsUpdateTimer(MOVEMENT_FLAGS_UPDATE_TIMER)
 {
     m_valuesCount = UNIT_END;
 
@@ -763,8 +765,11 @@ void Creature::Update(uint32 diff)
 
             DecreaseTimer(m_stealthAlertCooldown, diff);
 
-            //From TC. Removed as this is VERY costly in cpu time for little to no gain
-            //UpdateMovementFlags();
+            if (DecreaseTimer(m_movementFlagsUpdateTimer, diff))
+            {
+                UpdateMovementFlags();
+                m_movementFlagsUpdateTimer = MOVEMENT_FLAGS_UPDATE_TIMER;
+            }
 
             if(IsInCombat() && 
                 (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
@@ -1929,7 +1934,7 @@ void Creature::StartStealthAlert(Unit const* target)
 {
     m_stealthAlertCooldown = STEALTH_ALERT_COOLDOWN;
 
-    GetMotionMaster()->MoveStealthAlert(target, STEALTH_ALERT_DURATINON);
+    GetMotionMaster()->MoveStealthAlert(target, STEALTH_ALERT_DURATION);
     SendAIReaction(AI_REACTION_ALERT);
 }
 
@@ -3524,8 +3529,11 @@ bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
     return true;
 }
 
-void Creature::UpdateMovementFlags()
+void Creature::UpdateMovementFlags(bool force /* = false */)
 {
+    if (!force && GetExactDistSq(m_lastMovementFlagsPosition) < 2.5f*2.5f)
+        return;
+
     // Do not update movement flags if creature is controlled by a player (charm/vehicle)
     if (m_playerMovingMe)
         return;
@@ -3561,6 +3569,7 @@ void Creature::UpdateMovementFlags()
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     SetSwim(CanSwim() && IsInWater());
+    m_lastMovementFlagsPosition = GetPosition();
 }
 
 bool Creature::IsInEvadeMode() const 

@@ -240,7 +240,7 @@ Unit::Unit(bool isWorldObject)
     movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
     m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
     m_charmer(nullptr), m_charmed(nullptr),
-    _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
+    m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
     _last_in_water_status(false),
     _last_isunderwater_status(false),
     m_duringRemoveFromWorld(false),
@@ -753,9 +753,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
     }
     else                                                    // if (health <= damage)
     {
-        //TC_LOG_DEBUG("FIXME","DealDamageAlive");
-
-        pVictim->ModifyHealth(- (int32)damage);
+        pVictim->ModifyHealth(-(int32)damage);
 
         if(damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
             pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DIRECT_DAMAGE, spellProto ? spellProto->Id : 0);

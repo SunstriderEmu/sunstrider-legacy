@@ -163,6 +163,8 @@ enum class CreatureGroundMovementType : uint8
     Max
 };
 
+#define MOVEMENT_FLAGS_UPDATE_TIMER 5000
+
 enum class CreatureFlightMovementType : uint8
 {
     None             = 0,
@@ -639,8 +641,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         Remove flying movement flags if creature is not in air.
         Add flying movement flags if creature can fly is in air and not flying.
         Also set creature as swimming if in water
+        Won't update if current position is very close to the last one when updating. Force update with argument 'force'
         */
-        void UpdateMovementFlags();
+        void UpdateMovementFlags(bool force = false);
 
         bool UpdateStats(Stats stat) override;
         bool UpdateAllStats() override;
@@ -824,7 +827,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
         uint32 GetCreaturePoolId() const { return m_creaturePoolId; }
         void SetCreaturePoolId(uint32 id) { m_creaturePoolId = id; }
-        
+
+        // Part of Evade mechanics
+        time_t GetLastDamagedTime() const { return m_lastDamagedTime; }
+        void SetLastDamagedTime(time_t val) { m_lastDamagedTime = val; }
+
         /** This is only filled for world bosses */
         bool HadPlayerInThreatListAtDeath(ObjectGuid guid) const;
         void ConvertThreatListIntoPlayerListAtDeath();
@@ -914,8 +921,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         // vendor items
         VendorItemCounts m_vendorItemCounts;
 
-        void _RealtimeSetCreatureInfo();
-
         uint32 m_lootMoney;
         ObjectGuid m_lootRecipient;
         uint32 m_lootRecipientGroup; //group identified by leader
@@ -972,6 +977,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool m_evadingAttacks;
         bool m_homeless;
 
+        Position m_lastMovementFlagsPosition;
+        uint32 m_movementFlagsUpdateTimer;
+
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
         uint32 m_stealthAlertCooldown;
@@ -992,6 +1000,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
         CreatureData const* m_creatureData;
         CreatureAddon const* m_creatureInfoAddon;
+
+        time_t m_lastDamagedTime; // Part of Evade mechanic
 
         uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
 

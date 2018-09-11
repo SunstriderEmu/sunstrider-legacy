@@ -1121,8 +1121,8 @@ Only on units hostile to players and able to attack him.
 //if in warning range, we can do the suspicious look.
 //time in ms between two warning, counting from warning start (= ignoring duration)
 #define STEALTH_ALERT_COOLDOWN 16000
-#define STEALTH_ALERT_DURATINON 5000
-// STEALTH_ALERT_COOLDOWN must always be greater than STEALTH_ALERT_DURATINON
+#define STEALTH_ALERT_DURATION 5000
+// STEALTH_ALERT_COOLDOWN must always be greater than STEALTH_ALERT_DURATION
 
 enum StealthDetectedStatus
 {
@@ -2212,10 +2212,6 @@ class TC_GAME_API Unit : public WorldObject
 
         bool IsJustCCed() { return (m_justCCed > 0); }
         
-        // Part of Evade mechanics
-        time_t GetLastDamagedTime() const { return _lastDamagedTime; }
-        void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
-
         virtual void Talk(std::string const& text, ChatMsg msgType, Language language, float textRange, WorldObject const* target);
         virtual void Say(std::string const& text, Language language = LANG_UNIVERSAL, WorldObject const* target = nullptr);
         virtual void Yell(std::string const& text, Language language = LANG_UNIVERSAL, WorldObject const* target = nullptr);
@@ -2357,7 +2353,6 @@ class TC_GAME_API Unit : public WorldObject
         ComboPointHolderSet m_ComboPointHolders;
         
         bool _targetLocked; // locks the target during spell cast for proper facing
-        time_t _lastDamagedTime; // Part of Evade mechanic
 };
 
 // drop a charge for the first aura found of type SPELL_AURA_SPELL_MAGNET
