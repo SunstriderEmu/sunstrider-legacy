@@ -79,6 +79,8 @@ public:
         TestPlayer* p1;
         TestPlayer* p2;
         Creature* creatureTarget;
+        Creature* creatureTarget2;
+        Creature* creatureTarget3;
 
         void TestStack(uint32 id1, uint32 id2 = 0, bool _not = false, bool sameCaster = false, Unit* target = nullptr)
         {
@@ -144,6 +146,8 @@ public:
             p1 = SpawnRandomPlayer(RACE_HUMAN);
             p2 = SpawnRandomPlayer(RACE_HUMAN);
             creatureTarget = SpawnCreature();
+            creatureTarget2 = SpawnCreature();
+            creatureTarget3 = SpawnCreature();
             
             //well fed buffs
             uint32 const herbBakedEgg = 19705;
@@ -262,6 +266,17 @@ public:
 
             SECTION("WIP", STATUS_WIP, [&] {
                 //More powerful spells?
+            });
+             
+            SECTION("Immunity stack", STATUS_PASSING, [&] {
+                //Need friendly casters to get aura stacking
+                creatureTarget2->AddAura(38112, creatureTarget);
+                creatureTarget3->AddAura(38112, creatureTarget);
+                TEST_ASSERT(creatureTarget->GetAuraCount(38112) == 2);
+                creatureTarget->RemoveAura(38112, creatureTarget3->GetGUID());
+                TEST_ASSERT(creatureTarget->GetAuraCount(38112) == 1);
+                //check if we're still immune 
+                TEST_ASSERT(creatureTarget->IsImmunedToDamage(SPELL_SCHOOL_MASK_FIRE));
             });
         }
     };

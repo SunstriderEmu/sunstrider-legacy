@@ -6796,7 +6796,11 @@ void Unit::ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply)
         for (auto itr = bounds.first; itr != bounds.second;)
         {
             if (itr->second == spellId)
+            {
                 itr = m_spellImmune[op].erase(itr);
+                //sun: only erase one. There may be several times the same spell, such as with 38112
+                break;
+            }
             else
                 ++itr;
         }
