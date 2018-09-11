@@ -2761,6 +2761,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 23505:                                         // Berserking (BG buff)
         case 1462:                                          // Beast Lore
         case 30877:                                         // Tag Murloc
+        case 38044:                                         // Surge
             return true;
         case 1852:                                          // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -2885,7 +2886,8 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case SPELL_EFFECT_ENERGIZE_PCT:
             return true;
         case SPELL_EFFECT_INSTAKILL:
-            if (i != effIndex && // for spells like 38044: instakill effect is negative but auras on target must count as buff
+            // if any other effect has instakill on the same target as this effect
+            if (i != effIndex && // for spells like 38044: instakill effect is negative but auras on target must count as buff //sun: does not work... we return false below in this func
                 spellInfo->Effects[i].TargetA.GetTarget() == spellInfo->Effects[effIndex].TargetA.GetTarget() &&
                 spellInfo->Effects[i].TargetB.GetTarget() == spellInfo->Effects[effIndex].TargetB.GetTarget())
                 return false;

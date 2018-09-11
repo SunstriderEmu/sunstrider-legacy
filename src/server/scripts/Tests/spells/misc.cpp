@@ -292,6 +292,7 @@ public:
                 { 36895, false }, // Transporter Malfunction (increase size case)
                 { 42792, false }, // Recently Dropped Flag (prevent cancel)
                 { 7268,  false }, // Arcane Missile
+                { 38044, true  }, // Surge (SSC Vashj fight)
                 //Add much more spells here as we fix them
             };
 
