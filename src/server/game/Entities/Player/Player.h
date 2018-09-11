@@ -2130,9 +2130,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ClearAfkReports() { m_bgData.bgAfkReporter.clear(); }
 
         bool GetBGAccessByLevel(BattlegroundTypeId bgTypeId) const;
-        bool isAllowUseBattlegroundObject();
+        bool CanUseBattlegroundObject(GameObject* gameobject);
         bool isAllowedToTakeBattlegroundBase();
-        bool isTotalImmunity();
+        bool IsTotalImmune();
 
         /*********************************************************/
         /***               OUTDOOR PVP SYSTEM                  ***/

@@ -21879,11 +21879,21 @@ void Player::StopCastingBindSight(Aura* except /* = nullptr*/)
     }
 }
 
-bool Player::isAllowUseBattlegroundObject()
+bool Player::CanUseBattlegroundObject(GameObject* gameobject)
 {
+    // It is possible to call this method with a null pointer, only skipping faction check.
+    if (gameobject)
+    {
+        FactionTemplateEntry const* playerFaction = GetFactionTemplateEntry();
+        FactionTemplateEntry const* faction = sFactionTemplateStore.LookupEntry(gameobject->GetFaction());
+
+        if (playerFaction && faction && !playerFaction->IsFriendlyTo(*faction))
+            return false;
+    }
+
     return ( //InBattleground() &&                            // in battleground - not need, check in other cases
              //!IsMounted() &&                                  // not mounted
-             !isTotalImmunity() &&                              // not totally immuned
+             !IsTotalImmune() &&                              // not totally immuned
              !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
              !HasAuraEffect(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
@@ -21945,7 +21955,7 @@ bool Player::HasLevelInRangeForTeleport() const
 }
 
 /*-----------------------TRINITY--------------------------*/
-bool Player::isTotalImmunity()
+bool Player::IsTotalImmune()
 {
     AuraEffectList const& immune = GetAuraEffectsByType(SPELL_AURA_SCHOOL_IMMUNITY);
 
