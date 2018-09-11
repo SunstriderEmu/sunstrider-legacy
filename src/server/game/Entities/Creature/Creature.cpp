@@ -564,7 +564,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
 #endif
 
     if(!IsPet())
-        SetCanFly(GetMovementTemplate().IsFlightAllowed());
+        _SetCanFly(GetMovementTemplate().IsFlightAllowed());
 
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
@@ -3446,7 +3446,7 @@ bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
 
     //also mark creature as able to fly to avoid getting fly mode removed
     if(enable)
-        SetCanFly(enable, false);
+        _SetCanFly(enable, false);
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
@@ -3454,7 +3454,7 @@ bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
     return true;
 }
 
-void Creature::SetCanFly(bool enable, bool updateMovementFlags /* = true */) 
+void Creature::_SetCanFly(bool enable, bool updateMovementFlags /* = true */) 
 { 
     m_canFly = enable; 
     if (updateMovementFlags)

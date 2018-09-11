@@ -481,12 +481,12 @@ public:
 
         if (argstr == "on")
         {
-            pCreature->SetCanFly(true);
+            pCreature->_SetCanFly(true);
             handler->PSendSysMessage("Creature is now fly-capable");
             return true;
         } else if (argstr == "off")
         {
-            pCreature->SetCanFly(false);
+            pCreature->_SetCanFly(false);
             handler->PSendSysMessage("Creature is now not fly-capable");
             return true;
         }

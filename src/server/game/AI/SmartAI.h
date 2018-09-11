@@ -153,7 +153,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Makes the creature run/walk
         void SetRun(bool run = true);
 
-        void SetCanFly(bool fly = true);
+        void _SetCanFly(bool fly = true);
         void SetDisableGravity(bool disable = true);
 
         void SetSwim(bool swim = true);

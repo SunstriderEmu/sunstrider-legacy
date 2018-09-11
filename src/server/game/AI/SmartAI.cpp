@@ -770,9 +770,9 @@ void SmartAI::SetDisableGravity(bool fly)
     me->SetDisableGravity(fly);
 }
 
-void SmartAI::SetCanFly(bool fly)
+void SmartAI::_SetCanFly(bool fly)
 {
-    me->SetCanFly(fly);
+    me->_SetCanFly(fly);
 }
 
 void SmartAI::SetSwim(bool swim)

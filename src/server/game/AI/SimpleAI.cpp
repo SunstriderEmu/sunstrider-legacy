@@ -48,8 +48,6 @@ SimpleAI::SimpleAI(Creature *c) : ScriptedAI(c)
     Kill_Target_Type = 0;
 
     memset(Spell,0,sizeof(Spell));
-
-    EnterEvadeMode();
 }
 
 void SimpleAI::Reset()
