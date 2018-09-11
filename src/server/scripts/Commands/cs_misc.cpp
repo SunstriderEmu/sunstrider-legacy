@@ -1651,7 +1651,12 @@ public:
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
-        handler->PSendSysMessage("Target (%u) moveflags = %u",target->GetGUID().GetCounter(),target->GetUnitMovementFlags());
+        std::stringstream stream;
+        stream << std::hex << target->GetUnitMovementFlags();
+
+        handler->PSendSysMessage("Target (%u) moveflags = 0x%s", 
+            target->GetGUID().GetCounter(), 
+            stream.str().c_str());
 
         return true;
     }
@@ -1667,13 +1672,24 @@ public:
         if(strcmp(args,"") == 0)
             return false;
 
+        bool useHex = true;
+        if (args[0] != '0' || args[1] != 'x')
+            useHex = false;
+
         uint32 moveFlags;
-        std::stringstream ss(args);
+        std::stringstream ss;
+        if (useHex)
+            ss << std::hex << std::string(args).substr(2);
+        else
+            ss << args;
+
         ss >> moveFlags;
 
         target->SetUnitMovementFlags(moveFlags);
 
-        handler->PSendSysMessage("Target (%u) moveflags set to %u",target->GetGUID().GetCounter(),moveFlags);
+        std::stringstream stream;
+        stream << std::hex << target->GetUnitMovementFlags();
+        handler->PSendSysMessage("Target (%u) moveflags set to 0x%s", target->GetGUID().GetCounter(), stream.str().c_str());
 
         return true;
     }
