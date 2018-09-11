@@ -1205,30 +1205,6 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
-                case 14185:                                 // Preparation Rogue
-                {
-                    if (!_unitCaster)
-                        return;
-
-                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    //immediately finishes the cooldown on certain Rogue abilities
-                    const PlayerSpellMap& sp_list = (m_caster->ToPlayer())->GetSpellMap();
-                    for (const auto & itr : sp_list)
-                    {
-                        uint32 classspell = itr.first;
-                        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
-
-                        if (spellInfo)
-                        {
-                            if(spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && spellInfo->SpellFamilyFlags & 0x26000000860LL)
-                                _unitCaster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
-
-                        } else { TC_LOG_ERROR("FIXME","EffectDummy: spellInfo for spell %u not found (case 14185)",classspell); }
-                    }
-                    return;
-                }
                 case 15998:                                 // Capture Worg Pup
                 case 29435:                                 // Capture Female Kaliri Hatchling
                 {

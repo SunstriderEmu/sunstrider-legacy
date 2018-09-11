@@ -1,6 +1,7 @@
 #include "SpellMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "SpellHistory.h"
 
 enum RogueSpells
 {
@@ -154,8 +155,51 @@ public:
     }
 };
 
+// 14185 - Preparation
+class spell_rog_preparation : public SpellScriptLoader
+{
+public:
+    spell_rog_preparation() : SpellScriptLoader("spell_rog_preparation") { }
+
+    class spell_rog_preparation_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_rog_preparation_SpellScript);
+
+        bool Load() override
+        {
+            return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+        }
+
+        void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*damage*/)
+        {
+            Unit* caster = GetCaster();
+            caster->GetSpellHistory()->ResetCooldowns([caster](SpellHistory::CooldownStorageType::iterator itr) -> bool
+            {
+                SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(itr->first);
+                if (spellInfo->SpellFamilyName != SPELLFAMILY_ROGUE)
+                    return false;
+
+                return spellInfo->SpellFamilyFlags & ( SPELLFAMILYFLAG_ROGUE_EVASION | SPELLFAMILYFLAG_ROGUE_SPRINT 
+                    | SPELLFAMILYFLAG_ROGUE_VANISH | SPELLFAMILYFLAG_ROGUE_COLD_BLOOD 
+                    | SPELLFAMILYFLAG_ROGUE_SHADOWSTEP | SPELLFAMILYFLAG_ROGUE_PREMEDITATION);
+            }, true);
+        }
+
+        void Register() override
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_rog_preparation_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_rog_preparation_SpellScript();
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_preparation();
     new spell_rog_blade_flurry();
     new spell_rog_deadly_throw_interrupt();
     new spell_rog_quick_recovery();
