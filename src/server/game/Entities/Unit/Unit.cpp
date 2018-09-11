@@ -6448,16 +6448,16 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
     if (uint32 schoolMask = spellInfo->GetSchoolMask())
     {
         uint32 schoolImmunityMask = 0;
-        SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
+        SpellImmuneContainer const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for (auto itr = schoolList.begin(); itr != schoolList.end(); ++itr)
         {
-            if ((itr->type & schoolMask) == 0)
+            if ((itr->first & schoolMask) == 0)
                 continue;
 
-            SpellInfo const* immuneSpellInfo = sSpellMgr->GetSpellInfo(itr->spellId);
+            SpellInfo const* immuneSpellInfo = sSpellMgr->GetSpellInfo(itr->second);
             if (!(immuneSpellInfo && immuneSpellInfo->IsPositive() && spellInfo->IsPositive() && caster && IsFriendlyTo(caster)))
                 if (!spellInfo->CanPierceImmuneAura(immuneSpellInfo))
-                    schoolImmunityMask |= itr->type;
+                    schoolImmunityMask |= itr->first;
         }
 
         if ((schoolImmunityMask & schoolMask) == schoolMask)
