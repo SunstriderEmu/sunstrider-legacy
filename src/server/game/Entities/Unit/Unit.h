@@ -989,13 +989,6 @@ struct GlobalCooldown
 
 typedef UnitActionBarEntry CharmSpellInfo;
 
-enum Rotation
-{
-    CREATURE_ROTATE_NONE = 0,
-    CREATURE_ROTATE_LEFT = 1,
-    CREATURE_ROTATE_RIGHT = 2
-};
-
 enum SplineType
 {
     SPLINETYPE_NORMAL        = 0,
@@ -1243,10 +1236,6 @@ class TC_GAME_API Unit : public WorldObject
         uint32 m_extraAttacks;
         bool m_canDualWield;
         
-        void StartAutoRotate(uint8 type, uint32 fulltime, double Angle = 0, bool attackVictimOnEnd = true);
-        void AutoRotate(uint32 time);
-        bool IsUnitRotating() {return IsRotating;}
-
         void _addAttacker(Unit* pAttacker);                  // must be called only from Unit::Attack(Unit*)
         void _removeAttacker(Unit* pAttacker);               // must be called only from Unit::AttackStop()
         Unit* GetAttackerForHelper() const;                 // If someone wants to help, who to give them
@@ -2367,13 +2356,6 @@ class TC_GAME_API Unit : public WorldObject
 
         ComboPointHolderSet m_ComboPointHolders;
         
-        uint8 IsRotating;//0none 1left 2right
-        uint32 RotateTimer;
-        uint32 RotateTimerFull;
-        double RotateAngle;
-        ObjectGuid LastTargetGUID;
-        bool m_attackVictimOnEnd;
-
         bool _targetLocked; // locks the target during spell cast for proper facing
         time_t _lastDamagedTime; // Part of Evade mechanic
 };

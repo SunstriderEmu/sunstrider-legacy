@@ -338,9 +338,6 @@ Unit::Unit(bool isWorldObject)
     for(uint32 & i : m_reactiveTimer)
         i = 0;
         
-    IsRotating = 0;
-    m_attackVictimOnEnd = false;
-    
     _targetLocked = false;
     m_CombatDistance = 0;//MELEE_RANGE;
 
@@ -487,54 +484,6 @@ float Unit::GetMeleeRange(Unit const* target) const
 {
     float range = GetCombatReach() + target->GetCombatReach() + 4.0f / 3.0f;
     return std::max(range, NOMINAL_MELEE_RANGE);
-}
-
-void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attackVictimOnEnd)
-{
-    m_attackVictimOnEnd = attackVictimOnEnd;
-
-    if (Angle > 0)
-    {
-        RotateAngle = Angle;
-    }
-    else
-    {
-        if(GetVictim())
-            RotateAngle = GetAbsoluteAngle(GetVictim());
-        else
-            RotateAngle = GetOrientation();
-    }
-
-    RotateTimer = fulltime;    
-    RotateTimerFull = fulltime;    
-    IsRotating = type;
-    LastTargetGUID = GetGuidValue(UNIT_FIELD_TARGET);
-    SetTarget(ObjectGuid::Empty);
-}
-
-void Unit::AutoRotate(uint32 time)
-{
-    if(!IsRotating)return;
-    if(IsRotating == CREATURE_ROTATE_LEFT)
-    {
-        RotateAngle += (double)time/RotateTimerFull*(double)M_PI*2;
-        if (RotateAngle >= M_PI*2)RotateAngle = 0;
-    }
-    else
-    {
-        RotateAngle -= (double)time/RotateTimerFull*(double)M_PI*2;
-        if (RotateAngle < 0)RotateAngle = M_PI*2;
-    }    
-    SetOrientation(RotateAngle);
-    StopMoving();
-    if(RotateTimer <= time)
-    {
-        IsRotating = CREATURE_ROTATE_NONE;
-        RotateAngle = 0;
-        RotateTimer = RotateTimerFull;
-        if (m_attackVictimOnEnd)
-            SetTarget(LastTargetGUID);
-    }else RotateTimer -= time;
 }
 
 AuraApplication* Unit::GetVisibleAura(uint8 slot) const
@@ -11065,7 +11014,7 @@ void Unit::SetInFront(WorldObject const* target)
 
 void Unit::SetInFront(float x, float y)
 {
-    if(!HasUnitState(UNIT_STATE_CANNOT_TURN) && !IsUnitRotating()) 
+    if(!HasUnitState(UNIT_STATE_CANNOT_TURN))
         SetOrientation(GetAbsoluteAngle(x,y));
 }
 
