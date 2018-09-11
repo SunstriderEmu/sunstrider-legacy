@@ -249,7 +249,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_corpseDelay(60), 
     m_respawnradius(0.0f),
     m_reactState(REACT_AGGRESSIVE), 
-    m_transportCheckTimer(1000),
     m_defaultMovementType(IDLE_MOTION_TYPE), 
     m_equipmentId(0), 
     m_originalEquipmentId(0),
@@ -909,30 +908,6 @@ void Creature::Update(uint32 diff)
         }
         default:
             break;
-    }
-
-    if (IsInWorld())
-    {
-        // sunwell:
-        if (GetOwnerGUID().IsPlayer())
-        {
-            if (m_transportCheckTimer <= diff)
-            {
-                m_transportCheckTimer = 1000;
-                Transport* newTransport = GetMap()->GetTransportForPos(GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ(), this);
-                if (newTransport != GetTransport())
-                {
-                    if (GetTransport())
-                        GetTransport()->RemovePassenger(this);
-                    if (newTransport)
-                        newTransport->AddPassenger(this);
-                    this->StopMovingOnCurrentPos();
-                    //SendMovementFlagUpdate();
-                }
-            }
-            else
-                m_transportCheckTimer -= diff;
-        }
     }
 }
 
