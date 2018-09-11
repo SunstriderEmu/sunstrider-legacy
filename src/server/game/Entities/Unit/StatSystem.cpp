@@ -268,19 +268,6 @@ void Unit::UpdateDamagePctDoneMods(WeaponAttackType attackType)
         factor *= GetTotalAuraMultiplier(SPELL_AURA_MOD_OFFHAND_DAMAGE_PCT, std::bind(&Unit::CheckAttackFitToAuraRequirement, this, attackType, std::placeholders::_1));
 
     SetStatPctModifier(unitMod, TOTAL_PCT, factor);
-
-    /* Old sun
-        // apply generic physical damage bonuses including wand case
-        // import me 
-
-        // For show in client
-        if(m_target->GetTypeId() == TYPEID_PLAYER)
-        {
-            //apply damage to already equipped weapon
-            for(UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod +1))
-                m_target->ToPlayer()->HandleStatModifier(mod, TOTAL_PCT, float(GetAmount()),apply);
-        }
-    */
 }
 
 void Unit::UpdateAllDamagePctDoneMods()
