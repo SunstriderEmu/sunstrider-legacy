@@ -12231,8 +12231,12 @@ Aura* Unit::_TryStackingOrRefreshingExistingAura(AuraCreateInfo& createInfo)
         if (createInfo.CastItem)
             castItemGUID = createInfo.CastItem->GetGUID();
 
+        ObjectGuid searchCasterGUID(createInfo.CasterGUID);
+        if (createInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS))
+            searchCasterGUID = ObjectGuid::Empty;
+
         // find current aura from spell and change it's stackamount, or refresh it's duration
-        if (Aura* foundAura = GetOwnedAura(createInfo.GetSpellInfo()->Id, createInfo.CasterGUID, createInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_ENCHANT_PROC) ? castItemGUID : ObjectGuid::Empty, 0))
+        if (Aura* foundAura = GetOwnedAura(createInfo.GetSpellInfo()->Id, searchCasterGUID, createInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_ENCHANT_PROC) ? castItemGUID : ObjectGuid::Empty, 0))
         {
             // effect masks do not match
             // extremely rare case
