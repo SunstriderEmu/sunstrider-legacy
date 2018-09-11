@@ -369,6 +369,12 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                             return false;
 
             bossInfo->state = state;
+            //sun: warn gms of state change
+            for (const auto & i : instance->GetPlayers())
+                if (Player* player = i.GetSource())
+                    if (WorldSession* session = player->GetSession())
+                        if(session->GetSecurity() > SEC_PLAYER)
+                            ChatHandler(player).PSendSysMessage("Boss state %u changed to %u", id, bossInfo->state);
             SaveToDB();
         }
 
