@@ -1236,16 +1236,6 @@ Unit* Creature::SelectVictim(bool evade /*= true*/)
 void Creature::SetReactState(ReactStates st) 
 { 
     m_reactState = st; 
-    //sunstrider: also reset combat on passive
-    switch (st)
-    {
-    //+ also recheck aggro on aggressive ?
-    case REACT_PASSIVE:
-        if (GetVictim())
-            AI()->EnterEvadeMode();
-
-        break;
-    }
 }
 
 void Creature::InitializeReactState()
