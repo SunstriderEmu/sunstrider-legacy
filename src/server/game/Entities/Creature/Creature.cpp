@@ -2093,8 +2093,9 @@ bool Creature::IsOutOfThreatArea(Unit const* target) const
     if (GetCharmerOrOwnerGUID().IsPlayer())
         return false;
 
-    if (!target->isInAccessiblePlaceFor(this))
-        return true;
+    if(!GetAI() || GetAI()->IsCombatMovementAllowed()) // only check accessibility for creatures allowed to move
+        if (!target->isInAccessiblePlaceFor(this))
+            return true;
 
     if (GetMap()->IsDungeon())
         return false;
