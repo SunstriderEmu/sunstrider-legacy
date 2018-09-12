@@ -361,6 +361,68 @@ class SpellDelayedStacks : public TestCase
     }
 };
 
+/* "spells targets aoetrigger"
+Check some spell triggering aoe
+*/
+class SpellTargetsAoETrigger : public TestCase
+{
+    /* Code currently has a fix for this using SPELL_ATTR0_UNK11
+    Not sure what it does, but for spells that had a problem with aoe targeting, only spells targeting allies had it.
+    I'd interpret it as "Cast by target", but after checking some other spells (such as 27162), this is wrong. Still needs a general rule for this!
+    */
+    void Test() override
+    {
+        TestPlayer* player = SpawnRandomPlayer();
+        TestPlayer* player2 = SpawnRandomPlayer();
+        Creature* creature = SpawnCreature();
+
+        {
+            uint32 const sporeSpellId = 34168;  //periodic cast of 31689 on TARGET_UNIT_SRC_AREA_ENEMY + direct damage aoe
+            uint32 const sporeSpellTriggeredIt = 31689; //dot on TARGET_UNIT_SRC_AREA_ENEMY 
+            SECTION("Spore clouds", [&] {
+                player->SetFullHealth();
+                creature->SetFullHealth();
+                creature->CastSpell(creature, sporeSpellId);
+                ASSERT_INFO("Spell direct damage did not hit player");
+                TEST_ASSERT(!player->IsFullHealth());
+                TEST_ASSERT(creature->HasAura(sporeSpellId));
+                Wait(3500); //Wait first tick (+3000)
+                ASSERT_INFO("Creature affected itself instead of player");
+                TEST_ASSERT(!creature->HasAura(sporeSpellTriggeredIt));
+                ASSERT_INFO("Creature trigger spell did not affected player");
+                TEST_ASSERT(player->HasAura(sporeSpellTriggeredIt));
+            });
+            player->RemoveAurasDueToSpell(sporeSpellId);
+            player->RemoveAurasDueToSpell(sporeSpellTriggeredIt);
+            creature->RemoveAurasDueToSpell(sporeSpellId);
+            creature->RemoveAurasDueToSpell(sporeSpellTriggeredIt);
+        }
+
+        {
+            uint32 const staticChargeSpellId = 38280; //periodic cast of 38280 on TARGET_UNIT_TARGET_ENEMY  
+            uint32 const staticChargeSpellTriggerId = 38281; //dmg on TARGET_UNIT_SRC_AREA_ALLY
+            SECTION("Static Charge", [&] {
+                player->SetFullHealth();
+                player2->SetFullHealth();
+                creature->SetFullHealth();
+                creature->CastSpell(player, staticChargeSpellId);
+                TEST_ASSERT(player->HasAura(staticChargeSpellId));
+                Wait(2500);  //Wait first tick (+2000)
+                ASSERT_INFO("Creature it itself instead of player!");
+                TEST_ASSERT(creature->IsFullHealth());
+                ASSERT_INFO("Player2 was not hit by ally aoe on player1");
+                TEST_ASSERT(!player2->IsFullHealth());
+            });
+            player->RemoveAurasDueToSpell(staticChargeSpellId);
+            player->RemoveAurasDueToSpell(staticChargeSpellTriggerId);
+            player2->RemoveAurasDueToSpell(staticChargeSpellId);
+            player2->RemoveAurasDueToSpell(staticChargeSpellTriggerId);
+            creature->RemoveAurasDueToSpell(staticChargeSpellId);
+            creature->RemoveAurasDueToSpell(staticChargeSpellTriggerId);
+        }
+    }
+};
+
 void AddSC_test_spells_misc()
 {
     new NextMeleeHitTest();
@@ -368,4 +430,5 @@ void AddSC_test_spells_misc()
     new StackingRulesTest();
     new SpellPositivity();
     RegisterTestCase("spells delayed stacks", SpellDelayedStacks);
+    RegisterTestCase("spells targets aoetrigger", SpellTargetsAoETrigger);
 }

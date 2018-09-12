@@ -1529,7 +1529,18 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 {
     uint32 triggerSpellId = GetSpellInfo()->Effects[GetEffIndex()].TriggerSpell;
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
-    Unit* triggerCaster = triggeredSpellInfo ? (triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target) : caster;
+    if (!triggeredSpellInfo)
+    {
+        TC_LOG_WARN("spells", "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u has non-existent spell %u in EffectTriggered[%d] and is therefore not triggered.", GetId(), triggerSpellId, GetEffIndex());
+        return;
+    }
+
+    bool castByTarget = false;
+    //sun: Spells such as 34168, 29213, 38652 are broken if cast by target. Tentative generic fix with SPELL_ATTR0_UNK11
+    if (!triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_UNK11))
+        castByTarget = true;
+
+    Unit* triggerCaster = castByTarget ? target : caster;
     ObjectGuid originalCasterGUID = GetCasterGUID();
     //old hacks time
     {
@@ -1975,7 +1986,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
-    if (triggeredSpellInfo && triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
+    if (triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
     {
         targets.SetDstChannel(GetBase()->GetChannelTargetData()->spellDst);
         targets.SetObjectTargetChannel(GetBase()->GetChannelTargetData()->channelGUID);
@@ -2003,8 +2014,12 @@ void AuraEffect::HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit*
     uint32 triggerSpellId = GetSpellInfo()->Effects[m_effIndex].TriggerSpell;
     if (SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId))
     {
-        //if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) ? caster : target)
-        if (Unit* triggerCaster = caster) //sun: see HandlePeriodicTriggerSpellAuraTick
+
+        bool castByTarget = false;
+        //sun: Spells such as 34168, 29213, 38652 are broken if cast by target. Tentative generic fix with SPELL_ATTR0_UNK11
+        if (!triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_UNK11))
+            castByTarget = true;
+        if (Unit* triggerCaster = castByTarget ? target : caster) //sun: see HandlePeriodicTriggerSpellAuraTick
         {
             CastSpellExtraArgs args(this);
             for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
