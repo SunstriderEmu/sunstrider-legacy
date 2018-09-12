@@ -689,8 +689,47 @@ public:
     }
 };
 
+// 20185 - Judgement of Light
+class spell_pal_judgement_of_light_heal : public SpellScriptLoader
+{
+public:
+    spell_pal_judgement_of_light_heal() : SpellScriptLoader("spell_pal_judgement_of_light_heal") { }
+
+    class spell_pal_judgement_of_light_heal_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pal_judgement_of_light_heal_AuraScript);
+
+        void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            PreventDefaultAction();
+
+            Unit* caster = eventInfo.GetProcTarget();
+
+            CastSpellExtraArgs args(aurEff);
+            args.OriginalCaster = GetCasterGUID();
+#ifdef LICH_KING
+            args.AddSpellBP0(caster->CountPctFromMaxHealth(aurEff->GetAmount()));
+            caster->CastSpell(nullptr, SPELL_PALADIN_JUDGEMENT_OF_LIGHT_HEAL, args);
+#else
+            caster->CastSpell(nullptr, GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, args);
+#endif
+        }
+
+        void Register() override
+        {
+            OnEffectProc += AuraEffectProcFn(spell_pal_judgement_of_light_heal_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_pal_judgement_of_light_heal_AuraScript();
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_judgement_of_light_heal();
     new spell_pal_judgement_of_command();
     new spell_pal_spiritual_attunement();
     new spell_pal_item_t6_trinket();
