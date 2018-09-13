@@ -27,7 +27,7 @@ public:
     {
         ARGS_CHECK
 
-            Unit* target = handler->GetSelectedUnit();
+        Unit* target = handler->GetSelectedUnit();
 
         if (!target)
         {
@@ -233,7 +233,7 @@ public:
     {
         ARGS_CHECK
 
-            Unit* target = handler->GetSelectedUnit();
+        Unit* target = handler->GetSelectedUnit();
 
         if (!target)
         {

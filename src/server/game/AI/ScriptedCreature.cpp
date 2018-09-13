@@ -93,13 +93,13 @@ void SummonList::DoZoneInCombat(uint32 entry)
     }
 }
 
-bool SummonList::IsAlive()
+bool SummonList::IsAlive(uint32 creatureId /*= 0*/)
 {
     for (ObjectGuid const i : *this)
     {
         if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
         {
-            if (summon->IsAlive())
+            if (summon->IsAlive() && (!creatureId || summon->GetEntry() == creatureId))
                 return true;
         }
     }

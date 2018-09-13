@@ -14643,9 +14643,9 @@ void Player::_LoadArenaTeamInfo(PreparedQueryResult result)
         Field *fields = result->Fetch();
 
         uint32 arenateamid     = fields[0].GetUInt32();
-        uint32 played_week     = fields[1].GetUInt32();
-        uint32 played_season   = fields[2].GetUInt32();
-        uint32 PersonalRating = fields[3].GetUInt32();
+        uint32 played_week     = fields[1].GetUInt16();
+        uint32 played_season   = fields[2].GetUInt16();
+        uint32 PersonalRating  = fields[3].GetUInt16();
 
         ArenaTeam* aTeam = sArenaTeamMgr->GetArenaTeamById(arenateamid);
         if(!aTeam)

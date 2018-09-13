@@ -86,7 +86,7 @@ public:
     void Despawn(Creature const* summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll(bool withoutWorldBoss = false);
-    bool IsAlive(); //true if any alive
+    bool IsAlive(uint32 creatureId = 0); //true if any alive
 
     template <typename T>
     void DespawnIf(T const& predicate)
