@@ -1,0 +1,3 @@
+UPDATE spell_template_override SET effect1 = 28, effectMiscValueB1 = 64 WHERE effect1 IN (41, 42, 73, 74, 87, 88, 89, 90, 93, 97, 112);
+UPDATE spell_template_override SET effect2 = 28, effectMiscValueB2 = 64 WHERE effect2 IN (41, 42, 73, 74, 87, 88, 89, 90, 93, 97, 112);
+UPDATE spell_template_override SET effect3 = 28, effectMiscValueB3 = 64 WHERE effect3 IN (41, 42, 73, 74, 87, 88, 89, 90, 93, 97, 112);

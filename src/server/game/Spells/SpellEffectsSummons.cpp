@@ -349,25 +349,6 @@ void Spell::EffectSummonType(uint32 effIndex)
     }
 }
 
-
-void Spell::EffectSummonTotem(uint32 effIndex)
-{
-    EffectSummonType(effIndex);
-}
-
-//if caster is a creature, this handles like a normal summon (instead of 'toggling' minipet like for players)
-void Spell::EffectSummonCritter(uint32 effIndex)
-{
-    EffectSummonType(effIndex);
-    
-}
-
-void Spell::EffectSummonWild(uint32 effIndex)
-{
-    EffectSummonType(effIndex);
-    
-}
-
 void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians)
 {
     if (!_unitCaster)
@@ -449,20 +430,4 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
 
         ExecuteLogEffectSummonObject(i, summon);
     }
-}
-
-void Spell::EffectSummonGuardian(uint32 effIndex)
-{
-    EffectSummonType(effIndex);
-    
-}
-
-void Spell::EffectSummonPossessed(uint32 effIndex)
-{
-    EffectSummonType(effIndex);
-}
-
-void Spell::EffectSummonDemon(uint32 i)
-{
-    EffectSummonType(i);
 }

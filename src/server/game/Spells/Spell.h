@@ -320,15 +320,13 @@ class TC_GAME_API Spell
         void EffectOpenSecretSafe(uint32 i);
         void EffectProficiency(uint32 i);
         void EffectSummonType(uint32 i);
+        void _EffectSummonType(uint32 effIndex, SummonPropertiesEntry const* properties);
         //void EffectSummon(uint32 i);
         void EffectLearnSpell(uint32 i);
         void EffectDispel(uint32 i);
         void EffectDualWield(uint32 i);
         void EffectPickPocket(uint32 i);
         void EffectAddFarsight(uint32 i);
-        void EffectSummonPossessed(uint32 i);
-        void EffectSummonWild(uint32 i);
-        void EffectSummonGuardian(uint32 i);
         void EffectHealMechanical(uint32 i);
         void EffectTeleUnitsFaceCaster(uint32 i);
         void EffectLearnSkill(uint32 i);
@@ -354,7 +352,6 @@ class TC_GAME_API Spell
         void EffectStuck(uint32 i);
         void EffectSummonPlayer(uint32 i);
         void EffectActivateObject(uint32 i);
-        void EffectSummonTotem(uint32 i);
         void EffectEnchantHeldItem(uint32 i);
         void EffectSummonObject(uint32 i);
         void EffectResurrect(uint32 i);
@@ -372,7 +369,6 @@ class TC_GAME_API Spell
         void EffectCharge(uint32 i);
         void EffectProspecting(uint32 i);
         void EffectSendTaxi(uint32 i);
-        void EffectSummonCritter(uint32 i);
         void EffectKnockBack(uint32 i);
         void EffectPullTowards(uint32 i);
         void EffectDispelMechanic(uint32 i);
@@ -387,7 +383,6 @@ class TC_GAME_API Spell
         void EffectAddExtraAttacks(uint32 i);
         void EffectSpiritHeal(uint32 i);
         void EffectSkinPlayerCorpse(uint32 i);
-        void EffectSummonDemon(uint32 i);
         void EffectStealBeneficialBuff(uint32 i);
         void EffectUnlearnSpecialization(uint32 i);
         void EffectHealPct(uint32 i);

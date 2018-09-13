@@ -6072,7 +6072,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                     case SUMMON_CATEGORY_PET:
                         if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && caster->GetPetGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-                    // intentional missing break, check both GetPetGUID() and GetCharmedGUID for SUMMON_CATEGORY_PET
+                        [[fallthrough]]; // intentional missing break, check both GetPetGUID() and GetCharmedGUID for SUMMON_CATEGORY_PET
                     case SUMMON_CATEGORY_PUPPET:
                         if (caster->GetCharmedGUID())
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
@@ -6083,24 +6083,6 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                             return SPELL_FAILED_TRY_AGAIN;
                         break;
                 }
-                break;
-            }
-            // Don't make this check for SPELL_EFFECT_SUMMON_CRITTER, SPELL_EFFECT_SUMMON_WILD or SPELL_EFFECT_SUMMON_GUARDIAN.
-            // These won't show up in m_caster->GetMinionGUID()
-            case SPELL_EFFECT_SUMMON_POSSESSED:
-            case SPELL_EFFECT_SUMMON_PHANTASM:
-            case SPELL_EFFECT_SUMMON_DEMON:
-            {
-                Unit* caster = m_caster->ToUnit();
-                if (!caster)
-                    return SPELL_FAILED_BAD_TARGETS;
-
-                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && caster->GetPetGUID())
-                    return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-
-                if(caster->GetCharmedGUID())
-                    return SPELL_FAILED_ALREADY_HAVE_CHARM;
-
                 break;
             }
             case SPELL_EFFECT_SUMMON_PET:
