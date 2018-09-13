@@ -249,7 +249,9 @@ Unit::Unit(bool isWorldObject)
     m_cleanupDone(false),
     m_regenTimer(0),
     m_spellHistory(new SpellHistory(this)),
-    m_transformSpell(0)
+    m_transformSpell(0),
+    _oldFactionId(0),
+    _isWalkingBeforeCharm(false)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -4775,14 +4777,12 @@ void Unit::SetCharm(Unit* charm, bool apply)
             "Unit %u is being charmed, but it already has a charmer %s", charm->GetEntry(), charm->GetCharmerGUID().ToString().c_str());
         charm->m_charmer = this;
 
-        /* TC
         _isWalkingBeforeCharm = charm->IsWalking();
         if (_isWalkingBeforeCharm)
         {
             charm->SetWalk(false);
             charm->SendMovementFlagUpdate();
         }
-        */
 
         m_Controlled.insert(charm);
     }
@@ -4828,13 +4828,11 @@ void Unit::SetCharm(Unit* charm, bool apply)
 #endif    
         }
 
-        /* TC
         if (charm->IsWalking() != _isWalkingBeforeCharm)
         {
             charm->SetWalk(_isWalkingBeforeCharm);
-            charm->SendMovementFlagUpdate(true); // send packet to self, to update movement state on player.
+            charm->SendMovementFlagUpdate(); // send packet to self, to update movement state on player.
         }
-        */
 
         if (charm->GetTypeId() == TYPEID_PLAYER
             || !charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_MINION)
@@ -10217,7 +10215,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     if (aurApp && aurApp->GetRemoveMode())
         return false;
 
-    //TC _oldFactionId = GetFaction();
+    _oldFactionId = GetFaction();
     SetFaction(charmer->GetFaction());
 
     // Set charmed
@@ -10334,7 +10332,14 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     CastStop();
     AttackStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
-    RestoreFaction();
+
+    if (_oldFactionId)
+    {
+        SetFaction(_oldFactionId);
+        _oldFactionId = 0;
+    }
+    else
+        RestoreFaction();
 
     GetMotionMaster()->InitializeDefault();
     if(Creature* c = ToCreature())

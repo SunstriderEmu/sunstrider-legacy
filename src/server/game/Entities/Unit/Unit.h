@@ -2325,6 +2325,9 @@ class TC_GAME_API Unit : public WorldObject
         bool m_duringRemoveFromWorld; // lock made to not add stuff after begining removing from world
         bool _instantCast;
 
+        uint32 _oldFactionId;           ///< faction before charm
+        bool _isWalkingBeforeCharm;     ///< Are we walking before we were charmed?
+
         float m_CombatDistance;
 
         SpellHistory* m_spellHistory;
