@@ -17,7 +17,7 @@ void UnitAI::AttackStart(Unit *victim)
                 return;
             }
             
-            me->GetMotionMaster()->MoveChase(victim);
+            me->GetMotionMaster()->MoveChase(victim, me->GetCombatDistance());
         } else {
             me->GetMotionMaster()->MoveIdle();
         }
