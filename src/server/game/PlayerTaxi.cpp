@@ -130,6 +130,8 @@ std::string PlayerTaxi::SaveTaxiDestinationsToString()
     if(m_TaxiDestinations.empty())
         return "";
 
+    ASSERT(m_TaxiDestinations.size() >= 2);
+
     std::ostringstream ss;
     ss << m_flightMasterFactionId << ' ';
 

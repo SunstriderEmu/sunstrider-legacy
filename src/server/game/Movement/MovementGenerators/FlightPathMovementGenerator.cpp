@@ -123,6 +123,7 @@ void FlightPathMovementGenerator::DoFinalize(Player* player, bool active, bool/*
     if (!active)
         return;
 
+    player->m_taxi.ClearTaxiDestinations();
     player->Dismount();
     player->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
 
