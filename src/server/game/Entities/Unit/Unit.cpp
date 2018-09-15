@@ -8203,7 +8203,7 @@ void Unit::SetHealth(uint32 val)
     if (val > std::numeric_limits<int32>::max())
         val = std::numeric_limits<int32>::max();
 
-    if(GetDeathState() == JUST_DIED)
+    if(GetDeathState() == JUST_DIED || GetDeathState() == CORPSE)
         val = 0;
     else
     {
