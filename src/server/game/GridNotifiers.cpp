@@ -457,7 +457,7 @@ bool AnyUnitInObjectRangeCheck::operator()(Unit* u)
 
 bool NearestAttackableUnitInObjectRangeCheck::operator()(Unit* u)
 {
-    if (i_funit->IsValidAttackTarget(u) == CAN_ATTACK_RESULT_OK && i_obj->IsWithinDistInMap(u, i_range) &&
+    if (i_funit->IsValidAttackTarget(u) && i_obj->IsWithinDistInMap(u, i_range) &&
         (i_funit->IsInCombatWith(u) || i_funit->IsHostileTo(u)) && i_obj->CanSeeOrDetect(u))
     {
         i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
