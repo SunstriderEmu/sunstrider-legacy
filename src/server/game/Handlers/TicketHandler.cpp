@@ -25,6 +25,21 @@
 #include "ObjectMgr.h"
 #include "World.h"
 
+#define ValidateLinksAndMaybeKick(str)                                                                              \
+{                                                                                                                   \
+    if (!Trinity::Hyperlinks::ValidateLinks(str))                                                                   \
+    {                                                                                                               \
+        TC_LOG_ERROR("network", "Player %s (GUID: %u) tried to add an invalid link to a GM ticket - corrected",     \
+            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());                                   \
+                                                                                                                    \
+        if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))                                            \
+        {                                                                                                           \
+            KickPlayer();                                                                                           \
+            return;                                                                                                 \
+        }                                                                                                           \
+    }                                                                                                               \
+}
+
 void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 {
     if(GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID()))
@@ -46,7 +61,11 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
     recvData >> z;
     recvData >> ticketText;
 
+    ValidateLinksAndMaybeKick(ticketText);
+
     recvData >> ticketText2;
+
+    ValidateLinksAndMaybeKick(ticketText2);
 
     auto ticket = new GM_Ticket;
     ticket->guid = sObjectMgr->GenerateGMTicketId();
@@ -73,6 +92,8 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
 
     std::string message;
     recvData >> message;
+
+    ValidateLinksAndMaybeKick(message);
 
     GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID());
     if(!ticket)
@@ -150,22 +171,55 @@ void WorldSession::SendGMTicketGetTicket(uint32 status, char const* text)
 
 void WorldSession::HandleGMSurveySubmit(WorldPacket& recvData)
 {
-    /* 
-    //sunstrider: struct reversed from binary
-    uint32 unk1;
-    uint32 unk2[10];
-    uint8 unk3[10];
-    std::string unk4[10];
-    std::string unk5;
+    //sun: packet structure confirmed for TBC via binary reversing
+    /*
+    uint32 nextSurveyID = sTicketMgr->GetNextSurveyID();
+    // just put the survey into the database
+    uint32 mainSurvey; // GMSurveyCurrentSurvey.dbc, column 1 (all 9) ref to GMSurveySurveys.dbc
+    recvData >> mainSurvey;
 
-    recvData >> unk1;
-    for(int i = 0; i < 10; i++)
+    std::unordered_set<uint32> surveyIds;
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    // sub_survey1, r1, comment1, sub_survey2, r2, comment2, sub_survey3, r3, comment3, sub_survey4, r4, comment4, sub_survey5, r5, comment5, sub_survey6, r6, comment6, sub_survey7, r7, comment7, sub_survey8, r8, comment8, sub_survey9, r9, comment9, sub_survey10, r10, comment10,
+    for (uint8 i = 0; i < 10; i++)
     {
-        recvData >> unk2[i];
-        //possible break from loop
-        recvData >> unk3[i];
-        recvData >> unk4[i];
+        uint32 subSurveyId; // ref to i'th GMSurveySurveys.dbc field (all fields in that dbc point to fields in GMSurveyQuestions.dbc)
+        recvData >> subSurveyId;
+        if (!subSurveyId)
+            break;
+
+        uint8 rank; // probably some sort of ref to GMSurveyAnswers.dbc
+        recvData >> rank;
+        std::string comment; // comment ("Usage: GMSurveyAnswerSubmit(question, rank, comment)")
+        recvData >> comment;
+
+        // make sure the same sub survey is not added to DB twice
+        if (!surveyIds.insert(subSurveyId).second)
+            continue;
+
+        ValidateLinksAndMaybeKick(comment);
+
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GM_SUBSURVEY);
+        stmt->setUInt32(0, nextSurveyID);
+        stmt->setUInt32(1, subSurveyId);
+        stmt->setUInt32(2, rank);
+        stmt->setString(3, comment);
+        trans->Append(stmt);
     }
-    recvData >> unk5;
+
+    std::string comment; // just a guess
+    recvData >> comment;
+
+    ValidateLinksAndMaybeKick(comment);
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GM_SURVEY);
+    stmt->setUInt32(0, GetPlayer()->GetGUID().GetCounter());
+    stmt->setUInt32(1, nextSurveyID);
+    stmt->setUInt32(2, mainSurvey);
+    stmt->setString(3, comment);
+
+    trans->Append(stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
     */
 }
