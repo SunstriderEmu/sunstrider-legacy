@@ -836,15 +836,8 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
 
     // setting Ghost+speed if dead
-    if (pCurrChar->m_deathState != ALIVE)
-    {
-        // not blizz like, we must correctly save and load player instead...
-        if (pCurrChar->GetRace() == RACE_NIGHTELF)
-            pCurrChar->CastSpell(pCurrChar, 20584, true);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
-        pCurrChar->CastSpell(pCurrChar, 8326, true);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
-
+    if (pCurrChar->m_deathState == DEAD)
         pCurrChar->SetMovement(MOVE_WATER_WALK);
-    }
 
     pCurrChar->ContinueTaxiFlight();
 
@@ -964,7 +957,12 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     //sLog->outChar("Account: %d (IP: %s) Login Character:[%s] (guid:%u)",
     //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUID().GetCounter());
 
-    m_playerLoading = false;
+    // if we're loading a dead player, repop them to the GY after the load is finished
+    if (pCurrChar->GetDeathState() == CORPSE)
+    {
+        pCurrChar->BuildPlayerRepop();
+        pCurrChar->RepopAtGraveyard();
+    }
 
 #ifdef PLAYERBOT
     if (!_player->GetPlayerbotAI())
@@ -981,6 +979,8 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     //sun: Avoid bug abuse to enter in heroic instance without needed reputation level
     if (sMapMgr->PlayerCannotEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
         pCurrChar->RepopAtGraveyard();
+
+    m_playerLoading = false;
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
