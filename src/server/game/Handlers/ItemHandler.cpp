@@ -915,7 +915,7 @@ void WorldSession::SendEnchantmentLog(ObjectGuid Target, ObjectGuid Caster, uint
 
 void WorldSession::SendItemEnchantTimeUpdate(ObjectGuid Playerguid, ObjectGuid Itemguid, uint32 slot, uint32 Duration)
 {
-    // last check 2.0.10
+    // last check 2.0.10 LK ok
     WorldPacket data(SMSG_ITEM_ENCHANT_TIME_UPDATE, (8+4+4+8));
     data << uint64(Itemguid);
     data << uint32(slot);

@@ -48,6 +48,8 @@
 #include "UseMeetingStoneAction.h"
 #include "WhoAction.h"
 #include "SaveManaAction.h"
+#include "GMModeAction.h"
+#include "CheatGodAction.h"
 #include "../values/Formations.h"
 
 namespace ai
@@ -115,6 +117,9 @@ namespace ai
             creators["max dps chat shortcut"] = &ChatActionContext::max_dps_chat_shortcut;
             creators["tell attackers"] = &ChatActionContext::tell_attackers;
             creators["formation"] = &ChatActionContext::formation;
+            //sunstrider custom
+            creators["gm"] = &ChatActionContext::gmmode_action;
+            creators["cheatgod"] = &ChatActionContext::cheatgod_action;
         }
 
     private:
@@ -178,7 +183,9 @@ namespace ai
         static std::shared_ptr<Action> add_all_loot(PlayerbotAI* ai) { return std::make_shared<AddAllLootAction>(ai); }
         static std::shared_ptr<Action> reset_ai(PlayerbotAI* ai) { return std::make_shared<ResetAiAction>(ai); }
         static std::shared_ptr<Action> gossip_hello(PlayerbotAI* ai) { return std::make_shared<GossipHelloAction>(ai); }
+
+        //custom sunstrider
+        static std::shared_ptr<Action> gmmode_action(PlayerbotAI* ai) { return std::make_shared<GMModeAction>(ai); }
+        static std::shared_ptr<Action> cheatgod_action(PlayerbotAI* ai) { return std::make_shared<CheatGodAction>(ai); }
     };
-
-
 };

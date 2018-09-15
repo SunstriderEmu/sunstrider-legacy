@@ -34,9 +34,10 @@ Up to date from TC with some fixes on our own as well as some from Nostalrius.
     * A LOT of misc fixes in addition to TC systems
 * EventAI has been dropped in favor of SmartAI  
 Furthermore SmartAI has been used extensively in the last years of development on Sunstrider and has received various fixes and extensions on our part.
-* Custom map update logic  
-Instances and battlegrounds may be updated multiple times while continents are updated.
+* Reworked map update logic  
+Instances and battlegrounds may be updated multiple times while continents are updated, making instance/bgs less sensible to lag when the server is under high load.
 * Creature soft evade on target not accessible
+* Movemaps on transports!
 * Years of services
 Lot have been done when the server was live:
     * Large debugged quest base  
@@ -45,18 +46,18 @@ A LOT of quests of all levels have been fixed, so we're benefiting from a good b
 Most high level instance scripts are decent seeing other BC server ones (but still need work). Black temple and SunWell scripts have been the most worked on and are close to perfect.
     * A lot of possible abuses fixes  
     * Most world creatures use their spells and have correct equipment.
-* A lot more I forgot about 
 
 ## Additional features (non blizzlike)
 
 * [Playerbots](https://github.com/ike3/mangosbot)
 * [Fully reworked stealth mechanics](http://wiki.valoren.org/index.php/Stealth_mechanics)
-* Transports includes static npcs (ship crew), and supports pet combat.
+* Transports includes static npcs (ship crew), purely cosmectic. Selling and combat has been disabled for them.
 * Dynamic PvP titles system depending on player rank in arena ladder (Disabled by default)
 * ArenaSpectator (Not tested for a long while, we'll probably just trash it)
-* Duel zone ([wiki](http://wiki.valoren.org/index.php/Duel_zone))
+* Duel zone ([wiki](https://github.com/ValorenWoW/sunstrider-core/wiki/Duel-zone-(custom-feature)))
 * Pack58 item packs
-* Configurable minimal level for whispering
-* (We've also developed some cool dev tools we'll probably share later)
 
-[Wiki](http://wiki.valoren.org) (will move it to a public version soon)
+
+And much more. We've also developed some cool dev tools we'll probably share at a later point.
+
+[Wiki](https://github.com/ValorenWoW/sunstrider-core/wiki) (WIP, import in progress)

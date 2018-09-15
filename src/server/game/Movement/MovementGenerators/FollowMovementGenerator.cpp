@@ -14,6 +14,9 @@
 
 static void DoMovementInform(Unit* owner, Unit* target)
 {
+    if (owner->GetTypeId() != TYPEID_UNIT)
+        return;
+
     if (CreatureAI* AI = owner->ToCreature()->AI())
         AI->MovementInform(FOLLOW_MOTION_TYPE, target->GetGUID().GetCounter());
 }
