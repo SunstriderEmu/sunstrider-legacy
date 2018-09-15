@@ -36,6 +36,7 @@ class TC_GAME_API ChatHandler
         virtual std::string GetNameLink() const;
         virtual LocaleConstant GetSessionDbcLocale() const;
         virtual bool isAvailable(ChatCommand const& cmd) const;
+        virtual bool IsHumanReadable() const { return true; }
         virtual bool needReportToTarget(Player* chr) const;
 
         virtual const char* GetTrinityString(int32 entry) const;
@@ -56,7 +57,8 @@ class TC_GAME_API ChatHandler
         }
         std::string PGetParseString(int32 entry, ...);
 
-        int ParseCommands(const char* text);
+        bool _ParseCommands(char const* text);
+        virtual bool ParseCommands(const char* text);
 
         virtual std::string const GetName() const;
         static std::vector<ChatCommand> const& getCommandTable();
@@ -128,7 +130,7 @@ class TC_GAME_API ChatHandler
         bool sentErrorMessage;
 };
 
-class CliHandler : public ChatHandler
+class TC_GAME_API CliHandler : public ChatHandler
 {
     public:
         typedef void Print(void*, char const*);
@@ -139,6 +141,7 @@ class CliHandler : public ChatHandler
         bool isAvailable(ChatCommand const& cmd) const override;
         bool HasPermission(uint32 /*permission*/) const override { return true; }
         void SendSysMessage(const char *str, bool escapeCharacters = false) override;
+        bool ParseCommands(char const* str) override;
         std::string GetNameLink() const override;
         bool needReportToTarget(Player* chr) const override;
         LocaleConstant GetSessionDbcLocale() const override;
@@ -148,7 +151,25 @@ class CliHandler : public ChatHandler
         Print* m_print;
 };
 
-char const *fmtstring(char const *format, ...);
+class TC_GAME_API AddonChannelCommandHandler : public ChatHandler
+{
+public:
+    using ChatHandler::ChatHandler;
+    bool ParseCommands(char const* str) override;
+    void SendSysMessage(char const* str, bool escapeCharacters) override;
+    using ChatHandler::SendSysMessage;
+    bool IsHumanReadable() const override { return humanReadable; }
+
+private:
+    void Send(std::string const& msg);
+    void SendAck();
+    void SendOK();
+    void SendFailed();
+
+    char const* echo = nullptr;
+    bool hadAck = false;
+    bool humanReadable = false;
+};
 
 //return false if args char* is empty
 #define ARGS_CHECK if(!*args)return false;

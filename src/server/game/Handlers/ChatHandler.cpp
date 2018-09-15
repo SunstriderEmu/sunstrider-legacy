@@ -56,6 +56,19 @@ static void StripInvisibleChars(std::string& str)
         str.erase(wpos, str.size());
 }
 
+void WorldSession::SendPlayerNotFoundNotice(std::string const& name)
+{
+    WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, name.size() + 1);
+    data << name;
+    SendPacket(&data);
+}
+
+void WorldSession::SendWrongFactionNotice()
+{
+    WorldPacket data(SMSG_CHAT_WRONG_FACTION, 0);
+    SendPacket(&data);
+}
+
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 {
     uint32 type;
@@ -263,10 +276,14 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         case CHAT_MSG_EMOTE:
         case CHAT_MSG_YELL:
         {
+            // Prevent cheating
+            if (!GetPlayer()->IsAlive())
+                return;
+
             if (GetPlayer()->isSpectator())
             {
-                //TODO translate
-                SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur.");
+                //SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur.");
+                SendNotification("You cannot do this while spectating");
                 return;
             }
 
@@ -282,9 +299,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         {
             if(!normalizePlayerName(to))
             {
-                WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
-                data<<to;
-                SendPacket(&data);
+                SendPlayerNotFoundNotice(to);
                 break;
             }
 
@@ -295,9 +310,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             //prevent sending whisps to gm not accepting whispers
             if(!toPlayer || ((playerSecurity == SEC_PLAYER) && (targetSecurity > SEC_PLAYER) && !toPlayer->IsAcceptWhispers()) )
             {
-                WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
-                data<<to;
-                SendPacket(&data);
+                SendPlayerNotFoundNotice(to);
                 return;
             }
 
@@ -321,11 +334,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             {
                 uint32 sidea = GetPlayer()->GetTeam();
                 uint32 sideb = toPlayer->GetTeam();
-                if( sidea != sideb )
+                if (sidea != sideb)
                 {
-                    WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
-                    data<<to;
-                    SendPacket(&data);
+                    SendWrongFactionNotice();
                     return;
                 }
             }
@@ -389,7 +400,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 return;
 
             Guild* guild = sGuildMgr->GetGuildById(guildId);
-            if (guild) {
+            if (guild) 
+            {
                 sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
                 guild->BroadcastToGuild(this, false, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
             }
@@ -413,6 +425,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         }
         case CHAT_MSG_OFFICER:
         {
+            //TODO: check if player has access to officer channel in his guild
             if (GetPlayer()->GetGuildId())
                 if (Guild *guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
                 {

@@ -752,6 +752,8 @@ class TC_GAME_API WorldSession
         void HandleQuestPushResult(WorldPacket& recvPacket);
 
         void HandleMessagechatOpcode(WorldPacket& recvPacket);
+        void SendPlayerNotFoundNotice(std::string const& name);
+        void SendWrongFactionNotice();
         void HandleTextEmoteOpcode(WorldPacket& recvPacket);
         void HandleChatIgnoredOpcode(WorldPacket& recvPacket);
 

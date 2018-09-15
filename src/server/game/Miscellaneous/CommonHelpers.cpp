@@ -5,6 +5,226 @@
 #include "Player.h"
 #include "SharedDefines.h"
 
+enum PlayerSpecializationIconicSpellIds
+{
+    /* Warrior - Arms */
+    SPELL_SWEEPING_STRIKES = 12328,
+    SPELL_MORTAL_STRIKE = 12294,
+#ifdef LICH_KING
+    SPELL_BLADESTORM = 46924,
+#endif
+
+    /* Warrior - Fury */
+    SPELL_DEATH_WISH = 12292,
+    SPELL_BLOODTHIRST = 23881,
+#ifdef LICH_KING
+    PASSIVE_TITANS_GRIP = 46917,
+#endif
+
+    /* Warrior - Protection */
+    SPELL_VIGILANCE = 50720,
+    SPELL_DEVASTATE = 20243,
+#ifdef LICH_KING
+    SPELL_SHOCKWAVE = 46968,
+#endif
+
+    /* Paladin - Holy*/
+    PASSIVE_ILLUMINATION = 20215,
+    SPELL_HOLY_SHOCK = 20473,
+#ifdef LICH_KING
+    SPELL_BEACON_OF_LIGHT = 53563,
+#endif
+
+    /* Paladin - Protection */
+    SPELL_BLESS_OF_SANC = 20911,
+    SPELL_HOLY_SHIELD = 20925,
+#ifdef LICH_KING
+    SPELL_HAMMER_OF_RIGHTEOUS = 53595,
+#endif
+
+    /* Paladin - Retribution */
+    SPELL_SEAL_OF_COMMAND = 20375,
+    SPELL_CRUSADER_STRIKE = 35395,
+#ifdef LICH_KING
+    SPELL_DIVINE_STORM = 53385,
+#endif
+
+    /* Hunter - Beast Mastery */
+    SPELL_BESTIAL_WRATH = 19574,
+    PASSIVE_BEAST_WITHIN = 34692,
+#ifdef LICH_KING
+    PASSIVE_BEAST_MASTERY = 53270,
+#endif
+
+    /* Hunter - Marksmanship */
+    SPELL_AIMED_SHOT = 19434,
+    PASSIVE_TRUESHOT_AURA = 19506,
+#ifdef LICH_KING
+    SPELL_CHIMERA_SHOT = 53209,
+#endif
+
+    /* Hunter - Survival */
+    PASSIVE_LOCK_AND_LOAD = 56344,
+    SPELL_WYVERN_STING = 19386,
+#ifdef LICH_KING
+    SPELL_EXPLOSIVE_SHOT = 53301,
+#endif
+
+    /* Rogue - Assassination */
+    SPELL_COLD_BLOOD = 14177,
+    SPELL_MUTILATE = 1329,
+#ifdef LICH_KING
+    SPELL_HUNGER_FOR_BLOOD = 51662,
+#endif
+
+    /* Rogue - Combat */
+    SPELL_BLADE_FLURRY = 13877,
+    SPELL_ADRENALINE_RUSH = 13750,
+#ifdef LICH_KING
+    SPELL_KILLING_SPREE = 51690,
+#endif
+
+    /* Rogue - Sublety */
+    SPELL_HEMORRHAGE = 16511,
+    SPELL_PREMEDITATION = 14183,
+#ifdef LICH_KING
+    SPELL_SHADOW_DANCE = 51713,
+#endif
+
+    /* Priest - Discipline */
+    PASSIVE_SOUL_WARDING = 63574,
+    SPELL_POWER_INFUSION = 10060,
+#ifdef LICH_KING
+    SPELL_PENANCE = 47540,
+#else
+    SPELL_PAIN_SUPPRESSION = 33206,
+#endif
+
+    /* Priest - Holy */
+    PASSIVE_SPIRIT_REDEMPTION = 20711,
+    SPELL_DESPERATE_PRAYER = 19236,
+#ifdef LICH_KING
+    SPELL_GUARDIAN_SPIRIT = 47788,
+#endif
+
+    /* Priest - Shadow */
+    SPELL_VAMPIRIC_EMBRACE = 15286,
+    SPELL_SHADOWFORM = 15473,
+    SPELL_VAMPIRIC_TOUCH = 34914,
+
+#ifdef LICH_KING
+    /* Death Knight - Blood */
+    SPELL_RUNE_TAP = 48982,
+    SPELL_HYSTERIA = 49016,
+    SPELL_HEART_STRIKE = 55050,
+
+    /* Death Knight - Frost */
+    PASSIVE_ICY_TALONS = 50887,
+    SPELL_FROST_STRIKE = 49143,
+    SPELL_HOWLING_BLAST = 49184,
+
+    /* Death Knight - Unholy */
+    PASSIVE_UNHOLY_BLIGHT = 49194,
+    PASSIVE_MASTER_OF_GHOUL = 52143,
+    SPELL_SCOURGE_STRIKE = 55090,
+#endif
+
+    /* Shaman - Elemental*/
+    PASSIVE_ELEMENTAL_FOCUS = 16164,
+    SPELL_TOTEM_OF_WRATH = 30706,
+#ifdef LICH_KING
+    SPELL_THUNDERSTORM = 51490,
+#endif
+
+    /* Shaman - Enhancement */
+    PASSIVE_SPIRIT_WEAPONS = 16268,
+#ifdef LICH_KING
+    SPELL_LAVA_LASH = 60103,
+    SPELL_FERAL_SPIRIT = 51533,
+#else
+    SPELL_STORMSTRIKE = 17364,
+    SPELL_SHAMANISTIC_RAGE = 30823,
+#endif
+
+    /* Shaman - Restoration*/
+    SPELL_SHA_NATURE_SWIFT = 591,
+    SPELL_MANA_TIDE_TOTEM = 590,
+#ifdef LICH_KING
+    SPELL_RIPTIDE = 61295,
+#else
+    SPELL_EARTH_SHIELD = 32594,
+#endif
+
+    /* Mage - Arcane */
+    SPELL_ARCANE_POWER = 12042,
+#ifdef LICH_KING
+    SPELL_FOCUS_MAGIC = 54646,
+    SPELL_ARCANE_BARRAGE = 44425,
+#endif
+
+    /* Mage - Fire */
+    SPELL_PYROBLAST = 11366,
+    SPELL_COMBUSTION = 11129,
+#ifdef LICH_KING
+    SPELL_LIVING_BOMB = 44457,
+#endif
+
+    /* Mage - Frost */
+    SPELL_ICY_VEINS = 12472,
+    SPELL_ICE_BARRIER = 11426,
+#ifdef LICH_KING
+    SPELL_DEEP_FREEZE = 44572,
+#endif
+
+    /* Warlock - Affliction */
+    PASSIVE_SIPHON_LIFE = 63108,
+    SPELL_UNSTABLE_AFFLICTION = 30108,
+#ifdef LICH_KING
+    SPELL_HAUNT = 48181,
+#else
+    AURA_CONTAGION = 30064,
+#endif
+
+    /* Warlock - Demonology */
+    SPELL_SOUL_LINK = 19028,
+#ifdef LICH_KING
+    SPELL_DEMONIC_EMPOWERMENT = 47193,
+    SPELL_METAMORPHOSIS = 59672,
+#else
+    SPELL_SUMMON_FELGUARD = 30146,
+#endif
+
+    /* Warlock - Destruction */
+    SPELL_SHADOWBURN = 17877,
+    SPELL_CONFLAGRATE = 17962,
+#ifdef LICH_KING
+    SPELL_CHAOS_BOLT = 50796,
+#else
+    SPELL_CHAOS_BOLT = 27209,
+#endif
+
+    /* Druid - Balance */
+    SPELL_INSECT_SWARM = 5570,
+    SPELL_MOONKIN_FORM = 24858,
+#ifdef LICH_KING
+    SPELL_STARFALL = 48505,
+#endif
+
+    /* Druid - Feral */
+    SPELL_SURVIVAL_INSTINCTS = 61336,
+    SPELL_MANGLE = 33917,
+#ifdef LICH_KING
+    SPELL_BERSERK = 50334,
+#endif
+
+    /* Druid - Restoration */
+    SPELL_SWIFTMEND = 18562,
+    SPELL_TREE_OF_LIFE = 33891,
+#ifdef LICH_KING
+    SPELL_WILD_GROWTH = 48438,
+#endif
+};
+
 static const uint8 MaximumSpecializationIconicSpells = 3;
 
 // As it turns out, finding out "how many points does the player have in spec X" is actually really expensive to do frequently
@@ -19,11 +239,12 @@ static const uint32 PlayerSpecializationIconicSpells[MAX_CLASSES][MAX_TALENT_TRE
         {0,0,0}
     },
     { // CLASS_WARRIOR
-        {SPELL_BLADESTORM, SPELL_MORTAL_STRIKE, SPELL_SWEEPING_STRIKES}, // Arms
 #ifdef LICH_KING
+        {SPELL_BLADESTORM, SPELL_MORTAL_STRIKE, SPELL_SWEEPING_STRIKES}, // Arms
         {PASSIVE_TITANS_GRIP, SPELL_BLOODTHIRST, SPELL_DEATH_WISH}, // Fury
         {SPELL_SHOCKWAVE, SPELL_DEVASTATE, SPELL_VIGILANCE} // Protection
 #else
+        {0, SPELL_MORTAL_STRIKE, SPELL_SWEEPING_STRIKES}, // Arms
         {0, SPELL_BLOODTHIRST, SPELL_DEATH_WISH}, // Fury
         {0, SPELL_DEVASTATE, 0} // Protection
 #endif
@@ -111,12 +332,11 @@ static const uint32 PlayerSpecializationIconicSpells[MAX_CLASSES][MAX_TALENT_TRE
 #ifdef LICH_KING
         {SPELL_HAUNT, SPELL_UNSTABLE_AFFLICTION, PASSIVE_SIPHON_LIFE}, // Affliction
         {SPELL_METAMORPHOSIS, SPELL_DEMONIC_EMPOWERMENT, SPELL_SOUL_LINK}, // Demonology
-        {SPELL_CHAOS_BOLT, SPELL_CONFLAGRATE, SPELL_SHADOWBURN} // Destruction
 #else
         {0, SPELL_UNSTABLE_AFFLICTION, AURA_CONTAGION}, // Affliction
-        {0, SPELL_SUMMON_FELGUARD, SPELL_SOUL_LINK}, // Demonology
-        {SPELL_CHAOS_BOLT, SPELL_CONFLAGRATE, SPELL_SHADOWBURN} // Destruction
+        { SPELL_SUMMON_FELGUARD, 0, SPELL_SOUL_LINK}, // Demonology
 #endif
+        {SPELL_CHAOS_BOLT, SPELL_CONFLAGRATE, SPELL_SHADOWBURN} // Destruction
     },
     { // CLASS_UNK
         {0,0,0},

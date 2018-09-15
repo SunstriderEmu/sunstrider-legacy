@@ -334,8 +334,6 @@ enum Spells
     SPELL_LAVA_LASH         = 60103,
     SPELL_FERAL_SPIRIT      = 51533,
     AURA_MAELSTROM_WEAPON   = 53817,
-#else
-
 #endif
     SPELL_STORMSTRIKE       = 17364,
     SPELL_SHAMANISTIC_RAGE  = 30823,

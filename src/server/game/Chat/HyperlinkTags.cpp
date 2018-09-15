@@ -56,6 +56,7 @@ class HyperlinkDataTokenizer
     bool _empty;
 };
 
+#ifdef LICH_KING
 bool Trinity::Hyperlinks::LinkTags::achievement::StoreTo(AchievementLinkData& val, char const* pos, size_t len)
 {
     HyperlinkDataTokenizer t(pos, len);
@@ -89,6 +90,7 @@ bool Trinity::Hyperlinks::LinkTags::glyph::StoreTo(GlyphLinkData& val, char cons
         return false;
     return true;
 }
+#endif
 
 bool Trinity::Hyperlinks::LinkTags::item::StoreTo(ItemLinkData& val, char const* pos, size_t len)
 {
@@ -120,6 +122,7 @@ bool Trinity::Hyperlinks::LinkTags::spell::StoreTo(SpellInfo const*& val, char c
     return !!(val = sSpellMgr->GetSpellInfo(spellId));
 }
 
+#ifdef LICH_KING
 bool Trinity::Hyperlinks::LinkTags::talent::StoreTo(TalentLinkData& val, char const* pos, size_t len)
 {
     HyperlinkDataTokenizer t(pos, len);
@@ -147,3 +150,4 @@ bool Trinity::Hyperlinks::LinkTags::trade::StoreTo(TradeskillLinkData& val, char
     val.Owner.Set(guid);
     return true;
 }
+#endif
