@@ -384,6 +384,7 @@ void ThreatManager::AddThreat(Unit* target, float amount, SpellInfo const* spell
     if (ref->IsOnline()) // ...and if the ref is online it also gets the threat it should have
         ref->AddThreat(amount);
 
+    if (!_ownerEngaged)
     {
         Creature* cOwner = ASSERT_NOTNULL(_owner->ToCreature()); // if we got here the owner can have a threat list, and must be a creature!
         _ownerEngaged = true;

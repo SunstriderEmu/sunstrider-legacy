@@ -154,7 +154,7 @@ public:
     {
         ARGS_CHECK
 
-            std::string namepart = args;
+        std::string namepart = args;
         std::wstring wnamepart;
 
         // converting string that we try to find to lower case
