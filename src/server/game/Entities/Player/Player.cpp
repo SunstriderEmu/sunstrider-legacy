@@ -3711,17 +3711,12 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
 
 void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
 {
-#ifdef LICH_KING
-    uint32 cooldown = 10 * MINUTE * IN_MILLISECONDS;
-#else
-    uint32 cooldown = 15 * MINUTE * IN_MILLISECONDS;
-#endif
-
-    // remove cooldowns on spells that have < 10 min CD
+    // remove cooldowns on spells that have <= 10/15 min CD (sun: also remove on equality - /cmangos/mangos-tbc/commit/f118d12e93d4136732d61b56d7a9a8a5bc3f4e29)
+    // Has to be in sync with SPELL_FAILED_NOT_IN_ARENA check in Spell::CheckCast
     GetSpellHistory()->ResetCooldowns([&](SpellHistory::CooldownStorageType::iterator itr) -> bool
     {
         SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(itr->first);
-        return spellInfo->RecoveryTime < cooldown && spellInfo->CategoryRecoveryTime < cooldown;
+        return spellInfo->RecoveryTime <= ARENA_MAX_COOLDOWN && spellInfo->CategoryRecoveryTime <= ARENA_MAX_COOLDOWN;
     }, true);
 
     // pet cooldowns
