@@ -365,10 +365,22 @@ enum ItemQualities
     ITEM_QUALITY_RARE                  = 3,                 //BLUE
     ITEM_QUALITY_EPIC                  = 4,                 //PURPLE
     ITEM_QUALITY_LEGENDARY             = 5,                 //ORANGE
-    ITEM_QUALITY_ARTIFACT              = 6                  //LIGHT YELLOW
+    ITEM_QUALITY_ARTIFACT              = 6,                 //LIGHT YELLOW
+#ifdef LICH_KING
+    ITEM_QUALITY_HEIRLOOM              = 7,
+#endif
+
+    MAX_ITEM_QUALITY
 };
 
-#define MAX_ITEM_QUALITY                 7
+size_t constexpr MAX_QUEST_DIFFICULTY = 5; // Okay for TBC?
+uint32 constexpr QuestDifficultyColors[MAX_QUEST_DIFFICULTY] = {
+    0xff40c040,
+    0xff808080,
+    0xffffff00,
+    0xffff8040,
+    0xffff2020
+};
 
 enum SpellCategory
 {
@@ -376,7 +388,7 @@ enum SpellCategory
     SPELL_CATEGORY_DRINK            = 59,
 };
 
-const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
+uint32 constexpr ItemQualityColors[MAX_ITEM_QUALITY] =
 {
     0xff9d9d9d,        //GREY
     0xffffffff,        //WHITE
@@ -386,6 +398,8 @@ const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
     0xffff8000,        //ORANGE
     0xffe6cc80,        //LIGHT YELLOW
 };
+
+
 
 // ***********************************
 // Spell Attributes definitions
@@ -2414,7 +2428,7 @@ enum ChatMsg : uint32
     MAX_CHAT_MSG_TYPE
 };
 
-enum ChatLinkColors
+enum ChatLinkColors : uint32
 {
     CHAT_LINK_COLOR_SPELL       = 0xff71d5ff,   // bright blue
 #ifdef LICH_KING

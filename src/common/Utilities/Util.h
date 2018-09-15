@@ -32,8 +32,6 @@ typedef std::vector<std::string> Tokens;
 
 TC_COMMON_API Tokens StrSplit(const std::string &src, const std::string &sep);
 
-TC_COMMON_API void stripLineInvisibleChars(std::string &src);
-
 TC_COMMON_API int32 MoneyStringToMoney(const std::string& moneyString);
 
 TC_COMMON_API struct tm* localtime_r(const time_t* time, struct tm *result);

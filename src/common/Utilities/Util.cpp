@@ -66,42 +66,6 @@ Tokens StrSplit(const std::string &src, const std::string &sep)
     return r;
 }
 
-void stripLineInvisibleChars(std::string &str)
-{
-    if (str.empty())
-        return;
-
-    static std::string invChars = " \t\7\n";
-
-    size_t wpos = 0;
-
-    bool space = false;
-    for(size_t pos = 0; pos < str.size(); ++pos)
-    {
-        if(invChars.find(str[pos])!=std::string::npos)
-        {
-            if(!space)
-            {
-                str[wpos++] = ' ';
-                space = true;
-            }
-        }
-        else
-        {
-            if(wpos!=pos)
-                str[wpos++] = str[pos];
-            else
-                ++wpos;
-            space = false;
-        }
-    }
-
-    if(wpos < str.size())
-        str.erase(wpos,str.size());
-    if (str.find("|TInterface") != std::string::npos)
-        str.clear();
-}
-
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
 struct tm* localtime_r(const time_t* time, struct tm *result)
 {

@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "Hyperlinks.h"
 #include "Language.h"
 #include "Util.h"
 #include "ScriptMgr.h"
@@ -26,6 +27,34 @@
 #ifdef PLAYERBOT
 #include "playerbot.h"
 #endif
+
+static void StripInvisibleChars(std::string& str)
+{
+    static std::string const invChars = " \t\7\n";
+     size_t wpos = 0;
+     bool space = false;
+    for (size_t pos = 0; pos < str.size(); ++pos)
+    {
+        if (invChars.find(str[pos]) != std::string::npos)
+        {
+            if (!space)
+            {
+                str[wpos++] = ' ';
+                space = true;
+            }
+        }
+        else
+        {
+            if (wpos != pos)
+                str[wpos++] = str[pos];
+            else
+                ++wpos;
+            space = false;
+        }
+    }
+     if (wpos < str.size())
+        str.erase(wpos, str.size());
+}
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 {
@@ -138,9 +167,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         }
     }
 
-   //GM Silence
-   if (GetPlayer()->HasAuraEffect(1852,0) && type != CHAT_MSG_WHISPER)
-   {
+    //GM Silence
+    if (GetPlayer()->HasAuraEffect(1852,0) && type != CHAT_MSG_WHISPER)
+    {
         std::string msg="";
         recvData >> msg;
         if (ChatHandler(this).ParseCommands(msg.c_str()) == 0)
@@ -148,63 +177,82 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName().c_str());
             return;
         }
-   }
+    }
 
-   std::string msg = "";
-   std::string to = "";
-
-   if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_CHANNEL)
-       recvData >> to;
-
-   recvData >> msg;
-
-    // strip invisible characters for non-addon messages
-    if (lang != LANG_ADDON)
+    std::string to, channel, msg;
+    switch (type)
     {
-        if(sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-            stripLineInvisibleChars(msg);
+    case CHAT_MSG_SAY:
+    case CHAT_MSG_EMOTE:
+    case CHAT_MSG_YELL:
+    case CHAT_MSG_PARTY:
+    #ifdef LICH_GKING
+    case CHAT_MSG_PARTY_LEADER:
+    #endif
+    case CHAT_MSG_GUILD:
+    case CHAT_MSG_OFFICER:
+    case CHAT_MSG_RAID:
+    case CHAT_MSG_RAID_LEADER:
+    case CHAT_MSG_RAID_WARNING:
+    case CHAT_MSG_BATTLEGROUND:
+    case CHAT_MSG_BATTLEGROUND_LEADER:
+    case CHAT_MSG_AFK:
+    case CHAT_MSG_DND:
+        recvData >> msg;
+        break;
+    case CHAT_MSG_WHISPER:
+        recvData >> to;
+        recvData >> msg;
+        break;
+    case CHAT_MSG_CHANNEL:
+        recvData >> channel;
+        recvData >> msg;
+        break;
+    }
 
-        if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && !ChatHandler(this).IsValidChatMessage(msg.c_str()))
+    // Strip invisible characters for non-addon messages
+    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING) && lang != LANG_ADDON)
+        StripInvisibleChars(msg);
+
+    // no chat commands in AFK/DND autoreply, and it can be empty
+    if (!(type == CHAT_MSG_AFK || type == CHAT_MSG_DND))
+    {
+        if (msg.empty())
+            return;
+
+        if (lang == LANG_ADDON)
         {
-            TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName().c_str(),
-                GetPlayer()->GetGUID().GetCounter(), msg.c_str());
+            if (AddonChannelCommandHandler(this).ParseCommands(msg.c_str()))
+                return;
+        }
+        else
+        {
+            if (ChatHandler(this).ParseCommands(msg.c_str()))
+                return;
 
-            if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
-                KickPlayer();
+            if (sWorld->IsPhishing(msg)) 
+            {
+                sWorld->LogPhishing(GetPlayer()->GetGUID().GetCounter(), 0, msg);
+                return;
+            }
+        }
+    }
 
+    bool validMessage = Trinity::Hyperlinks::ValidateLinks(msg);
+    if (!validMessage)
+    {
+        TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link - corrected", GetPlayer()->GetName().c_str(),
+            GetPlayer()->GetGUID().GetCounter());
+
+        if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+        {
+            KickPlayer();
             return;
         }
     }
 
-   //message can only be empty for those types
-   if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND && msg.empty())
-       return;
-
-   if(!msg.empty())
-   {
-       if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-           return;
-
-       if (sWorld->IsPhishing(msg)) {
-           sWorld->LogPhishing(GetPlayer()->GetGUID().GetCounter(), 0, msg);
-           return;
-        }
-   }
-
-    /* Is this to prevent linking fake items ?
-    if (strncmp(msg.c_str(), "|cff", 4) == 0) {
-        char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-        if (cEntry) {
-            if (uint32 entry = atoi(cEntry)) {
-                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
-                if (!proto)
-                    break;
-            }
-            else
-                break;
-        }
-    }
-    */
+    if (msg.length() > 255)
+        return;
 
    Player* toPlayer = nullptr;
    uint32 logChannelId = 0;
@@ -451,7 +499,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         {
             if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {
-                if(Channel *chn = cMgr->GetChannel(to,_player))
+                if(Channel *chn = cMgr->GetChannel(channel, _player))
                 {
                     #ifdef PLAYERBOT
                     // Playerbot mod: broadcast message to bot members
@@ -462,6 +510,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     sRandomPlayerbotMgr.HandleCommand(type, msg, *_player);
                     #endif
 
+                    //sScriptMgr->OnPlayerChat(sender, type, lang, msg, chn);
                     chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
                 }
             }

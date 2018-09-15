@@ -1701,9 +1701,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetSpellModTakingSpell(Spell* spell, bool apply);
 
 #ifdef LICH_KING
-        static uint32 const ARENA_MAX_COOLDOWN = 10 * MINUTES * IN_MILLISECONDS;
+        static uint32 constexpr ARENA_MAX_COOLDOWN = 10 * MINUTE * IN_MILLISECONDS;
 #else
-        static uint32 const ARENA_MAX_COOLDOWN = 15 * MINUTES * IN_MILLISECONDS;
+        static uint32 constexpr ARENA_MAX_COOLDOWN = 15 * MINUTE * IN_MILLISECONDS;
 #endif
         void RemoveArenaSpellCooldowns(bool removeActivePetCooldowns = false);
 

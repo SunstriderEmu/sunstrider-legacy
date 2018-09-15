@@ -158,7 +158,7 @@ enum CharacterCustomizeFlags
 #define DEATH_EXPIRE_STEP (5*MINUTE)
 #define MAX_DEATH_COUNT 3
 
-static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
+static uint32 constexpr copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 
 //== Player ====================================================
 
@@ -2092,7 +2092,7 @@ void Player::RegenerateAll()
 
     Regenerate(POWER_MANA);
 
-    static uint32 const regenDelay = 2000;
+    static uint32 constexpr regenDelay = 2000;
 
     if (m_regenTimerCount >= 2000)
     {
@@ -19844,7 +19844,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     // set some aura effects that send packet to player client after add player to map
     // SendMessageToSet not send it to player not it map, only for aura that not changed anything at re-apply
     // same auras state lost at far teleport, send it one more time in this case also
-    static const AuraType auratypes[] =
+    static AuraType constexpr auratypes[] =
     {
         SPELL_AURA_MOD_FEAR,     SPELL_AURA_TRANSFORM,                         SPELL_AURA_WATER_WALK,
         SPELL_AURA_FEATHER_FALL, SPELL_AURA_HOVER,                             SPELL_AURA_SAFE_FALL,

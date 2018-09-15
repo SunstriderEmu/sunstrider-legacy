@@ -92,7 +92,6 @@ class TC_GAME_API ChatHandler
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
 
-        bool IsValidChatMessage(char const* msg);
         static void SendGlobalSysMessage(const char *str);
         static void SendGlobalGMSysMessage(const char *str);
 
