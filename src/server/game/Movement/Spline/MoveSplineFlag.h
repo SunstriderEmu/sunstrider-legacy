@@ -15,7 +15,7 @@ namespace Movement
     {
     public:
 #ifdef LICH_KING
-        enum eFlags
+        enum eFlags : uint32
         {
             None = 0x00000000,
             // x00-xFF(first byte) used as animation Ids storage in pair with Animation flag
@@ -56,7 +56,7 @@ namespace Movement
             Mask_Unused = No_Spline | Enter_Cycle | Frozen | Unknown7 | Unknown8 | Unknown10 | Unknown11 | Unknown12 | Unknown13
         };
 #else
-        enum eFlags
+        enum eFlags : uint32
         {
             None                = 0x00000000,
             Done                = 0x00000001,

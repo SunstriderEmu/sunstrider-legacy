@@ -5626,8 +5626,9 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
     // do not allow spells to be cast in arenas
     // - with greater than 15 min CD without SPELL_ATTR4_USABLE_IN_ARENA flag
     // - with SPELL_ATTR4_NOT_USABLE_IN_ARENA flag
+    uint32 const cooldown = Player::ARENA_MAX_COOLDOWN * MINUTE * IN_MILLISECONDS;
     if( (m_spellInfo->HasAttribute(SPELL_ATTR4_NOT_USABLE_IN_ARENA)) ||
-        (m_spellInfo->GetRecoveryTime() > Player::ARENA_MAX_COOLDOWN * MINUTE * IN_MILLISECONDS && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA))) )
+        (m_spellInfo->GetRecoveryTime() > cooldown && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA))) )
         if(MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId()))
             if(mapEntry->IsBattleArena())
                 return SPELL_FAILED_NOT_IN_ARENA;
