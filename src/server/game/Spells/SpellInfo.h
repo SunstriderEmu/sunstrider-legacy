@@ -43,7 +43,7 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
     //reuse                                      = 0x00020000,
     SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00040000,     // Instead of original caster
-    //reuse                                      = 0x00080000,    
+    SPELL_ATTR0_CU_NEEDS_AMMO_DATA               = 0x00080000,
     //reuse                                      = 0x00100000,
     SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
     SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          = 0x00400000,

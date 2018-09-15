@@ -4553,7 +4553,7 @@ void Spell::SendSpellStart()
     if (((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_spellInfo->IsChanneled() && !m_cast_count)
         castFlags |= CAST_FLAG_PENDING;
 
-    if (m_spellInfo->HasAttribute(SPELL_ATTR0_RANGED))
+    if (m_spellInfo->IsRangedWeaponSpell() || m_spellInfo->HasAttribute(SPELL_ATTR0_CU_NEEDS_AMMO_DATA))
         castFlags |= CAST_FLAG_AMMO;
 
 
@@ -4608,7 +4608,7 @@ void Spell::SendSpellGo()
     if( ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_cast_count)
         castFlags |= CAST_FLAG_PENDING; 
 
-    if(m_spellInfo->IsRangedWeaponSpell())
+    if (m_spellInfo->IsRangedWeaponSpell() || m_spellInfo->HasAttribute(SPELL_ATTR0_CU_NEEDS_AMMO_DATA))
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
 
 #ifdef LICH_KING
