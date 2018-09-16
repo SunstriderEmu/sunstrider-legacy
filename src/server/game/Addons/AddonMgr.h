@@ -46,7 +46,7 @@ struct BannedAddon
 //LK
 #define STANDARD_ADDON_CRC_12340 0x4C1C776DLL
 //BC
-#define STANDARD_ADDON_CRC_8606 0x1c776d01LL
+#define STANDARD_ADDON_CRC_8606 0x4C1C776DLL
 
 namespace AddonMgr
 {
