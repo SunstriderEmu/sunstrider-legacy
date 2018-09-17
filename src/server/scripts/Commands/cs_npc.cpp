@@ -299,10 +299,9 @@ public:
                 if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
                 {
                     sObjectMgr->AddCreatureToGrid(guid, &data);
+                    creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
                     // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
                     WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", creature->GetSpawnId(), id);
-
-                    creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
                 }
                 else {
                     handler->SendSysMessage("Error: cannot create NPC Passenger.");
@@ -325,12 +324,11 @@ public:
             return false;
         }
 
-        // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
-        WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", creature->GetSpawnId(), id);
-
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
         uint32 spawnId = creature->GetSpawnId(); //spawn id gets generated in SaveToDB
+        // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
+        WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", spawnId, id);
 
         CreatureData& data = sObjectMgr->NewOrExistCreatureData(spawnId);
         data.ids.emplace_back(id);
@@ -1273,7 +1271,7 @@ public:
 
         if(pCreature->AI())
         {
-            pCreature->SetCombatDistance(distance);
+            pCreature->SetCombatRange(distance);
             handler->PSendSysMessage("m_combatDistance set to %f", distance);
         }
 
