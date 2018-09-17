@@ -1211,7 +1211,7 @@ Optional<uint32> GameEventMgr::GetEquipmentOverride(uint32 spawnId)
 
 void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
 {
-    for(auto itr : mGameEventModelEquip[event_id])
+    for(auto& itr : mGameEventModelEquip[event_id]) //sun: added reference, else code below won't work...
     {
         // Remove the creature from grid
         uint32 spawnId = itr.first;
