@@ -1120,9 +1120,9 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             }
             break;
         case SMART_ACTION_INSTALL_AI_TEMPLATE:
-            if (e.action.installTtemplate.id >= SMARTAI_TEMPLATE_END)
+            if (e.action.installTemplate.id >= SMARTAI_TEMPLATE_END)
             {
-                SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Creature %d Event %u Action %u uses non-existent AI template id %u, skipped.", e.entryOrGuid, e.event_id, e.GetActionType(), e.action.installTtemplate.id);
+                SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Creature %d Event %u Action %u uses non-existent AI template id %u, skipped.", e.entryOrGuid, e.event_id, e.GetActionType(), e.action.installTemplate.id);
                 return false;
             }
             break;

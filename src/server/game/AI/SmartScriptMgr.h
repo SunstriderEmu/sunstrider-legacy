@@ -947,7 +947,7 @@ struct SmartAction
             uint32 param3;
             uint32 param4;
             uint32 param5;
-        } installTtemplate;
+        } installTemplate;
 
         struct
         {
