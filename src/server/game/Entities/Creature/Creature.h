@@ -371,12 +371,45 @@ struct EquipmentInfo
 typedef std::unordered_map<uint8, EquipmentInfo> EquipmentInfoContainerInternal;
 typedef std::unordered_map<uint32, EquipmentInfoContainerInternal> EquipmentInfoContainer;
 
+struct SpawnDataId
+{
+    SpawnDataId(uint32 id, int8 equipId = -1) : id(id), equipment_id(equipId) {}
+
+    uint32 id;
+    int8 equipment_id; //if applicable
+};
+
 // from `creature` table
 struct CreatureData : public SpawnData
 {
+    uint32 GetFirstSpawnEntry() const
+    {
+        ASSERT(!ids.empty());
+        return ids[0].id;
+    }
+
+    uint32 ChooseSpawnEntry() const
+    {
+        ASSERT(!ids.empty());
+        uint32 const rand = urand(0, ids.size() - 1);
+        return ids[rand].id;
+    }
+    typedef std::vector<SpawnDataId> SpawnDataIds;
+
+    int8 ChooseEquipmentId(uint32 chosenTemplate) const
+    {
+        auto itr = std::find_if(ids.begin(), ids.end(), [chosenTemplate](SpawnDataId const& data) {
+            return data.id == chosenTemplate;
+        });
+        if (itr == ids.end())
+            return -1; //random
+
+        return itr->equipment_id;
+    }
+
     CreatureData() : SpawnData(SPAWN_TYPE_CREATURE) { }
+    SpawnDataIds ids; // entries in respective _template table, replace id field in SpawnData
     uint32 displayid = 0;
-    int8 equipmentId = 0;
     float spawndist = 0;
     uint32 currentwaypoint = 0;
     uint32 curhealth = 0;
@@ -975,6 +1008,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         // Creature evade all attacks. This is different from evade mode, when target is unreachable creature will stay some tile on place before evading.
         bool m_evadingAttacks;
         bool m_homeless;
+
+        uint32 m_chosenTemplate; //chosen creature template for this creature
 
         Position m_lastMovementFlagsPosition;
         uint32 m_movementFlagsUpdateTimer;

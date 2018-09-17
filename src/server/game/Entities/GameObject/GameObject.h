@@ -430,6 +430,7 @@ enum GOState: uint32
 struct GameObjectData : public SpawnData
 {
     GameObjectData() : SpawnData(SPAWN_TYPE_GAMEOBJECT) { }
+    uint32 id; // entry in gameobject_template table
     G3D::Quat rotation;
     uint32 animprogress;
     uint32 go_state;

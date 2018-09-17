@@ -146,7 +146,9 @@ public:
                     {
                         handler->PSendSysMessage(LANG_WAYPOINT_NOTREMOVED, wpguid);
                         hasError = true;
-                        WorldDatabase.PExecute("DELETE FROM creature WHERE guid = '%u'", wpguid);
+                        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
+                        stmt->setUInt32(0, wpguid);
+                        WorldDatabase.Execute(stmt);
                     }
                     else
                     {
@@ -327,7 +329,10 @@ public:
 
         if(show == "off")
         {
-            QueryResult result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE id = '%u'", 1);
+            PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_BY_ID);
+            stmt->setUInt32(0, 1);
+            PreparedQueryResult result = WorldDatabase.Query(stmt);
+
             if(!result)
             {
                 handler->SendSysMessage(LANG_WAYPOINT_VP_NOTFOUND);
@@ -345,7 +350,10 @@ public:
                 {
                     handler->PSendSysMessage(LANG_WAYPOINT_NOTREMOVED, guid);
                     hasError = true;
-                    WorldDatabase.PExecute("DELETE FROM creature WHERE guid = '%u'", guid);
+
+                    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
+                    stmt->setUInt32(0, guid);
+                    WorldDatabase.Execute(stmt);
                 }
                 else
                 {
@@ -396,8 +404,8 @@ public:
         {
             if(target->GetCreatureAddon()->path_id != 0)
             {
-                WorldDatabase.PExecute("UPDATE creature_addon SET path_id = 0 WHERE guid = %u", guidlow);
-                WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", IDLE_MOTION_TYPE, guidlow);
+                WorldDatabase.PExecute("UPDATE creature_addon SET path_id = 0 WHERE spawnID = %u", guidlow);
+                WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE spawnID = '%u'", IDLE_MOTION_TYPE, guidlow);
                 target->LoadPath(0);
                 target->SetDefaultMovementType(IDLE_MOTION_TYPE);
                 target->GetMotionMaster()->MoveTargetedHome();
@@ -1124,11 +1132,11 @@ public:
         }
 
         guidlow = target->GetSpawnId();
-        QueryResult result = WorldDatabase.PQuery( "SELECT guid FROM creature_addon WHERE guid = '%u'",guidlow);
+        QueryResult result = WorldDatabase.PQuery( "SELECT guid FROM creature_addon WHERE spawnID = '%u'",guidlow);
 
         if( result )
         {
-            WorldDatabase.PExecute("UPDATE creature_addon SET path_id = '%u' WHERE guid = '%u'", pathid, guidlow);
+            WorldDatabase.PExecute("UPDATE creature_addon SET path_id = '%u' WHERE spawnID = '%u'", pathid, guidlow);
         }
         else
         {
@@ -1143,19 +1151,19 @@ public:
                 uint32 emote = (*result)[4].GetUInt32();
                 uint32 moveflags = (*result)[5].GetUInt32();
                 const char* auras = (*result)[6].GetCString();
-                WorldDatabase.PExecute("INSERT INTO creature_addon(guid,path_id,mount,bytes0,bytes1,bytes2,emote,moveflags,auras) VALUES \
+                WorldDatabase.PExecute("INSERT INTO creature_addon(spawnID,path_id,mount,bytes0,bytes1,bytes2,emote,moveflags,auras) VALUES \
                                        ('%u','%u','%u','%u','%u','%u','%u','%u','%s')", guidlow, pathid,mount,bytes0,bytes1,bytes2,emote,moveflags,auras);
             } else { //else just create a new entry
-                WorldDatabase.PExecute("INSERT INTO creature_addon(guid,path_id) VALUES ('%u','%u')", guidlow, pathid);
+                WorldDatabase.PExecute("INSERT INTO creature_addon(spawnID,path_id) VALUES ('%u','%u')", guidlow, pathid);
             }
         }
 
-        WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", WAYPOINT_MOTION_TYPE, guidlow);
+        WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE spawnID = '%u'", WAYPOINT_MOTION_TYPE, guidlow);
 
         target->LoadPath(pathid);
         target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
         target->GetMotionMaster()->Initialize();
-        target->Say("Path loaded.",LANG_UNIVERSAL,nullptr);
+        target->Say("Path loaded.", LANG_UNIVERSAL, nullptr);
 
         return true;
     }

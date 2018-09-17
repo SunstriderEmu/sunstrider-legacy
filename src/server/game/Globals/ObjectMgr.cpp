@@ -568,8 +568,8 @@ void ObjectMgr::LoadCreatureAddons()
 {
     uint32 oldMSTime = GetMSTime();
 
-    //                                                0       1       2      3       4       5        6        7
-    QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_addon");
+    //                                                0       1        2      3       4       5      6          7
+    QueryResult result = WorldDatabase.Query("SELECT spawnID, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_addon");
 
     if (!result)
     {
@@ -1161,21 +1161,30 @@ void ObjectMgr::LoadTempSummons()
 
 void ObjectMgr::LoadCreatures()
 {
+    _creatureDataStore.clear();
+
     uint32 count = 0;
-    //                                                0             1   2    3
-    QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
-    //   4             5           6           7           8            9              10         11
-        "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13       14            15         16     17       18                   19          20
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature.ScriptName, pool_entry, unit_flags "
+    //                                                0                1    2          3
+    QueryResult result = WorldDatabase.Query("SELECT creature.spawnID, map, spawnMask, modelid, "
+    //   4           5           6           7            8              9         10
+        "position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, "
+    //   11         12       13            14          15                   16     17       18 
+        "curhealth, curmana, MovementType, unit_flags, creature.ScriptName, event, pool_id, pool_entry "
         "FROM creature "
-        "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
-        "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid "
+        "LEFT OUTER JOIN game_event_creature ON creature.SpawnID = game_event_creature.guid "
+        "LEFT OUTER JOIN pool_creature ON creature.SpawnID = pool_creature.guid "
         );
 
     if(!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 creature. DB table `creature` is empty.");
+        return;
+    }
+
+    QueryResult result2 = WorldDatabase.Query("SELECT spawnID, entry, equipment_id FROM creature_entry");
+    if (!result2)
+    {
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 creature entries. DB table `creature_entry` is empty.");
         return;
     }
 
@@ -1189,56 +1198,83 @@ void ObjectMgr::LoadCreatures()
 
     do
     {
-        Field *fields = result->Fetch();
+        Field* fields = result2->Fetch();
+        uint32 spawnId = fields[0].GetUInt32();
+        uint32 templateId = fields[1].GetUInt32();
+        int8 equipmentId = fields[2].GetInt8();
 
-        ObjectGuid::LowType guid = fields[0].GetUInt32();
-
-        CreatureData& data = _creatureDataStore[guid];
-
-        data.id             = fields[ 1].GetUInt32();
-
-        CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
+        CreatureTemplate const* cInfo = GetCreatureTemplate(templateId);
         if (!cInfo)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) with not existed creature entry %u, skipped.", guid, data.id);
+            TC_LOG_ERROR("sql.sql", "Table `creature_entry` has creature (SpawnId: %u) with not existing creature entry %u, skipped.", spawnId, templateId);
             continue;
         }
 
-        uint32 mapId = fields[2].GetUInt16();
+        // -1 random, 0 no equipment,
+        if (equipmentId != 0 && equipmentId != -1)
+        {
+            if (!GetEquipmentInfo(templateId, equipmentId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `creature_entry` has creature (SpawnId: %u) with equipment_id %u not found in table `creature_equip_template`, reverting to no equipment.", spawnId, equipmentId);
+                equipmentId = -1;
+            }
+        }
+
+        CreatureData& data = _creatureDataStore[spawnId];
+        data.ids.emplace_back(templateId, equipmentId);
+
+    } while (result2->NextRow());
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 spawnId = fields[0].GetUInt32();
+
+        // we create a _creatureDataStore entry in creature_entry loading
+        auto itr = _creatureDataStore.find(spawnId);
+        if (itr == _creatureDataStore.end())
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) with no listed creature id in table creature_entry, skipped.", spawnId);
+            continue;
+        }
+
+        CreatureData& data = _creatureDataStore[spawnId];
+
+        uint32 mapId = fields[1].GetUInt16();
         MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
         if (!mapEntry)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", guid, mapId);
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", spawnId, mapId);
             continue;
         }
+        data.spawnMask = fields[2].GetUInt8();
 
-        data.spawnPoint.WorldRelocate(mapId, fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat(), fields[8].GetFloat());
+        data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
         data.displayid       = fields[ 3].GetUInt32();
-        data.equipmentId     = fields[ 4].GetInt8();
-        data.spawntimesecs   = fields[ 9].GetUInt32();
-        data.spawndist       = fields[10].GetFloat();
-        data.currentwaypoint = fields[11].GetUInt32();
-        data.curhealth       = fields[12].GetUInt32();
-        data.curmana         = fields[13].GetUInt32();
-        data.movementType    = fields[14].GetUInt8();
-        data.spawnMask       = fields[15].GetUInt8();
+        data.spawntimesecs   = fields[ 8].GetUInt32();
+        data.spawndist       = fields[ 9].GetFloat();
+        data.currentwaypoint = fields[10].GetUInt32();
+        data.curhealth       = fields[11].GetUInt32();
+        data.curmana         = fields[12].GetUInt32();
+        data.movementType    = fields[13].GetUInt8();
+        data.unit_flags      = fields[14].GetUInt32();
+        data.scriptId        = GetScriptId(fields[15].GetString());
         int32 gameEvent      = fields[16].GetInt32();
         data.poolId          = fields[17].GetUInt32(); //Old WR pool system
-        data.scriptId = GetScriptId(fields[18].GetString());
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
         if(mapEntry->Instanceable())
             data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
         else
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
 
-        uint32 poolId = fields[19].GetUInt32();
-        data.unit_flags = fields[20].GetUInt32();
+        uint32 poolId = fields[18].GetUInt32();
 
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))
         {
             if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
-                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", guid, data.spawnMask, data.spawnPoint.GetMapId());
+                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
         } else
             data.spawnGroupData = &_spawnGroupDataStore[1]; // force compatibility group for transport spawns
 
@@ -1246,37 +1282,27 @@ void ObjectMgr::LoadCreatures()
         {
             if (!sCreatureDisplayInfoStore.LookupEntry(data.displayid))
             {
-                TC_LOG_ERROR("sql.sql", "Table `creature` have creature (SpawnId: %u Entry: %u) with invalid displayid %u, set to 0.", guid, data.id, data.displayid);
+                TC_LOG_ERROR("sql.sql", "Table `creature` have creature (SpawnId: %u) with invalid displayid %u, set to 0.", spawnId, data.displayid);
                 data.displayid = 0;
-            }
-        }
-
-        // -1 random, 0 no equipment,
-        if (data.equipmentId != 0)
-        {
-            if (!GetEquipmentInfo(data.id, data.equipmentId))
-            {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, data.id, data.equipmentId);
-                data.equipmentId = -1;
             }
         }
 
         if (data.movementType >= MAX_DB_MOTION_TYPE)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u Entry: %u) with wrong movement generator type (%u), ignored and set to IDLE.", guid, data.id, data.movementType);
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) with wrong movement generator type (%u), ignored and set to IDLE.", spawnId, data.movementType);
             data.movementType = IDLE_MOTION_TYPE;
         }
 
         if(data.spawndist < 0.0f)
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `spawndist`< 0, set to 0.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u) with `spawndist`< 0, set to 0.", spawnId);
             data.spawndist = 0.0f;
         }
         else if(data.movementType == RANDOM_MOTION_TYPE)
         {
             if(data.spawndist == 0.0f)
             {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u) with `MovementType`=1 (random movement) but with `spawndist`=0, replace by idle movement type (0).", spawnId);
                 data.movementType = IDLE_MOTION_TYPE;
             }
         }
@@ -1284,20 +1310,18 @@ void ObjectMgr::LoadCreatures()
         {
             if(data.spawndist != 0.0f)
             {
-                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u Entry: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.",guid,data.id );
+                TC_LOG_ERROR("sql.sql","Table `creature` have creature (SpawnId: %u) with `MovementType`=0 (idle) have `spawndist`<>0, set to 0.", spawnId);
                 data.spawndist = 0.0f;
             }
         }
 
         // Add to grid if not managed by the game event or pool system
         if (gameEvent == 0 && poolId == 0)
-            AddCreatureToGrid(guid, &data);
+            AddCreatureToGrid(spawnId, &data);
 
         ++count;
 
     } while (result->NextRow());
-
-    DeleteCreatureData(0);
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creatures", _creatureDataStore.size());
 }
@@ -1794,9 +1818,8 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
     ObjectGuid::LowType spawnId = GenerateCreatureSpawnId();
 
     CreatureData& data = NewOrExistCreatureData(spawnId);
-    data.id = entry;
+    data.ids.emplace_back(entry);
     data.displayid = 0;
-    data.equipmentId = 0;
     data.spawnPoint.WorldRelocate(mapId, x, y, z, o);
     data.spawntimesecs = spawntimedelay;
     data.spawndist = 0;
@@ -5863,8 +5886,7 @@ void ObjectMgr::SetHighestGuids()
     if (result)
         sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32() + 1);
 
-    //db guids are actually spawnIds
-    result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
+    result = WorldDatabase.Query("SELECT MAX(spawnId) FROM creature");
     if (result)
         _creatureSpawnId = (*result)[0].GetUInt32() + 1;
 
@@ -7750,50 +7772,6 @@ uint32 ObjectMgr::GetScriptId(std::string const& name)
 
     return uint32(itr - _scriptNamesStore.begin());
 }
-
-/*
-void ObjectMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)
-{
-    for(const auto & script : scripts)
-    {
-        for(auto itrM = script.second.begin(); itrM != script.second.end(); ++itrM)
-        {
-            if(itrM->second.dataint)
-            {
-                if(!GetTrinityStringLocale (itrM->second.dataint))
-                    TC_LOG_ERROR("sql.sql", "Table `db_script_string` has not existed string id  %u", itrM->first);
-
-                if(ids.count(itrM->second.dataint))
-                    ids.erase(itrM->second.dataint);
-            }
-        }
-    }
-}
-
-void ObjectMgr::LoadDbScriptStrings()
-{
-    LoadTrinityStrings(WorldDatabase,"db_script_string",MIN_DB_SCRIPT_STRING_ID,MAX_DB_SCRIPT_STRING_ID);
-
-    std::set<int32> ids;
-
-    for(int32 i = MIN_DB_SCRIPT_STRING_ID; i < MAX_DB_SCRIPT_STRING_ID; ++i)
-        if(GetTrinityStringLocale(i))
-            ids.insert(i);
-
-    CheckScripts(sQuestEndScripts,ids);
-    CheckScripts(sQuestStartScripts,ids);
-    CheckScripts(sSpellScripts,ids);
-    CheckScripts(sGameObjectScripts,ids);
-    CheckScripts(sEventScripts,ids);
-
-    CheckScripts(sWaypointScripts,ids);
-
-    for(int id : ids)
-    {
-        TC_LOG_ERROR("sql.sql","Table `db_script_string` has unused string id  %u", id);
-    }
-}
-*/
 
 // Functions for scripting access
 uint32 GetAreaTriggerScriptId(uint32 trigger_id)

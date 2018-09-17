@@ -541,12 +541,16 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
     m_homeless = m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS;
 
     // Load creature equipment
-    if(!data || data->equipmentId == 0)
+    if(!data)
         LoadEquipment(-1); //sunstrider: load random equipment
-    else if(data && data->equipmentId != 0) // override
-    {                                                       
-        m_originalEquipmentId = data->equipmentId;
-        LoadEquipment(data->equipmentId);
+    else if(data) // override
+    {
+        uint32 chosenEquipment = data->ChooseEquipmentId(m_chosenTemplate);
+        m_originalEquipmentId = chosenEquipment;
+        if(auto overrideEquip = sGameEventMgr->GetEquipmentOverride(m_spawnId))
+            LoadEquipment(*overrideEquip);
+        else
+            LoadEquipment(chosenEquipment);
     }
 
     SetName(normalInfo->Name);                              // at normal entry always
@@ -1450,14 +1454,12 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
             displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4) displayId = 0;
     }
 
-    // data->guid = guid must not be update at save
-    data.id = GetEntry();
     data.displayid = displayId;
-    data.equipmentId = GetCurrentEquipmentId();
     if (!GetTransport())
         data.spawnPoint.WorldRelocate(this);
     else
         data.spawnPoint.WorldRelocate(mapid, GetTransOffsetX(), GetTransOffsetY(), GetTransOffsetZ(), GetTransOffsetO());
+
     data.spawntimesecs = m_respawnDelay;
     // prevent add data integrity problems
     data.spawndist = GetDefaultMovementType()==IDLE_MOTION_TYPE ? 0 : m_respawnradius;
@@ -1476,12 +1478,13 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     //TODO: only save relevant fields? This seems dangerous for no benefit...
     SQLTransaction trans = WorldDatabase.BeginTransaction();
 
-    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
+    stmt->setUInt32(0, m_spawnId);
+    trans->Append(stmt);
 
     std::ostringstream ss;
-    ss << "INSERT INTO creature (guid,id,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
+    ss << "INSERT INTO creature (spawnId,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
         << m_spawnId << ","
-        << GetEntry() << ","
         << mapid <<","
         << (uint32)spawnMask << ","
         << displayId <<","
@@ -1496,7 +1499,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetHealth() << ","                               //curhealth
         << GetPower(POWER_MANA) << ","                      //curmana
         << GetDefaultMovementType() << ","                  //default movement generator type
-        << m_creaturePoolId << ")";                          //creature pool id
+        << m_creaturePoolId << ")";                         //creature pool id
 
     trans->Append( ss.str( ).c_str( ) );
 
@@ -1578,7 +1581,7 @@ bool Creature::CreateFromProto(ObjectGuid::LowType guidlow, uint32 entry, const 
     SetZoneScript();
     if (GetZoneScript() && data)
     {
-        entry = GetZoneScript()->GetCreatureEntry(guidlow, data);
+        entry = GetZoneScript()->GetCreatureEntry(guidlow, data, m_chosenTemplate);
         if (!entry)
             return false;
     }
@@ -1656,8 +1659,9 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
         return false;
     }
     
+    m_chosenTemplate = data->ChooseSpawnEntry();
     // Rare creatures in dungeons have 15% chance to spawn
-    CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(data->id);
+    CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(m_chosenTemplate);
     if (cinfo && map->GetInstanceId() != 0 && (cinfo->rank == CREATURE_ELITE_RAREELITE || cinfo->rank == CREATURE_ELITE_RARE)) {
         if (rand()%5 != 0)
             return false;
@@ -1677,7 +1681,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
         m_respawnTime = GameTime::GetGameTime() + urand(4, 7);
     }
 
-    if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->spawnPoint, data, !m_respawnCompatibilityMode))
+    if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, m_chosenTemplate, data->spawnPoint, data, !m_respawnCompatibilityMode))
         return false;
 
     if(!IsPositionValid())
@@ -1728,7 +1732,6 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
 
     return true;
 }
-
 
 void Creature::LoadEquipment(int8 id, bool force)
 {
@@ -1845,14 +1848,17 @@ void Creature::DeleteFromDB()
     sObjectMgr->DeleteCreatureData(m_spawnId);
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
 
-    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_SPAWNGROUP_MEMBER);
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
+    stmt->setUInt32(0, m_spawnId);
+    trans->Append(stmt);
+
+    stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_SPAWNGROUP_MEMBER);
     stmt->setUInt8(0, uint8(SPAWN_TYPE_CREATURE));
     stmt->setUInt32(1, m_spawnId);
     trans->Append(stmt);
 
-    trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_spawnId);
+    trans->PAppend("DELETE FROM creature_addon WHERE spawnID = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
 

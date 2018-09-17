@@ -265,7 +265,7 @@ public:
         if (!cId)
             return false;
 
-        uint32 id  = atoi(cId);
+        uint32 id = atoi(cId);
 
         Player *chr = handler->GetSession()->GetPlayer();
         float x = chr->GetPositionX();
@@ -280,13 +280,12 @@ public:
             {
                 ObjectGuid::LowType guid = sObjectMgr->GenerateCreatureSpawnId();
                 CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
-                data.id = id;
+                data.ids.emplace_back(id);
                 data.spawnPoint.m_positionX = chr->GetTransOffsetX();
                 data.spawnPoint.m_positionY = chr->GetTransOffsetY();
                 data.spawnPoint.m_positionZ = chr->GetTransOffsetZ();
                 data.spawnPoint.m_orientation = chr->GetTransOffsetO();
                 data.displayid = 0;
-                data.equipmentId = 0;
                 data.spawntimesecs = 300;
                 data.spawndist = 0;
                 data.movementType = 1;
@@ -300,6 +299,9 @@ public:
                 if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
                 {
                     sObjectMgr->AddCreatureToGrid(guid, &data);
+                    // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
+                    WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", creature->GetSpawnId(), id);
+
                     creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
                 }
                 else {
@@ -323,22 +325,28 @@ public:
             return false;
         }
 
+        // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
+        WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", creature->GetSpawnId(), id);
+
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
-        ObjectGuid::LowType db_guid = creature->GetSpawnId(); //spawn id gets generated in SaveToDB
+        uint32 spawnId = creature->GetSpawnId(); //spawn id gets generated in SaveToDB
+
+        CreatureData& data = sObjectMgr->NewOrExistCreatureData(spawnId);
+        data.ids.emplace_back(id);
 
         // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
         // current "creature" variable is deleted and created fresh new, otherwise old values might trigger asserts or cause undefined behavior
         creature->CleanupsBeforeDelete();
         delete creature;
         creature = new Creature();
-        if (!creature->LoadFromDB(db_guid, map, true, true))
+        if (!creature->LoadFromDB(spawnId, map, true, true))
         {
             delete creature;
             return false;
         }
 
-        sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
+        sObjectMgr->AddCreatureToGrid(spawnId, &data);
         return true;
     }
 
@@ -460,7 +468,7 @@ public:
             }
         }
 
-        WorldDatabase.PExecute("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f', orientation = '%f' WHERE guid = '%u'", x, y, z, o, lowguid);
+        WorldDatabase.PExecute("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f', orientation = '%f' WHERE spawnID = '%u'", x, y, z, o, lowguid);
 
         handler->PSendSysMessage(LANG_COMMAND_CREATUREMOVED);
         return true;
@@ -890,9 +898,9 @@ public:
         {
             handler->PSendSysMessage("Emote state set as permanent (will stay after a reboot)");
             if(state)
-                WorldDatabase.PExecute("INSERT INTO creature_addon(`guid`,`emote`) VALUES (%u,%u) ON DUPLICATE KEY UPDATE emote = %u;", target->GetSpawnId(), state, state);
+                WorldDatabase.PExecute("INSERT INTO creature_addon(`spawnID`,`emote`) VALUES (%u,%u) ON DUPLICATE KEY UPDATE emote = %u;", target->GetSpawnId(), state, state);
             else
-                WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetSpawnId());
+                WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `spawnID` = %u", target->GetSpawnId());
         }
         return true;
     }
@@ -1092,7 +1100,8 @@ public:
 
     static bool HandleNpcGoBackHomeCommand(ChatHandler* handler, char const* args)
     {
-        if (!*args) {      // Command is applied on selected unit
+        if (!*args) 
+        {      // Command is applied on selected unit
             Unit* pUnit = handler->GetSelectedUnit();
             if (!pUnit || pUnit == handler->GetSession()->GetPlayer())
                 return false;
@@ -1101,29 +1110,6 @@ public:
             (pUnit->ToCreature())->GetHomePosition(x, y, z, o);
             pUnit->GetMotionMaster()->MovePoint(0, x, y, z);
             return true;
-        }
-        else {                      // On specified GUID
-            char* guid = strtok((char *)args, " ");
-            Player* plr = handler->GetSession()->GetPlayer();
-            if (!guid || !plr)
-                return false;
-            ObjectGuid uintGUID = ObjectGuid(uint64(atoll(guid)));
-            QueryResult result = WorldDatabase.PQuery("SELECT id FROM creature WHERE guid = %u LIMIT 1", uintGUID);
-            if (result) {
-                Field *fields = result->Fetch();
-                uint32 creatureentry = fields[0].GetUInt32();
-                ObjectGuid fullguid = ObjectGuid(HighGuid::Unit, creatureentry, uint32(uintGUID));
-                Unit* pUnit = ObjectAccessor::GetUnit(*plr, fullguid);
-                if (!pUnit) {
-                    handler->PSendSysMessage("No unit found.");
-                    return true;
-                }
-                float x, y, z, o;
-                (pUnit->ToCreature())->GetHomePosition(x, y, z, o);
-                (pUnit->ToCreature())->GetMotionMaster()->MovePoint(0, x, y, z);
-                return true;
-            }
-            handler->PSendSysMessage("No unit found.");
         }
     
         return false;
@@ -1148,7 +1134,7 @@ public:
             return true;
         }
         
-        WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetSpawnId());
+        WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE spawnID = %u", poolId, creature->GetSpawnId());
         creature->SetCreaturePoolId(poolId);
         creature->FindMap()->AddCreatureToPool(creature, poolId);
         handler->PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetSpawnId(),poolId);
@@ -1642,7 +1628,7 @@ public:
         pCreature->GetMotionMaster()->Initialize();
         pCreature->Respawn(true);
 
-        WorldDatabase.PExecute("UPDATE creature SET spawndist=%f, MovementType=%i WHERE guid=%u", option, mtype, u_guidlow);
+        WorldDatabase.PExecute("UPDATE creature SET spawndist=%f, MovementType=%i WHERE spawnID=%u", option, mtype, u_guidlow);
         handler->PSendSysMessage(LANG_COMMAND_SPAWNDIST, option);
         return true;
     }
@@ -1673,7 +1659,7 @@ public:
         else
             return false;
 
-        WorldDatabase.PExecute("UPDATE creature SET spawntimesecs=%i WHERE guid=%u",i_stime,u_guidlow);
+        WorldDatabase.PExecute("UPDATE creature SET spawntimesecs=%i WHERE spawnID=%u",i_stime,u_guidlow);
         pCreature->SetRespawnDelay((uint32)i_stime);
         handler->PSendSysMessage(LANG_COMMAND_SPAWNTIME,i_stime);
 

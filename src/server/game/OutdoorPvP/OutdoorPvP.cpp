@@ -91,12 +91,7 @@ void OPvPCapturePoint::AddGO(uint32 type, ObjectGuid::LowType guid, uint32 entry
 void OPvPCapturePoint::AddCre(uint32 type, ObjectGuid::LowType guid, uint32 entry)
 {
     if (!entry)
-    {
-        CreatureData const* data = sObjectMgr->GetCreatureData(guid);
-        if (!data)
-            return;
-        entry = data->id;
-    }
+        return;
 
     m_Creatures[type] = ObjectGuid(HighGuid::Unit, entry, guid);
     m_CreatureTypes[m_Creatures[type]] = type;

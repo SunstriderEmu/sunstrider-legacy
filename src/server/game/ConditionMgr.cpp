@@ -2061,7 +2061,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                     {
                         if (CreatureData const* creatureData = sObjectMgr->GetCreatureData(cond->ConditionValue3))
                         {
-                            if (cond->ConditionValue2 && creatureData->id != cond->ConditionValue2)
+                            if (cond->ConditionValue2 && creatureData->GetFirstSpawnEntry() != cond->ConditionValue2)
                             {
                                 TC_LOG_ERROR("sql.sql", "%s has guid %u set but does not match creature entry (%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue3, cond->ConditionValue2);
                                 return false;

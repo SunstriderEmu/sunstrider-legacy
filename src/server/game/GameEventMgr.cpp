@@ -210,7 +210,7 @@ void GameEventMgr::LoadVendors()
             newEntry.entry = 0;
 
             if (CreatureData const* data = sObjectMgr->GetCreatureData(guid))
-                newEntry.entry = data->id;
+                newEntry.entry = data->GetFirstSpawnEntry();
 
             // check validity with event's npcflag
             if (!sObjectMgr->IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, nullptr, nullptr, event_npc_flag))
@@ -463,9 +463,9 @@ void GameEventMgr::LoadFromDB()
     }
 
     mGameEventCreatureGuids.resize(mGameEvent.size()*2-1);
-    //                                   1              2
-    result = WorldDatabase.Query("SELECT creature.guid, game_event_creature.event "
-        "FROM creature JOIN game_event_creature ON creature.guid = game_event_creature.guid");
+    //                                   1                 2
+    result = WorldDatabase.Query("SELECT creature.spawnId, game_event_creature.event "
+        "FROM creature JOIN game_event_creature ON creature.spawnID = game_event_creature.guid");
 
     count = 0;
     if( !result )
@@ -534,11 +534,11 @@ void GameEventMgr::LoadFromDB()
     }
 
     mGameEventModelEquip.resize(mGameEvent.size());
-    //                                        0              1                             2
-    result = WorldDatabase.Query("SELECT creature.guid, game_event_model_equip.event, game_event_model_equip.modelid,"
-    //               3                            4
-        "game_event_model_equip.equipment_id, creature.id "
-        "FROM creature JOIN game_event_model_equip ON creature.guid=game_event_model_equip.guid");
+    //                                   0          1           2             3                  4
+    result = WorldDatabase.Query("SELECT c.spawnID, geme.event, geme.modelid, geme.equipment_id, ce.entry "
+        "FROM creature c "
+        "JOIN creature_entry ce ON ce.spawnID = c.spawnID "
+        "JOIN game_event_model_equip geme ON c.spawnID = geme.guid");
 
     count = 0;
     if( !result )
@@ -1200,19 +1200,34 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
     }
 }
 
+Optional<uint32> GameEventMgr::GetEquipmentOverride(uint32 spawnId)
+{
+    auto itr = mGameEventEquipOverrides.find(spawnId);
+    if (itr == mGameEventEquipOverrides.end())
+        return {};
+
+    return itr->second;
+}
+
 void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
 {
     for(auto itr : mGameEventModelEquip[event_id])
     {
         // Remove the creature from grid
-        CreatureData const* data = sObjectMgr->GetCreatureData(itr.first);
+        uint32 spawnId = itr.first;
+        CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
         if(!data)
             continue;
 
+        if (activate)
+            mGameEventEquipOverrides[spawnId] = itr.second.equipment_id;
+        else
+            mGameEventEquipOverrides.erase(spawnId);
+
         // Update if spawned
-        sMapMgr->DoForAllMapsWithMapId(data->spawnPoint.GetMapId(), [&itr, activate](Map* map)
+        sMapMgr->DoForAllMapsWithMapId(data->spawnPoint.GetMapId(), [&](Map* map)
         {
-            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(itr.first);
+            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
             for (auto itr2 = creatureBounds.first; itr2 != creatureBounds.second; ++itr2)
             {
                 Creature* creature = itr2->second;
@@ -1221,6 +1236,7 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
                     itr.second.equipement_id_prev = creature->GetCurrentEquipmentId();
                     itr.second.modelid_prev = creature->GetDisplayId();
                     creature->LoadEquipment(itr.second.equipment_id, true);
+
                     if (itr.second.modelid >0 && itr.second.modelid_prev != itr.second.modelid)
                     {
                         uint32 newModelId = itr.second.modelid; //may be changed at next line
@@ -1252,21 +1268,7 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
             }
         });
 
-        // now last step: put in data
-        // just to have write access to it
-        CreatureData& data2 = sObjectMgr->NewOrExistCreatureData(itr.first);
-        if (activate)
-        {
-            itr.second.modelid_prev = data2.displayid;
-            itr.second.equipement_id_prev = data2.equipmentId;
-            data2.displayid = itr.second.modelid;
-            data2.equipmentId = itr.second.equipment_id;
-        }
-        else
-        {
-            data2.displayid = itr.second.modelid_prev;
-            data2.equipmentId = itr.second.equipement_id_prev;
-        }
+        // sun: replace CreatureData modifications with GetEquipmentOverride
     }
 }
 

@@ -30,8 +30,8 @@ public:
     {
         ARGS_CHECK
 
-            // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
+        // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
+        char* cId = handler->extractKeyFromLink((char*)args, "Hcreature_entry");
         if (!cId)
             return false;
 
@@ -57,24 +57,18 @@ public:
         if (count < 0)
             return false;
 
-        QueryResult result;
-
         uint32 cr_count = 0;
-        result = WorldDatabase.PQuery("SELECT COUNT(guid) FROM creature WHERE id='%u'", cr_id);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_COUNT_BY_ID);
+        stmt->setUInt32(0, cr_id);
+        PreparedQueryResult result = WorldDatabase.Query(stmt);
         if (result)
         {
             cr_count = (*result)[0].GetUInt64();
         }
 
-        if (handler->GetSession())
-        {
-            Player* pl = handler->GetSession()->GetPlayer();
-            result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM creature WHERE id = '%u' ORDER BY order_ ASC LIMIT %u",
-                pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(), cr_id, uint32(count));
-        }
-        else
-            result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map FROM creature WHERE id = '%u' LIMIT %u",
-                cr_id, uint32(count));
+        stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_POS_BY_ID);
+        stmt->setUInt32(0, cr_id);
+        result = WorldDatabase.Query(stmt);
 
         if (result)
         {
@@ -445,18 +439,18 @@ public:
         handler->PSendSysMessage("Listing all spawn points in map %u (%s)%s:", mapId, map->GetMapName(), showAll ? "" : " within 5000yd");
         for (auto const& pair : sObjectMgr->GetAllCreatureData())
         {
-            SpawnData const& data = pair.second;
+            CreatureData const& data = pair.second;
             if (data.spawnPoint.GetMapId() != mapId)
                 continue;
-            CreatureTemplate const* cTemp = sObjectMgr->GetCreatureTemplate(data.id);
+            CreatureTemplate const* cTemp = sObjectMgr->GetCreatureTemplate(data.GetFirstSpawnEntry());
             if (!cTemp)
                 continue;
             if (showAll || data.spawnPoint.IsInDist2d(player, 5000.0))
-                handler->PSendSysMessage("Type: %u | SpawnId: %u | Entry: %u (%s) | X: %.3f | Y: %.3f | Z: %.3f", uint32(data.type), data.spawnId, data.id, cTemp->Name.c_str(), data.spawnPoint.GetPositionX(), data.spawnPoint.GetPositionY(), data.spawnPoint.GetPositionZ());
+                handler->PSendSysMessage("Type: %u | SpawnId: %u | Entry: %u (%s) | X: %.3f | Y: %.3f | Z: %.3f", uint32(data.type), data.spawnId, data.GetFirstSpawnEntry(), cTemp->Name.c_str(), data.spawnPoint.GetPositionX(), data.spawnPoint.GetPositionY(), data.spawnPoint.GetPositionZ());
         }
         for (auto const& pair : sObjectMgr->GetAllGameObjectData())
         {
-            SpawnData const& data = pair.second;
+            GameObjectData const& data = pair.second;
             if (data.spawnPoint.GetMapId() != mapId)
                 continue;
             GameObjectTemplate const* goTemp = sObjectMgr->GetGameObjectTemplate(data.id);

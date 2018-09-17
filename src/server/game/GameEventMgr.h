@@ -137,6 +137,8 @@ class TC_GAME_API GameEventMgr
         Negative events can be used here too.
         */
         bool ShouldHaveObjectsSpawned(int16 event_id);
+
+        Optional<uint32> GetEquipmentOverride(uint32 spawnId);
     private:
         void SendWorldStateUpdate(Player * plr, uint16 event_id);
         void AddActiveEvent(uint16 event_id) { m_ActiveEvents.insert(event_id); }
@@ -167,6 +169,7 @@ class TC_GAME_API GameEventMgr
         typedef std::pair<uint32, ModelEquip> ModelEquipPair;
         typedef std::list<ModelEquipPair> ModelEquipList;
         typedef std::vector<ModelEquipList> GameEventModelEquipMap;
+        typedef std::unordered_map<uint32 /*spawnId*/, uint32 /*override equipment*/> GameEventModelEquipOverride;
         typedef std::pair<uint32, uint32> QuestRelation;
         typedef std::list<QuestRelation> QuestRelList;
         typedef std::vector<QuestRelList> GameEventQuestMap;
@@ -185,6 +188,7 @@ class TC_GAME_API GameEventMgr
         GameEventQuestMap mGameEventGameObjectQuests; 
         GameEventNPCVendorMap mGameEventVendors;
         GameEventModelEquipMap mGameEventModelEquip;
+        GameEventModelEquipOverride mGameEventEquipOverrides; // Equip overrides from currently enable events
         GameEventNPCTrainerSpellsMap mGameEventTrainers;
         GameEventGuidMap  mGameEventCreatureGuids;
         GameEventGuidMap  mGameEventGameobjectGuids;

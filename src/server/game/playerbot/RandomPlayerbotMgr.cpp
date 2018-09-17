@@ -269,7 +269,8 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
             //                                                                                 bot->GetLevel()
             "SELECT map, position_x, position_y, position_z, avg(t.maxlevel), avg(t.minlevel), (%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2) AS delta "
             "FROM creature c "
-            "INNER JOIN creature_template t ON c.id = t.entry "
+            "JOIN creature_entry ce ON ce.spawnID = c.spawnID "
+            "INNER JOIN creature_template t ON ce.entry = t.entry "
             "GROUP BY t.entry "
         ") q "
         "WHERE delta >= 0 "
@@ -283,7 +284,8 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
                 //                                                                               bot->GetLevel()
                "SELECT map, c.position_x, c.position_y, c.position_z, avg(t.maxlevel), avg(t.minlevel), (%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2) AS delta "
                 "FROM creature c "
-                "INNER JOIN creature_template t on c.id = t.entry "
+                "JOIN creature_entry ce ON ce.spawnID = c.spawnID "
+                "INNER JOIN creature_template t on ce.entry = t.entry "
                 "GROUP BY t.entry "
             ") q1 "
             //     randomBotTeleLevel
