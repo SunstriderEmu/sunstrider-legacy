@@ -1284,7 +1284,7 @@ bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id)
                         return false;
                     }
                     else
-                        entry = data->id;
+                        entry = data->GetFirstSpawnEntry();
                 }
                 else
                     entry = uint32(e.entryOrGuid);
