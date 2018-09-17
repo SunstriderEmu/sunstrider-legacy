@@ -886,6 +886,11 @@ struct SmartAction
 
         struct
         {
+            uint32 distance;
+        } moveForward;
+
+        struct
+        {
             uint32 state;
         } visibility;
 
