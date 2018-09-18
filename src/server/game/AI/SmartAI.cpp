@@ -636,7 +636,7 @@ void SmartAI::AttackStart(Unit* who)
         if (mCanCombatMove)
         {
             SetRun(mRun);
-            me->GetMotionMaster()->MoveChase(who);
+            me->GetMotionMaster()->MoveChase(who, me->GetCombatRange());
         }
     }
 }

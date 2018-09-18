@@ -89,6 +89,15 @@ struct TC_GAME_API ChaseRange
     float MinTolerance; // ...and if we are, we will move this far away
     float MaxRange;     // we have to move if we are outside this range...   (max. attack range)
     float MaxTolerance; // ...and if we are, we will move into this range
+
+    bool operator==(ChaseRange const& other) const
+    {
+        return other.MinRange == MinRange && other.MinTolerance == MinTolerance && other.MaxRange == MaxRange && other.MaxTolerance == MaxTolerance;
+    }
+    bool operator!=(ChaseRange const& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 struct TC_GAME_API ChaseAngle

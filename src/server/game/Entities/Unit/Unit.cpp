@@ -46,6 +46,7 @@
 #include "UpdateFieldFlags.h"
 #include "LogsDatabaseAccessor.h"
 #include "GuildMgr.h"
+#include "MovementDefines.h"
 
 #include <math.h>
 
@@ -341,7 +342,7 @@ Unit::Unit(bool isWorldObject)
         i = 0;
         
     _targetLocked = false;
-    m_CombatDistance = 0;//MELEE_RANGE;
+    m_ChaseRange = 0;//MELEE_RANGE;
 
     _lastLiquid = nullptr;
 
@@ -12102,10 +12103,15 @@ void Unit::SetShapeshiftForm(ShapeshiftForm form)
     SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, form);
 }
 
-void Unit::SetCombatDistance(float dist)
+Optional<ChaseRange> Unit::GetCombatRange() const
 {
-    bool changed = m_CombatDistance != dist;
-    m_CombatDistance = dist;
+    return m_ChaseRange;
+}
+
+void Unit::SetCombatRange(ChaseRange range)
+{
+    bool changed = m_ChaseRange != range;
+    m_ChaseRange = range;
     //create new targeted movement gen
     if (i_AI && changed && GetVictim())
     {

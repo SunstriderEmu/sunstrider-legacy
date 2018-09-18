@@ -223,6 +223,8 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             init.SetFacing(target);
 
             init.Launch();
+
+            _movingTowards = moveToward;
         }
     }
 

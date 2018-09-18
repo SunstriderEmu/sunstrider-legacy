@@ -1983,7 +1983,8 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
     if (who->GetTypeId() == TYPEID_UNIT && who->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET)
         return CAN_ATTACK_RESULT_OTHERS;
 
-    if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + m_CombatDistance)
+    float chaseRange = m_ChaseRange ? m_ChaseRange->MaxRange : 0.0f;
+    if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + chaseRange)
         return CAN_ATTACK_RESULT_TOO_FAR_Z;
 
     if(force)
@@ -1994,7 +1995,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
         if (!_IsTargetAcceptable(who))
             return CAN_ATTACK_RESULT_OTHERS;
 
-        if(!IsWithinDistInMap(who, GetAggroRange(who) + m_CombatDistance + GetCombatReach() + who->GetCombatReach())) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
+        if(!IsWithinDistInMap(who, GetAggroRange(who) + GetCombatReach() + who->GetCombatReach()))
             return CAN_ATTACK_RESULT_TOO_FAR;
 
         //ignore LoS for assist

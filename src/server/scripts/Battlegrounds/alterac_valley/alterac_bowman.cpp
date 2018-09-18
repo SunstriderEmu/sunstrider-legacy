@@ -16,7 +16,7 @@ public:
         alterac_bowmanAI(Creature *c) : ScriptedAI(c) 
         {   
             shoot_timer = 0;
-            me->SetCombatDistance(80.0f); //Disable melee visual
+            me->SetCombatRange(80.0f); //Disable melee visual
             SetCombatMovementAllowed(false);
             me->SetSheath(SHEATH_STATE_RANGED);
         }

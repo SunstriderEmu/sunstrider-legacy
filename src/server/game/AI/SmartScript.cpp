@@ -1960,16 +1960,17 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         {
             if (!IsSmart())
                 break;
-
+             
             float attackDistance = float(e.action.setRangedMovement.distance);
             float attackAngle = float(e.action.setRangedMovement.angle) / 180.0f * M_PI;
             float minDist = float(e.action.setRangedMovement.minDist);
-
-            me->SetCombatDistance(attackDistance);
-
+            
             for (WorldObject* target : targets)
             {
                 if (Creature* targetCreature = target->ToCreature())
+                {
+                    targetCreature->SetCombatRange(ChaseRange(minDist, minDist ? (minDist + 5.0f) : 0, attackDistance ? (attackDistance - 5.0f) : 0, attackDistance));
+                    /* sun: should be handled by SetCombatRange
                     if (IsSmart(targetCreature) && targetCreature->GetVictim())
                         if (CAST_AI(SmartAI, targetCreature->AI())->CanCombatMove())
                         {
@@ -1977,7 +1978,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             if (minDist)
                                 range.MinRange = minDist;
                             targetCreature->GetMotionMaster()->MoveChase(targetCreature->GetVictim(), range, attackAngle ? ChaseAngle(attackAngle) : Optional<ChaseAngle>());
-                        }
+                        }*/
+                }
             }
             break;
         }

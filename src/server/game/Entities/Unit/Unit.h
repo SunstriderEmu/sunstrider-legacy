@@ -45,6 +45,7 @@ class BigNumber;
 class Unit;
 class SpellHistory;
 enum MovementGeneratorType : uint8;
+struct ChaseRange;
 
 #define WORLD_TRIGGER   12999
 
@@ -1840,8 +1841,8 @@ class TC_GAME_API Unit : public WorldObject
         
         bool CanReachWithMeleeAttack(Unit const* pVictim, float flat_mod = 0.0f) const;
 
-        float GetCombatDistance() const { return m_CombatDistance; };
-        void SetCombatDistance(float dist);
+        Optional<ChaseRange> GetCombatRange() const;
+        void SetCombatRange(ChaseRange range);
 
         bool IsCCed() const;
 
@@ -2328,7 +2329,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 _oldFactionId;           ///< faction before charm
         bool _isWalkingBeforeCharm;     ///< Are we walking before we were charmed?
 
-        float m_CombatDistance;
+        Optional<ChaseRange> m_ChaseRange;
 
         SpellHistory* m_spellHistory;
 

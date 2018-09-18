@@ -5,19 +5,19 @@ void UnitAI::AttackStart(Unit *victim)
     if(!victim)
         return;
         
-    bool melee = (me->GetCombatDistance() > ATTACK_DISTANCE) ? me->GetDistance(victim) <= ATTACK_DISTANCE : true; //visual part
-    if(me->Attack(victim, melee))
+    uint32 maxRange = me->GetCombatRange() ? (me->GetCombatRange())->MaxRange : 0.0f;
+    if(me->Attack(victim, me->IsWithinMeleeRange(victim)))
     {
         if(m_allowCombatMovement)
         {
             //pet attack from behind in melee
-            if(me->IsPet() && melee && victim->GetVictim() && victim->GetVictim()->GetGUID() != me->GetGUID())
+            if(me->IsPet() && maxRange == 0.0f && victim->GetVictim() && victim->GetVictim()->GetGUID() != me->GetGUID())
             {
                 me->GetMotionMaster()->MoveChase(victim, CONTACT_DISTANCE, M_PI);
                 return;
             }
             
-            me->GetMotionMaster()->MoveChase(victim, me->GetCombatDistance());
+            me->GetMotionMaster()->MoveChase(victim, me->GetCombatRange());
         } else {
             me->GetMotionMaster()->MoveIdle();
         }
@@ -32,7 +32,7 @@ void UnitAI::OnCharmed(bool isNew)
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
 {
-    me->SetCombatDistance(dist);
+    me->SetCombatRange(dist);
     AttackStart(victim);
 }
 
