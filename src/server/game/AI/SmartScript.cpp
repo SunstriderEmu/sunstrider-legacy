@@ -1969,7 +1969,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (Creature* targetCreature = target->ToCreature())
                 {
-                    targetCreature->SetCombatRange(ChaseRange(minDist, minDist ? (minDist + 5.0f) : 0, attackDistance ? (attackDistance - 5.0f) : 0, attackDistance));
+                    if (attackDistance)
+                        targetCreature->SetCombatRange(ChaseRange(minDist, minDist ? (minDist + 5.0f) : 0, attackDistance - 5.0f, attackDistance));
+                    else
+                        targetCreature->ResetCombatRange();
+
                     /* sun: should be handled by SetCombatRange
                     if (IsSmart(targetCreature) && targetCreature->GetVictim())
                         if (CAST_AI(SmartAI, targetCreature->AI())->CanCombatMove())
@@ -2734,6 +2738,57 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 // Follow victim in melee
                 AddEvent(1007, 0, SMART_EVENT_LINK, 0, 0, range, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, range, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
 
+                break;
+            }
+        case SMARTAI_TEMPLATE_CASTER_SUN_ROOT:
+            {
+                uint32 spellID = e.action.installTemplate.param1;
+                uint32 spellRepeat = e.action.installTemplate.param2;
+                uint32 rootSpellID = e.action.installTemplate.param3;
+                uint32 rootSpellRepeat = e.action.installTemplate.param4;
+
+                auto spellInfo = sSpellMgr->GetSpellInfo(spellID);
+                if (spellInfo == nullptr)
+                {
+                    SMARTAI_DB_ERROR(e.entryOrGuid, "SmartScript: Entry %d SourceType %u Event %u Action %u is using invalid spell %u", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType(), spellID);
+                    break;
+                }
+                auto rootSpellInfo = sSpellMgr->GetSpellInfo(rootSpellID);
+                if (rootSpellInfo == nullptr)
+                {
+                    SMARTAI_DB_ERROR(e.entryOrGuid, "SmartScript: Entry %d SourceType %u Event %u Action %u is using invalid spell %u", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType(), rootSpellID);
+                    break;
+                }
+
+                uint32 range = spellInfo->GetMaxRange() - 5.0f;
+                uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
+                
+                AddEvent(1000, 0, SMART_EVENT_AGGRO, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+
+                // Phase 1 = casting
+                // Cast spell
+                AddEvent(1001, 0, SMART_EVENT_UPDATE_IC, 0, 0, 0, spellRepeat, spellRepeat, 0, SMART_ACTION_CAST, spellID, 0, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+                // Ranged movement when starting phase 1
+                AddEvent(1002, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 1, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, range, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                // Go to phase 2 when under manaPercent
+                AddEvent(1003, 0, SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 2, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+                 // Cast root spell when in melee 
+                AddEvent(1004, 0, SMART_EVENT_RANGE, 0, 0, 5, rootSpellRepeat, rootSpellRepeat, 0, SMART_ACTION_CAST, rootSpellID, SMARTCAST_TRIGGERED | SMARTCAST_INTERRUPT_PREVIOUS, TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+                // Trigger phase 3 on root spell hit
+                AddEvent(1005, 0, SMART_EVENT_SPELLHIT_TARGET, 0, rootSpellID, 0, 1, 1, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 3, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+
+                // Phase 2 = need mana, start melee
+                // Melee movement when starting phase 2
+                AddEvent(1010, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 2, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                // Go back to phase 1 when at least at manaPercent
+                AddEvent(1011, 0, SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(2));
+              
+                // Phase 3 (mask 0x4) = root spell phase
+                // Min distance movement when starting phase 3
+                AddEvent(1020, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 4, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, range, 0, 8, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                // Go back to Phase 1 after 4s
+                AddEvent(1021, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 4, 0, 0, 0, 0, SMART_ACTION_CREATE_TIMED_EVENT, 99, 2500, 2500, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(1022, 0, SMART_EVENT_TIMED_EVENT_TRIGGERED, 0, 99, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 break;
             }
         case SMARTAI_TEMPLATE_TURRET:

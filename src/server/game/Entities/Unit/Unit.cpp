@@ -12108,6 +12108,19 @@ Optional<ChaseRange> Unit::GetCombatRange() const
     return m_ChaseRange;
 }
 
+void Unit::ResetCombatRange()
+{
+    bool changed = m_ChaseRange.is_initialized();
+    m_ChaseRange.reset();
+    //create new targeted movement gen
+    if (i_AI && changed && GetVictim())
+    {
+        Unit* victim = GetVictim();
+        AttackStop();
+        i_AI->AttackStart(victim);
+    }
+}
+
 void Unit::SetCombatRange(ChaseRange range)
 {
     bool changed = m_ChaseRange != range;
@@ -12115,8 +12128,9 @@ void Unit::SetCombatRange(ChaseRange range)
     //create new targeted movement gen
     if (i_AI && changed && GetVictim())
     {
+        Unit* victim = GetVictim();
         AttackStop();
-        i_AI->AttackStart(GetVictim());
+        i_AI->AttackStart(victim);
     }
 };
 

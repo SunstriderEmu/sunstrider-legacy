@@ -1842,6 +1842,7 @@ class TC_GAME_API Unit : public WorldObject
         bool CanReachWithMeleeAttack(Unit const* pVictim, float flat_mod = 0.0f) const;
 
         Optional<ChaseRange> GetCombatRange() const;
+        void ResetCombatRange();
         void SetCombatRange(ChaseRange range);
 
         bool IsCCed() const;
