@@ -12,6 +12,7 @@
 #include "WorldSession.h"
 #include "Player.h"
 #include "ObjectMgr.h"
+#include "Hyperlinks.h"
 #include "GameTime.h"
 #include "Group.h"
 #include "Guild.h"
@@ -747,6 +748,17 @@ void WorldSession::SendNotification(const char *format,...)
         data << szStr;
         SendPacket(&data);
     }
+}
+
+bool WorldSession::ValidateHyperlinksAndMaybeKick(std::string const& str)
+{
+    if (Trinity::Hyperlinks::CheckAllLinks(str))
+        return true;
+    TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a message with an invalid link:\n%s", GetPlayer()->GetName().c_str(),
+        GetPlayer()->GetGUID().GetCounter(), str.c_str());
+    if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
+        KickPlayer();
+    return false;
 }
 
 void WorldSession::SendNotification(int32 string_id,...)

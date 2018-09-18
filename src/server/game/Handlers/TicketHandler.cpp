@@ -25,21 +25,6 @@
 #include "ObjectMgr.h"
 #include "World.h"
 
-#define ValidateLinksAndMaybeKick(str)                                                                              \
-{                                                                                                                   \
-    if (!Trinity::Hyperlinks::ValidateLinks(str))                                                                   \
-    {                                                                                                               \
-        TC_LOG_ERROR("network", "Player %s (GUID: %u) tried to add an invalid link to a GM ticket - corrected",     \
-            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());                                   \
-                                                                                                                    \
-        if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))                                            \
-        {                                                                                                           \
-            KickPlayer();                                                                                           \
-            return;                                                                                                 \
-        }                                                                                                           \
-    }                                                                                                               \
-}
-
 void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 {
     if(GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID()))
@@ -61,11 +46,16 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
     recvData >> z;
     recvData >> ticketText;
 
-    ValidateLinksAndMaybeKick(ticketText);
+    if (!ValidateHyperlinksAndMaybeKick(ticketText))
+        return;
 
     recvData >> ticketText2;
 
-    ValidateLinksAndMaybeKick(ticketText2);
+    if (!ValidateHyperlinksAndMaybeKick(ticketText2))
+        return;
+
+    /*if (!chatLog.empty() && !ValidateHyperlinksAndMaybeKick(chatLog))
+        return;*/
 
     auto ticket = new GM_Ticket;
     ticket->guid = sObjectMgr->GenerateGMTicketId();
@@ -93,7 +83,8 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
     std::string message;
     recvData >> message;
 
-    ValidateLinksAndMaybeKick(message);
+    if (!ValidateHyperlinksAndMaybeKick(message))
+        return;
 
     GM_Ticket *ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID());
     if(!ticket)
