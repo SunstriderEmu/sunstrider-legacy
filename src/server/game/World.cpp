@@ -1344,7 +1344,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
     m_configs[CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableGameObjectsLoading", 0);
     m_configs[CONFIG_DEBUG_DISABLE_TRANSPORTS] = sConfigMgr->GetBoolDefault("Debug.DisableTransports", 0);
-
+    m_configs[CONFIG_DEBUG_DISABLE_OUTDOOR_PVP] = sConfigMgr->GetBoolDefault("Debug.DisableOutdoorPvP", 0);
 
     if (int32 clientCacheId = sConfigMgr->GetIntDefault("ClientCacheVersion", 0))
     {
@@ -1830,7 +1830,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->InitializeQueriesData(QUERY_DATA_ALL);
 
     ///- Initialize game time and timers
-    TC_LOG_INFO("server.loading", "Initialize game time and timers");
+    TC_LOG_INFO("server.loading", "Initialize game time and timers...");
     GameTime::UpdateGameTimers();
 
     tm local;
@@ -1870,7 +1870,7 @@ void World::SetInitialWorldSettings()
     mail_timer_expires = ( (DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
 
     ///- Initialize MapManager
-    TC_LOG_INFO("server.loading", "Starting Map System");
+    TC_LOG_INFO("server.loading", "Starting Map System...");
     sMapMgr->Initialize();
 
     // Load Warden Data
@@ -1878,19 +1878,23 @@ void World::SetInitialWorldSettings()
     WardenDataStorage.Init();
 
     ///- Initialize Battlegrounds
-    TC_LOG_INFO("server.loading", "Starting Battleground System");
+    TC_LOG_INFO("server.loading", "Starting Battleground System...");
     sBattlegroundMgr->LoadBattlegroundTemplates();
     sBattlegroundMgr->InitAutomaticArenaPointDistribution();
 
     ///- Initialize outdoor pvp
-    TC_LOG_INFO("server.loading", "Starting Outdoor PvP System");
-    sOutdoorPvPMgr->InitOutdoorPvP();
+    TC_LOG_INFO("server.loading", "Starting Outdoor PvP System...");
+    if (!getConfig(CONFIG_DEBUG_DISABLE_OUTDOOR_PVP))
+        sOutdoorPvPMgr->InitOutdoorPvP();
+    else
+        TC_LOG_INFO("server.loading", "Outdoor PvP is disabled in config");
 
-    TC_LOG_INFO("server.loading", "Loading Transports...");
+
+    TC_LOG_INFO("server.loading", "Loading Transports.");
     if (!getConfig(CONFIG_DEBUG_DISABLE_TRANSPORTS))
         sTransportMgr->SpawnContinentTransports();
     else
-        TC_LOG_INFO("server.loading", "Transports are disabled");
+        TC_LOG_INFO("server.loading", "Transports are disabled in config");
 
     TC_LOG_INFO("server.loading","Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
