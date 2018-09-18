@@ -91,20 +91,6 @@ void MapInstanced::MapCrashed(Map* map)
     crashedMaps.push_back(map);
 }
 
-/*
-bool MapInstanced::RemoveBones(ObjectGuid guid, float x, float y)
-{
-    bool remove_result = false;
-
-    for (auto & m_InstancedMap : m_InstancedMaps)
-    {
-        remove_result = remove_result || m_InstancedMap.second->RemoveBones(guid, x, y);
-    }
-
-    return remove_result || Map::RemoveBones(guid,x,y);
-}
-*/
-
 void MapInstanced::UnloadAll()
 {
     // Unload instanced maps
@@ -323,6 +309,8 @@ bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
         ++itr;
         return false;
     }
+
+    std::lock_guard<std::mutex> lock(_mapLock);
 
     itr->second->UnloadAll();
     // should only unload VMaps if this is the last instance and grid unloading is enabled
