@@ -1,6 +1,5 @@
 START TRANSACTION;
 
-DROP TABLE creature_entry;
 CREATE TABLE `creature_entry`(  
   `spawnID` INT(10) UNSIGNED NOT NULL,
   `entry` MEDIUMINT(8) UNSIGNED NOT NULL,
