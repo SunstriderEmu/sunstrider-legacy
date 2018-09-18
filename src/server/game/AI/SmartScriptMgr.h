@@ -185,6 +185,7 @@ enum SMART_EVENT
     SMART_EVENT_ENTER_PHASE              = 103,      // phase
     SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
     SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanicMask
+    SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE = 106,   // event phase mask (<= SMART_EVENT_PHASE_ALL)
     
     
     SMART_EVENT_END                      ,

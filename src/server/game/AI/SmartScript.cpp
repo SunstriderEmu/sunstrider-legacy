@@ -3700,6 +3700,14 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, GetLastInvoker());
             break;
         }
+        case SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE:
+        {
+            if (!IsInTemplatePhase(SmartPhaseMask(e.event.eventPhaseChange.phasemask)))
+                return;
+
+            ProcessAction(e, GetLastInvoker());
+            break;
+        }
         case SMART_EVENT_GAME_EVENT_START:
         case SMART_EVENT_GAME_EVENT_END:
         {
@@ -4076,7 +4084,6 @@ bool SmartScript::IsInTemplatePhase(SmartPhaseMask phaseMask) const
 
 void SmartScript::SetPhase(uint32 p)
 {
-
     uint32 previous = mEventPhase;
     mEventPhase = p;
     if (mEventPhase != previous) 
@@ -4088,7 +4095,12 @@ void SmartScript::SetPhase(uint32 p)
 
 void SmartScript::SetTemplatePhase(uint32 p)
 {
+    uint32 previous = mEventTemplatePhase;
     mEventTemplatePhase = p;
+    if (mEventTemplatePhase != previous)
+    {
+        ProcessEventsFor(SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE);
+    }
 }
 
 void SmartScript::OnUpdate(uint32 const diff)

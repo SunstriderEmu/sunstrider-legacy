@@ -681,6 +681,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 break;
             }
             case SMART_EVENT_EVENT_PHASE_CHANGE:
+            case SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE:
             {
                 if (!e.event.eventPhaseChange.phasemask)
                 {
