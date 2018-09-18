@@ -6070,20 +6070,15 @@ void Spell::EffectDuel(uint32 i)
     target->SendDirectMessage(&data);
 
     // create duel-info
-    auto duel   = new DuelInfo;
-    duel->initiator  = caster;
-    duel->opponent   = target;
-    duel->startTime  = 0;
-    duel->startTimer = 0;
-    caster->duel     = duel;
-
-    auto duel2   = new DuelInfo;
-    duel2->initiator  = caster;
-    duel2->opponent   = caster;
-    duel2->startTime  = 0;
-    duel2->startTimer = 0;
-    target->duel      = duel2;
-
+#ifdef LICH_KING
+    bool isMounted = (GetSpellInfo()->Id == 62875);
+    caster->duel = std::make_unique<DuelInfo>(target, caster, isMounted);
+    target->duel = std::make_unique<DuelInfo>(caster, caster, isMounted);
+#else
+    caster->duel = std::make_unique<DuelInfo>(target, caster, false);
+    target->duel = std::make_unique<DuelInfo>(caster, caster, false);
+#endif
+   
     caster->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
     target->SetGuidValue(PLAYER_DUEL_ARBITER,pGameObj->GetGUID());
     sScriptMgr->OnPlayerDuelRequest(target, caster);

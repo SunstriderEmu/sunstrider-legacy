@@ -22,8 +22,8 @@ list<ObjectGuid> AttackersValue::Calculate()
     for (set<Unit*>::iterator i = targets.begin(); i != targets.end(); i++)
         result.push_back(ObjectGuid(ObjectGuid((*i)->GetGUID())));
 
-    if (bot->duel && bot->duel->opponent)
-        result.push_back(ObjectGuid(bot->duel->opponent->GetGUID()));
+    if (bot->duel && bot->duel->Opponent)
+        result.push_back(ObjectGuid(bot->duel->Opponent->GetGUID()));
 
     return result;
 }

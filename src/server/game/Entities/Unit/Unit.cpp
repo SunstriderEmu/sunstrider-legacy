@@ -686,7 +686,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
     if(attacker && pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->ToPlayer())->duel && damage >= (health-1))
     {
         // prevent kill only if killed in duel and killed by opponent or opponent controlled creature
-        if (pVictim->ToPlayer()->duel->opponent == attacker->GetControllingPlayer())
+        if (pVictim->ToPlayer()->duel->Opponent == attacker->GetControllingPlayer())
             damage = health-1;
 
         duel_hasEnded = true;
@@ -842,7 +842,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
 
             he->SetHealth(he->GetMaxHealth()/10.0f);
 
-            he->duel->opponent->CombatStopWithPets(true);
+            he->duel->Opponent->CombatStopWithPets(true);
             he->CombatStopWithPets(true);
 
             he->CastSpell(he, 7267, true);                  // beg
@@ -6920,7 +6920,7 @@ void Unit::AttackedTarget(Unit* target, bool canInitialAggro)
 
     Player* myPlayerOwner = GetCharmerOrOwnerPlayerOrPlayerItself();
     Player* targetPlayerOwner = target->GetCharmerOrOwnerPlayerOrPlayerItself();
-    if (myPlayerOwner && targetPlayerOwner && !(myPlayerOwner->duel && myPlayerOwner->duel->opponent == targetPlayerOwner))
+    if (myPlayerOwner && targetPlayerOwner && !(myPlayerOwner->duel && myPlayerOwner->duel->Opponent == targetPlayerOwner))
     {
         myPlayerOwner->UpdatePvP(true);
         myPlayerOwner->SetContestedPvP(targetPlayerOwner);
@@ -9733,7 +9733,7 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
         // last damage from non duel opponent or opponent controlled creature
         if((pVictim->ToPlayer())->duel)
         {
-            (pVictim->ToPlayer())->duel->opponent->CombatStopWithPets(true);
+            (pVictim->ToPlayer())->duel->Opponent->CombatStopWithPets(true);
             (pVictim->ToPlayer())->CombatStopWithPets(true);
             (pVictim->ToPlayer())->DuelComplete(DUEL_INTERRUPTED);
         }
