@@ -3939,8 +3939,7 @@ void SmartScript::InitTimer(SmartScriptHolder& e)
 void SmartScript::RecalcTimer(SmartScriptHolder& e, uint32 min, uint32 max)
 {
     // TC has: min/max was checked at loading!
-    // Sun: This is not checked if flag NOT_REPEATABLE is present, so:
-    if (e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE)
+    if (min > max) // Sun: But this is not actually checked if flag NOT_REPEATABLE is present, so recheck it here:
         return;
 
     e.timer = urand(uint32(min), uint32(max));

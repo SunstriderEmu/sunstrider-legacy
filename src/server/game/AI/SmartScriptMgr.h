@@ -99,93 +99,93 @@ const uint32 smartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
 
 enum SMART_EVENT
 {
-    SMART_EVENT_UPDATE_IC                = 0,       // InitialMin, InitialMax, RepeatMin, RepeatMax
-    SMART_EVENT_UPDATE_OOC               = 1,       // InitialMin, InitialMax, RepeatMin, RepeatMax
-    SMART_EVENT_HEALT_PCT                = 2,       // HPMin%, HPMax%,  RepeatMin, RepeatMax
-    SMART_EVENT_MANA_PCT                 = 3,       // ManaMin%, ManaMax%, RepeatMin, RepeatMax
-    SMART_EVENT_AGGRO                    = 4,       // NONE
-    SMART_EVENT_KILL                     = 5,       // CooldownMin0, CooldownMax1, playerOnly2, else creature entry3
-    SMART_EVENT_DEATH                    = 6,       // NONE
-    SMART_EVENT_EVADE                    = 7,       // NONE
-    SMART_EVENT_SPELLHIT                 = 8,       // SpellID, School, CooldownMin, CooldownMax
-    SMART_EVENT_RANGE                    = 9,       // MinDist, MaxDist, RepeatMin, RepeatMax
-    SMART_EVENT_OOC_LOS                  = 10,      // NoHostile, MaxRange, CooldownMin, CooldownMax, PlayerOnly
-    SMART_EVENT_RESPAWN                  = 11,      // type, MapId, ZoneId
-    SMART_EVENT_TARGET_HEALTH_PCT        = 12,      // HPMin%, HPMax%, RepeatMin, RepeatMax
-    SMART_EVENT_VICTIM_CASTING           = 13,      // RepeatMin, RepeatMax, spellid
-    SMART_EVENT_FRIENDLY_HEALTH          = 14,      // HPDeficit, Radius, RepeatMin, RepeatMax
-    SMART_EVENT_FRIENDLY_IS_CC           = 15,      // Radius, RepeatMin, RepeatMax
-    SMART_EVENT_FRIENDLY_MISSING_BUFF    = 16,      // SpellId, Radius, RepeatMin, RepeatMax
-    SMART_EVENT_SUMMONED_UNIT            = 17,      // CreatureId(0 all), CooldownMin, CooldownMax
-    SMART_EVENT_TARGET_MANA_PCT          = 18,      // ManaMin%, ManaMax%, RepeatMin, RepeatMax
-    SMART_EVENT_ACCEPTED_QUEST           = 19,      // QuestID(0any)
-    SMART_EVENT_REWARD_QUEST             = 20,      // QuestID(0any)
-    SMART_EVENT_REACHED_HOME             = 21,      // NONE
-    SMART_EVENT_RECEIVE_EMOTE            = 22,      // EmoteId, CooldownMin, CooldownMax, condition, val1, val2, val3
-    SMART_EVENT_HAS_AURA                 = 23,      // Param1 = SpellID, Param2 = Stack amount, Param3/4 RepeatMin, RepeatMax
-    SMART_EVENT_TARGET_BUFFED            = 24,      // Param1 = SpellID, Param2 = Stack amount, Param3/4 RepeatMin, RepeatMax
-    SMART_EVENT_RESET                    = 25,      // Called after combat, when the creature respawn and spawn.
-    SMART_EVENT_IC_LOS                   = 26,      // NoHostile, MaxRnage, CooldownMin, CooldownMax, PlayerOnly
-    SMART_EVENT_PASSENGER_BOARDED        = 27,      // CooldownMin, CooldownMax
-    SMART_EVENT_PASSENGER_REMOVED        = 28,      // CooldownMin, CooldownMax
-    SMART_EVENT_CHARMED                  = 29,      // onRemove (0 - on apply, 1 - on remove)
-    SMART_EVENT_CHARMED_TARGET           = 30,      // NONE
-    SMART_EVENT_SPELLHIT_TARGET          = 31,      // SpellID, School, CooldownMin, CooldownMax
-    SMART_EVENT_DAMAGED                  = 32,      // MinDmg, MaxDmg, CooldownMin, CooldownMax
-    SMART_EVENT_DAMAGED_TARGET           = 33,      // MinDmg, MaxDmg, CooldownMin, CooldownMax
-    SMART_EVENT_MOVEMENTINFORM           = 34,      // MovementType(any), PointID
-    SMART_EVENT_SUMMON_DESPAWNED         = 35,      // Entry, CooldownMin, CooldownMax
-    SMART_EVENT_CORPSE_REMOVED           = 36,      // NONE
-    SMART_EVENT_AI_INIT                  = 37,      // NONE
-    SMART_EVENT_DATA_SET                 = 38,      // Id, Value, CooldownMin, CooldownMax
-    SMART_EVENT_WAYPOINT_START           = 39,      // PointId(0any), pathID(0any)
-    SMART_EVENT_WAYPOINT_REACHED         = 40,      // PointId(0any), pathID(0any)
-    SMART_EVENT_TRANSPORT_ADDPLAYER      = 41,      // NONE
-    SMART_EVENT_TRANSPORT_ADDCREATURE    = 42,      // Entry (0 any)
-    SMART_EVENT_TRANSPORT_REMOVE_PLAYER  = 43,      // NONE
-    SMART_EVENT_TRANSPORT_RELOCATE       = 44,      // PointId
-    SMART_EVENT_INSTANCE_PLAYER_ENTER    = 45,      // Team (0 any), CooldownMin, CooldownMax
-    SMART_EVENT_AREATRIGGER_ONTRIGGER    = 46,      // TriggerId(0 any)
-    //SMART_EVENT_QUEST_ACCEPTED           = 47,      // none -> use SMART_EVENT_ACCEPTED_QUEST
-    SMART_EVENT_QUEST_OBJ_COPLETETION    = 48,      // none NYI
-    SMART_EVENT_QUEST_COMPLETION         = 49,      // none NYI
-    //SMART_EVENT_QUEST_REWARDED           = 50,      // none -> use SMART_EVENT_REWARD_QUEST
-    SMART_EVENT_QUEST_FAIL               = 51,      // none NYI
-    SMART_EVENT_TEXT_OVER                = 52,      // GroupId from creature_text,  creature entry who talks (0 any)
-    SMART_EVENT_RECEIVE_HEAL             = 53,      // MinHeal, MaxHeal, CooldownMin, CooldownMax
-    SMART_EVENT_JUST_SUMMONED            = 54,      // none
-    SMART_EVENT_WAYPOINT_PAUSED          = 55,      // PointId(0any), pathID(0any)
-    SMART_EVENT_WAYPOINT_RESUMED         = 56,      // PointId(0any), pathID(0any)
-    SMART_EVENT_WAYPOINT_STOPPED         = 57,      // PointId(0any), pathID(0any)
-    SMART_EVENT_WAYPOINT_ENDED           = 58,      // PointId(0any), pathID(0any)
-    SMART_EVENT_TIMED_EVENT_TRIGGERED    = 59,      // id
-    SMART_EVENT_UPDATE                   = 60,      // InitialMin, InitialMax, RepeatMin, RepeatMax
-    SMART_EVENT_LINK                     = 61,      // INTERNAL USAGE, no params, used to link together multiple events, does not use any extra resources to iterate event lists needlessly
-    SMART_EVENT_GOSSIP_SELECT            = 62,      // menuID, actionID, any (0|1)
-    SMART_EVENT_JUST_CREATED             = 63,      // none
-    SMART_EVENT_GOSSIP_HELLO             = 64,      // noReportUse (for GOs)
-    SMART_EVENT_FOLLOW_COMPLETED         = 65,      // none
-    SMART_EVENT_EVENT_PHASE_CHANGE       = 66,      // event phase mask (<= SMART_EVENT_PHASE_ALL)
-    SMART_EVENT_IS_BEHIND_TARGET         = 67,      // cooldownMin, CooldownMax
-    SMART_EVENT_GAME_EVENT_START         = 68,      // game_event.Entry
-    SMART_EVENT_GAME_EVENT_END           = 69,      // game_event.Entry
-    SMART_EVENT_GO_STATE_CHANGED         = 70,      // go state
-    SMART_EVENT_GO_EVENT_INFORM          = 71,      // eventId
-    SMART_EVENT_ACTION_DONE              = 72,      // eventId (SharedDefines.EventId)
-    SMART_EVENT_ON_SPELLCLICK            = 73,      // clicker (unit)
-    SMART_EVENT_FRIENDLY_HEALTH_PCT      = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax //!!! This event is shitty, do not use, targets will get overriden in action anyway. It's only kept for compat with Trinity.
-    SMART_EVENT_DISTANCE_CREATURE        = 75,      // guid, entry, distance, repeat
-    SMART_EVENT_DISTANCE_GAMEOBJECT      = 76,      // guid, entry, distance, repeat
-    SMART_EVENT_COUNTER_SET              = 77,      // id, value, cooldownMin, cooldownMax
-
-    //Custom sunstrider
-    SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
-    SMART_EVENT_VICTIM_NOT_IN_LOS        = 101,      // checkInterval, NOT (event triggers if can see instead)
-    SMART_EVENT_VICTIM_DIED              = 102,      // none
-    SMART_EVENT_ENTER_PHASE              = 103,      // phase
-    SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
-    SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanicMask
-    SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE = 106,   // event phase mask (<= SMART_EVENT_PHASE_ALL)
+    SMART_EVENT_UPDATE_IC                   = 0,       // InitialMin, InitialMax, RepeatMin, RepeatMax
+    SMART_EVENT_UPDATE_OOC                  = 1,       // InitialMin, InitialMax, RepeatMin, RepeatMax
+    SMART_EVENT_HEALT_PCT                   = 2,       // HPMin%, HPMax%,  RepeatMin, RepeatMax
+    SMART_EVENT_MANA_PCT                    = 3,       // ManaMin%, ManaMax%, RepeatMin, RepeatMax
+    SMART_EVENT_AGGRO                       = 4,       // NONE
+    SMART_EVENT_KILL                        = 5,       // CooldownMin0, CooldownMax1, playerOnly2, else creature entry3
+    SMART_EVENT_DEATH                       = 6,       // NONE
+    SMART_EVENT_EVADE                       = 7,       // NONE
+    SMART_EVENT_SPELLHIT                    = 8,       // SpellID, School, CooldownMin, CooldownMax
+    SMART_EVENT_RANGE                       = 9,       // MinDist, MaxDist, RepeatMin, RepeatMax
+    SMART_EVENT_OOC_LOS                     = 10,      // NoHostile, MaxRange, CooldownMin, CooldownMax, PlayerOnly
+    SMART_EVENT_RESPAWN                     = 11,      // type, MapId, ZoneId
+    SMART_EVENT_TARGET_HEALTH_PCT           = 12,      // HPMin%, HPMax%, RepeatMin, RepeatMax
+    SMART_EVENT_VICTIM_CASTING              = 13,      // RepeatMin, RepeatMax, spellid
+    SMART_EVENT_FRIENDLY_HEALTH             = 14,      // HPDeficit, Radius, RepeatMin, RepeatMax
+    SMART_EVENT_FRIENDLY_IS_CC              = 15,      // Radius, RepeatMin, RepeatMax
+    SMART_EVENT_FRIENDLY_MISSING_BUFF       = 16,      // SpellId, Radius, RepeatMin, RepeatMax
+    SMART_EVENT_SUMMONED_UNIT               = 17,      // CreatureId(0 all), CooldownMin, CooldownMax
+    SMART_EVENT_TARGET_MANA_PCT             = 18,      // ManaMin%, ManaMax%, RepeatMin, RepeatMax
+    SMART_EVENT_ACCEPTED_QUEST              = 19,      // QuestID(0any)
+    SMART_EVENT_REWARD_QUEST                = 20,      // QuestID(0any)
+    SMART_EVENT_REACHED_HOME                = 21,      // NONE
+    SMART_EVENT_RECEIVE_EMOTE               = 22,      // EmoteId, CooldownMin, CooldownMax, condition, val1, val2, val3
+    SMART_EVENT_HAS_AURA                    = 23,      // Param1 = SpellID, Param2 = Stack amount, Param3/4 RepeatMin, RepeatMax
+    SMART_EVENT_TARGET_BUFFED               = 24,      // Param1 = SpellID, Param2 = Stack amount, Param3/4 RepeatMin, RepeatMax
+    SMART_EVENT_RESET                       = 25,      // Called after combat, when the creature respawn and spawn.
+    SMART_EVENT_IC_LOS                      = 26,      // NoHostile, MaxRnage, CooldownMin, CooldownMax, PlayerOnly
+    SMART_EVENT_PASSENGER_BOARDED           = 27,      // CooldownMin, CooldownMax
+    SMART_EVENT_PASSENGER_REMOVED           = 28,      // CooldownMin, CooldownMax
+    SMART_EVENT_CHARMED                     = 29,      // onRemove (0 - on apply, 1 - on remove)
+    SMART_EVENT_CHARMED_TARGET              = 30,      // NONE
+    SMART_EVENT_SPELLHIT_TARGET             = 31,      // SpellID, School, CooldownMin, CooldownMax
+    SMART_EVENT_DAMAGED                     = 32,      // MinDmg, MaxDmg, CooldownMin, CooldownMax
+    SMART_EVENT_DAMAGED_TARGET              = 33,      // MinDmg, MaxDmg, CooldownMin, CooldownMax
+    SMART_EVENT_MOVEMENTINFORM              = 34,      // MovementType(any), PointID
+    SMART_EVENT_SUMMON_DESPAWNED            = 35,      // Entry, CooldownMin, CooldownMax
+    SMART_EVENT_CORPSE_REMOVED              = 36,      // NONE
+    SMART_EVENT_AI_INIT                     = 37,      // NONE
+    SMART_EVENT_DATA_SET                    = 38,      // Id, Value, CooldownMin, CooldownMax
+    SMART_EVENT_WAYPOINT_START              = 39,      // PointId(0any), pathID(0any)
+    SMART_EVENT_WAYPOINT_REACHED            = 40,      // PointId(0any), pathID(0any)
+    SMART_EVENT_TRANSPORT_ADDPLAYER         = 41,      // NONE
+    SMART_EVENT_TRANSPORT_ADDCREATURE       = 42,      // Entry (0 any)
+    SMART_EVENT_TRANSPORT_REMOVE_PLAYER     = 43,      // NONE
+    SMART_EVENT_TRANSPORT_RELOCATE          = 44,      // PointId
+    SMART_EVENT_INSTANCE_PLAYER_ENTER       = 45,      // Team (0 any), CooldownMin, CooldownMax
+    SMART_EVENT_AREATRIGGER_ONTRIGGER       = 46,      // TriggerId(0 any)
+    //SMART_EVENT_QUEST_ACCEPTED              = 47,      // none -> use SMART_EVENT_ACCEPTED_QUEST
+    SMART_EVENT_QUEST_OBJ_COPLETETION       = 48,      // none NYI
+    SMART_EVENT_QUEST_COMPLETION            = 49,      // none NYI
+    //SMART_EVENT_QUEST_REWARDED              = 50,      // none -> use SMART_EVENT_REWARD_QUEST
+    SMART_EVENT_QUEST_FAIL                  = 51,      // none NYI
+    SMART_EVENT_TEXT_OVER                   = 52,      // GroupId from creature_text,  creature entry who talks (0 any)
+    SMART_EVENT_RECEIVE_HEAL                = 53,      // MinHeal, MaxHeal, CooldownMin, CooldownMax
+    SMART_EVENT_JUST_SUMMONED               = 54,      // none
+    SMART_EVENT_WAYPOINT_PAUSED             = 55,      // PointId(0any), pathID(0any)
+    SMART_EVENT_WAYPOINT_RESUMED            = 56,      // PointId(0any), pathID(0any)
+    SMART_EVENT_WAYPOINT_STOPPED            = 57,      // PointId(0any), pathID(0any)
+    SMART_EVENT_WAYPOINT_ENDED              = 58,      // PointId(0any), pathID(0any)
+    SMART_EVENT_TIMED_EVENT_TRIGGERED       = 59,      // id
+    SMART_EVENT_UPDATE                      = 60,      // InitialMin, InitialMax, RepeatMin, RepeatMax
+    SMART_EVENT_LINK                        = 61,      // INTERNAL USAGE, no params, used to link together multiple events, does not use any extra resources to iterate event lists needlessly
+    SMART_EVENT_GOSSIP_SELECT               = 62,      // menuID, actionID, any (0|1)
+    SMART_EVENT_JUST_CREATED                = 63,      // none
+    SMART_EVENT_GOSSIP_HELLO                = 64,      // noReportUse (for GOs)
+    SMART_EVENT_FOLLOW_COMPLETED            = 65,      // none
+    SMART_EVENT_EVENT_PHASE_CHANGE          = 66,      // event phase mask (<= SMART_EVENT_PHASE_ALL)
+    SMART_EVENT_IS_BEHIND_TARGET            = 67,      // cooldownMin, CooldownMax
+    SMART_EVENT_GAME_EVENT_START            = 68,      // game_event.Entry
+    SMART_EVENT_GAME_EVENT_END              = 69,      // game_event.Entry
+    SMART_EVENT_GO_STATE_CHANGED            = 70,      // go state
+    SMART_EVENT_GO_EVENT_INFORM             = 71,      // eventId
+    SMART_EVENT_ACTION_DONE                 = 72,      // eventId (SharedDefines.EventId)
+    SMART_EVENT_ON_SPELLCLICK               = 73,      // clicker (unit)
+    SMART_EVENT_FRIENDLY_HEALTH_PCT         = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax //!!! This event is shitty, do not use, targets will get overriden in action anyway. It's only kept for compat with Trinity.
+    SMART_EVENT_DISTANCE_CREATURE           = 75,      // guid, entry, distance, repeat
+    SMART_EVENT_DISTANCE_GAMEOBJECT         = 76,      // guid, entry, distance, repeat
+    SMART_EVENT_COUNTER_SET                 = 77,      // id, value, cooldownMin, cooldownMax
+                                            
+    //Custom sunstrider                     
+    SMART_EVENT_FRIENDLY_KILLED             = 100,      // maxRange, entry(0 any), guid(0 any)
+    SMART_EVENT_VICTIM_NOT_IN_LOS           = 101,      // checkInterval, NOT (event triggers if can see instead)
+    SMART_EVENT_VICTIM_DIED                 = 102,      // none
+    SMART_EVENT_ENTER_PHASE                 = 103,      // phase
+    SMART_EVENT_GO_LOOT_STATE_CHANGED       = 104,      // stateMask (LootState)
+    SMART_EVENT_AFFECTED_BY_MECHANIC        = 105,      // checkTimer, mechanicMask
+    SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE = 106,      // event phase mask (<= SMART_EVENT_PHASE_ALL)
     
     
     SMART_EVENT_END                      ,
@@ -503,7 +503,7 @@ enum SMART_ACTION
     SMART_ACTION_SET_REACT_STATE                    = 8,      // state
     SMART_ACTION_ACTIVATE_GOBJECT                   = 9,      //
     SMART_ACTION_RANDOM_EMOTE                       = 10,     // EmoteId1, EmoteId2, EmoteId3...
-    SMART_ACTION_CAST                               = 11,     // SpellId, CastFlags
+    SMART_ACTION_CAST                               = 11,     // SpellId, CastFlags, TriggeredFlags
     SMART_ACTION_SUMMON_CREATURE                    = 12,     // CreatureID, summonType, duration in ms, attackInvoker, attackVictim
     SMART_ACTION_THREAT_SINGLE_PCT                  = 13,     // Threat%
     SMART_ACTION_THREAT_ALL_PCT                     = 14,     // Threat%
@@ -1285,14 +1285,15 @@ enum SMARTAI_SPAWN_FLAGS
 
 enum SMARTAI_TEMPLATE
 {
-    SMARTAI_TEMPLATE_BASIC          = 0, //nothing is preset
-    SMARTAI_TEMPLATE_CASTER         = 1, //spellid, repeatMin, repeatMax, range, manaPCT +JOIN: target_param1 as castFlag
-    SMARTAI_TEMPLATE_TURRET         = 2, //spellid, repeatMin, repeatMax +JOIN: target_param1 as castFlag
-    SMARTAI_TEMPLATE_PASSIVE        = 3,
-    SMARTAI_TEMPLATE_CAGED_GO_PART  = 4, //creatureID, give credit at point end?,
-    SMARTAI_TEMPLATE_CAGED_NPC_PART = 5, //gameObjectID, despawntime, run?, dist, TextGroupID
-    SMARTAI_TEMPLATE_CASTER_SUN     = 6, //spellid, repeatMin, repeatMax, castFlags
-    SMARTAI_TEMPLATE_END            = 7
+    SMARTAI_TEMPLATE_BASIC           = 0, //nothing is preset
+    SMARTAI_TEMPLATE_CASTER          = 1, //spellid, repeatMin, repeatMax, range, manaPCT +JOIN: target_param1 as castFlag
+    SMARTAI_TEMPLATE_TURRET          = 2, //spellid, repeatMin, repeatMax +JOIN: target_param1 as castFlag
+    SMARTAI_TEMPLATE_PASSIVE         = 3,
+    SMARTAI_TEMPLATE_CAGED_GO_PART   = 4, //creatureID, give credit at point end?,
+    SMARTAI_TEMPLATE_CAGED_NPC_PART  = 5, //gameObjectID, despawntime, run?, dist, TextGroupID
+    SMARTAI_TEMPLATE_CASTER_SUN      = 6, //spellid, repeatMin, repeatMax, castFlags
+    SMARTAI_TEMPLATE_CASTER_SUN_ROOT = 7, //spellid, spellRepeat, rootSpellId, rootSpellRepeat
+    SMARTAI_TEMPLATE_END,
 };
 
 enum SMARTAI_TARGETS
@@ -1527,90 +1528,91 @@ const std::unordered_map<uint32, uint32> SmartAITypeMask =
 
 const std::unordered_map<uint32, uint32> SmartAIEventMask =
 {
-    { SMART_EVENT_UPDATE_IC,                 SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_TIMED_ACTIONLIST },
-    { SMART_EVENT_UPDATE_OOC,                SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT + SMART_SCRIPT_TYPE_MASK_INSTANCE },
-    { SMART_EVENT_HEALT_PCT,                 SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_MANA_PCT,                  SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_AGGRO,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_KILL,                      SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_DEATH,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_EVADE,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_SPELLHIT,                  SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_RANGE,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_OOC_LOS,                   SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_RESPAWN,                   SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_TARGET_HEALTH_PCT,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_VICTIM_CASTING,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_FRIENDLY_HEALTH,           SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_FRIENDLY_IS_CC,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_FRIENDLY_MISSING_BUFF,     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_SUMMONED_UNIT,             SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_TARGET_MANA_PCT,           SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_ACCEPTED_QUEST,            SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_REWARD_QUEST,              SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_REACHED_HOME,              SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_RECEIVE_EMOTE,             SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_HAS_AURA,                  SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_TARGET_BUFFED,             SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_RESET,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_IC_LOS,                    SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_PASSENGER_BOARDED,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_PASSENGER_REMOVED,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_CHARMED,                   SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_CHARMED_TARGET,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_SPELLHIT_TARGET,           SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_DAMAGED,                   SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_DAMAGED_TARGET,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_MOVEMENTINFORM,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_SUMMON_DESPAWNED,          SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_CORPSE_REMOVED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_AI_INIT,                   SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_DATA_SET,                  SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_WAYPOINT_START,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_WAYPOINT_REACHED,          SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_TRANSPORT_ADDPLAYER,       SMART_SCRIPT_TYPE_MASK_TRANSPORT },
-    { SMART_EVENT_TRANSPORT_ADDCREATURE,     SMART_SCRIPT_TYPE_MASK_TRANSPORT },
-    { SMART_EVENT_TRANSPORT_REMOVE_PLAYER,   SMART_SCRIPT_TYPE_MASK_TRANSPORT },
-    { SMART_EVENT_TRANSPORT_RELOCATE,        SMART_SCRIPT_TYPE_MASK_TRANSPORT },
-    { SMART_EVENT_INSTANCE_PLAYER_ENTER,     SMART_SCRIPT_TYPE_MASK_INSTANCE },
-    { SMART_EVENT_AREATRIGGER_ONTRIGGER,     SMART_SCRIPT_TYPE_MASK_AREATRIGGER },
-    // {SMART_EVENT_QUEST_ACCEPTED,            SMART_SCRIPT_TYPE_MASK_QUEST },
-    { SMART_EVENT_QUEST_OBJ_COPLETETION,     SMART_SCRIPT_TYPE_MASK_QUEST },
-    // {SMART_EVENT_QUEST_REWARDED,            SMART_SCRIPT_TYPE_MASK_QUEST },
-    { SMART_EVENT_QUEST_COMPLETION,          SMART_SCRIPT_TYPE_MASK_QUEST },
-    { SMART_EVENT_QUEST_FAIL,                SMART_SCRIPT_TYPE_MASK_QUEST },
-    { SMART_EVENT_TEXT_OVER,                 SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_RECEIVE_HEAL,              SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_JUST_SUMMONED,             SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_WAYPOINT_PAUSED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_WAYPOINT_RESUMED,          SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_WAYPOINT_STOPPED,          SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_WAYPOINT_ENDED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_TIMED_EVENT_TRIGGERED,     SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_UPDATE,                    SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_LINK,                      SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT + SMART_SCRIPT_TYPE_MASK_AREATRIGGER + SMART_SCRIPT_TYPE_MASK_EVENT + SMART_SCRIPT_TYPE_MASK_GOSSIP + SMART_SCRIPT_TYPE_MASK_QUEST + SMART_SCRIPT_TYPE_MASK_SPELL + SMART_SCRIPT_TYPE_MASK_TRANSPORT + SMART_SCRIPT_TYPE_MASK_INSTANCE },
-    { SMART_EVENT_GOSSIP_SELECT,             SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_JUST_CREATED,              SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_GOSSIP_HELLO,              SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_FOLLOW_COMPLETED,          SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_EVENT_PHASE_CHANGE,        SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_IS_BEHIND_TARGET,          SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_GAME_EVENT_START,          SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_GAME_EVENT_END,            SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_GO_STATE_CHANGED,          SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_GO_EVENT_INFORM,           SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_ACTION_DONE,               SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_ON_SPELLCLICK,             SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_FRIENDLY_HEALTH_PCT,       SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_DISTANCE_CREATURE,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_DISTANCE_GAMEOBJECT,       SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_COUNTER_SET,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_FRIENDLY_KILLED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_VICTIM_NOT_IN_LOS,         SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_VICTIM_DIED,               SMART_SCRIPT_TYPE_MASK_CREATURE },
-    { SMART_EVENT_ENTER_PHASE,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_GO_LOOT_STATE_CHANGED,     SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
-    { SMART_EVENT_AFFECTED_BY_MECHANIC,      SMART_SCRIPT_TYPE_MASK_CREATURE }
+    { SMART_EVENT_UPDATE_IC,                   SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_TIMED_ACTIONLIST },
+    { SMART_EVENT_UPDATE_OOC,                  SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT + SMART_SCRIPT_TYPE_MASK_INSTANCE },
+    { SMART_EVENT_HEALT_PCT,                   SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_MANA_PCT,                    SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_AGGRO,                       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_KILL,                        SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_DEATH,                       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_EVADE,                       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_SPELLHIT,                    SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_RANGE,                       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_OOC_LOS,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_RESPAWN,                     SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_TARGET_HEALTH_PCT,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_VICTIM_CASTING,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_FRIENDLY_HEALTH,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_FRIENDLY_IS_CC,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_FRIENDLY_MISSING_BUFF,       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_SUMMONED_UNIT,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_TARGET_MANA_PCT,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_ACCEPTED_QUEST,              SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_REWARD_QUEST,                SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_REACHED_HOME,                SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_RECEIVE_EMOTE,               SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_HAS_AURA,                    SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_TARGET_BUFFED,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_RESET,                       SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_IC_LOS,                      SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_PASSENGER_BOARDED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_PASSENGER_REMOVED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_CHARMED,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_CHARMED_TARGET,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_SPELLHIT_TARGET,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_DAMAGED,                     SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_DAMAGED_TARGET,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_MOVEMENTINFORM,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_SUMMON_DESPAWNED,            SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_CORPSE_REMOVED,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_AI_INIT,                     SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_DATA_SET,                    SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_WAYPOINT_START,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_WAYPOINT_REACHED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_TRANSPORT_ADDPLAYER,         SMART_SCRIPT_TYPE_MASK_TRANSPORT },
+    { SMART_EVENT_TRANSPORT_ADDCREATURE,       SMART_SCRIPT_TYPE_MASK_TRANSPORT },
+    { SMART_EVENT_TRANSPORT_REMOVE_PLAYER,     SMART_SCRIPT_TYPE_MASK_TRANSPORT },
+    { SMART_EVENT_TRANSPORT_RELOCATE,          SMART_SCRIPT_TYPE_MASK_TRANSPORT },
+    { SMART_EVENT_INSTANCE_PLAYER_ENTER,       SMART_SCRIPT_TYPE_MASK_INSTANCE },
+    { SMART_EVENT_AREATRIGGER_ONTRIGGER,       SMART_SCRIPT_TYPE_MASK_AREATRIGGER },
+    // {SMART_EVENT_QUEST_ACCEPTED,              SMART_SCRIPT_TYPE_MASK_QUEST },
+    { SMART_EVENT_QUEST_OBJ_COPLETETION,       SMART_SCRIPT_TYPE_MASK_QUEST },
+    // {SMART_EVENT_QUEST_REWARDED,              SMART_SCRIPT_TYPE_MASK_QUEST },
+    { SMART_EVENT_QUEST_COMPLETION,            SMART_SCRIPT_TYPE_MASK_QUEST },
+    { SMART_EVENT_QUEST_FAIL,                  SMART_SCRIPT_TYPE_MASK_QUEST },
+    { SMART_EVENT_TEXT_OVER,                   SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_RECEIVE_HEAL,                SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_JUST_SUMMONED,               SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_WAYPOINT_PAUSED,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_WAYPOINT_RESUMED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_WAYPOINT_STOPPED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_WAYPOINT_ENDED,              SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_TIMED_EVENT_TRIGGERED,       SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_UPDATE,                      SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_LINK,                        SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT + SMART_SCRIPT_TYPE_MASK_AREATRIGGER + SMART_SCRIPT_TYPE_MASK_EVENT + SMART_SCRIPT_TYPE_MASK_GOSSIP + SMART_SCRIPT_TYPE_MASK_QUEST + SMART_SCRIPT_TYPE_MASK_SPELL + SMART_SCRIPT_TYPE_MASK_TRANSPORT + SMART_SCRIPT_TYPE_MASK_INSTANCE },
+    { SMART_EVENT_GOSSIP_SELECT,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_JUST_CREATED,                SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_GOSSIP_HELLO,                SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_FOLLOW_COMPLETED,            SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_EVENT_PHASE_CHANGE,          SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_IS_BEHIND_TARGET,            SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_GAME_EVENT_START,            SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_GAME_EVENT_END,              SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_GO_STATE_CHANGED,            SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_GO_EVENT_INFORM,             SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_ACTION_DONE,                 SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_ON_SPELLCLICK,               SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_FRIENDLY_HEALTH_PCT,         SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_DISTANCE_CREATURE,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_DISTANCE_GAMEOBJECT,         SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_COUNTER_SET,                 SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_FRIENDLY_KILLED,             SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_VICTIM_NOT_IN_LOS,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_VICTIM_DIED,                 SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_ENTER_PHASE,                 SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_GO_LOOT_STATE_CHANGED,       SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_AFFECTED_BY_MECHANIC,        SMART_SCRIPT_TYPE_MASK_CREATURE },
+    { SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
 };
 
 enum SmartEventFlags
