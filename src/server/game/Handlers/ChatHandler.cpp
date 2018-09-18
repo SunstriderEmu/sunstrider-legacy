@@ -23,36 +23,21 @@
 #include "GuildMgr.h"
 #include "GameTime.h"
 
+#include <algorithm>
+
 #ifdef PLAYERBOT
 #include "playerbot.h"
 #endif
 
-static void StripInvisibleChars(std::string& str)
+inline bool isNasty(char c)
 {
-    static std::string const invChars = " \t\7\n";
-     size_t wpos = 0;
-     bool space = false;
-    for (size_t pos = 0; pos < str.size(); ++pos)
-    {
-        if (invChars.find(str[pos]) != std::string::npos)
-        {
-            if (!space)
-            {
-                str[wpos++] = ' ';
-                space = true;
-            }
-        }
-        else
-        {
-            if (wpos != pos)
-                str[wpos++] = str[pos];
-            else
-                ++wpos;
-            space = false;
-        }
-    }
-     if (wpos < str.size())
-        str.erase(wpos, str.size());
+    if (c < 32) // all of these are control characters
+        return true;
+    if (c == 127) // ascii delete
+        return true;
+    if (c == 255) // non-breaking whitespace
+        return true;
+    return false;
 }
 
 void WorldSession::SendPlayerNotFoundNotice(std::string const& name)
@@ -225,10 +210,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
     if (msg.size() > 255)
         return;
 
-    // Strip invisible characters for non-addon messages
-    if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING) && lang != LANG_ADDON)
-        StripInvisibleChars(msg);
-
     // no chat commands in AFK/DND autoreply, and it can be empty
     if (!(type == CHAT_MSG_AFK || type == CHAT_MSG_DND))
     {
@@ -253,8 +234,27 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         }
     }
 
-    if ((lang != LANG_ADDON) && !ValidateHyperlinksAndMaybeKick(msg))
-        return;
+    // do message validity checks
+    if (lang != LANG_ADDON)
+    {
+        // abort on any sort of nasty character
+        for (char c : msg)
+            if (isNasty(c))
+            {
+                TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a message containing control character %u - blocked", GetPlayer()->GetName().c_str(),
+                    GetPlayer()->GetGUID().GetCounter(), uint32(c));
+                return;
+            }
+        // collapse multiple spaces into one
+        if (sWorld->getBoolConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+        {
+            auto end = std::unique(msg.begin(), msg.end(), [](char c1, char c2) { return (c1 == ' ') && (c2 == ' '); });
+            msg.erase(end, msg.end());
+        }
+        // validate hyperlinks
+        if (!ValidateHyperlinksAndMaybeKick(msg))
+            return;
+    }
 
    Player* toPlayer = nullptr;
    uint32 logChannelId = 0;
