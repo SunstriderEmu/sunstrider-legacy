@@ -1529,7 +1529,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 {
     uint32 triggerSpellId = GetSpellInfo()->Effects[GetEffIndex()].TriggerSpell;
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
-    if (!triggeredSpellInfo)
+    if (!triggeredSpellInfo && !triggerSpellId)
     {
         TC_LOG_WARN("spells", "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u has non-existent spell %u in EffectTriggered[%d] and is therefore not triggered.", GetId(), triggerSpellId, GetEffIndex());
         return;
