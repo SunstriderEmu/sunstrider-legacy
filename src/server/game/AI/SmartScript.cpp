@@ -2907,7 +2907,7 @@ void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAG
     if (flags & SMART_TARGET_FLAG_UNIQUE_TARGET)
         if (!list.empty())
         {
-            list.resize(1);
+            Trinity::Containers::RandomResize(list, 1);
             return;
         }
 
