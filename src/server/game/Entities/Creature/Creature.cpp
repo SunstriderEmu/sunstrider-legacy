@@ -1045,7 +1045,8 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     if (!AIM_Create(ai))
         return false;
 
-    AI()->InitializeAI();
+    if (IsAlive()) //sun: we load dead units so make sure we don't call reset hooks for them. That would cause all kinds of weird behaviors in scripts
+        AI()->InitializeAI();
 #ifdef LICH_KING
     if (GetVehicleKit())
         GetVehicleKit()->Reset();

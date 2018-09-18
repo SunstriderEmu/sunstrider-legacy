@@ -100,6 +100,11 @@ void UnitAI::SetRestoreCombatMovementOnOOM(bool set)
     //Movement will be restored at next oom cast
 }
 
+void UnitAI::InitializeAI()
+{
+    Reset(); 
+}
+
 bool UnitAI::GetRestoreCombatMovementOnOOM()
 {
     return m_restoreCombatMovementOnOOM;

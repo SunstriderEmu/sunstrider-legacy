@@ -114,7 +114,7 @@ class TC_GAME_API UnitAI
         void SetRestoreCombatMovementOnOOM(bool set);
         bool GetRestoreCombatMovementOnOOM();
 
-        virtual void InitializeAI() { Reset(); }
+        virtual void InitializeAI();
 
         virtual void Reset() {}
 
