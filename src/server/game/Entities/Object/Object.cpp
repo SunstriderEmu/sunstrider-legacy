@@ -1791,8 +1791,8 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert, fl
 
     float distance = GetDistance(obj); // This uses this unit and target combat reach
 
-    Unit const* unit = ToUnit();
-    if (unit && !unit->IsAlive())
+    Unit const* detector = ToUnit();
+    if (detector && !detector->IsAlive())
         return false;
 
     Unit const* unitTarget = obj->ToUnit();
@@ -1813,7 +1813,7 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert, fl
         if (!(obj->m_stealth.GetFlags() & (1 << i)))
             continue;
 
-        if (unit && unit->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
+        if (detector && detector->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
             return true;
 
         float visibleDistance = 0.0f;
@@ -1864,13 +1864,20 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert, fl
         if (visibleDistance <= 0.0f)
             break; //in this case we can already stop here
 
-        // If this unit is an NPC then player detect range doesn't apply
-        if (unit && unit->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
-            visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
+        if (detector)
+        {
+            // If this unit is an NPC then player detect range doesn't apply
+            if (detector->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
+                visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
 
-        float combatRange = unit->ToCreature()->GetCombatRange() ? unit->ToCreature()->GetCombatRange()->MaxRange : 0.0f;
-        if (checkAlert && unit && unit->ToCreature() && visibleDistance <= unit->ToCreature()->GetAggroRange(unitTarget) + combatRange)
-            return true;
+            if (checkAlert && detector->GetTypeId() == TYPEID_UNIT)
+            {
+                float combatRange = detector->ToCreature()->GetCombatRange() ? detector->ToCreature()->GetCombatRange()->MaxRange : 0.0f;
+                if (visibleDistance <= detector->ToCreature()->GetAggroRange(unitTarget) + combatRange)
+                    return true;
+            }
+        }
+
 
         if (distance <= visibleDistance)
             return true;
