@@ -8154,7 +8154,8 @@ namespace Trinity
 
     bool WorldObjectSpellTargetCheck::operator()(WorldObject* target) const
     {
-        if (_spellInfo->CheckTarget(_caster, target, true) != SPELL_CAST_OK)
+        //sun: exclude TARGET_CHECK_ENTRY from most of these checks. Example spell: 36450 needs to target dead units.
+        if (_targetSelectionType != TARGET_CHECK_ENTRY && _spellInfo->CheckTarget(_caster, target, true) != SPELL_CAST_OK) 
             return false;
         Unit* unitTarget = target->ToUnit();
         if (Corpse* corpseTarget = target->ToCorpse())
