@@ -1050,19 +1050,8 @@ void ObjectMgr::LoadCreatureModelInfo()
         if (modelInfo.combat_reach < 0.1f)
             modelInfo.combat_reach = DEFAULT_PLAYER_COMBAT_REACH;
 
-        /*
         if (CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(creatureDisplay->ModelId))
-        {
-            for (uint32 i = 0; i < 5; ++i)
-            {
-                if (modelData->FileDataID == trigggerCreatureModelFileID[i])
-                {
-                    modelInfo.is_trigger = true;
-                    break;
-                }
-            }
-        }
-        */
+            modelInfo.is_trigger = strstr(modelData->ModelPath, "InvisibleStalker") != nullptr;
 
         ++count;
     }

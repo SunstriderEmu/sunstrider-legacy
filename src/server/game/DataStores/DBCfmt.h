@@ -26,12 +26,12 @@ char const CreatureDisplayInfofmt[]="nixifxxxxxxxxx";
 char const CreatureDisplayInfoExtrafmt[]="diixxxxxxxxxxxxxxxxxx";
 char const CreatureFamilyfmt[]="nfifiiiissssssssssssssssxx";
 #ifdef LICH_KING
-char const CreatureModelDatafmt[] ="nixxfxxxxxxxxxxffxxxxxxxxxxx";
+char const CreatureModelDatafmt[] = "nisxfxxxxxxxxxxffxxxxxxxxxxx";
 char const Emotesfmt[] = "nxxiiixx";
 char const LiquidTypefmt[] = "nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char const LightEntryfmt[] = "nifffxxxxxxxxxx";
 #else
-char const CreatureModelDatafmt[] = "nixxfxxxxxxxxxxffxxxxxxx";
+char const CreatureModelDatafmt[] = "nisxfxxxxxxxxxxffxxxxxxx";
 char const Emotesfmt[] = "nxxiiix";
 char const LiquidTypefmt[] = "nxii";
 char const LightEntryfmt[] = "nifffxxxxxxx";

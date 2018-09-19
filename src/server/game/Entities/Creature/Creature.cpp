@@ -127,7 +127,6 @@ uint32 CreatureTemplate::GetFirstValidModelId() const
 
 uint32 CreatureTemplate::GetFirstInvisibleModel() const
 {
-    /* TC, not implemented 
     CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid1);
     if (modelInfo && modelInfo->is_trigger)
         return Modelid1;
@@ -143,9 +142,29 @@ uint32 CreatureTemplate::GetFirstInvisibleModel() const
     modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid4);
     if (modelInfo && modelInfo->is_trigger)
         return Modelid4;
-    */
 
     return 11686;
+}
+
+uint32 CreatureTemplate::GetFirstVisibleModel() const
+{
+    CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid1);
+    if (modelInfo && !modelInfo->is_trigger)
+        return Modelid1;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid2);
+    if (modelInfo && !modelInfo->is_trigger)
+        return Modelid2;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid3);
+    if (modelInfo && !modelInfo->is_trigger)
+        return Modelid3;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid4);
+    if (modelInfo && !modelInfo->is_trigger)
+        return Modelid4;
+
+    return 17519;
 }
 
 void CreatureTemplate::InitializeQueryData()
