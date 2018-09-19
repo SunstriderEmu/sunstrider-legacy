@@ -100,7 +100,7 @@ inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
         if (c->IsAIEnabled() && c->CanSeeOrDetect(u, false, true))
             c->AI()->MoveInLineOfSight_Safe(u);
         else
-            if (u->GetTypeId() == TYPEID_PLAYER && u->HasStealthAura() && c->IsAIEnabled() && /* c->CanSeeOrDetect(u, false, true, true) already in next check */ c->CanDoStealthAlert(u))
+            if (u->GetTypeId() == TYPEID_PLAYER && c->IsAIEnabled() && /* c->CanSeeOrDetect(u, false, true, true) && u->HasStealthAura() already in next check */ c->CanDoStealthAlert(u))
                 c->StartStealthAlert(u); //c->AI()->TriggerAlert(u);
     }
 }

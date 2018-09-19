@@ -1942,8 +1942,10 @@ bool Creature::CanDoStealthAlert(Unit const* target) const
     if(target->GetTypeId() != TYPEID_PLAYER)
         return false;
 
-    //target not stealthed
-    if(CanSeeOrDetect(target, false, true, true))
+    if (!target->HasStealthAura())
+        return false;
+
+    if(!CanSeeOrDetect(target, false, true, true))
         return false;
 
     //only with those movement generators, we don't want to start warning when fleeing, chasing, ...
