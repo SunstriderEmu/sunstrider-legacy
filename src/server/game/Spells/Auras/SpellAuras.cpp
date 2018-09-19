@@ -75,7 +75,13 @@ void AuraApplication::_UpdateSlot()
 #else
         uint32 buffLimit = GetTarget()->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT);
         uint32 const firstSlot = IsPositive() ? 0 : buffLimit; //BC use defined slots for positive/negative auras. Negatives auras occupy the end of the range.
-        ASSERT(buffLimit == UNIT_BYTE2_CREATURE_BUFF_LIMIT || buffLimit == UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
+        if (buffLimit != UNIT_BYTE2_CREATURE_BUFF_LIMIT && buffLimit != UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT)
+        {
+            DEBUG_ASSERT(false, "Wrong debuff limit %u", buffLimit);
+            TC_LOG_ERROR("spells", "Aura: %u Effect: %d on unit with entry %u has wrong debuff limit %u", GetBase()->GetId(), GetEffectMask(), GetTarget()->GetEntry(), buffLimit);
+            buffLimit = UNIT_BYTE2_CREATURE_BUFF_LIMIT;
+            GetTarget()->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, buffLimit);
+        }
 #endif
         Unit::VisibleAuraMap::const_iterator itr = visibleAuras->find(firstSlot);
         // lookup for free slots in units visibleAuras
