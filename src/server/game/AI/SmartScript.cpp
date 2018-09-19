@@ -92,7 +92,7 @@ void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint3
         if (eventType == SMART_EVENT_LINK)//special handling
             continue;
 
-        if (eventType == e/* && (!i->event.event_phase_mask || IsInPhase(i->event.event_phase_mask)) && !(i->event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && i->runOnce)*/)
+        if (eventType == e)
         {
             if (sConditionMgr->IsObjectMeetingSmartEventConditions(mEvent.entryOrGuid, mEvent.event_id, mEvent.source_type, unit, GetBaseObject()))
                 ProcessEvent(mEvent, unit, var0, var1, bvar, spell, gob);
@@ -776,12 +776,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 if (e.action.removeAura.spell)
                 {
-                    /* TODO SPELLS 
                     if (e.action.removeAura.charges)
                     {
                         if (Aura* aur = target->ToUnit()->GetAura(e.action.removeAura.spell))
-                            aur->ModCharges(-e.action.removeAura.charges, AURA_REMOVE_BY_EXPIRE);
-                    } else */
+                            aur->ModCharges(-static_cast<int32>(e.action.removeAura.charges), AURA_REMOVE_BY_EXPIRE);
+                    } else 
                         target->ToUnit()->RemoveAurasDueToSpell(e.action.removeAura.spell);
                 }
                 else
