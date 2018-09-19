@@ -2976,23 +2976,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
             }
-            /*
-            Working with spell_target and SmartAI
-            case 32146: //Liquid Fire
-            {
-            if (!m_target && !caster->GetVictim())
-            return;
-
-            Creature* cTarget = caster->FindNearestCreature(18240, 5, true);
-            if ((caster->ToPlayer())->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
-            {
-            (caster->ToPlayer())->KilledMonsterCredit(18240, 0);
-            cTarget->ForcedDespawn();
-            }
-
-            return;
-            }
-            */
             case 37096:                                     // Blood Elf Disguise
                 if (caster)
                 {
@@ -3093,11 +3076,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 m_target->CastSpell(m_target, 28206, this);
                 // Poison Cloud
                 m_target->CastSpell(m_target, 28240, this);
-                return;
-            }
-            case 36730:                                     // Flame Strike
-            {
-                m_target->CastSpell(m_target, 36731, this);
                 return;
             }
             case 44191:                                     // Flame Strike
