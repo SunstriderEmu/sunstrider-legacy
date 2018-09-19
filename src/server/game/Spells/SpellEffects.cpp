@@ -6440,9 +6440,7 @@ void Spell::EffectAddExtraAttacks(uint32 effIndex)
 
     Unit *victim = unitTarget->GetVictim();
 
-    // attack prevented
-    // fixme, some attacks may not target current victim, this is right now not handled
-    if (!victim || !unitTarget->IsWithinMeleeRange(victim) || !unitTarget->HasInArc( 2*M_PI/3, victim ))
+    if (unitTarget->m_extraAttacks)
         return;
 
     // Only for proc/log informations

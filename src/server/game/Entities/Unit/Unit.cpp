@@ -2188,6 +2188,15 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
     }
 }
 
+void Unit::HandleProcExtraAttackFor(Unit* victim)
+{
+    while (m_extraAttacks)
+    {
+        AttackerStateUpdate(victim, BASE_ATTACK, true);
+        --m_extraAttacks;
+    }
+}
+
 MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const
 {
 #ifdef TESTS

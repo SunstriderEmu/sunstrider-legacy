@@ -4097,7 +4097,20 @@ void Spell::_handle_finish_phase()
 {
     // Take for real after all targets are processed
     if (m_needComboPoints && m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
         m_caster->ToPlayer()->ClearComboPoints();
+    }
+
+    if (Unit* unitCaster = m_caster->ToUnit())
+    {
+        if (unitCaster->m_extraAttacks && m_spellInfo->HasEffect(SPELL_EFFECT_ADD_EXTRA_ATTACKS))
+        {
+            if (Unit* victim = ObjectAccessor::GetUnit(*unitCaster, m_targets.GetOrigUnitTargetGUID()))
+                unitCaster->HandleProcExtraAttackFor(victim);
+            else
+                unitCaster->m_extraAttacks = 0;
+        }
+    }
 
     // Handle procs on finish
     if (!m_originalCaster)

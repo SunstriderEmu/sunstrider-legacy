@@ -219,7 +219,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
 
             Movement::MoveSplineInit init(owner);
             init.MovebyPath(_path->GetPath(), 0, targetTransport);
-            init.SetWalk(false);
+            init.SetWalk(!_run);
             init.SetFacing(target);
 
             init.Launch();
