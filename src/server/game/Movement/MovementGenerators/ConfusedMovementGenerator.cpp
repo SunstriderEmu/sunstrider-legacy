@@ -56,7 +56,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
     if (!owner || !owner->IsAlive())
         return false;
 
-    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting() || owner->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING)) //sun: added falling
     {
         MovementGenerator::AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
         owner->StopMoving();
