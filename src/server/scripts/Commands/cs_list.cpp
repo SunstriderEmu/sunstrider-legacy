@@ -82,9 +82,9 @@ public:
                 int mapid = fields[4].GetUInt16();
 
                 if (handler->GetSession())
-                    handler->PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, cInfo->Name.c_str(), x, y, z, mapid);
+                    handler->PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name.c_str(), x, y, z, mapid);
                 else
-                    handler->PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name.c_str(), x, y, z, mapid);
+                    handler->PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, guid, cInfo->Name.c_str(), x, y, z, mapid);
             } while (result->NextRow());
         }
 
