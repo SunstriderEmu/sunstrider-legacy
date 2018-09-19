@@ -2722,22 +2722,22 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 uint32 range = spellInfo->GetMaxRange() - 5.0f;
                 uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
                 
-                AddEvent(1002, 1007, SMART_EVENT_AGGRO, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
+                AddEvent(1000, 0, SMART_EVENT_AGGRO, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
 
                 // Phase 1 = casting
+                // Chase at range
+                AddEvent(1001, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 1, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, range, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // Cast spell
-                AddEvent(1003, 0, SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, 0, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+                AddEvent(1002, 0, SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, 0, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
                 // Go to phase 2 when under manaPercent
-                AddEvent(1004, 1005, SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 2, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
-                // Phase 2 when under given mana
-                AddEvent(1005, 0, SMART_EVENT_LINK, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
-
+                AddEvent(1003, 1005, SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 2, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(1));
+            
                 // Phase 2 = need mana, meleeing
+                // Chase in melee
+                AddEvent(1004, 0, SMART_EVENT_EVENT_TEMPLATE_PHASE_CHANGE, 0, 2, 0, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
                 // Go back to phase 1 when at least at manaPercent
-                AddEvent(1006, 1007, SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(2));
-                // Follow victim in melee
-                AddEvent(1007, 0, SMART_EVENT_LINK, 0, 0, range, 0, 0, 0, SMART_ACTION_SET_RANGED_MOVEMENT, range, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
-
+                AddEvent(1005, 0, SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0), SmartPhaseMask(2));
+             
                 break;
             }
         case SMARTAI_TEMPLATE_CASTER_SUN_ROOT:
