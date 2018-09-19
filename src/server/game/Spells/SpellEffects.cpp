@@ -6438,8 +6438,6 @@ void Spell::EffectAddExtraAttacks(uint32 effIndex)
     if(!unitTarget || !unitTarget->IsAlive())
         return;
 
-    Unit *victim = unitTarget->GetVictim();
-
     if (unitTarget->m_extraAttacks)
         return;
 
@@ -6447,8 +6445,6 @@ void Spell::EffectAddExtraAttacks(uint32 effIndex)
     unitTarget->m_extraAttacks = damage;
 
     ExecuteLogEffectExtraAttacks(effIndex, unitTarget, damage);
-
-    unitTarget->AttackerStateUpdate(victim, BASE_ATTACK, true);
 }
 
 void Spell::EffectParry(uint32 /*i*/)
