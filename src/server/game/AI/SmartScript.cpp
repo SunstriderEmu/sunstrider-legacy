@@ -2719,9 +2719,10 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                     break;
                 }
 
-                uint32 range = spellInfo->GetMaxRange() - 5.0f;
+                uint32 range = std::min(spellInfo->GetMaxRange() - 5.0f, 30.0f); //cap at 30, some mobs spells have very long range
                 uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
                 
+                //ai init event won't work for templates
                 AddEvent(1000, 0, SMART_EVENT_AGGRO, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
 
                 // Phase 1 = casting
@@ -2760,9 +2761,10 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                     break;
                 }
 
-                uint32 range = spellInfo->GetMaxRange() - 5.0f;
+                uint32 range = std::min(spellInfo->GetMaxRange() - 5.0f, 30.0f); //cap at 30, some mobs spells have very long range
                 uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
                 
+                //ai init event won't work for templates
                 AddEvent(1000, 0, SMART_EVENT_AGGRO, 0, 0, 0, 0, 0, 0, SMART_ACTION_SET_EVENT_TEMPLATE_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, SmartPhaseMask(0));
 
                 // Phase 1 = casting
