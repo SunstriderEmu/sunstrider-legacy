@@ -512,13 +512,10 @@ void Unit::RemoveVisibleAura(uint8 slot)
 void Unit::UpdateInterruptMask()
 {
     m_interruptMask = 0;
-#ifdef LICH_KING
-    for(auto & m_interruptableAura : m_interruptableAuras)
-    {
-        if(m_interruptableAura)
-            m_interruptMask |= m_interruptableAura->GetSpellInfo()->AuraInterruptFlags;
-    }
-#endif
+
+    for(auto const& m_interruptableAura : m_interruptableAuras)
+        m_interruptMask |= m_interruptableAura->GetBase()->GetSpellInfo()->AuraInterruptFlags;
+
     if(Spell* spell = GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         if(spell->getState() == SPELL_STATE_CASTING)
             m_interruptMask |= spell->m_spellInfo->ChannelInterruptFlags;

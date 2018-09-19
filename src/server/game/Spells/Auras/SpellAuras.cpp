@@ -2130,7 +2130,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 #endif
         case SPELLFAMILY_ROGUE:
             // Remove Vanish on stealth remove
-            if (GetId() == 1784)
+            if (GetSpellInfo()->GetFirstRankSpell()->Id == 1784)
                 target->RemoveAurasWithFamily(SPELLFAMILY_ROGUE, 0x0000800, target->GetGUID());
             break;
 #ifdef LICH_KING
