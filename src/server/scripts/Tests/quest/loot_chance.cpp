@@ -25,6 +25,7 @@ class QuestLootChanceTest : public TestCase
                 successCount += uint32(HasLootForMe(warlock, player, 30811));
             }
 
+            TEST_ASSERT(sampleSize != 0);
             float actualSuccessPercent = 100 * (successCount / float(sampleSize));
             ASSERT_INFO("Expected result: %f, result: %f", expectedLootChance, actualSuccessPercent);
             TEST_ASSERT(Between<float>(expectedLootChance, expectedLootChance - resultingAbsoluteTolerance, expectedLootChance + resultingAbsoluteTolerance));
