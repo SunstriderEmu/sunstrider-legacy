@@ -55,7 +55,11 @@ class TC_GAME_API ChatHandler
         {
             SendSysMessage(PGetParseString(entry, std::forward<Args>(args)...).c_str());
         }
-        std::string PGetParseString(int32 entry, ...);
+        template<typename... Args>
+        std::string PGetParseString(uint32 entry, Args&&... args) const
+        {
+            return Trinity::StringFormat(GetTrinityString(entry), std::forward<Args>(args)...);
+        }
 
         bool _ParseCommands(char const* text);
         virtual bool ParseCommands(const char* text);

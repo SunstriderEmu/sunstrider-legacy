@@ -1176,17 +1176,6 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, ObjectGuid* p
     return true;
 }
 
-std::string ChatHandler::PGetParseString(int32 entry, ...)
-{
-    const char *format = GetTrinityString(entry);
-    va_list ap;
-    char str[1024];
-    va_start(ap, entry);
-    vsnprintf(str, 1024, format, ap);
-    va_end(ap);
-    return (std::string)str;
-}
-
 bool AddonChannelCommandHandler::ParseCommands(char const* str)
 {
     if (memcmp(str, "TrinityCore\t", 12))
