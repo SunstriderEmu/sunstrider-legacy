@@ -2,6 +2,7 @@
 #include "Language.h"
 #include "SpellAuraEffects.h"
 #include "GameTime.h"
+#include "MapManager.h"
 
 class list_commandscript : public CommandScript
 {
@@ -76,15 +77,44 @@ public:
             {
                 Field *fields = result->Fetch();
                 ObjectGuid::LowType guid = fields[0].GetUInt32();
-                float x = fields[1].GetFloat();
-                float y = fields[2].GetFloat();
-                float z = fields[3].GetFloat();
-                int mapid = fields[4].GetUInt16();
+                int mapId = fields[1].GetUInt16();
+                float x = fields[2].GetFloat();
+                float y = fields[3].GetFloat();
+                float z = fields[4].GetFloat();
+                bool liveFound = false;
 
+                // Get map (only support base map from console)
+                Map* thisMap;
                 if (handler->GetSession())
-                    handler->PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name.c_str(), x, y, z, mapid);
+                    thisMap = handler->GetSession()->GetPlayer()->GetMap();
                 else
-                    handler->PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, guid, cInfo->Name.c_str(), x, y, z, mapid);
+                    thisMap = sMapMgr->FindBaseNonInstanceMap(mapId);
+
+                // If map found, try to find active version of this creature
+                if (thisMap)
+                {
+                    auto const creBounds = thisMap->GetCreatureBySpawnIdStore().equal_range(guid);
+                    if (creBounds.first != creBounds.second)
+                    {
+                        for (std::unordered_multimap<uint32, Creature*>::const_iterator itr = creBounds.first; itr != creBounds.second;)
+                        {
+                            if (handler->GetSession())
+                                handler->PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name.c_str(), x, y, z, mapId, itr->second->GetGUID().ToString().c_str(), itr->second->IsAlive() ? "*" : " ");
+                            else
+                                handler->PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name.c_str(), x, y, z, mapId, itr->second->GetGUID().ToString().c_str(), itr->second->IsAlive() ? "*" : " ");
+                            ++itr;
+                        }
+                        liveFound = true;
+                    }
+                }
+
+                if (!liveFound)
+                {
+                    if (handler->GetSession())
+                        handler->PSendSysMessage(LANG_CREATURE_LIST_CHAT, guid, guid, cInfo->Name.c_str(), x, y, z, mapId, "", "");
+                    else
+                        handler->PSendSysMessage(LANG_CREATURE_LIST_CONSOLE, guid, cInfo->Name.c_str(), x, y, z, mapId, "", "");
+                }
             } while (result->NextRow());
         }
 
