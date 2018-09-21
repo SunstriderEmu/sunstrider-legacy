@@ -5998,15 +5998,19 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
     if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
         return;
 
-    Unit* m_target = aurApp->GetTarget();
+    Unit* target = aurApp->GetTarget();
     if (!apply)
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
-        if (m_target->HasAuraType(GetAuraType()) || m_target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+        if (target->HasAuraType(GetAuraType()) || target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
             return;
     }
 
-    m_target->SetFlying(apply);
+    if (target->SetFlying(apply))
+    {
+        if (!apply && !target->IsLevitating())
+            target->GetMotionMaster()->MoveFall();
+    }
 }
 
 void AuraEffect::HandleModRating(AuraApplication const* aurApp, uint8 mode, bool apply) const

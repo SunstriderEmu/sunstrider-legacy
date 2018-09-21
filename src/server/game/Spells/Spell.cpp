@@ -6413,15 +6413,25 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 
                 break;
             }
-            case SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED:
             case SPELL_AURA_FLY:
+#ifndef LICH_KING
+                //not sure about LK but BC only has scripted spells for these, so no checks needed
+                break;
+#endif
+            case SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED:
             {
                 // not allow cast fly spells at old maps by players (all spells is self target)
-                if(m_caster->GetTypeId()==TYPEID_PLAYER)
+                if(m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    if( !(m_caster->ToPlayer())->IsGameMaster() &&
-                        GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) != 530)
+#ifdef LICH_KING
+                    Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(m_originalCaster->GetZoneId());
+                    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(m_originalCaster->GetAreaId()))
+                        if (area->flags & AREA_FLAG_NO_FLY_ZONE || (Bf && !Bf->CanFlyIn()))
+                            return SPELL_FAILED_NOT_HERE;
+#else
+                    if(GetVirtualMapForMapAndZone(m_caster->GetMapId(), m_caster->GetZoneId()) != 530)
                         return SPELL_FAILED_NOT_HERE;
+#endif
                 }
                 break;
             }
