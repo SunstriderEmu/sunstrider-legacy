@@ -239,8 +239,8 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, SpellEffI
     if (!targetType)
         return false;
 
-    if (spellEntry->Effects[effIndex].TargetA.GetTarget() != targetType &&
-        spellEntry->Effects[effIndex].TargetB.GetTarget() != targetType)
+    if (spellEntry->Effects[localEffIndex].TargetA.GetTarget() != targetType &&
+        spellEntry->Effects[localEffIndex].TargetB.GetTarget() != targetType)
         return false;
 
     SpellImplicitTargetInfo targetInfo(targetType);
