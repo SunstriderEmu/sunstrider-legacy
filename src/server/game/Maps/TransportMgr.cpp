@@ -217,8 +217,8 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
         if (keyFrames[i - 1].Teleport || i + 1 == keyFrames.size())
         {
             size_t extra = !keyFrames[i - 1].Teleport ? 1 : 0;
-            auto  spline = new TransportSpline();
-            spline->init_spline(&splinePath[start], i - start + extra, Movement::SplineBase::ModeCatmullrom);
+            auto spline = new TransportSpline();
+            spline->init_spline(&splinePath[start], i - start + extra, Movement::SplineBase::ModeCatmullrom, keyFrames[0].InitialOrientation); //not sure about this initial orientation
             spline->initLengths();
             for (size_t j = start; j < i + extra; ++j)
             {

@@ -55,6 +55,9 @@ namespace Movement
         }
 
         // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
+        // also see: https://github.com/TrinityCore/TrinityCore/issues/22448
+        // Apparently MoveSplineFlag::Enter_Cycle tells the client to discord the first point so that may help
+        // Also SMSG_FLIGHT_SPLINE_SYNC must be used
         splineflags.enter_cycle = move_spline.isCyclic();
 
 #ifdef LICH_KING
