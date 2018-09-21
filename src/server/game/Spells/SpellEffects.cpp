@@ -6162,6 +6162,122 @@ void Spell::EffectActivateObject(uint32 effect_idx)
     ScriptInfo activateCommand;
     activateCommand.command = SCRIPT_COMMAND_ACTIVATE_OBJECT;
 
+    /* sun: Code from:
+    See https://github.com/TrinityCore/TrinityCore/issues/21078 
+    We disabled most of these, we'd need to adapt pretty much all scripts involving gameobjects
+    using #disabled
+    */
+
+    GameObjectActions action = (GameObjectActions)m_spellInfo->Effects[effect_idx].MiscValue;
+    switch (action)
+    {
+    case GameObjectActions::None:
+        TC_LOG_ERROR("spells", "Spell::EffectActivateObject: Incorrect GameObjectActions::None action in spell %u", m_spellInfo->Id);
+        break;
+    case GameObjectActions::AnimateCustom0:
+        gameObjTarget->SendCustomAnim(0);
+        break;
+    case GameObjectActions::AnimateCustom1:
+        gameObjTarget->SendCustomAnim(1);
+        break;
+    case GameObjectActions::AnimateCustom2:
+        gameObjTarget->SendCustomAnim(2);
+        break;
+    case GameObjectActions::AnimateCustom3:
+        gameObjTarget->SendCustomAnim(3);
+        break;
+    case GameObjectActions::Disturb:
+        /* #disabled if(_unitCaster)
+            gameObjTarget->Use(_unitCaster);*/
+        /* Seems like Disturb really can be used on any object...
+        if (gameObjTarget->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+        gameObjTarget->Use(m_caster);
+        else
+        sLog->outError("Spell::EffectActivateObject: GameObjectActions::Disturb triggered for non-trap GameObject %u (GUID: %u) in spell %u", gameObjTarget->GetEntry(), gameObjTarget->GetDBTableGUIDLow(), m_spellInfo->Id);
+        */
+        break;
+    case GameObjectActions::Unlock:
+        //#disabled gameObjTarget->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+        break;
+    case GameObjectActions::Lock:
+        //#disabled gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+        break;
+    case GameObjectActions::Open:
+        //#disabled gameObjTarget->Use(m_caster);
+        /* Seems like Open can also trigger traps, cause linked trap to trigger, etc... go figure...
+        gameObjTarget->UseDoorOrButton(0, false, m_caster);
+        */
+        break;
+    case GameObjectActions::OpenAndUnlock:
+        //#disabled gameObjTarget->UseDoorOrButton(0, false, _unitCaster);
+        //#disabled gameObjTarget->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+        break;
+    case GameObjectActions::Close:
+        //#disabled gameObjTarget->ResetDoorOrButton();
+        break;
+    case GameObjectActions::ToggleOpen:
+        // No use cases, implementation unknown
+        break;
+    case GameObjectActions::Destroy:
+        //#disabled gameObjTarget->UseDoorOrButton(0, true, _unitCaster);
+        break;
+    case GameObjectActions::Rebuild:
+        //#disabled gameObjTarget->ResetDoorOrButton();
+        break;
+    case GameObjectActions::Creation:
+        // No use cases, implementation unknown
+        break;
+    case GameObjectActions::Despawn:
+        //#disabled gameObjTarget->Despawn();
+        break;
+    case GameObjectActions::MakeInert:
+        //#disabled gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+        break;
+    case GameObjectActions::MakeActive:
+        //#disabled gameObjTarget->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+        break;
+    case GameObjectActions::CloseAndLock:
+        /* #disabled
+        gameObjTarget->ResetDoorOrButton();
+        gameObjTarget->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
+        */
+        break;
+    case GameObjectActions::UseArtKit0:
+        // Source for values unknown
+        switch (m_spellInfo->Id)
+        {
+        case 46904: // Light Bonfire (Art Kit)
+            gameObjTarget->SetGoArtKit(121);
+            break;
+        }
+        break;
+    case GameObjectActions::UseArtKit1:
+        // Source for values unknown
+        switch (m_spellInfo->Id)
+        {
+        case 36639: // Test Cauldron Bubble
+            gameObjTarget->SetGoArtKit(81);
+            break;
+        case 46903: // Stamp Out Bonfire (Art Kit)
+            gameObjTarget->SetGoArtKit(122);
+            break;
+        }
+        break;
+    case GameObjectActions::UseArtKit2:
+        // No use cases, implementation unknown
+        break;
+    case GameObjectActions::UseArtKit3:
+        // No use cases, implementation unknown
+        break;
+    case GameObjectActions::SetTapList:
+        // No use cases, implementation unknown
+        break;
+    default:
+        TC_LOG_ERROR("spells", "Spell::EffectActivateObject: Unhandled GameObjectActions action %u in spell %u", (uint32)action, m_spellInfo->Id);
+        break;
+    }
+
+
     gameObjTarget->GetMap()->ScriptCommandStart(activateCommand, 0, m_caster, gameObjTarget);
 }
 
