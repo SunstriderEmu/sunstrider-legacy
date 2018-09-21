@@ -426,6 +426,8 @@ class TC_GAME_API Spell
         void SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, WorldObject* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionContainer* condList);
         void SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionContainer* condList, bool isChainHeal);
 
+        GameObject* SearchSpellFocus();
+
         inline uint32 prepare(Unit* const target, AuraEffect const* triggeredByAura = nullptr)
         {
             SpellCastTargets targets;
