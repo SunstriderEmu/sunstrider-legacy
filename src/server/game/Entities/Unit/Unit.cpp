@@ -11395,7 +11395,12 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
     }
 
     if (arrived)
+    {
+        /*if (movespline->HasAnimation())
+            SetAnimationTier(movespline->GetAnimation());*/
+
         DisableSpline();
+    }
 
     // sunwell: update always! not every 400ms, because movement generators need the actual position
     // also disabled in https://github.com/TrinityCore/TrinityCore/issues/22448

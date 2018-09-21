@@ -3480,6 +3480,15 @@ bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
     SendMessageToSet(&data, false);
+
+    // Testing this from https://github.com/TrinityCore/TrinityCore/issues/22421
+    if (IsLevitating())
+        SetAnimationTier(UnitAnimationTier::Fly);
+    else if (IsHovering())
+        SetAnimationTier(UnitAnimationTier::Hover);
+    else
+        SetAnimationTier(UnitAnimationTier::Ground);
+
     return true;
 }
 
@@ -3530,6 +3539,15 @@ bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_HOVER : SMSG_SPLINE_MOVE_UNSET_HOVER, 9);
     data << GetPackGUID();
     SendMessageToSet(&data, false);
+
+    // Testing this from https://github.com/TrinityCore/TrinityCore/issues/22421
+    if (IsLevitating())
+        SetAnimationTier(UnitAnimationTier::Fly);
+    else if (IsHovering())
+        SetAnimationTier(UnitAnimationTier::Hover);
+    else
+        SetAnimationTier(UnitAnimationTier::Ground);
+
     return true;
 }
 

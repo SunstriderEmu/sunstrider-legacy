@@ -63,8 +63,8 @@ struct ChaseRange;
 
 #define DEFAULT_HOVER_HEIGHT 1.0f
 
-// byte value (UNIT_FIELD_BYTES_1,0) // UNIT_BYTES_1_OFFSET_STAND_STATE
-enum UnitStandStateType 
+// byte flag value (UNIT_FIELD_BYTES_1,0) // UNIT_BYTES_1_OFFSET_STAND_STATE
+enum UnitStandStateType : uint8
 {
     UNIT_STAND_STATE_STAND             = 0,
     UNIT_STAND_STATE_SIT               = 1,
@@ -79,7 +79,7 @@ enum UnitStandStateType
 };
 
 // byte flag value (UNIT_FIELD_BYTES_1, 2) // UNIT_BYTES_1_OFFSET_VIS_FLAG
-enum UnitStandFlags
+enum UnitStandFlags : uint8
 {
     UNIT_STAND_FLAGS_UNK1         = 0x01,
     UNIT_STAND_FLAGS_CREEP        = 0x02,
@@ -89,7 +89,17 @@ enum UnitStandFlags
     UNIT_STAND_FLAGS_ALL          = 0xFF
 };
 
-enum UnitBytes0Offsets
+// byte flag value (UNIT_FIELD_BYTES_1, 2) // UNIT_BYTES_1_OFFSET_ANIM_TIER
+enum UnitAnimationTier : uint8
+{                  // Name from client executable
+    Ground    = 0, // Normal/Ground                   - Plays ground tier animations
+    Swim      = 1, // Swim (NOT YET IMPLEMENTED)      - Falls back to ground tier animations, not handled by the client, should never appear in sniffs, will prevent tier change animations from playing correctly if used
+    Hover     = 2, // Hover                           - Plays flying tier animations or falls back to ground tier animations, automatically enables hover clientside when entering visibility with this value
+    Fly       = 3, // Fly                             - Plays flying tier animations
+    Submerged = 4, // Submerged (NOT YET IMPLEMENTED)
+};
+
+enum UnitBytes0Offsets : uint8
 {
     UNIT_BYTES_0_OFFSET_RACE        = 0,
     UNIT_BYTES_0_OFFSET_CLASS       = 1,
@@ -97,16 +107,15 @@ enum UnitBytes0Offsets
     UNIT_BYTES_0_OFFSET_POWER_TYPE  = 3,
 };
 
-
-enum UnitBytes1Offsets
+enum UnitBytes1Offsets : uint8
 {
     UNIT_BYTES_1_OFFSET_STAND_STATE = 0,
     UNIT_BYTES_1_OFFSET_PET_LOYALTY = 1,
-    UNIT_BYTES_1_OFFSET_VIS_FLAG = 2,
-    UNIT_BYTES_1_OFFSET_ANIM_TIER = 3,
+    UNIT_BYTES_1_OFFSET_VIS_FLAG    = 2,
+    UNIT_BYTES_1_OFFSET_ANIM_TIER   = 3,
 };
 
-enum UnitBytes2Offsets
+enum UnitBytes2Offsets : uint8
 {
     UNIT_BYTES_2_OFFSET_SHEATH_STATE    = 0,
     UNIT_BYTES_2_OFFSET_BUFF_LIMIT      = 1, //According to cmangos. (TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1, but it makes sense this flag changed with LK since debuff limit disappeared and PvP handling changed a lot)
@@ -115,7 +124,7 @@ enum UnitBytes2Offsets
 };
 
 // byte flags value (UNIT_FIELD_BYTES_1, 3)
-enum UnitBytes1_Flags
+enum UnitBytes1_Flags : uint8
 {
     UNIT_BYTE1_FLAG_ALWAYS_STAND    = 0x01,
     UNIT_BYTE1_FLAG_HOVER           = 0x02,
@@ -124,14 +133,14 @@ enum UnitBytes1_Flags
 };
 
 // byte flags value (UNIT_FIELD_BYTES_2,1) (according to cmangos)
-enum UnitBytes2_Flags
+enum UnitBytes2_Flags : uint8
 {
     UNIT_BYTE2_CREATURE_BUFF_LIMIT          = 16,
     UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT = 40,
 };
 
 // high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
-enum ShapeshiftForm
+enum ShapeshiftForm : uint8
 {
     FORM_NONE               = 0x00,
     FORM_CAT                = 0x01,
@@ -155,11 +164,11 @@ enum ShapeshiftForm
     FORM_FLIGHT             = 0x1D,
     FORM_STEALTH            = 0x1E,
     FORM_MOONKIN            = 0x1F,
-    FORM_SPIRITOFREDEMPTION = 0x20
+    FORM_SPIRITOFREDEMPTION = 0x20,
 };
 
 // low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_SHEATH_STATE
-enum SheathState
+enum SheathState : uint8
 {
     SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
     SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
@@ -170,7 +179,7 @@ enum SheathState
 
 // byte (2 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_PET_FLAGS
 // Those has changed with LK
-enum UnitRename
+enum UnitRename : uint8
 {
     UNIT_RENAME_NOT_ALLOWED = 0x02,
     UNIT_RENAME_ALLOWED     = 0x03
@@ -179,7 +188,7 @@ enum UnitRename
 static const uint32 MAX_CREATURE_SPELLS = 8;
 static const uint32 MAX_CREATURE_MODELS = 4;
 
-enum VictimState
+enum VictimState : uint8
 {
     VICTIMSTATE_UNKNOWN1       = 0,
     VICTIMSTATE_NORMAL         = 1,
@@ -193,7 +202,7 @@ enum VictimState
 };
 
 //this is sent to client in SMSG_ATTACKERSTATEUPDATE or other packets
-enum HitInfo
+enum HitInfo : uint32
 {
     HITINFO_NORMALSWING         = 0x00000000,
     HITINFO_UNK1                = 0x00000001,               // req correct packet structure
@@ -622,7 +631,7 @@ enum MovementFlags : int
     /** Player can fly. Seems to work on some degree on creatures. */
     MOVEMENTFLAG_CAN_FLY               = 0x01000000,               
     /** unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity. This will crash the client in various and horrible ways if set on creatures. */
-    MOVEMENTFLAG_PLAYER_FLYING         = 0x02000000,               // 
+    MOVEMENTFLAG_PLAYER_FLYING         = 0x02000000,               // TC MOVEMENTFLAG_FLYING
     MOVEMENTFLAG_SPLINE_ELEVATION      = 0x04000000,               // used for flight paths
     MOVEMENTFLAG_SPLINE_ENABLED        = 0x08000000,               // used for flight paths
     MOVEMENTFLAG_WATERWALKING          = 0x10000000,               // prevent unit from falling through water
@@ -1375,6 +1384,8 @@ class TC_GAME_API Unit : public WorldObject
 
         void  SetStandFlags(uint8 flags) { SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
         void  RemoveStandFlags(uint8 flags) { RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+
+        void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, (uint8)tier); }
 
         bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT ); }
         uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID); }
