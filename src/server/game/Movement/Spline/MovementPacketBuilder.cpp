@@ -54,12 +54,6 @@ namespace Movement
                 break;
         }
 
-        // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
-        // also see: https://github.com/TrinityCore/TrinityCore/issues/22448
-        // Apparently MoveSplineFlag::Enter_Cycle tells the client to discord the first point so that may help
-        // Also SMSG_FLIGHT_SPLINE_SYNC must be used
-        splineflags.enter_cycle = move_spline.isCyclic();
-
 #ifdef LICH_KING
         data << uint32(splineflags & uint32(~MoveSplineFlag::Mask_No_Monster_Move));
 #else
@@ -125,10 +119,9 @@ namespace Movement
 
     void WriteCatmullRomCyclicPath(const Spline<int32>& spline, ByteBuffer& data)
     {
-        uint32 count = spline.getPointCount() - 3;
-        data << uint32(count + 1);
-        data << spline.getPoint(1); // fake point, client will erase it from the spline after first cycle done
-        data.append<Vector3>(&spline.getPoint(1), count);
+        uint32 count = spline.getPointCount() - 4;
+        data << count;
+        data.append<Vector3>(&spline.getPoint(2), count);
     }
 
     void PacketBuilder::WriteMonsterMove(const MoveSpline& move_spline, ByteBuffer& data)
@@ -191,5 +184,10 @@ namespace Movement
 #endif
             data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
         }
+    }
+
+    void PacketBuilder::WriteSplineSync(MoveSpline const& move_spline, ByteBuffer& data)
+    {
+        data << (float)move_spline.timePassed() / move_spline.Duration();
     }
 } // namespace Movement

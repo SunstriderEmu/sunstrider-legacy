@@ -47,6 +47,7 @@
 #include "LogsDatabaseAccessor.h"
 #include "GuildMgr.h"
 #include "MovementDefines.h"
+#include "MovementPacketBuilder.h"
 
 #include <math.h>
 
@@ -241,7 +242,7 @@ Unit::Unit(bool isWorldObject)
     movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
     m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
     m_charmer(nullptr), m_charmed(nullptr),
-    m_movesplineTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
+    m_splineSyncTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
     _last_in_water_status(false),
     _last_isunderwater_status(false),
     m_duringRemoveFromWorld(false),
@@ -11389,11 +11390,25 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
     }
 
     bool arrived = movespline->Finalized();
+    if (movespline->isCyclic())
+    {
+        m_splineSyncTimer.Update(t_diff);
+        if (m_splineSyncTimer.Passed())
+        {
+            m_splineSyncTimer.Reset(5000); // Retail value, do not change
+
+            WorldPacket data(SMSG_FLIGHT_SPLINE_SYNC, 4 + GetPackGUID().size());
+            Movement::PacketBuilder::WriteSplineSync(*movespline, data);
+            data << GetGUID().WriteAsPacked();
+            SendMessageToSet(&data, true);
+        }
+    }
 
     if (arrived)
         DisableSpline();
 
     // sunwell: update always! not every 400ms, because movement generators need the actual position
+    // also disabled in https://github.com/TrinityCore/TrinityCore/issues/22448
     /*m_movesplineTimer.Update(t_diff);
     if (m_movesplineTimer.Passed() || arrived) */
         UpdateSplinePosition();
@@ -11401,9 +11416,6 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
 void Unit::UpdateSplinePosition()
 {
-    static uint32 const positionUpdateDelay = 400;
-
-    m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
 
     if (movespline->onTransport)
