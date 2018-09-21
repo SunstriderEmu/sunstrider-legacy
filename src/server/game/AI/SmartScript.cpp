@@ -3047,6 +3047,9 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
                 if(!baseObject->IsInRange(unit, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
                     continue;
 
+                if (e.target.unitRange.maxSize)
+                    Trinity::Containers::RandomResize(targets, e.target.unitRange.maxSize);
+
                 targets.push_back(unit);
             }
 
@@ -3078,6 +3081,9 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
                     targets.push_back(unit);
             }
 
+            if (e.target.unitDistance.maxSize)
+                Trinity::Containers::RandomResize(targets, e.target.unitDistance.maxSize);
+
             break;
         }
         case SMART_TARGET_GAMEOBJECT_DISTANCE:
@@ -3097,6 +3103,8 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
                     targets.push_back(gob);
             }
 
+            if (e.target.goDistance.maxSize)
+                Trinity::Containers::RandomResize(targets, e.target.goDistance.maxSize);
             break;
         }
         case SMART_TARGET_GAMEOBJECT_RANGE:
@@ -3116,6 +3124,8 @@ void SmartScript::GetTargets(ObjectVector& targets, SmartScriptHolder const& e, 
                     targets.push_back(gob);
             }
 
+            if (e.target.goRange.maxSize)
+                Trinity::Containers::RandomResize(targets, e.target.goRange.maxSize);
             break;
         }
         case SMART_TARGET_CREATURE_GUID:
