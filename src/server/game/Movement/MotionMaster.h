@@ -173,8 +173,6 @@ class TC_GAME_API MotionMaster
         /** Look towards the target for given time */
         void MoveStealthAlert(Unit const* target, uint32 time);
 
-        uint32 GetCurrentSplineId() const; // sunwell: Escort system
-
         void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementGeneratorPriority priority = MOTION_PRIORITY_NORMAL, MovementGeneratorType type = EFFECT_MOTION_TYPE);
     private:
         typedef std::unique_ptr<MovementGenerator, MovementGeneratorDeleter> MovementGeneratorPointer;

@@ -66,6 +66,7 @@ TC_GAME_API std::string GetWaypointPathDirectionName(WaypointPathDirection dir);
 
 template<class T>
 class WaypointMovementGenerator;
+class SplineHandler;
 
 /*
 Completely rewritten for sunstrider
@@ -77,10 +78,14 @@ template<>
 class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
     public PathMovementBase<Creature, WaypointPath const*>
 {
+    friend class SplineHandler;
+
     public:
         /* 
         repeating: path will use its default value, either WP_PATH_TYPE_LOOP or any value specified in waypoint_info table. Using this argument will override the default value.
-        smoothSpline: will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint */
+        smoothSpline: EXPERIMENTAL. will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint 
+                      Server lag seems to incrase imprecisions for this one.
+        */
         explicit WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating = {}, bool smoothSpline = false);
         explicit WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating = {}, bool smoothSpline = false);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
@@ -100,8 +105,6 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool DoUpdate(Creature*, uint32 diff);
         void DoDeactivate(Creature*);
 
-        uint32 GetSplineId() const override { return _splineId; }
-
         // Load path (from Creature::GetWaypointPathId) and start it
         bool LoadPath(Creature*);
         
@@ -114,8 +117,6 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool SetDirection(WaypointPathDirection dir);
 
         bool GetResetPosition(Unit*, float& x, float& y, float& z) override;
-
-        void SplineFinished(Creature* creature, uint32 splineId);
 
         bool GetCurrentDestinationPoint(Creature* creature, Position& pos) const;
 
@@ -133,21 +134,12 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         // Get first node in path (depending on direction)
         uint32 GetFirstMemoryNode();
 
-        // Pause path execution for given time. This does not stop current spline movement.
-        void Pause(int32 time);
-
         /* Handle point relative stuff (memory inform, script, delay)
-        arrivedNodeIndex = index in _path
         */
-        void OnArrived(Creature*, uint32 arrivedNodeIndex);
+        void OnArrived(Creature*);
 
-        /* Fill _precomputedPath with data from _path according to current node (that is, points until next stop), then start spline path
-        nextNode = skip current node
-        Returns false on error getting new point
-        */
         bool StartMove(Creature* c);
-        //meant to be used by StartSplinePath only. Return false if should break in loop
-        bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointNode const& nextNode, uint32& splineId);
+        void StartFormationMove(Creature* creature, uint32 node);
 
         bool IsPaused();
 
@@ -158,7 +150,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool CreateCustomPath(Movement::PointsArray&);
 
         TimeTrackerSmall _nextMoveTime; //timer for pauses
-        uint32 path_id;
+        uint32 _pathId;
         //this movement generator can be constructed with either a path id or with given points, stored in customPath in this second case
         WaypointPath* customPath;
         bool erasePathAtEnd; //
@@ -166,23 +158,15 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         WaypointPathDirection direction;
 
         Movement::PointsArray _precomputedPath;
-        uint32 _useSmoothSpline; //calculate path to further points to allow using smooth splines
         bool _recalculateTravel;
 
         Position _originalHome; //original home position before it was altered by this movegen. Some scripts are currently using the home AFTER the waypoint path. (such as 18970)
 
         uint32 _splineId;
-        //true when creature has reached the start node in path (it has to travel from its current position first)
-        uint32 _reachedFirstNode;
+        // true when creature has reached the start node in path (it has to travel from its current position to first point)
+        uint32 _reachedFirstNode; 
         bool _done;
-
-        typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> SplineToPathIdMapping;
-        //filled at spline path generation. Used to determine which node spline system reached. When spline id is finished, it means we've reached path id.
-        SplineToPathIdMapping splineToPathIds;
-
-        typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> PathIdToPathIndexMapping;
-        //filled at initial path loading. Used to update _currentNode when a new spline node is reached.
-        PathIdToPathIndexMapping pathIdsToPathIndexes;
+        bool _useSmoothSpline;
 };
 
 #endif

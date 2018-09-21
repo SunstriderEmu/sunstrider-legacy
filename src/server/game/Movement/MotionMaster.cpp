@@ -904,16 +904,6 @@ void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*
     Add(movement);
 }
 
-// sunwell: Escort system
-uint32 MotionMaster::GetCurrentSplineId() const
-{
-    if (Empty())
-        return 0;
-
-    return GetCurrentMovementGenerator(MOTION_SLOT_DEFAULT)->GetSplineId();
-}
-
-
 /******************** Private methods ********************/
 
 void MotionMaster::Pop(bool active, bool movementInform)

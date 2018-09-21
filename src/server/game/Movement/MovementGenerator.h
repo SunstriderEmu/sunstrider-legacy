@@ -53,8 +53,6 @@ class MovementGenerator
 
         virtual MovementGeneratorType GetMovementGeneratorType() const = 0;
 
-        virtual uint32 GetSplineId() const { return 0; }  // sunwell: Escort system
-
         virtual void UnitSpeedChanged() { }
         // timer in ms
         virtual void Pause(uint32/* timer = 0*/) { } 

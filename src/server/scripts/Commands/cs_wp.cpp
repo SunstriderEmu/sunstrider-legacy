@@ -1039,7 +1039,6 @@ public:
 
     static bool HandleWpAddCommand(ChatHandler* handler, char const* args)
     {
-    
         // optional
         char* path_number = nullptr;
         uint32 pathid = 0;

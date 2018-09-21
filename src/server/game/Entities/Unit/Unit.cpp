@@ -11346,24 +11346,14 @@ public:
         MovementGeneratorType motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
         if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived | Movement::MoveSpline::Result_Arrived))
             && _unit->GetTypeId() == TYPEID_UNIT 
-            && (motionType == WAYPOINT_MOTION_TYPE)
-            && _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())
+            && (motionType == WAYPOINT_MOTION_TYPE))
         {
-            Creature* creature = _unit->ToCreature();
-            if (creature)
+            if (Creature* creature = _unit->ToCreature())
             {
                 _unit->GetMotionMaster()->AddFlag(MOTIONMASTER_FLAG_UPDATE);
                 MovementGenerator* baseGenerator = creature->GetMotionMaster()->GetCurrentMovementGenerator();
                 WaypointMovementGenerator<Creature>* moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(baseGenerator);
-                moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
-
-                //warn formation movement if needed. atm members don't use spline movement and move point to point.
-                if (result & Movement::MoveSpline::Result_NextSegment)
-                {
-                    Position dest;
-                    if (moveGenerator->GetCurrentDestinationPoint(creature, dest))
-                        creature->SignalFormationMovement(dest, creature->IsWalking() ? WAYPOINT_MOVE_TYPE_WALK : WAYPOINT_MOVE_TYPE_RUN);
-                }
+                moveGenerator->OnArrived(creature);
                 _unit->GetMotionMaster()->RemoveFlag(MOTIONMASTER_FLAG_UPDATE);
             }
         }
