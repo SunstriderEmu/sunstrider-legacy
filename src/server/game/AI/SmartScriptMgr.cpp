@@ -93,14 +93,8 @@ void SmartAIMgr::LoadSmartAIFromDB()
     for (auto & i : mEventMap)
         i.clear();  //Drop Existing SmartAI List
 
-    QueryResult result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, \
-                                             event_phase_mask, event_chance, event_flags, event_param1, \
-                                             event_param2, event_param3, event_param4, event_param5, action_type, \
-                                             action_param1, action_param2, action_param3, action_param4, \
-                                             action_param5, action_param6, target_type, target_flags, \
-                                             target_param1, target_param2, target_param3, target_x, \
-                                             target_y, target_z, target_o FROM smart_scripts \
-                                             ORDER BY entryorguid, source_type, id, link");
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMART_SCRIPTS);
+    PreparedQueryResult result = WorldDatabase.Query(stmt);
 
     if (!result)
     {
@@ -258,6 +252,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         temp.target.raw.param1 = fields[count++].GetUInt32();
         temp.target.raw.param2 = fields[count++].GetUInt32();
         temp.target.raw.param3 = fields[count++].GetUInt32();
+        temp.target.raw.param4 = fields[count++].GetUInt32();
         temp.target.x = fields[count++].GetFloat();
         temp.target.y = fields[count++].GetFloat();
         temp.target.z = fields[count++].GetFloat();

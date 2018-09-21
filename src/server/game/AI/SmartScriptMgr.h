@@ -1350,13 +1350,14 @@ enum SMARTAI_TARGETS_FLAGS
 
 struct SmartTarget
 {
-    SmartTarget(SMARTAI_TARGETS t = SMART_TARGET_NONE, SMARTAI_TARGETS_FLAGS f = SMART_TARGET_FLAG_NONE, uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0)
+    SmartTarget(SMARTAI_TARGETS t = SMART_TARGET_NONE, SMARTAI_TARGETS_FLAGS f = SMART_TARGET_FLAG_NONE, uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0, uint32 p4 = 0)
     {
         type = t;
         flags = f;
         raw.param1 = p1;
         raw.param2 = p2;
         raw.param3 = p3;
+        raw.param4 = p4;
         x = 0.0f;
         y = 0.0f;
         z = 0.0f;
@@ -1479,6 +1480,7 @@ struct SmartTarget
             uint32 param1;
             uint32 param2;
             uint32 param3;
+            uint32 param4;
         } raw;
     };
 };

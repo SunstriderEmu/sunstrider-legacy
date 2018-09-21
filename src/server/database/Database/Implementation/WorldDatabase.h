@@ -31,8 +31,8 @@ enum WorldDatabaseStatements : uint32
     WORLD_SEL_QUEST_POOLS,
     */
     WORLD_SEL_CREATURE_TEXT,
-    /*
     WORLD_SEL_SMART_SCRIPTS,
+    /*
     WORLD_SEL_SMARTAI_WP,
     WORLD_DEL_GAMEOBJECT,
     WORLD_DEL_EVENT_GAMEOBJECT,
