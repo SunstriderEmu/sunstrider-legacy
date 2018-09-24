@@ -1131,7 +1131,7 @@ public:
         }
 
         guidlow = target->GetSpawnId();
-        QueryResult result = WorldDatabase.PQuery( "SELECT guid FROM creature_addon WHERE spawnID = '%u'",guidlow);
+        QueryResult result = WorldDatabase.PQuery( "SELECT spawnId FROM creature_addon WHERE spawnID = '%u'",guidlow);
 
         if( result )
         {
