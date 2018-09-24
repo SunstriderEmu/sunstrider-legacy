@@ -135,18 +135,17 @@ class TC_GAME_API MotionMaster
         void MoveRandom(float spawndist = 0.0f);
         void MoveFollow(Unit* target, float dist, ChaseAngle angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
         void MoveChase(Unit* target, Optional<ChaseRange> dist = {}, Optional<ChaseAngle> angle = {}, bool run = true);
-        void MoveChase(Unit* target, float dist, float angle = 0.0f);
+        inline void MoveChase(Unit* target, float dist, float angle) { MoveChase(target, Optional<ChaseRange>(dist), Optional<ChaseAngle>(angle)); }
+        inline void MoveChase(Unit* target, float dist) { MoveChase(target, Optional<ChaseRange>(dist)); }
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
         void MovePoint(uint32 id, Position const& pos, bool generatePath = true, Optional<float> finalOrient = {}, bool forceDestination = true);
         void MovePoint(uint32 id, float x, float y, float z, bool generatePath = true, Optional<float> finalOrient = {}, bool forceDestination = true);
-      
         /*  Makes the unit move toward the target until it is at a certain distance from it. The unit then stops.
                    Only works in 2D.
                    This method doesn't account for any movement done by the target. in other words, it only works if the target is stationary.
         */
         void MoveCloserAndStop(uint32 id, Unit* target, float distance);
-
         // These two movement types should only be used with creatures having landing/takeoff animations
         void MoveLand(uint32 id, Position const& pos);
         void MoveTakeoff(uint32 id, Position const& pos);

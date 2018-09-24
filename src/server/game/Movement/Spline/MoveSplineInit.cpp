@@ -120,6 +120,13 @@ namespace Movement
             //DEBUG_ASSERT(args.velocity);
         }
 
+        // Limit hardcoded in client (see https://github.com/TrinityCore/TrinityCore/issues/22434)
+#ifdef LICH_KING
+        args.velocity = std::min(args.velocity, args.flags.catmullrom || args.flags.flying ? 50.0f : std::max(28.0f, unit->GetSpeed(MOVE_RUN) * 4.0f));
+#else
+        args.velocity = std::min(args.velocity, args.flags.flying ? 50.0f : std::max(28.0f, unit->GetSpeed(MOVE_RUN) * 4.0f));
+#endif
+
         if (!args.Validate(unit))
         {
             //sun: make sure this flag is correctly removed if it's already there when entering this function.
