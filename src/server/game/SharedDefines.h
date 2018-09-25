@@ -399,17 +399,15 @@ uint32 constexpr ItemQualityColors[MAX_ITEM_QUALITY] =
     0xffe6cc80,        //LIGHT YELLOW
 };
 
-
-
 // ***********************************
 // Spell Attributes definitions
 // ***********************************
 enum SpellAttr0
 {
-    SPELL_ATTR0_UNK0                           = 0x00000001,           // 0
+    SPELL_ATTR0_UNK0                           = 0x00000001,           // 0 (Nost has SPELL_ATTR_DONT_DISPLAY_SPELL_RESULT)
     SPELL_ATTR0_RANGED                         = 0x00000002,           // 1 All ranged abilities have this flag
     SPELL_ATTR0_ON_NEXT_SWING                  = 0x00000004,           // 2 on next swing
-    SPELL_ATTR0_UNK3                           = 0x00000008,           // 3 not set in 2.4.2 //TC: SPELL_ATTR0_IS_REPLENISHMENT
+    SPELL_ATTR0_IS_REPLENISHMENT               = 0x00000008,           // 3 not set in 2.4.2
     SPELL_ATTR0_ABILITY                        = 0x00000010,           // 4 client puts 'ability' instead of 'spell' in game strings for these spells
     SPELL_ATTR0_TRADESPELL                     = 0x00000020,           // 5 trade spells (recipes), will be added by client to a sublist of profession spell
     SPELL_ATTR0_PASSIVE                        = 0x00000040,           // 6 Passive spell

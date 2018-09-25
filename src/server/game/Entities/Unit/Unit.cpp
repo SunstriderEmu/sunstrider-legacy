@@ -9629,9 +9629,6 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
             Unit::ProcSkillsAndAuras(owner, pVictim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
     }
 
-    if (!pVictim->IsCritter())
-        Unit::ProcSkillsAndAuras(attacker, pVictim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
-
     // Proc auras on death - must be before aura/combat remove
     Unit::ProcSkillsAndAuras(pVictim, pVictim, PROC_FLAG_NONE, PROC_FLAG_DEATH, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
 
