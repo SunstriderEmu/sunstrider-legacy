@@ -1,0 +1,1 @@
+update `spell_proc` set `SpellTypeMask` = '1' where `SpellId` = '45054';
