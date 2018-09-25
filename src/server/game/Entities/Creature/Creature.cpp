@@ -1879,49 +1879,12 @@ void Creature::DeleteFromDB()
     trans->Append(stmt);
 
     trans->PAppend("DELETE FROM creature_addon WHERE spawnID = '%u'", m_spawnId);
+    trans->PAppend("DELETE FROM creature_entry WHERE spawnID = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
     trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
 
     WorldDatabase.CommitTransaction(trans);
 }
-
-/*
-bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
-{
-    // not in world
-    if(!IsInWorld() || !u->IsInWorld())
-        return false;
-
-    // all dead creatures/players not visible for any creatures
-    if(!u->IsAlive() || !IsAlive())
-        return false;
-
-    // Always can see self
-    if (u == this)
-        return true;
-
-    // always seen by owner
-    if(GetGUID() == u->GetCharmerOrOwnerGUID())
-        return true;
-
-    if(u->GetVisibility() == VISIBILITY_OFF) //GM
-        return false;
-
-    // invisible aura
-    if((m_invisibilityMask || u->m_invisibilityMask) && !CanDetectInvisibilityOf(u))
-        return false;
-
-    // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
-    if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
-    {
-        //do not know what is the use of this detect
-        if(!detect || CanDetectStealthOf(u, GetDistance(u) != DETECTED_STATUS_DETECTED))
-            return false;
-    }
-
-    return true;
-}
-*/
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
