@@ -692,6 +692,10 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     LoadTemplateImmunities();
 
     GetThreatManager().EvaluateSuppressed();
+
+    //We must update last scriptId or it looks like we reloaded a script, breaking some things such as gossip temporarily
+    LastUsedScriptID = GetScriptId();
+
     return true;
 }
 
