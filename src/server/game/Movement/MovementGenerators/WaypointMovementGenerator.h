@@ -139,7 +139,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         void OnArrived(Creature*);
 
         bool StartMove(Creature* c);
-        void StartFormationMove(Creature* creature, uint32 node);
+        void StartFormationMove(Creature* creature, uint32 node, uint32 moveType);
 
         bool IsPaused();
 

@@ -13,6 +13,7 @@
 #include "FleeingMovementGenerator.h"
 #include "FlightPathMovementGenerator.h"
 #include "FollowMovementGenerator.h"
+#include "FormationMovementGenerator.h"
 #include "GenericMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
@@ -882,6 +883,28 @@ void MotionMaster::MoveRotate(uint32 id, uint32 time, RotateDirection direction)
 
     TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::MoveRotate: '%s', starts rotate (time: %u, direction: %u)", _owner->GetGUID().ToString().c_str(), time, direction);
     Add(new RotateMovementGenerator(id, time, direction), MOTION_SLOT_ACTIVE);
+}
+
+void MotionMaster::MoveFormation(uint32 id, FormationMoveSegment path, Creature* leader)
+{
+    if (_owner->GetTypeId() != TYPEID_UNIT)
+        return;
+
+    FormationMovementGenerator* generator = nullptr;
+    if (_owner->GetMotionMaster()->GetCurrentMovementGeneratorType() == FORMATION_MOTION_TYPE)
+    {
+        generator = static_cast<FormationMovementGenerator*>(_owner->GetMotionMaster()->GetCurrentMovementGenerator());
+        if (generator->GetLeaderGuid() != leader->GetGUID())
+            generator = nullptr;
+    }
+
+    if (generator == nullptr)
+    {
+        generator = new FormationMovementGenerator(id, leader->GetGUID());
+        Add(generator);
+    }
+
+    generator->NewLeaderDestination(path);
 }
 
 void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*= 0*/, MovementGeneratorPriority priority/* = MOTION_PRIORITY_NORMAL*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)

@@ -117,4 +117,17 @@ struct TC_GAME_API ChaseAngle
 inline bool IsInvalidMovementGeneratorType(uint8 const type) { return type == MAX_DB_MOTION_TYPE || type >= MAX_MOTION_TYPE; }
 inline bool IsInvalidMovementSlot(uint8 const slot) { return slot >= MAX_MOTION_SLOT; }
 
+struct FormationMoveSegment
+{
+    FormationMoveSegment(Position start, Position dest, uint32 moveType, bool hasDestOrientation, float followAngle, float followDist) :
+        start(start), dest(dest), moveType(moveType), hasDestOrientation(hasDestOrientation), followAngle(followAngle), followDist(followDist) {}
+
+    Position start;
+    Position dest;
+    uint32 moveType;
+    bool hasDestOrientation;
+    float followAngle;
+    float followDist;
+};
+
 #endif

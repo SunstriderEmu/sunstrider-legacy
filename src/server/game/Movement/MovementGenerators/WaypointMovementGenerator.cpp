@@ -242,7 +242,8 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
         return;
     }
 
-    StartFormationMove(creature, _currentNode);
+    WaypointNode const& nextNode = _path->nodes.at(_currentNode);
+    StartFormationMove(creature, _currentNode, nextNode.moveType);
 
     if (arrivedNode.delay)
     {
@@ -350,7 +351,7 @@ bool WaypointMovementGenerator<Creature>::UpdatePause(int32 diff)
     return _nextMoveTime.Passed();
 }
 
-void WaypointMovementGenerator<Creature>::StartFormationMove(Creature* creature, uint32 node)
+void WaypointMovementGenerator<Creature>::StartFormationMove(Creature* creature, uint32 node, uint32 moveType)
 {
     WaypointNode const &waypoint = _path->nodes[_currentNode];
     Position dest(waypoint.x, waypoint.y, waypoint.z, (waypoint.orientation && waypoint.delay) ? waypoint.orientation : 0.0f);
@@ -367,7 +368,7 @@ void WaypointMovementGenerator<Creature>::StartFormationMove(Creature* creature,
         }
     }    
     
-    creature->SignalFormationMovement(dest, creature->IsWalking() ? WAYPOINT_MOVE_TYPE_WALK : WAYPOINT_MOVE_TYPE_RUN);
+    creature->SignalFormationMovement(dest, 0, moveType, dest.GetOrientation() != 0.0f);
 }
 
 bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
@@ -520,7 +521,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     RemoveFlag(MOVEMENTGENERATOR_FLAG_TRANSITORY | MOVEMENTGENERATOR_FLAG_INFORM_ENABLED | MOVEMENTGENERATOR_FLAG_TIMED_PAUSED);
 
     //Call for creature group update
-    StartFormationMove(creature, _currentNode);
+    StartFormationMove(creature, _currentNode, currentNode.moveType);
 
     // inform AI
     if (CreatureAI* AI = creature->AI())

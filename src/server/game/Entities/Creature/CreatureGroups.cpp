@@ -351,46 +351,14 @@ bool CreatureGroup::CanLeaderStartMoving() const
     return true;
 }
 
-Position CreatureGroup::CalculateMemberDestination(Creature* member, Position const& leaderPos, float followAngle, float followDist, float pathAngle, uint8 depth) const
-{
-    //no valid position found after 3 iterations, return leader position instead
-    if (depth > 3)
-        return leaderPos;
-
-    Position dest;
-    dest.m_positionX = leaderPos.GetPositionX() + cos(followAngle + pathAngle) * followDist;
-    dest.m_positionY = leaderPos.GetPositionY() + sin(followAngle + pathAngle) * followDist;
-    float height;
-    if (!member->IsFlying())
-        height = member->GetMap()->GetHeight(dest.m_positionX, dest.m_positionY, leaderPos.GetPositionZ() + 5.0f, true, 10.0f, member->GetCollisionHeight(), true);
-    else
-        height = leaderPos.GetPositionZ();
-
-    if (height != INVALID_HEIGHT)
-        dest.m_positionZ = height;
-    else //no valid height found, try closer
-        return CalculateMemberDestination(member, leaderPos, followAngle, followDist / 2.0f, pathAngle, ++depth);
-
-    Trinity::NormalizeMapCoord(dest.m_positionX);
-    Trinity::NormalizeMapCoord(dest.m_positionY);
-
-    /* No ground pos update since we already do GetHeight call before
-    if (!member->CanFly() && !member->IsFlying())
-        member->UpdateGroundPositionZ(dest.m_positionX, dest.m_positionY, dest.m_positionZ);*/
-
-    return dest;
-}
-
 void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/, uint32 moveType /*= 0*/, bool orientation /*= false*/)
 {
-    //! To do: This should probably get its own movement generator or use WaypointMovementGenerator.
-    //! If the leader's path is known, member's path can be plotted as well using formation offsets.
     if (!_leader)
         return;
 
-    Position pos(destination);
+    /*Position pos(destination);
     float pathDist = _leader->GetExactDist(destination);
-    float pathAngle = _leader->GetAbsoluteAngle(destination);
+    float pathAngle = _leader->GetAbsoluteAngle(destination);*/
 
     for(auto & m_member : _members)
     {
@@ -399,7 +367,7 @@ void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/,
         if(member == _leader || !member->IsAlive() || member->IsEngaged() || formationInfo.groupAI == GROUP_AI_NONE)
             continue;
 
-        if (formationInfo.leaderWaypointIDs[0])
+        /*if (formationInfo.leaderWaypointIDs[0])
         {
             for (uint8 i = 0; i < 2; ++i)
             {
@@ -409,31 +377,10 @@ void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/,
                     break;
                 }
             }
-        }
+        }*/
 
-        // sunwell: this should be automatized, if turn angle is greater than ~117° we should swap formation angle
-        if (M_PI - fabs(fabs(_leader->GetOrientation() - pathAngle) - M_PI) > M_PI * 0.65f)
-        {
-            // sunwell: in both cases should be 2*M_PI - follow_angle
-            // sunwell: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
-            // sunwell: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
-            // if (m_leader->GetCurrentWaypointID()+1 == itr->second->point_1 || m_leader->GetCurrentWaypointID()+1 == itr->second->point_2)
-            formationInfo.followAngle = Position::NormalizeOrientation(formationInfo.followAngle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
-        }
-
-        Position memberDest = CalculateMemberDestination(member, destination, formationInfo.followAngle, formationInfo.followDist, pathAngle);
-
-        if (moveType == WAYPOINT_MOVE_TYPE_WALK)
-            member->SetWalk(true);
-        else
-            member->SetWalk(false);
-            
-        // sunwell: change members speed basing on distance - if too far speed up, if too close slow down
-        UnitMoveType mtype = Movement::SelectSpeedType(member->GetUnitMovementFlags());
-        member->SetSpeedRate(mtype, _leader->GetSpeedRate(mtype) * member->GetExactDist(POSITION_GET_X_Y_Z(&memberDest)) / pathDist);
-
-        member->SetHomePosition(POSITION_GET_X_Y_Z(&memberDest), pathAngle);
-        member->GetMotionMaster()->MovePoint(0, POSITION_GET_X_Y_Z(&memberDest), true, orientation ? destination.GetOrientation() : Optional<float>());
+        FormationMoveSegment path(_leader->GetPosition(), destination, moveType, orientation, formationInfo.followAngle, formationInfo.followDist);
+        member->GetMotionMaster()->MoveFormation(id, path, _leader);
     }
 }
 
