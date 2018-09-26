@@ -448,8 +448,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
         float SelectBestZForDestination(float x, float y, float z, bool excludeCollisionHeight) const;
 
-        void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
-		Position GetRandomPoint(Position const &srcPos, float distance) const;
+        void GetRandomPoint(Position const& pos, float distance, float &rand_x, float &rand_y, float &rand_z) const;
+        Position GetRandomPoint(Position const &srcPos, float distance) const;
 
 		virtual void SetMap(Map* map);
 		virtual void ResetMap();

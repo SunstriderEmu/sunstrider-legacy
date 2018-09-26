@@ -379,11 +379,19 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     for (uint32 count = 0; count < numGuardians; ++count)
     {
         Position pos;
-        if (count == 0)
+        if (numGuardians == 1)
             pos = *destTarget;
         else
-            // randomize position for multiple summons
-            pos = m_caster->GetRandomPoint(*destTarget, radius);
+        {
+            // sun: new angle calculation. Dest target is ignored (observed on spell 33966)
+            // Example for two:
+            //    X       (leader)
+            // x     x 
+            float x, y, z;
+            float newAngle = Trinity::NormalizeOrientation(M_PI / 2.0f * (numGuardians / 2.0f) * (count+1) + M_PI / 4.0f);
+            m_caster->GetClosePoint(x, y, z, radius, newAngle);
+            pos.Relocate(x, y, z);
+        }
 
         TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, _unitCaster, m_spellInfo->Id);
         if (!summon)
@@ -396,7 +404,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             summon->SetFaction(_unitCaster->GetFaction());
 
         if (summon->HasUnitTypeMask(UNIT_MASK_MINION) && m_targets.HasDst())
-            ((Minion*)summon)->SetFollowAngle(_unitCaster->GetAbsoluteAngle(summon));
+            ((Minion*)summon)->SetFollowAngle(_unitCaster->GetRelativeAngle(summon)); //sun: fixed angle
 
         switch (summon->GetEntry())
         {
