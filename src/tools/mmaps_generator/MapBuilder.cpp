@@ -669,7 +669,7 @@ namespace MMAP
         config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
         config.walkableSlopeAngle = 75.0f;
         config.tileSize = VERTEX_PER_TILE;
-        config.walkableRadius = m_bigBaseUnit ? 1 : 2; //using nost value here (0.75 for continent) does break pathing, unit start taking weird detour
+        config.walkableRadius = m_bigBaseUnit ? 1 : 2; //nost value here is 0.75
         config.borderSize = config.walkableRadius + 3;
         config.maxEdgeLen = VERTEX_PER_TILE + 1;        // anything bigger than tileSize
         config.walkableHeight = (int)ceilf(agentHeight / config.ch);

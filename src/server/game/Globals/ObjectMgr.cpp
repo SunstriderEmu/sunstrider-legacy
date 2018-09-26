@@ -219,7 +219,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
     //                                                 
     QueryResult result = WorldDatabase.Query("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
                                              //   5
-                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed, "
+                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed_walk, speed_run, "
                                              //
                                              "scale, `rank`, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
                                              //   
@@ -282,7 +282,8 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.expansion        = fields[f++].GetUInt16();
     creatureTemplate.faction          = fields[f++].GetUInt16();
     creatureTemplate.npcflag          = fields[f++].GetUInt32();
-    creatureTemplate.speed            = fields[f++].GetFloat();
+    creatureTemplate.speed_walk       = fields[f++].GetFloat();
+    creatureTemplate.speed_run        = fields[f++].GetFloat();
     creatureTemplate.scale            = fields[f++].GetFloat();
     creatureTemplate.rank             = fields[f++].GetUInt8();
     creatureTemplate.dmgschool        = uint32(fields[f++].GetInt8());
@@ -500,6 +501,18 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 
     if((cInfo->npcflag & UNIT_NPC_FLAG_TRAINER) && cInfo->trainer_type >= MAX_TRAINER_TYPE)
         TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has wrong trainer type %u",cInfo->Entry,cInfo->trainer_type);
+
+    if (cInfo->speed_walk == 0.0f)
+    {
+        TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has wrong value (%f) in speed_walk, set to 1.", cInfo->Entry, cInfo->speed_walk);
+        const_cast<CreatureTemplate*>(cInfo)->speed_walk = 1.0f;
+    }
+
+    if (cInfo->speed_run == 0.0f)
+    {
+        TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has wrong value (%f) in speed_run, set to 1.14286.", cInfo->Entry, cInfo->speed_run);
+        const_cast<CreatureTemplate*>(cInfo)->speed_run = 1.14286f;
+    }
 
     CheckCreatureMovement("creature_template_movement", cInfo->Entry, const_cast<CreatureTemplate*>(cInfo)->Movement);
 

@@ -184,7 +184,7 @@ void guardAI::UpdateAI(const uint32 diff)
         //If we are within range melee the target
         if( me->IsWithinMeleeRange(me->GetVictim()))
         {
-            bool Healing = false;
+            bool healing = false;
             SpellInfo const *info = nullptr;
 
             //Select a healing spell if less than 30% hp
@@ -193,7 +193,7 @@ void guardAI::UpdateAI(const uint32 diff)
 
             //No healing spell available, select a hostile spell
             if (info) 
-                Healing = true;
+                healing = true;
             else 
                 info = SelectSpell(me->GetVictim(), SPELL_SCHOOL_MASK_NONE, MECHANIC_NONE, SELECT_TARGET_ANY_ENEMY, 0, 0, 0, 0, SELECT_EFFECT_DONTCARE);
 
@@ -201,7 +201,7 @@ void guardAI::UpdateAI(const uint32 diff)
             if (info && rand() % 5 == 0 && !GlobalCooldown)
             {
                 //Cast the spell
-                if (Healing)
+                if (healing)
                     DoCastSpell(me, info);
                 else 
                     DoCastSpell(me->GetVictim(), info);
@@ -219,16 +219,18 @@ void guardAI::UpdateAI(const uint32 diff)
         //Only run this code if we arn't already casting
         if (!me->IsNonMeleeSpellCast(false))
         {
-            bool Healing = false;
-            SpellInfo const *info = nullptr;
+            bool healing = false;
+            SpellInfo const* info = nullptr;
 
             //Select a healing spell if less than 30% hp ONLY 33% of the time
             if (me->GetHealth()*100 / me->GetMaxHealth() < 30 && rand() % 3 == 0)
                 info = SelectSpell(me, SPELL_SCHOOL_MASK_NONE, MECHANIC_NONE, SELECT_TARGET_ANY_FRIEND, 0, 0, 0, 0, SELECT_EFFECT_HEALING);
 
             //No healing spell available, See if we can cast a ranged spell (Range must be greater than ATTACK_DISTANCE)
-            if (info) Healing = true;
-            else info = SelectSpell(me->GetVictim(), SPELL_SCHOOL_MASK_NONE, MECHANIC_NONE, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONTCARE);
+            if (info) 
+                healing = true;
+            else 
+                info = SelectSpell(me->GetVictim(), SPELL_SCHOOL_MASK_NONE, MECHANIC_NONE, SELECT_TARGET_ANY_ENEMY, 0, 0, NOMINAL_MELEE_RANGE, 0, SELECT_EFFECT_DONTCARE);
 
             //Found a spell, check if we arn't on cooldown
             if (info && !GlobalCooldown)
@@ -241,7 +243,7 @@ void guardAI::UpdateAI(const uint32 diff)
                 }
 
                 //Cast spell
-                if (Healing) 
+                if (healing) 
                     DoCastSpell(me,info);
                 else 
                     DoCastSpell(me->GetVictim(),info);

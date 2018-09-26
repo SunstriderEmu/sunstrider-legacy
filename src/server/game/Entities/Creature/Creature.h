@@ -221,7 +221,8 @@ struct CreatureTemplate
     uint32  expansion;
     uint32  faction;
     uint32  npcflag;
-    float   speed;
+    float   speed_walk;
+    float   speed_run;
     float   scale;
     uint32  rank;
     uint32  dmgschool;
