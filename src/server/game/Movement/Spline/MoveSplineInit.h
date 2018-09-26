@@ -145,14 +145,16 @@ namespace Movement
 
     inline void MoveSplineInit::SetFly() { args.flags.EnableFlying(); }
     inline void MoveSplineInit::SetWalk(bool enable) { args.walk = enable; }
-    //inline void MoveSplineInit::SetSmooth() { args.flags.EnableCatmullRom(); }
     inline void MoveSplineInit::SetCyclic() { args.flags.cyclic = true; }
     inline void MoveSplineInit::SetFall() { args.flags.EnableFalling(); }
     inline void MoveSplineInit::SetVelocity(float vel) { args.velocity = vel; args.HasVelocity = true; }
-    /*inline void MoveSplineInit::SetBackward() { args.flags.backward  = true;}
+#ifdef LICH_KING
+    inline void MoveSplineInit::SetSmooth() { args.flags.EnableCatmullRom(); }
+    inline void MoveSplineInit::SetBackward() { args.flags.backward = true; }
     inline void MoveSplineInit::SetTransportEnter() { args.flags.EnableTransportEnter(); }
     inline void MoveSplineInit::SetTransportExit() { args.flags.EnableTransportExit(); }
-    inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable;} */
+    inline void MoveSplineInit::SetOrientationFixed(bool enable) { args.flags.orientationFixed = enable; }
+#endif
 
     inline void MoveSplineInit::MovebyPath(PointsArray const& controls, int32 path_offset /* = 0*/, Transport* pathTransport /*= nullptr*/)
     {

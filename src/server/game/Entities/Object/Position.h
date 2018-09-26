@@ -104,13 +104,13 @@ struct TC_GAME_API Position
     { 
         float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; 
     }
-    float GetExactDist2d(const Position *pos) const
-    { 
-        return sqrt(GetExactDist2dSq(pos)); 
-    }
+    float GetExactDist2d(Position const& pos) const { return GetExactDist2d(pos.m_positionX, pos.m_positionY); }
+    float GetExactDist2d(Position const* pos) const { return GetExactDist2d(*pos); }
+
     float GetExactDistSq(float x, float y, float z) const
     { 
-        float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; 
+        float dz = m_positionZ - z; 
+        return GetExactDist2dSq(x, y) + dz*dz; 
     }
     float GetExactDist(float x, float y, float z) const
     { 

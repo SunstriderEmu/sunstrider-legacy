@@ -890,21 +890,7 @@ void MotionMaster::MoveFormation(uint32 id, FormationMoveSegment path, Creature*
     if (_owner->GetTypeId() != TYPEID_UNIT)
         return;
 
-    FormationMovementGenerator* generator = nullptr;
-    if (_owner->GetMotionMaster()->GetCurrentMovementGeneratorType() == FORMATION_MOTION_TYPE)
-    {
-        generator = static_cast<FormationMovementGenerator*>(_owner->GetMotionMaster()->GetCurrentMovementGenerator());
-        if (generator->GetLeaderGuid() != leader->GetGUID())
-            generator = nullptr;
-    }
-
-    if (generator == nullptr)
-    {
-        generator = new FormationMovementGenerator(id, leader->GetGUID());
-        Add(generator);
-    }
-
-    generator->NewLeaderDestination(path);
+    Add(new FormationMovementGenerator(id, leader->GetGUID(), path));
 }
 
 void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*= 0*/, MovementGeneratorPriority priority/* = MOTION_PRIORITY_NORMAL*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)

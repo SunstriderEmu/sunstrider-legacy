@@ -1,8 +1,11 @@
 // rewritten for sunstrider
-// ...
+// - Main difference is that instead of going directly to dest, we also go to a start point with the correct offset. 
+//   This ensures a trajectory parallel to the owner one
+// 
 // Todo: 
-// - Handle the special 180° logic 
-// - Redo speed corrections
+// - Launch a single movement with different speeds for position to start then start to dest.
+//   This is possible but currently not handled by our movement system.
+//   This would allow for even more precise positions.
 
 #include "FormationMovementGenerator.h"
 #include "Creature.h"
@@ -10,11 +13,16 @@
 #include "MovementDefines.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/linestring.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
 
-FormationMovementGenerator::FormationMovementGenerator(uint32 id, ObjectGuid leaderGUID) :
+FormationMovementGenerator::FormationMovementGenerator(uint32 id, ObjectGuid leaderGUID, FormationMoveSegment moveSegment) :
     MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
     _movementId(id), 
-    _leaderGUID(leaderGUID)
+    _leaderGUID(leaderGUID),
+    _moveSegment(moveSegment),
+    _movingToStart(false)
 {
     Flags = MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING;
 }
@@ -26,19 +34,16 @@ MovementGeneratorType FormationMovementGenerator::GetMovementGeneratorType() con
 
 Position FormationMovementGenerator::GetMemberDestination(Creature* member, uint32 followDist, Position leaderDest, uint8 depth) const
 {
-    if (!_moveSegment)
-        return member->GetPosition();
-
     //no valid position found after 3 iterations, return leader position instead
     if (depth > 3)
         return leaderDest;
 
-    float pathAngle = _moveSegment->start.GetAbsoluteAngle(_moveSegment->dest);
+    float pathAngle = _moveSegment.start.GetAbsoluteAngle(_moveSegment.dest);
 
     Position dest;
     dest.m_orientation = leaderDest.GetOrientation();
-    dest.m_positionX = leaderDest.GetPositionX() + cos(_moveSegment->followAngle + pathAngle) * followDist;
-    dest.m_positionY = leaderDest.GetPositionY() + sin(_moveSegment->followAngle + pathAngle) * followDist;
+    dest.m_positionX = leaderDest.GetPositionX() + cos(_moveSegment.followAngle + pathAngle) * followDist;
+    dest.m_positionY = leaderDest.GetPositionY() + sin(_moveSegment.followAngle + pathAngle) * followDist;
     float height;
     if (!member->IsFlying())
         height = member->GetMap()->GetHeight(dest.m_positionX, dest.m_positionY, leaderDest.GetPositionZ() + 5.0f, true, 10.0f, member->GetCollisionHeight(), true);
@@ -60,27 +65,84 @@ Position FormationMovementGenerator::GetMemberDestination(Creature* member, uint
     return dest;
 }
 
-void FormationMovementGenerator::StartMove(Creature* owner)
+float FormationMovementGenerator::GetDistanceFromLine(Position point, Position start, Position end)
 {
-    if (!_moveSegment)
-        return;
+    typedef boost::geometry::model::d2::point_xy<double> point_type;
+    typedef boost::geometry::model::linestring<point_type> linestring_type;
 
-    Position start = GetMemberDestination(owner, _moveSegment->followDist, _moveSegment->start);
-    Position dest  = GetMemberDestination(owner, _moveSegment->followDist, _moveSegment->dest);
+    point_type p(point.GetPositionX(), point.GetPositionY());
+    linestring_type line;
+    line.push_back(point_type(start.GetPositionX(), start.GetPositionY()));
+    line.push_back(point_type(end.GetPositionX(), end.GetPositionY()));
+
+    return boost::geometry::distance(p, line);
+}
+
+void FormationMovementGenerator::MoveToStart(Creature* owner)
+{
+    _movingToStart = true;
+
+    Position start = GetMemberDestination(owner, _moveSegment.followDist, _moveSegment.start);
+    Position dest = GetMemberDestination(owner, _moveSegment.followDist, _moveSegment.dest);
+
+    // Decide if we should skip the start point, skip if we're:
+    if (   start.GetExactDist(owner) < 5.0f                                  // - Close from the start point
+        && owner->GetExactDist2d(dest) < start.GetExactDist2d(dest)          // - Closer to start than from end
+        && GetDistanceFromLine(owner->GetPosition(), start, dest) < 3.0f)    // - Close to the line between start and end
+    {
+        return; // This will trigger start to dest at next update
+    }
+       
+    Movement::MoveSplineInit init(owner);
+    init.MoveTo(start.GetPositionX(), start.GetPositionY(), start.GetPositionZ(), false, true);  //waypoint generator is not using mmaps... so neither should be
+    if (start.GetOrientation())
+        init.SetFacing(start.GetOrientation());
+
+    bool walk = true;
+    switch (_moveSegment.moveType)
+    {
+#ifdef LICH_KING
+    case 2: // WAYPOINT_MOVE_TYPE_LAND
+        init.SetAnimation(Movement::ToGround);
+        break;
+    case 3: // WAYPOINT_MOVE_TYPE_TAKEOFF
+        init.SetAnimation(Movement::ToFly);
+        break;
+#endif
+    case WAYPOINT_MOVE_TYPE_RUN:
+        walk = false;
+        break;
+    case WAYPOINT_MOVE_TYPE_WALK:
+        walk = true;
+        break;
+}
+    init.SetWalk(walk);
+
+    // Speed calc - Max 1 sec to get there
+    UnitMoveType mtype = walk ? MOVE_WALK : MOVE_RUN;
+    float const baseVelocity = owner->GetSpeed(mtype);
+    float const distance = owner->GetExactDist(start);
+    float const velocityFor1s = distance; //velocity to move this distance in 1 sec
+    init.SetVelocity(std::max(baseVelocity, velocityFor1s));
+
+    init.Launch();
+    owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
+    RemoveFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED | MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING);
+}
+
+void FormationMovementGenerator::MoveToDest(Creature* owner)
+{
+    _movingToStart = false;
+
+    Position dest = GetMemberDestination(owner, _moveSegment.followDist, _moveSegment.dest);
 
     Movement::MoveSplineInit init(owner);
-    Movement::PointsArray points;
-    points.reserve(3);
-    points.emplace_back(); //dummy point 0, will be replaced in MoveByPath
-    if (start.GetExactDist(owner) > 3.0f) //skip first point if its already real close. Might need tweaking
-        points.emplace_back(start.GetPositionX(), start.GetPositionY(), start.GetPositionZ());
-    points.emplace_back(dest.GetPositionX(),  dest.GetPositionY(),  dest.GetPositionZ());
-    init.MovebyPath(points);
+    init.MoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, true); //waypoint generator is not using mmaps... so neither should be
     if (dest.GetOrientation())
         init.SetFacing(dest.GetOrientation());
 
     bool walk = true;
-    switch (_moveSegment->moveType)
+    switch (_moveSegment.moveType)
     {
 #ifdef LICH_KING
     case 2: // WAYPOINT_MOVE_TYPE_LAND
@@ -102,9 +164,10 @@ void FormationMovementGenerator::StartMove(Creature* owner)
     if (Creature* leader = owner->GetMap()->GetCreature(_leaderGUID))
     {
         // change members speed basing on distance
+        // -> What we aim here is arriving at the same time
         UnitMoveType mtype = walk ? MOVE_WALK : MOVE_RUN;
-        float leaderSegmentLength = leader->GetExactDist(_moveSegment->dest);
-        float memberSegmentLength = owner->GetExactDist(start) + owner->GetExactDist(dest);
+        float leaderSegmentLength = _moveSegment.start.GetExactDist(_moveSegment.dest);
+        float memberSegmentLength = owner->GetExactDist(dest);
         float rate = memberSegmentLength / leaderSegmentLength;
         init.SetVelocity(leader->GetSpeed(mtype) * rate);
     }
@@ -121,7 +184,7 @@ bool FormationMovementGenerator::DoInitialize(Creature* owner)
     _previousHome = owner->GetHomePosition();
     RemoveFlag(MOVEMENTGENERATOR_FLAG_INITIALIZATION_PENDING | MOVEMENTGENERATOR_FLAG_TRANSITORY | MOVEMENTGENERATOR_FLAG_DEACTIVATED);
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
-   
+
     if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
     {
         AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
@@ -129,8 +192,7 @@ bool FormationMovementGenerator::DoInitialize(Creature* owner)
         return true;
     }
 
-    StartMove(owner);
-    
+    MoveToStart(owner);
     return true;
 }
 
@@ -146,9 +208,6 @@ bool FormationMovementGenerator::DoUpdate(Creature* owner, uint32 /*diff*/)
     if (!owner)
         return false;
 
-    if (!_moveSegment)
-        return true; //Just wait for new destination
-
     if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
     {
         AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
@@ -156,10 +215,11 @@ bool FormationMovementGenerator::DoUpdate(Creature* owner, uint32 /*diff*/)
         return true;
     }
 
-    if (   (HasFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED) && owner->movespline->Finalized())
+    if (   (_movingToStart && owner->movespline->Finalized())
+        || (HasFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED) && owner->movespline->Finalized())
         || (HasFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING) && !owner->movespline->Finalized()))
     {
-        StartMove(owner);
+        MoveToDest(owner);
     }
 
     if (owner->movespline->Finalized())
@@ -192,10 +252,4 @@ void FormationMovementGenerator::MovementInform(Creature* owner)
 {
     if (owner->AI())
         owner->AI()->MovementInform(FORMATION_MOTION_TYPE, _movementId);
-}
-
-void FormationMovementGenerator::NewLeaderDestination(FormationMoveSegment moveSegment)
-{
-    _moveSegment = moveSegment;
-    AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED); //trigger new movement if one is already ongoing
 }

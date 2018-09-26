@@ -26,7 +26,7 @@ class Creature;
 class FormationMovementGenerator : public MovementGeneratorMedium<Creature, FormationMovementGenerator>
 {
     public:
-        explicit FormationMovementGenerator(uint32 id, ObjectGuid leaderGUID);
+        explicit FormationMovementGenerator(uint32 id, ObjectGuid leaderGUID, FormationMoveSegment moveSegment);
 
         MovementGeneratorType GetMovementGeneratorType() const override;
 
@@ -36,7 +36,6 @@ class FormationMovementGenerator : public MovementGeneratorMedium<Creature, Form
         void DoDeactivate(Creature*);
         void DoFinalize(Creature*, bool, bool);
 
-        void NewLeaderDestination(FormationMoveSegment moveSegment);
         ObjectGuid GetLeaderGuid() const { return _leaderGUID; }
 
         void UnitSpeedChanged() override { AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
@@ -44,12 +43,16 @@ class FormationMovementGenerator : public MovementGeneratorMedium<Creature, Form
     private:
         void MovementInform(Creature*);
 
-        void StartMove(Creature*);
+        void MoveToStart(Creature*);
+        void MoveToDest(Creature*);
         Position GetMemberDestination(Creature* member, uint32 followDist, Position leaderDest, uint8 depth = 0) const;
 
+        float GetDistanceFromLine(Position point, Position start, Position end);
+
         uint32 _movementId;
-        Optional<FormationMoveSegment> _moveSegment;
+        FormationMoveSegment _moveSegment;
         ObjectGuid _leaderGUID;
+        bool _movingToStart;
 
         Position _previousHome;
 };
