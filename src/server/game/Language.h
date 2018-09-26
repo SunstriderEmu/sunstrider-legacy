@@ -777,6 +777,7 @@ enum TrinityStrings
     LANG_MOVEGENS_FOLLOW_CREATURE       = 1140,
     LANG_MOVEGENS_FOLLOW_NULL           = 1141,
     LANG_MOVEGENS_EFFECT                = 1142,
+    LANG_MOVEGENS_FORMATION             = 1143,
 
     LANG_BAN_EXISTS                     = 1188,
 

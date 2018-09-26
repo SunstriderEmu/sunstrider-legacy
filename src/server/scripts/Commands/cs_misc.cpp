@@ -1332,6 +1332,9 @@ public:
                 case EFFECT_MOTION_TYPE:
                     handler->SendSysMessage(LANG_MOVEGENS_EFFECT);
                     break;
+                case FORMATION_MOTION_TYPE:
+                    handler->SendSysMessage(LANG_MOVEGENS_FORMATION);
+                    break;
                 default:
                     handler->PSendSysMessage(LANG_MOVEGENS_UNKNOWN, info.Type);
                     break;

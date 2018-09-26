@@ -98,9 +98,15 @@ public:
     {
         static std::vector<ChatCommand> npcPathTable =
         {
-            { "type",           SEC_GAMEMASTER2,  false, &HandleNpcPathTypeCommand,           "" },
-            { "direction",      SEC_GAMEMASTER2,  false, &HandleNpcPathDirectionCommand,      "" },
-            { "currentid",      SEC_GAMEMASTER1,  false, &HandleNpcPathCurrentIdCommand,      "" },
+            { "type",           SEC_GAMEMASTER2,     false, &HandleNpcPathTypeCommand,           "" },
+            { "direction",      SEC_GAMEMASTER2,     false, &HandleNpcPathDirectionCommand,      "" },
+            { "currentid",      SEC_GAMEMASTER1,     false, &HandleNpcPathCurrentIdCommand,      "" },
+        };
+        static std::vector<ChatCommand> npcFormationTable =
+        {
+            { "add",           SEC_ADMINISTRATOR,    false, &HandleNpcFormationAddCommand,           "" },
+            { "remove",        SEC_ADMINISTRATOR,    false, &HandleNpcFormationRemoveCommand,      "" },
+            { "info",          SEC_ADMINISTRATOR,    false, &HandleNpcFormationInfoCommand,      "" },
         };
         static std::vector<ChatCommand> npcCommandTable =
         {
@@ -126,8 +132,6 @@ public:
             { "whisper",        SEC_GAMEMASTER1,     false, &HandleNpcWhisperCommand,          "" },
             { "yell",           SEC_GAMEMASTER1,     false, &HandleNpcYellCommand,             "" },
             { "addtemp",        SEC_GAMEMASTER2,     false, &HandleNpcTempAddCommand,          "" },
-            { "addformation",   SEC_ADMINISTRATOR,   false, &HandleNpcAddFormationCommand,     "" },
-            { "removeformation",SEC_ADMINISTRATOR,   false, &HandleNpcRemoveFormationCommand,  "" },
             { "gobackhome",     SEC_GAMEMASTER3,     false, &HandleNpcGoBackHomeCommand,       "" },
             { "setpool",        SEC_GAMEMASTER3,     false, &HandleNpcSetPoolCommand,          "" },
             { "guid",           SEC_GAMEMASTER1,     false, &HandleNpcGuidCommand,             "" },
@@ -144,6 +148,7 @@ public:
             { "spawngroup",     SEC_ADMINISTRATOR,   false, &HandleNpcSpawnGroup,              "" },
             { "despawngroup",   SEC_ADMINISTRATOR,   false, &HandleNpcDespawnGroup,            "" },
             { "path",           SEC_GAMEMASTER1,     false, nullptr,                           "", npcPathTable },
+            { "formation",      SEC_ADMINISTRATOR,   false, nullptr,                           "", npcFormationTable },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -980,8 +985,46 @@ public:
         return true;
     }
 
+    static bool HandleNpcFormationInfoCommand(ChatHandler* handler, char const* args)
+    {
+        Player* player = handler->GetSession()->GetPlayer();
+        Creature* creature = handler->GetSelectedCreature();
+
+        if (!creature)
+        {
+            handler->PSendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        CreatureGroup* formation = creature->GetFormation();
+        if (!formation)
+        {
+            handler->PSendSysMessage("Selected creature (%u) is not in a formation.", creature->GetSpawnId());
+            return true;
+        }
+
+        handler->PSendSysMessage("Found formation %u with leader %u:", formation->GetGroupId(), formation->GetLeader()->GetSpawnId());
+        formation->ForEachMember([&](Creature* c) {
+            FormationInfo* fInfo = sFormationMgr->GetFormationInfo(c->GetSpawnId());
+            if (!fInfo)
+            {
+                handler->PSendSysMessage("  (failed to get info for member %u)", c->GetSpawnId());
+                return;
+            }
+            if (c != formation->GetLeader())
+            {
+                std::stringstream ss;
+                ss << "  Member " << setw(6) << c->GetSpawnId();
+                ss << " | angle " << std::setprecision(3) << fInfo->followAngle << " dist " << fInfo->followDist << " ai " << fInfo->groupAI << " - " << c->GetName();
+                handler->SendSysMessage(ss.str().c_str());
+            }
+        });
+        return true;
+    }
+
     // Does not handle summons, only creature with a spawnId
-    static bool HandleNpcAddFormationCommand(ChatHandler* handler, char const* args)
+    static bool HandleNpcFormationAddCommand(ChatHandler* handler, char const* args)
     {
         ARGS_CHECK
         Tokenizer tokens(std::string(args), ' ');
@@ -1067,29 +1110,29 @@ public:
         return true;
      }
 
-    static bool HandleNpcRemoveFormationCommand(ChatHandler* handler, char const* args)
+    static bool HandleNpcFormationRemoveCommand(ChatHandler* handler, char const* args)
     {
         ARGS_CHECK
 
-        Creature *pCreature =  handler->GetSelectedCreature();
+        Creature* creature =  handler->GetSelectedCreature();
 
-        if(!pCreature || !pCreature->GetSpawnId())
+        if(!creature || !creature->GetSpawnId())
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);
             return true;
         }
 
-        CreatureGroup* formation = pCreature->GetFormation();
+        CreatureGroup* formation = creature->GetFormation();
         if(!formation)
         {
-            handler->PSendSysMessage("Selected creature (%u) is not in a formation.", pCreature->GetSpawnId());
+            handler->PSendSysMessage("Selected creature (%u) is not in a formation.", creature->GetSpawnId());
             return true;
         }
 
-        formation->RemoveMember(pCreature);
-        pCreature->SetFormation(nullptr);
-        WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u", pCreature->GetSpawnId());
+        formation->RemoveMember(creature);
+        creature->SetFormation(nullptr);
+        WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u", creature->GetSpawnId());
 
         handler->PSendSysMessage("Creature removed from formation.");
 
