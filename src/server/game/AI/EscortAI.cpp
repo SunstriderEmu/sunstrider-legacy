@@ -49,7 +49,12 @@ void EscortAI::FailQuest()
 
 void EscortAI::JustDied(Unit* /*killer*/)
 {
-    if (!HasEscortState(STATE_ESCORT_ESCORTING) || !_playerGUID || !_escortQuest)
+    if (!HasEscortState(STATE_ESCORT_ESCORTING))
+        return;
+
+    RemoveEscortState(STATE_ESCORT_ESCORTING); //sun: remove escort state on death
+
+    if (!_playerGUID || !_escortQuest)
         return;
 
     FailQuest();
