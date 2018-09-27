@@ -47,7 +47,7 @@ public:
     TestCase();
     //Use specific position. If only map was specified in location, default coordinates in map may be chosen instead. If you need creatures and objects, use EnableMapObjects in your test constructor
     TestCase(WorldLocation const specificPosition);
-    ~TestCase() {}
+    virtual ~TestCase() {}
     void SetUsedPattern(std::string const& pattern) { _usedPattern = pattern; }
 
     std::string GetName() const { return _testName; }
