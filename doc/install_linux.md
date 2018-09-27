@@ -5,7 +5,7 @@
 
 1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). MySQL should also work but is not supported, and you may encounter problems when importing the databases.
 
-2. Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 5.0.
+2. Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 5.0. GCC or more recent versions of clang may or may not work. In any case you NEED a compiler supporting c++17.
 
 3. Add LLVM key `wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -`
 
