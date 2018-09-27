@@ -16,7 +16,11 @@ class ObjectMgr;
 #define MAX_QUEST_LOG_SIZE 25
 
 #define QUEST_OBJECTIVES_COUNT 4
+#ifdef LICH_KING
 #define QUEST_ITEM_OBJECTIVES_COUNT 6
+#else
+#define QUEST_ITEM_OBJECTIVES_COUNT QUEST_OBJECTIVES_COUNT
+#endif
 #define QUEST_SOURCE_ITEM_IDS_COUNT 4
 #define QUEST_REWARD_CHOICES_COUNT 6
 #define QUEST_REWARDS_COUNT 4
@@ -260,8 +264,8 @@ class TC_GAME_API Quest
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
-        uint32 RequiredItemId[QUEST_OBJECTIVES_COUNT]; //TODO LK, 6 items here
-        uint32 RequiredItemCount[QUEST_OBJECTIVES_COUNT]; //TODO LK, 6 items here
+        uint32 RequiredItemId[QUEST_ITEM_OBJECTIVES_COUNT];
+        uint32 RequiredItemCount[QUEST_ITEM_OBJECTIVES_COUNT]; 
         uint32 RequiredSourceItemId[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 RequiredSourceItemCount[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 ReqSourceRef[QUEST_SOURCE_ITEM_IDS_COUNT];
@@ -375,8 +379,8 @@ struct QuestStatusData
     uint32 m_timer;
     QuestUpdateState uState;
 
-    uint32 ItemCount[ QUEST_OBJECTIVES_COUNT ];
-    uint32 CreatureOrGOCount[ QUEST_OBJECTIVES_COUNT ];
+    uint32 ItemCount[QUEST_ITEM_OBJECTIVES_COUNT] = {};
+    uint32 CreatureOrGOCount[QUEST_OBJECTIVES_COUNT] = {};
 };
 
 struct AccessRequirement

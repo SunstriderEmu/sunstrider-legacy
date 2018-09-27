@@ -57,14 +57,6 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         if (!questTemplate->ObjectiveText[i].empty())
             ai->TellMaster(questTemplate->ObjectiveText[i]);
 
-        if (questTemplate->RequiredItemId[i])
-        {
-            int required = questTemplate->RequiredItemCount[i];
-            int available = questStatus.ItemCount[i];
-            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(questTemplate->RequiredItemId[i]);
-            TellObjective(chat->formatItem(proto), available, required);
-        }
-
         if (questTemplate->RequiredNpcOrGo[i])
         {
             int required = questTemplate->RequiredNpcOrGoCount[i];
@@ -83,6 +75,17 @@ void QueryQuestAction::TellObjectives(uint32 questId)
                 if (info)
                     TellObjective(info->Name, available, required);
             }
+        }
+    }
+
+    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
+    {
+        if (questTemplate->RequiredItemId[i]) 
+        {
+            int required = questTemplate->RequiredItemCount[i];
+            int available = questStatus.ItemCount[i];
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(questTemplate->RequiredItemId[i]);
+            TellObjective(chat->formatItem(proto), available, required);
         }
     }
 }

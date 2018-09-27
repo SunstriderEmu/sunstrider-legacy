@@ -62,7 +62,7 @@ Quest::Quest(Field * questRecord)
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
         ObjectiveText[j] = questRecord[i++].GetString();
 
-    for (int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
+    for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j)
         RequiredItemId[j] = questRecord[i++].GetUInt32();
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
@@ -128,10 +128,13 @@ Quest::Quest(Field * questRecord)
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
     {
-        if ( RequiredItemId[j] )
-            ++m_reqitemscount;
         if ( RequiredNpcOrGo[j] )
             ++m_reqCreatureOrGOcount;
+    }
+    for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
+    {
+        if (RequiredItemId[j])
+            ++m_reqitemscount;
     }
 
     for (uint32 j : RewardItemId)

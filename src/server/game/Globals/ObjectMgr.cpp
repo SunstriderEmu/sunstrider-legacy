@@ -3514,7 +3514,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for(int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j )
+        for(int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j )
         {
             uint32 id = qinfo->RequiredItemId[j];
             if(id)

@@ -13108,7 +13108,7 @@ bool Player::CanCompleteRepeatableQuest( Quest const *pQuest )
         return false;
 
     if (pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER) )
-        for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+        for(int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
             if( pQuest->RequiredItemId[i] && pQuest->RequiredItemCount[i] && !HasItemCount(pQuest->RequiredItemId[i],pQuest->RequiredItemCount[i]) )
                 return false;
 
@@ -13135,7 +13135,7 @@ bool Player::CanRewardQuest( Quest const *pQuest, bool msg )
     // prevent receive reward with quest items in bank
     if ( pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
     {
-        for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+        for(int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
         {
             if( pQuest->RequiredItemCount[i]!= 0 &&
                 GetItemCount(pQuest->RequiredItemId[i]) < pQuest->RequiredItemCount[i] )
@@ -13343,7 +13343,7 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     uint32 quest_id = pQuest->GetQuestId();
 
-    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; i++ )
+    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++ )
     {
         if ( pQuest->RequiredItemId[i] )
             DestroyItemCount( pQuest->RequiredItemId[i], pQuest->RequiredItemCount[i], true);
@@ -14078,7 +14078,7 @@ void Player::AdjustQuestRequiredItemCount( Quest const* pQuest )
 {
     if ( pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
     {
-        for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+        for(int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
         {
             uint32 reqitemcount = pQuest->RequiredItemCount[i];
             if( reqitemcount != 0 )
@@ -14159,7 +14159,7 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
         if( !qInfo || !qInfo->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
             continue;
 
-        for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
+        for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
         {
             uint32 reqitem = qInfo->RequiredItemId[j];
             if ( reqitem == entry )
@@ -14174,8 +14174,8 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
 
                     SendQuestUpdateAddItem( qInfo, j, additemcount );
                 }
-                if ( CanCompleteQuest( questid ) )
-                    CompleteQuest( questid );
+                if (CanCompleteQuest(questid))
+                    CompleteQuest(questid);
                 return;
             }
         }
@@ -14196,7 +14196,7 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
         if( !qInfo->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
             continue;
 
-        for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
+        for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
         {
             uint32 reqitem = qInfo->RequiredItemId[j];
             if ( reqitem == entry )
@@ -14489,11 +14489,12 @@ bool Player::HasQuestForItem( uint32 itemid ) const
 
             // There should be no mixed ReqItem/ReqSource drop
             // This part for ReqItem drop
-            for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
+            for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
             {
                 if(itemid == qinfo->RequiredItemId[j] && q_status.ItemCount[j] < qinfo->RequiredItemCount[j] )
                     return true;
             }
+
             // This part - for ReqSource
             for (int j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; j++)
             {
