@@ -6,7 +6,7 @@ Wants=network.target
 [Service]
 User=suncore
 Group=suncore
-Environment="PATH=/usr/lib/llvm-5.0/bin/:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/usr/lib/llvm-7/bin/:/usr/local/bin:/usr/bin:/bin"
 #Environment="CPUPROFILE=/tmp/prof.out"
 
 LimitAS=infinity

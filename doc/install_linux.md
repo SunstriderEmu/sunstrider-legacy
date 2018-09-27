@@ -5,13 +5,13 @@
 
 1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). MySQL should also work but is not supported, and you may encounter problems when importing the databases.
 
-2. Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 5.0. GCC or more recent versions of clang may or may not work. In any case you NEED a compiler supporting c++17.
+2. Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 7.
 
 3. Add LLVM key `wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -`
 
-4. sudo apt-get install clang-5.0 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev 
+4. sudo apt-get install clang-7 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev apt-get install libboost1.67-dev libboost-thread1.67-dev libboost-system1.67-dev libboost-filesystem1.67-dev libboost-program-options1.67-dev libboost-regex1.67-dev libboost-iostreams1.67-dev 
 
-Clang is now the supported compiler, but gcc should work too.
+Clang is now the main supported compiler, but gcc should work too.
 
 [mariadbrepository]:
 https://downloads.mariadb.org/mariadb/repositories/
@@ -128,6 +128,6 @@ password are the usernames.
 
 Just run both the **worldserver** and the **authserver** in the `<root_install_folder>/bin` folder.  
 
-Sunstrider now also has some systemd scripts that you can use, see [this directory][restarterscripts].
+Sunstrider also has some generic systemd scripts that you can use, see [this directory][restarterscripts].
 [restarterscripts]:
 https://github.com/ValorenWoW/sunstrider-core/tree/master/contrib/sunstrider

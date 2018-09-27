@@ -35,6 +35,10 @@ CollectIncludeDirectories(
   
 add_library(game-interface INTERFACE)
 
+target_compile_features(game-interface
+   INTERFACE
+     cxx_std_17)
+
 target_include_directories(game-interface
   INTERFACE
     ${PUBLIC_INCLUDES})

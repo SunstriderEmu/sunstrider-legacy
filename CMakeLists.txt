@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.8)
 
 # add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
@@ -7,9 +7,9 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 project(Sunstrider)
 
-if(POLICY CMP0043)
-    cmake_policy(SET CMP0043 OLD) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
-endif(POLICY CMP0043)
+if (POLICY CMP0074)
+  cmake_policy(SET CMP0074 OLD) # New cmake 1.12 policy, keep the old behavior for now 
+endif(POLICY CMP0074)
 
 if(POLICY CMP0054)
   cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted - prevents intepreting if (SOME_STRING_VARIABLE MATCHES "MSVC") as if (SOME_STRING_VARIABLE MATCHES "1")

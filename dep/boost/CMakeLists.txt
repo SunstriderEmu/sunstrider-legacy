@@ -34,12 +34,8 @@ endif()
 
 include (CheckCXXSourceCompiles)
 
-if (WIN32)
-  # On windows the requirements are higher according to the wiki.
-  set(BOOST_REQUIRED_VERSION 1.59)
-else()
-  set(BOOST_REQUIRED_VERSION 1.58)
-endif()
+# First boost version to support c++ 17
+set(BOOST_REQUIRED_VERSION 1.67)
 
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams regex)
 
@@ -47,7 +43,7 @@ find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread p
 
 set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_IOSTREAMS_LIBRARY})
-set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 check_cxx_source_compiles("
   #include <boost/filesystem/path.hpp>
   #include <boost/filesystem/operations.hpp>
@@ -71,10 +67,6 @@ target_compile_definitions(boost
   INTERFACE
     -DBOOST_DATE_TIME_NO_LIB
     -DBOOST_REGEX_NO_LIB
-    -DBOOST_CHRONO_NO_LIB
-    # Due to MSVC linking error boost::none" already defined in scripts_...
-    # May be removed when the requirement is raised to boost 1.61 on windows.
-    -DBOOST_OPTIONAL_USE_OLD_DEFINITION_OF_NONE
     -DBOOST_CHRONO_NO_LIB
     -DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     -DBOOST_ASIO_NO_DEPRECATED)

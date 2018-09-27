@@ -64,9 +64,6 @@ target_compile_options(trinity-compile-option-interface
     -Wno-deprecated-register
     -Wno-switch)
 
-# Keep this one out of target_compile_options, else we'd try to compile libmpq with it and end up with error: " error: invalid argument '-std=c++17' not allowed with 'C'"
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-
 target_compile_definitions(trinity-compile-option-interface
   INTERFACE
     -DDEBUG=1)
