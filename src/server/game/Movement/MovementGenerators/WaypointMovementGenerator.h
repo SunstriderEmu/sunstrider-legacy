@@ -121,6 +121,8 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool GetCurrentDestinationPoint(Creature* creature, Position& pos) const;
 
     private:
+        WaypointMovementGenerator(float fake);
+
         void MovementInform(Creature*, uint32 DBNodeId);
 
         // Return if node is last waypoint depending on current direction

@@ -13,44 +13,47 @@
 #include "MoveSpline.h"
 #include "WaypointManager.h"
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
-    WaypointMovementGenerator(uint32(0), repeating)
-{
-    CreateCustomPath(points);
-    path_type = WP_PATH_TYPE_ONCE;
-    direction = WP_PATH_DIRECTION_NORMAL;
-    erasePathAtEnd = true;
-}
-
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(float fake) : 
     MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
-    _pathId(_path_id),
-    path_type(WP_PATH_TYPE_UNSPECIFIED),
-    direction(WP_PATH_DIRECTION_NORMAL),
-    _nextMoveTime(0), 
-    _recalculateTravel(false),
-    _reachedFirstNode(false),
-    customPath(nullptr), 
-    erasePathAtEnd(false),
-    _useSmoothSpline(smoothSpline),
-    _done(false)
-{ 
-    if (repeating)
-        path_type = repeating.get() ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE;
-}
-
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
-    MovementGeneratorMedium(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
-    _pathId(0),
     direction(WP_PATH_DIRECTION_NORMAL),
     path_type(WP_PATH_TYPE_UNSPECIFIED),
     _nextMoveTime(0),
     _recalculateTravel(false),
     _reachedFirstNode(false),
-    customPath(&path),
-    _useSmoothSpline(smoothSpline),
-    erasePathAtEnd(false)
+    _useSmoothSpline(false),
+    erasePathAtEnd(false),
+    _done(false),
+    _splineId(0),
+    customPath(nullptr),
+    _pathId(0)
 {
+}
+
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
+    WaypointMovementGenerator(uint32(0), repeating)
+{
+    CreateCustomPath(points);
+    erasePathAtEnd = true;
+    path_type = WP_PATH_TYPE_ONCE;
+    direction = WP_PATH_DIRECTION_NORMAL;
+    _useSmoothSpline = smoothSpline;
+}
+
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
+    WaypointMovementGenerator(0.0f)
+{
+    _pathId = _path_id;
+    _useSmoothSpline = smoothSpline;
+    if (repeating)
+        path_type = repeating.get() ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE;
+}
+
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
+    WaypointMovementGenerator(0.0f)
+{
+    _pathId = 0;
+    customPath = &path;
+    _useSmoothSpline = smoothSpline;
     if(repeating)
         path_type = repeating.get() ? WP_PATH_TYPE_LOOP : WP_PATH_TYPE_ONCE;
 }
@@ -189,6 +192,9 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
     ASSERT(!_done);
     if (!_path || _path->nodes.size() <= _currentNode)
         return;
+
+    if (creature->movespline->GetId() != _splineId)
+        return;  //This movement could be a stop movement for pause
 
     WaypointNode const& arrivedNode = _path->nodes.at(_currentNode);
     
@@ -515,6 +521,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     init.MovebyPath(_precomputedPath, 0, creature->GetTransport());
 
     init.Launch();
+    _splineId = creature->movespline->GetId();
+
     _reachedFirstNode = false;
     _recalculateTravel = false;
     creature->AddUnitState(UNIT_STATE_ROAMING_MOVE);

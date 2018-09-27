@@ -122,8 +122,8 @@ void FormationMovementGenerator::MoveToStart(Creature* owner)
     UnitMoveType mtype = walk ? MOVE_WALK : MOVE_RUN;
     float const baseVelocity = owner->GetSpeed(mtype);
     float const distance = owner->GetExactDist(start);
-    float const velocityFor1s = distance; //velocity to move this distance in 1 sec
-    init.SetVelocity(std::max(baseVelocity, velocityFor1s));
+    float const velocityFor2s = distance / 2.0f; //velocity to move this distance in 2 sec
+    init.SetVelocity(std::max(baseVelocity, velocityFor2s));
 
     init.Launch();
     owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
