@@ -225,7 +225,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
 
-    void DoAction(const int32 param) override {}
+    void DoAction(const int32 /*param*/) override {}
 
     //Teleports a player without dropping threat (only teleports to same map)
     void DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float o);

@@ -34,7 +34,7 @@ public:
     explicit QueryCallback(TransactionCompleteFuture&& result);
     QueryCallback(QueryCallback&& right);
     QueryCallback& operator=(QueryCallback&& right);
-    ~QueryCallback();
+    virtual ~QueryCallback();
 
     // Transaction
     QueryCallback&& WithCallback(std::function<void()>&& callback);

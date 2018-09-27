@@ -741,12 +741,12 @@ void Channel::SendToOne(WorldPacket *data, ObjectGuid who)
         plr->SendDirectMessage(data);
 }
 
-void Channel::Voice(ObjectGuid guid1, ObjectGuid guid2)
+void Channel::Voice(ObjectGuid /*guid1*/, ObjectGuid /*guid2*/)
 {
 
 }
 
-void Channel::DeVoice(ObjectGuid guid1, ObjectGuid guid2)
+void Channel::DeVoice(ObjectGuid /*guid1*/, ObjectGuid /*guid2*/)
 {
 
 }

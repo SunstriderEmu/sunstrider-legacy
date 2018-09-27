@@ -112,7 +112,7 @@ namespace VMAP
         // M2 files don't have bounds
         if (flags & MOD_M2)
         {
-            //if (p.
+            
         }
         else if (!iBound.contains(p))
             return false;
@@ -120,7 +120,8 @@ namespace VMAP
         Vector3 up(0, 0, 1);
         Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
         up = iInvRot * up * iInvScale;
-        Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
+        
+        //Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
 
         if (iModel->IsUnderObject(pModel, up, flags & MOD_M2, outDist, inDist))
             return true;
