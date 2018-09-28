@@ -1,0 +1,1 @@
+REPLACE INTO updates_include VALUES ("$/src/server/game/Anticheat/modules/sql", "RELEASED");
