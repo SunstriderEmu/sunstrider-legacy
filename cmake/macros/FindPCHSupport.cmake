@@ -20,7 +20,13 @@ function(ADD_CXX_PCH TARGET_NAME_LIST PCH_HEADER)
     set_target_properties(${TARGET_NAME} PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT ${PCH_HEADER})
 
     # Workaround for cotire bug: https://github.com/sakra/cotire/issues/138
-    set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
+	# authserver check needed until TrinityCore/TrinityCore#22343 is fixed
+	# When removing this block, make sure to enable cxx_std_17 for all projects (we're currently relying on this hack to do it)
+	if(NOT ${TARGET_NAME} STREQUAL "authserver")
+		set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
+	else()
+		set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 14)
+	endif()
   endforeach()
 
   cotire(${TARGET_NAME_LIST})

@@ -109,11 +109,6 @@ target_compile_definitions(trinity-compile-option-interface
     -D_CRT_NONSTDC_NO_WARNINGS)
 message(STATUS "MSVC: Disabled POSIX warnings")
 
-target_compile_options(trinity-compile-option-interface
-  INTERFACE
-    /std:c++17)
-message(STATUS "MSVC: Enabled C++17")
-
 # Ignore specific warnings
 # C4351: new behavior: elements of array 'x' will be default initialized
 # C4091: 'typedef ': ignored on left of '' when no variable is declared

@@ -159,8 +159,6 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
       ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER})
     target_link_libraries(${SCRIPT_MODULE_PROJECT_NAME}
       PRIVATE
-		#sunstrider: Added dependency to scripts library, so that we include pch directory. Dunno why it is needed for intellisense to work properly
-		#scripts
 		trinity-core-interface
       PUBLIC
         game

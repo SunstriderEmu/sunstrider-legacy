@@ -61,8 +61,3 @@ if (BUILD_SHARED_LIBS)
 
   message(STATUS "GCC: Enabled shared linking")
 endif()
-
-target_compile_options(trinity-compile-option-interface
-  INTERFACE
-    -std=c++17)
-	
