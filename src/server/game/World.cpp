@@ -835,7 +835,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_PLAYERONLY] = sConfigMgr->GetBoolDefault("Battleground.QueueAnnouncer.PlayerOnly", false);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY]  = sConfigMgr->GetBoolDefault("Battleground.QueueAnnouncer.WorldOnly", true);
     m_configs[CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE]         = sConfigMgr->GetBoolDefault("Battleground.Arena.Rated.Enable", true);
-    m_configs[CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK]  = sConfigMgr->GetIntDefault("Battleground.Arena.NightClose.Mask", 1);
+    m_configs[CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK]  = sConfigMgr->GetIntDefault("Battleground.Arena.NightClose.Mask", 0);
     m_configs[CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING]     = sConfigMgr->GetBoolDefault("Battleground.Arena.Alternate.Rating", false);
     m_configs[CONFIG_BATTLEGROUND_ARENA_ANNOUNCE]             = sConfigMgr->GetBoolDefault("Battleground.Arena.Announce", true);
 
@@ -1279,7 +1279,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_WHISPER_MINLEVEL] = sConfigMgr->GetIntDefault("Whisper.MinLevel", 1);
 
-    m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfigMgr->GetBoolDefault("ArenaSpectator.Enable", true);
+    m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfigMgr->GetBoolDefault("ArenaSpectator.Enable", false);
     m_configs[CONFIG_ARENA_SPECTATOR_MAX] = sConfigMgr->GetIntDefault("ArenaSpectator.Max", 10);
     m_configs[CONFIG_ARENA_SPECTATOR_GHOST] = sConfigMgr->GetBoolDefault("ArenaSpectator.Ghost", true);
     m_configs[CONFIG_ARENA_SPECTATOR_STEALTH] = sConfigMgr->GetBoolDefault("ArenaSpectator.Stealth", false);
@@ -1304,8 +1304,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SPAM_REPORT_COOLDOWN] = sConfigMgr->GetIntDefault("Spam.Report.Cooldown", 120); // In seconds
 
     m_configs[CONFIG_FACTION_CHANGE_ENABLED] = sConfigMgr->GetBoolDefault("Faction.Change.Enabled", false);
-    m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfigMgr->GetBoolDefault("Faction.Change.AllianceToHorde", false);
-    m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfigMgr->GetBoolDefault("Faction.Change.HordeToAlliance", false);
+    m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfigMgr->GetBoolDefault("Faction.Change.AllianceToHorde", true);
+    m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfigMgr->GetBoolDefault("Faction.Change.HordeToAlliance", true);
     m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfigMgr->GetIntDefault("Faction.Change.AllianceToHorde.Cost", 4);
     m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfigMgr->GetIntDefault("Faction.Change.HordeToAlliance.Cost", 4);
     m_configs[CONFIG_RACE_CHANGE_COST] = sConfigMgr->GetIntDefault("Race.Change.Cost", 4);
