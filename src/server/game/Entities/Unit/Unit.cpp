@@ -2112,8 +2112,11 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
     if(attType == BASE_ATTACK && sWorld->getConfig(CONFIG_DEBUG_DISABLE_MAINHAND))
         return;
 
+    if (attType != BASE_ATTACK && attType != OFF_ATTACK)
+        return; // ignore ranged case
+
     // disable this check for performance boost ?
-    if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !IsWithinLOSInMap(victim, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+    if (GetTypeId() == TYPEID_PLAYER && !IsWithinLOSInMap(victim, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
         return;
         
     AttackedTarget(victim, true);
