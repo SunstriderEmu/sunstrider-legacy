@@ -3951,6 +3951,9 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
     Trinity::AIRelocationNotifier notifier(*summon);
     Cell::VisitAllObjects(summon, notifier, GetVisibilityRange());
 
+    //sun: re call initialize, result may change because of previous initialisations
+    summon->GetThreatManager().Initialize();
+
     return summon;
 }
 
