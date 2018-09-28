@@ -11,7 +11,7 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
     recvPacket >> channel_id >> unknown1 >> hasVoice;
     recvPacket >> channelname;
 
-    if (channelname.empty() || isdigit(channelname[0]))
+    if (channelname.empty() || iswdigit(channelname[0]))
     {
         WorldPacket data(SMSG_CHANNEL_NOTIFY, 1 + channelname.size());
         data << uint8(CHAT_INVALID_NAME_NOTICE) << channelname;
