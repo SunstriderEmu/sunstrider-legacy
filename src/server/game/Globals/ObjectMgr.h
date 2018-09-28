@@ -1100,8 +1100,8 @@ class TC_GAME_API ObjectMgr
         {
             return Trinity::Containers::MapGetValuePtr(m_mCacheVendorItemMap, entry);
         }
-        void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
-        bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = true); // for event
+        void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = false); // for event
+        bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = false); // for event
         bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = nullptr, std::set<uint32>* skip_vendors = nullptr, uint32 ORnpcflag = 0 ) const;
         bool AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell);
         bool RemoveTrainerSpell(uint32 creatureId, uint32 spellId);
