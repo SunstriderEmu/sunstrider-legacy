@@ -1792,7 +1792,7 @@ public:
             return false;
         }
 
-        sObjectMgr->AddVendorItem(vendor_entry,pProto,maxcount,incrtime,extendedcost);
+        sObjectMgr->AddVendorItem(vendor_entry, pProto, maxcount, incrtime, extendedcost, true);
 
 
         handler->PSendSysMessage(LANG_ITEM_ADDED_TO_LIST,itemId,pProto->Name1.c_str(),maxcount,incrtime,extendedcost);
