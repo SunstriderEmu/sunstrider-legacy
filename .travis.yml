@@ -13,16 +13,8 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - sourceline: 'ppa:kzemek/boost'
     packages:
       - g++-6
-      - libboost1.58-dev
-      - libboost-filesystem1.58-dev
-      - libboost-iostreams1.58-dev
-      - libboost-program-options1.58-dev
-      - libboost-regex1.58-dev
-      - libboost-system1.58-dev
-      - libboost-thread1.58-dev
       - libssl-dev
       - libmariadbclient-dev 
       - libreadline6-dev
@@ -46,6 +38,15 @@ before_install:
   - sudo mkdir /opt/cmake
   - wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
   - sudo sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+  # Building boost
+  - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.bz2
+  - tar xvfo boost_1_67_0.tar.bz2
+  - cd boost_1_67_0
+  - ./bootstrap.sh --show-libraries
+  - ./bootstrap.sh --with-libraries=filesystem,iostreams,program_options,regex,system,thread
+  - ./b2 toolset=gcc cxxflags=-std=gnu++0x
+  - sudo ./b2 install
+  - cd ..
  
 install:
   - mysql -uroot -e 'create database test_mysql'
