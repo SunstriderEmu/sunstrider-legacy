@@ -110,7 +110,7 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     if (_sourceUnit && !_forceSourcePos)
     {
         _sourcePos.Relocate(_sourceUnit->GetPosition());
-        if(_transport) //ok if owner is in world, but not if he's on yet another transport... we'll that shouldn't happen
+        if(_transport) //ok if owner is in world, but not if he's on yet another transport... well that shouldn't happen
             _transport->CalculatePassengerOffset(_sourcePos.m_positionX, _sourcePos.m_positionY, _sourcePos.m_positionZ);
 
         // Always force destination if target is on transport and we're not, or we are on a transport and target is not
