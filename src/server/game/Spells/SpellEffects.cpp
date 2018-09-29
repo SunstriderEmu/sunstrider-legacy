@@ -3966,15 +3966,13 @@ void Spell::EffectProficiency(uint32 /*i*/)
     if(m_spellInfo->EquippedItemClass == ITEM_CLASS_WEAPON && !(p_target->GetWeaponProficiency() & subClassMask))
     {
         p_target->AddWeaponProficiency(subClassMask);
-        if (p_target->IsInWorld()) //sun: else this is sent at character creation
-            p_target->SendProficiency(uint8(ITEM_CLASS_WEAPON), p_target->GetWeaponProficiency());
+        p_target->SendProficiency(uint8(ITEM_CLASS_WEAPON), p_target->GetWeaponProficiency());
     }
 
     if(m_spellInfo->EquippedItemClass == ITEM_CLASS_ARMOR && !(p_target->GetArmorProficiency() & subClassMask))
     {
         p_target->AddArmorProficiency(subClassMask);
-        if (p_target->IsInWorld()) //sun: else this is sent at character creation
-            p_target->SendProficiency(uint8(ITEM_CLASS_ARMOR), p_target->GetArmorProficiency());
+        p_target->SendProficiency(uint8(ITEM_CLASS_ARMOR), p_target->GetArmorProficiency());
     }
 }
 
