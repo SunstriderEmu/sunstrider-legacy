@@ -20,6 +20,13 @@ addons:
       - libreadline6-dev
       - zlib1g-dev
       - libbz2-dev
+      - libboost-dev
+      - libboost-filesystem-dev
+      - libboost-iostreams-dev
+      - libboost-program-options-dev
+      - libboost-regex-dev
+      - libboost-system-dev
+      - libboost-thread-dev
       # For data archive
       - p7zip
       # For post run debug
@@ -38,15 +45,6 @@ before_install:
   - sudo mkdir /opt/cmake
   - wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
   - sudo sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
-  # Building boost
-  - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.bz2
-  - tar xvfo boost_1_67_0.tar.bz2
-  - cd boost_1_67_0
-  - ./bootstrap.sh --show-libraries
-  - ./bootstrap.sh --with-libraries=filesystem,iostreams,program_options,regex,system,thread
-  - ./b2 toolset=gcc cxxflags=-std=gnu++0x
-  - sudo ./b2 install
-  - cd ..
  
 install:
   - mysql -uroot -e 'create database test_mysql'

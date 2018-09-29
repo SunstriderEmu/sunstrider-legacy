@@ -17,10 +17,10 @@ the linking will fail.
 3. Install [OpenSSL 1.0.x][openssl] note the directory to which you
    install it. Caution, do not use the 'Light' version. OpenSSL 1.1 is NOT supported!
 
-4. Install [Boost 1.67][boost] version. (Other versions may be working but are not supported) 
+4. Install [Boost 1.62][boost] or higher.
    Get the windows prebuilt binaries corresponding to your MSVC compiler. 
    Set the **environment** variable (not a CMake variable) `BOOST_ROOT` to wherever you
-   installed Boost. 
+   installed Boost for CMake to find Boost location. 
 
 5. Run `cmake-gui` and indicate the repository as the source directory, and a
    directory of your choice to hold the compiled artifacts.

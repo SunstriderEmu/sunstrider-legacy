@@ -5,13 +5,13 @@
 
 1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). MySQL should also work but is not supported, and you may encounter problems when importing the databases.
 
-2. Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 7.
+2. clang: Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 7. gcc may work too but is not supported.
 
 3. Add LLVM key `wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -`
 
-4. sudo apt-get install clang-7 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libncurses5-dev libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev apt-get install libboost1.67-dev libboost-thread1.67-dev libboost-system1.67-dev libboost-filesystem1.67-dev libboost-program-options1.67-dev libboost-regex1.67-dev libboost-iostreams1.67-dev 
+4. Minimal boost version is 1.62
 
-Clang is now the main supported compiler, but gcc should work too.
+5. sudo apt-get install clang-7 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libncurses5-dev libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev 
 
 [mariadbrepository]:
 https://downloads.mariadb.org/mariadb/repositories/
