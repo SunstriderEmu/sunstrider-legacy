@@ -41,6 +41,12 @@ before_install:
   - ulimit -a -S
   - ulimit -a -H
   - cat /proc/sys/kernel/core_pattern
+  # More recent cmake
+  - apt-get remove cmake
+  - mkdir /opt/cmake
+  - wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
+  - sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake
+  - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
  
 install:
   - mysql -uroot -e 'create database test_mysql'
