@@ -43,6 +43,8 @@ static bool PositionOkay(Unit* owner, Unit* target, Optional<float> minDistance,
         return false;
     if (maxDistance && distSq > square(*maxDistance))
         return false;
+    if (owner->GetTransGUID() != target->GetTransGUID())
+        return false;
     return !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner));
 }
 

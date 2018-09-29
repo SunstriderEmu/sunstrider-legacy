@@ -158,16 +158,18 @@ namespace Movement
 
     inline void MoveSplineInit::MovebyPath(PointsArray const& controls, int32 path_offset /* = 0*/, Transport* pathTransport /*= nullptr*/)
     {
-        if (pathTransport) //always set unit on the same transport than target
+        Transport* currentTransport = unit->GetTransport();
+        if (pathTransport)
         {
-            Transport* currentTransport = unit->GetTransport();
-            if (currentTransport != pathTransport)
-            {
-                if (currentTransport)
-                    currentTransport->RemovePassenger(unit);
-                pathTransport->AddPassenger(unit);
-            }
-            args.TransformForTransport = false;  //if PathGenerator has a transport, coords are already transport offset
+            //if PathGenerator has a transport, coords are already transport offset (MovementGenerator must respect this)
+            args.TransformForTransport = false;  
+        }
+        if (pathTransport != currentTransport) //always set unit on the same transport as target
+        {
+            if (currentTransport)
+                currentTransport->RemovePassenger(unit);
+            if (pathTransport)
+                pathTransport->AddPassenger(unit, true);
         }
         args.path_Idx_offset = path_offset;
         args.path.resize(controls.size());

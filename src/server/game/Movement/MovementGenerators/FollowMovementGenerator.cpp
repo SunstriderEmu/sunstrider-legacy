@@ -26,6 +26,9 @@ static bool PositionOkay(Unit* owner, Unit* target, float range, Optional<ChaseA
     if (owner->GetExactDistSq(target) > square(owner->GetCombatReach() + target->GetCombatReach() + range))
         return false;
 
+    if (owner->GetTransGUID() != target->GetTransGUID())
+        return false;
+
     return !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner));
 }
 
