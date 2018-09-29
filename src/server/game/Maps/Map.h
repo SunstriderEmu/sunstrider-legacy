@@ -179,6 +179,10 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         MapEntry const* GetEntry() const { return i_mapEntry; }
         MapType GetMapType() const { return i_mapType; }
 
+        time_t GetGameTime() const;
+        // Milliseconds since server start
+        uint32 GetGameTimeMS() const;
+
         // currently unused for normal maps
         virtual bool CanUnload(uint32 diff);
 
@@ -585,11 +589,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
-		/*
-        template<class T> void AddType(T *obj);
-        template<class T> void RemoveType(T *obj, bool);
-		*/
-
         NGridType* getNGrid(uint32 x, uint32 y) const
         {
             assert(x < MAX_NUMBER_OF_GRIDS);
@@ -607,6 +606,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool AllTransportsEmpty() const; // sunwell
         void AllTransportsRemovePassengers(); // sunwell
         TransportsContainer const& GetAllTransports() const { return _transports; }
+
+        time_t GameTime;
+        uint32 GameMSTime;
 
     protected:
         void SetUnloadReferenceLock(GridCoord const& p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }

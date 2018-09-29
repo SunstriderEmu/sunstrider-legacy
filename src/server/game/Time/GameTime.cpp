@@ -16,27 +16,7 @@ namespace GameTime
     {
         return StartTime;
     }
-
-    time_t GetGameTime()
-    {
-        return GameTime;
-    }
-
-    uint32 GetGameTimeMS()
-    {
-        return GameMSTime;
-    }
-
-    std::chrono::system_clock::time_point GetGameTimeSystemPoint()
-    {
-        return GameTimeSystemPoint;
-    }
-
-    std::chrono::steady_clock::time_point GetGameTimeSteadyPoint()
-    {
-        return GameTimeSteadyPoint;
-    }
-
+    
     uint32 GetUptime()
     {
         return uint32(GameTime - StartTime);
@@ -48,5 +28,28 @@ namespace GameTime
         GameMSTime = GetMSTime();
         GameTimeSystemPoint = std::chrono::system_clock::now();
         GameTimeSteadyPoint = std::chrono::steady_clock::now();
+    }
+}
+
+namespace WorldGameTime
+{
+    time_t GetGameTime()
+    {
+        return GameTime::GameTime;
+    }
+
+    uint32 GetGameTimeMS()
+    {
+        return GameTime::GameMSTime;
+    }
+
+    std::chrono::system_clock::time_point GetGameTimeSystemPoint()
+    {
+        return GameTime::GameTimeSystemPoint;
+    }
+
+    std::chrono::steady_clock::time_point GetGameTimeSteadyPoint()
+    {
+        return GameTime::GameTimeSteadyPoint;
     }
 }

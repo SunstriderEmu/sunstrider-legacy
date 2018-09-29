@@ -388,7 +388,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    LogoutRequest(GameTime::GetGameTime());
+    LogoutRequest(WorldGameTime::GetGameTime());
 }
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
@@ -454,7 +454,7 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     else
     {
         if(!GetPlayer()->pvpInfo.IsHostile && GetPlayer()->IsPvP())
-            GetPlayer()->pvpInfo.endTimer = GameTime::GetGameTime();     // start toggle-off
+            GetPlayer()->pvpInfo.endTimer = GetPlayer()->GetMap()->GetGameTime();     // start toggle-off
     }
 }
 
@@ -548,7 +548,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
         return;
 
     // prevent resurrect before 30-sec delay after body release not finished
-    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > GameTime::GetGameTime())
+    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > GetPlayer()->GetMap()->GetGameTime())
         return;
 
     float dist = corpse->GetDistance2d(GetPlayer());
@@ -671,7 +671,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     {
         // set resting flag we are in the inn
         GetPlayer()->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        GetPlayer()->InnEnter(GameTime::GetGameTime(), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
+        GetPlayer()->InnEnter(GetPlayer()->GetMap()->GetGameTime(), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
         GetPlayer()->SetRestType(REST_TYPE_IN_TAVERN);
 
         if(sWorld->IsFFAPvPRealm())
@@ -1410,7 +1410,7 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
 
 #ifdef TRINITY_DEBUG
     TC_LOG_TRACE("network", "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
-    uint32 ourTicks = clientTicks + (GameTime::GetGameTimeMS() - _player->m_timeSyncServer);
+    uint32 ourTicks = clientTicks + (WorldGameTime::GetGameTimeMS() - _player->m_timeSyncServer);
 
     // diff should be small
     TC_LOG_TRACE("network", "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());

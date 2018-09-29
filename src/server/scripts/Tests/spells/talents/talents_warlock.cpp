@@ -1464,9 +1464,9 @@ class DemonicAegisTest : public TestCase
         TEST_ASSERT(caster->GetResistance(SPELL_SCHOOL_SHADOW) == expectedShadowRes);
 
         uint32 const regenTick = floor(healthRestore * talentFactor / 2.5f);
-        uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+        uint32 const beforeWaitTime = caster->GetMap()->GetGameTimeMS();
         Wait(2000);
-        uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+        uint32 const afterWaitTime = caster->GetMap()->GetGameTimeMS();
         uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
         uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 2.0f);
         uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
@@ -1671,9 +1671,9 @@ public:
             // Restores 2% every 4 sec.
             uint32 const regenTick = warlock->GetMaxHealth() * 0.02f;
 
-            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+            uint32 const beforeWaitTime = warlock->GetMap()->GetGameTimeMS();
             Wait(5000);
-            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const afterWaitTime = warlock->GetMap()->GetGameTimeMS();
             uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
             uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 4.0f);
             uint32 const expectedHealth = 1 + regenTick * expectedTickAmount;
@@ -1740,9 +1740,9 @@ public:
             // Restores x% of total mana every 4 sec.
             uint32 const regenTick = warlock->GetMaxPower(POWER_MANA) * sacrificeFactor;
 
-            uint32 const beforeWaitTime = GameTime::GetGameTimeMS();
+            uint32 const beforeWaitTime = warlock->GetMap()->GetGameTimeMS();
             Wait(5000);
-            uint32 const afterWaitTime = GameTime::GetGameTimeMS();
+            uint32 const afterWaitTime = warlock->GetMap()->GetGameTimeMS();
             uint32 const elapsedTimeInSeconds = floor((afterWaitTime - beforeWaitTime) / 1000.0f);
             uint32 const expectedTickAmount = floor(elapsedTimeInSeconds / 4.0f);
             uint32 const expectedMana = regenTick * expectedTickAmount;

@@ -449,7 +449,7 @@ AuctionHouseEntry const* AuctionHouseMgr::GetAuctionHouseEntry(uint32 factionTem
 
 void AuctionHouseObject::Update()
 {
-    time_t curTime = GameTime::GetGameTime();
+    time_t curTime = WorldGameTime::GetGameTime();
     ///- Handle expired auctions
     AuctionEntryMap::iterator next;
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -647,7 +647,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     data << (uint32) (bid ? GetAuctionOutBid() : 0);
     //minimal outbid
     data << (uint32) buyout;                                //auction->buyout
-    data << (uint32) (expire_time - GameTime::GetGameTime())* 1000;      //time left
+    data << (uint32) (expire_time - WorldGameTime::GetGameTime())* 1000;      //time left
     data << (uint64) bidder;                                //auction->bidder current
     data << (uint32) bid;                                   //current bid
     return true;
@@ -704,7 +704,7 @@ std::string AuctionEntry::BuildAuctionMailBody(ObjectGuid::LowType lowGuid, uint
     if (includeDeliveryTime)
     { //Not sure this is present on LK
         //does not seem to be working, mail show 12:00 AM by default regardless of this
-        time_t distrTime = GameTime::GetGameTime() + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
+        time_t distrTime = WorldGameTime::GetGameTime() + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
         strm << ':' << secsToTimeBitFields(distrTime);
     }
     return strm.str();

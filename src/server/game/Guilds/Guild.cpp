@@ -157,7 +157,7 @@ inline uint32 Guild::LogHolder::GetNextGUID()
     return m_nextGUID;
 }
 
-Guild::LogEntry::LogEntry(ObjectGuid::LowType guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(GameTime::GetGameTime()) { }
+Guild::LogEntry::LogEntry(ObjectGuid::LowType guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(WorldGameTime::GetGameTime()) { }
 
 // EventLogEntry
 void Guild::EventLogEntry::SaveToDB(SQLTransaction& trans) const
@@ -192,7 +192,7 @@ void Guild::EventLogEntry::WritePacket(WorldPacket& data) const
     if (m_eventType == GUILD_EVENT_LOG_PROMOTE_PLAYER || m_eventType == GUILD_EVENT_LOG_DEMOTE_PLAYER)
         data << uint8(m_newRank);
     // Event timestamp
-    data << uint32(GameTime::GetGameTime() - m_timestamp);
+    data << uint32(WorldGameTime::GetGameTime() - m_timestamp);
 }
 
 // BankEventLogEntry
@@ -244,7 +244,7 @@ void Guild::BankEventLogEntry::WritePacket(WorldPacket& data) const
             //I'm assuming this was wrong but keeping this comment here
     }
 
-    data << uint32(GameTime::GetGameTime() - m_timestamp);
+    data << uint32(WorldGameTime::GetGameTime() - m_timestamp);
 }
 
 // RankInfo
@@ -607,7 +607,7 @@ Guild::Member::Member(ObjectGuid::LowType guildId, ObjectGuid guid, uint8 rankId
     m_class(0),
     m_gender(0),
     m_flags(GUILDMEMBER_STATUS_NONE),
-    m_logoutTime(GameTime::GetGameTime()),
+    m_logoutTime(WorldGameTime::GetGameTime()),
     m_accountId(0),
     m_rankId(rankId)
 {
@@ -676,7 +676,7 @@ void Guild::Member::ChangeRank(SQLTransaction& trans, uint8 newRank)
 
 void Guild::Member::UpdateLogoutTime()
 {
-    m_logoutTime = GameTime::GetGameTime();
+    m_logoutTime = WorldGameTime::GetGameTime();
 }
 
 void Guild::Member::SaveToDB(SQLTransaction& trans) const
@@ -751,7 +751,7 @@ void Guild::Member::WritePacket(WorldPacket& data, bool sendOfficerNote) const
          << uint32(m_zoneId);
 
     if (!m_flags)
-        data << float(float(GameTime::GetGameTime() - m_logoutTime) / DAY);
+        data << float(float(WorldGameTime::GetGameTime() - m_logoutTime) / DAY);
 
     data << m_publicNote;
 
@@ -1229,7 +1229,7 @@ bool Guild::Create(Player* pLeader, std::string const& name)
     m_info = "";
     m_motd = "No message set.";
     m_bankMoney = 0;
-    m_createdDate = GameTime::GetGameTime();
+    m_createdDate = WorldGameTime::GetGameTime();
     _CreateLogHolders();
 
     TC_LOG_DEBUG("guild", "GUILD: creating guild [%s] for leader %s (%u)",

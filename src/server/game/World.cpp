@@ -119,7 +119,7 @@ World::World()
     _guidWarn = false;
     _guidAlert = false;
     _warnDiff = 0;
-    _warnShutdownTime = GameTime::GetGameTime();
+    _warnShutdownTime = WorldGameTime::GetGameTime();
 }
 
 /// World destructor
@@ -195,7 +195,7 @@ void World::TriggerGuidWarning()
     // Lock this only to prevent multiple maps triggering at the same time
     std::lock_guard<std::mutex> lock(_guidAlertLock);
 
-    time_t gameTime = GameTime::GetGameTime();
+    time_t gameTime = WorldGameTime::GetGameTime();
     time_t today = (gameTime / DAY) * DAY;
 
     // Check if our window to restart today has passed. 5 mins until quiet time
@@ -349,7 +349,7 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
     {
         for(auto i = m_disconnects.begin(); i != m_disconnects.end(); ++i)
         {
-            if(difftime(i->second, GameTime::GetGameTime()) < tolerance)
+            if(difftime(i->second, WorldGameTime::GetGameTime()) < tolerance)
             {
                 if(i->first == session->GetAccountId())
                     return true;
@@ -1863,7 +1863,7 @@ void World::SetInitialWorldSettings()
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
     tm localTm;
-    time_t gameTime = GameTime::GetGameTime();
+    time_t gameTime = WorldGameTime::GetGameTime();
     localtime_r(&gameTime, &localTm);
     mail_timer = ((((localTm.tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
@@ -2031,14 +2031,14 @@ void World::Update(time_t diff)
 {
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
-    time_t currentGameTime = GameTime::GetGameTime();
+    time_t currentGameTime = WorldGameTime::GetGameTime();
 
     sMonitor->StartedWorldLoop();
 
     sWorldUpdateTime.UpdateWithDiff(diff);
 
     // Record update if recording set in log and diff is greater then minimum set in log
-    sWorldUpdateTime.RecordUpdateTime(GameTime::GetGameTimeMS(), diff, GetActiveSessionCount());
+    sWorldUpdateTime.RecordUpdateTime(WorldGameTime::GetGameTimeMS(), diff, GetActiveSessionCount());
 
     ///- Update the different timers
     for (auto & m_timer : m_timers)
@@ -2188,7 +2188,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_ANNOUNCES].Reset();
 
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
-            time_t curTime = GameTime::GetGameTime();
+            time_t curTime = WorldGameTime::GetGameTime();
             for (auto & autoAnnounce : autoAnnounces) {
                 if (autoAnnounce.second->nextAnnounce <= curTime) {
                     SendWorldText(LANG_AUTO_ANN, autoAnnounce.second->message.c_str());
@@ -2225,7 +2225,7 @@ void World::Update(time_t diff)
     if (_guidWarn && !_guidAlert)
     {
         _warnDiff += diff;
-        if (GameTime::GetGameTime() >= _warnShutdownTime)
+        if (WorldGameTime::GetGameTime() >= _warnShutdownTime)
             DoGuidWarningRestart();
         else if (_warnDiff > getIntConfig(CONFIG_RESPAWN_GUIDWARNING_FREQUENCY) * IN_MILLISECONDS)
             SendGuidWarning();
@@ -2616,10 +2616,10 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
 void World::_UpdateGameTime()
 {
     ///- update the time
-    time_t lastGameTime = GameTime::GetGameTime();
+    time_t lastGameTime = WorldGameTime::GetGameTime();
     GameTime::UpdateGameTimers();
 
-    uint32 elapsed = uint32(GameTime::GetGameTime() - lastGameTime);
+    uint32 elapsed = uint32(WorldGameTime::GetGameTime() - lastGameTime);
 
     ///- if there is a shutdown timer
     if(!m_stopEvent && m_ShutdownTimer > 0 && elapsed > 0)
@@ -2760,7 +2760,7 @@ void World::UpdateSessions(uint32 diff)
         if (!pSession->Update(diff, updater))    // As interval = 0
         {
             if (!RemoveQueuedPlayer(itr->second) && itr->second && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = GameTime::GetGameTime();
+                m_disconnects[itr->second->GetAccountId()] = WorldGameTime::GetGameTime();
             RemoveQueuedPlayer(pSession);
             m_sessions.erase(itr);
             delete pSession;
@@ -2887,7 +2887,7 @@ void World::InitDailyQuestResetTime(bool loading)
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
-    time_t curTime = GameTime::GetGameTime();
+    time_t curTime = WorldGameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = 6;
     localTm.tm_min  = 0;
@@ -2923,7 +2923,7 @@ void World::ResetDailyQuests()
     TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
 
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
-    time_t curTime = GameTime::GetGameTime();
+    time_t curTime = WorldGameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     bool reinitConsortium = false;
     if (localTm.tm_mday == 1) {
@@ -3143,7 +3143,7 @@ void World::LoadAutoAnnounce()
         uint32 hour = fields[2].GetUInt32();
         uint32 mins = fields[3].GetUInt32();
 
-        time_t curTime = GameTime::GetGameTime();
+        time_t curTime = WorldGameTime::GetGameTime();
         tm localTm = *localtime(&curTime);
         localTm.tm_hour = hour;
         localTm.tm_min  = mins;

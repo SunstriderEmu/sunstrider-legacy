@@ -351,6 +351,8 @@ bool CreatureGroup::CanLeaderStartMoving() const
     return true;
 }
 
+Creature* followedCreature2 = nullptr;
+
 void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/, uint32 moveType /*= 0*/, bool orientation /*= false*/)
 {
     if (!_leader)
@@ -367,7 +369,7 @@ void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/,
         if(member == _leader || !member->IsAlive() || member->IsEngaged() || formationInfo.groupAI == GROUP_AI_NONE)
             continue;
 
-        /*if (formationInfo.leaderWaypointIDs[0])
+        /*TC if (formationInfo.leaderWaypointIDs[0])
         {
             for (uint8 i = 0; i < 2; ++i)
             {
@@ -378,6 +380,9 @@ void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/,
                 }
             }
         }*/
+
+        if (member == followedCreature2)
+            member = followedCreature2;
 
         FormationMoveSegment path(_leader->GetPosition(), destination, moveType, orientation, formationInfo.followAngle, formationInfo.followDist);
         member->GetMotionMaster()->MoveFormation(id, path, _leader);

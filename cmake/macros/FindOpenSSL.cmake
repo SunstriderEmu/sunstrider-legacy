@@ -80,13 +80,13 @@ IF(WIN32 AND NOT CYGWIN)
     # libeay32MD.lib is identical to ../libeay32.lib, and
     # ssleay32MD.lib is identical to ../ssleay32.lib
 
-	 # Since OpenSSL 1.1, lib names are like libcrypto32MTd.lib and libssl32MTd.lib
-	 if( "${CMAKE_SIZEOF_VOID_P}" STREQUAL "8" )
+    # Since OpenSSL 1.1, lib names are like libcrypto32MTd.lib and libssl32MTd.lib
+    if( "${CMAKE_SIZEOF_VOID_P}" STREQUAL "8" )
         set(_OPENSSL_MSVC_ARCH_SUFFIX "64")
     else()
         set(_OPENSSL_MSVC_ARCH_SUFFIX "32")
     endif()
-	
+
     FIND_LIBRARY(LIB_EAY_DEBUG
       NAMES
         libcrypto${_OPENSSL_MSVC_ARCH_SUFFIX}MDd libeay32MDd libeay32
@@ -230,7 +230,7 @@ if (OPENSSL_INCLUDE_DIR)
   include(EnsureVersion)
   ENSURE_VERSION_RANGE("${OPENSSL_EXPECTED_VERSION}" "${OPENSSL_VERSION}" "${OPENSSL_MAX_VERSION}" OPENSSL_VERSION_OK)
   if (NOT OPENSSL_VERSION_OK)
-      message(FATAL_ERROR "TrinityCore needs OpenSSL version ${OPENSSL_EXPECTED_VERSION} but found too new version ${OPENSSL_VERSION}. Any version different to 1.0.x breaks TrinityCore compatibility (and we cannot fix this). Please install OpenSSL 1.0.x if you still have problems search on forum for TCE00022")
+      message(FATAL_ERROR "Needs OpenSSL version ${OPENSSL_EXPECTED_VERSION} but found too new version ${OPENSSL_VERSION}. Core needs OpenSSL 1.0.x or 1.1.x to work properly. If you still have problems please install OpenSSL 1.0.x if you still have problems search on TrinityCore forum for TCE00022")
   endif()
 endif (OPENSSL_INCLUDE_DIR)
 

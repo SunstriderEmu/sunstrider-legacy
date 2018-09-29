@@ -143,7 +143,7 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
     m_initialized = true;
-    _wardenTimer = GameTime::GetGameTimeMS();
+    _wardenTimer = WorldGameTime::GetGameTimeMS();
 }
 
 void WardenMac::RequestData()

@@ -27,7 +27,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     TC_LOG_DEBUG("network", "Player 1 is: %u (%s)", player->GetGUID().GetCounter(), player->GetName().c_str());
     TC_LOG_DEBUG("network", "Player 2 is: %u (%s)", target->GetGUID().GetCounter(), target->GetName().c_str());
 
-    time_t now = GameTime::GetGameTime();
+    time_t now = player->GetMap()->GetGameTime();
     player->duel->StartTime = now + 3;
     target->duel->StartTime = now + 3;
 

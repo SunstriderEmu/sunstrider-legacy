@@ -377,9 +377,9 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
     if (me->IsInEvadeMode() || !me->IsInCombat())
         return false;
 
-    if (_evadeCheckCooldown == GameTime::GetGameTime())
+    if (_evadeCheckCooldown == me->GetMap()->GetGameTime())
         return false;
-    _evadeCheckCooldown = GameTime::GetGameTime();
+    _evadeCheckCooldown = me->GetMap()->GetGameTime();
 
     if (!CheckEvadeIfOutOfCombatArea())
         return false;

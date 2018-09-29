@@ -4873,7 +4873,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 {
     uint32 oldMSTime = GetMSTime();
 
-    time_t curTime = GameTime::GetGameTime();
+    time_t curTime = WorldGameTime::GetGameTime();
     tm lt;
     localtime_r(&curTime, &lt);
     uint64 basetime(curTime);

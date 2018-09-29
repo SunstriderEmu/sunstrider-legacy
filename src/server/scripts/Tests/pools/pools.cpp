@@ -73,12 +73,12 @@ public:
         TEST_ASSERT(p->GetMap()->IsGridLoaded(_location));
 
         // Wait for respawn (world wait, not test map wait, since our creatures are on world map)
-        uint32 startTime = GameTime::GetGameTime();
+        uint32 startTime = map->GetGameTime();
         uint32 waitTime = std::max(sWorld->getIntConfig(CONFIG_RESPAWN_MINCHECKINTERVALMS) / 1000, uint32(RESPAWN_DELAY)) + 1;
         for (uint32 i = 0; ; i++)
         {
             Wait(1s);
-            if (GameTime::GetGameTime() > startTime + waitTime)
+            if (map->GetGameTime() > startTime + waitTime)
                 break;
             if (i >= 100)
             {

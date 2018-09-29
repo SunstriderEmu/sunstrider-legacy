@@ -201,7 +201,7 @@ Map::Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnM
    _transportsUpdateIter(_transports.end()),
    _defaultLight(GetDefaultMapLight(id)),
    i_mapType(type), i_gridExpiry(expiry), _respawnCheckTimer(0),
-   i_scriptLock(false), m_disableMapObjects(false)
+   i_scriptLock(false), m_disableMapObjects(false), GameTime(WorldGameTime::GetGameTime()), GameMSTime(WorldGameTime::GetGameTimeMS())
 {
     m_parentMap = (_parent ? _parent : this);
     for(uint32 idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
@@ -217,6 +217,16 @@ Map::Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnM
     Map::InitVisibilityDistance();
 
     sScriptMgr->OnCreateMap(this);
+}
+
+time_t Map::GetGameTime() const
+{
+    return GameTime;
+}
+
+uint32 Map::GetGameTimeMS() const
+{
+    return GameMSTime;
 }
 
 float Map::GetDefaultVisibilityDistance() const
@@ -487,7 +497,7 @@ void Map::LoadGrid(float x, float y)
     EnsureGridLoaded(Cell(x,y));
 }
 
-bool Map::AddPlayerToMap(Player *player)
+bool Map::AddPlayerToMap(Player* player)
 {
     // update player state for other player and visa-versa
     CellCoord cellCoord = Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY());
@@ -496,6 +506,16 @@ bool Map::AddPlayerToMap(Player *player)
         TC_LOG_ERROR("maps", "Map::Add: Player (GUID: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", ObjectGuid(player->GetGUID()).GetCounter(), player->GetPositionX(), player->GetPositionY(), cellCoord.x_coord, cellCoord.y_coord);
         return false;
     }
+
+    //sun: moved from Player, we need the map time
+    WorldPacket data(SMSG_LOGIN_SETTIMESPEED, 8);
+    data << uint32(secsToTimeBitFields(GetGameTime()));
+    data << float(0.01666667f);                             // game speed
+#ifdef LICH_KING
+    data << uint32(0);                                      // added in 3.1.2
+#endif
+    player->SendDirectMessage(&data);
+
 
     Cell cell(cellCoord);
     EnsureGridLoadedForActiveObject(cell, player);
@@ -809,8 +829,14 @@ void Map::UpdatePlayerZoneStats(uint32 oldZone, uint32 newZone)
     ++_zonePlayerCountMap[newZone];
 }
 
-void Map::Update(const uint32 &t_diff)
+void Map::Update(const uint32& t_diff)
 {
+    GameTime = time(nullptr);
+    GameMSTime = GetMSTime();
+
+    if(GetId() == 545)
+        bool a = true;
+
     _dynamicTree.update(t_diff);
     /// update worldsessions for existing players
     for(m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)
@@ -3833,7 +3859,7 @@ Corpse* Map::ConvertCorpseToBones(ObjectGuid const& ownerGuid, bool insignia /*=
 
 void Map::RemoveOldCorpses()
 {
-    time_t now = GameTime::GetGameTime();
+    time_t now = GetGameTime();
 
     std::vector<ObjectGuid> corpses;
     corpses.reserve(_corpsesByPlayer.size());
@@ -4002,7 +4028,7 @@ void Map::UnloadAll()
 // CheckRespawn MUST do one of the following:
 //  -) return true
 //  -) set info->respawnTime to zero, which indicates the respawn time should be deleted (and will never be processed again without outside intervention)
-//  -) set info->respawnTime to a new respawn time, which must be strictly GREATER than the current time (GameTime::GetGameTime())
+//  -) set info->respawnTime to a new respawn time, which must be strictly GREATER than the current time (GetGameTime())
 bool Map::CheckRespawn(RespawnInfo* info)
 {
     SpawnData const* data = sObjectMgr->GetSpawnData(info->type, info->spawnId);

@@ -495,16 +495,16 @@ void GameObject::Update(uint32 diff)
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
                     if (owner && owner->IsInCombat())
-                        m_cooldownTime = GameTime::GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
+                        m_cooldownTime = GetMap()->GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
                     else if (GetEntry() == 180647)
-                        m_cooldownTime = GameTime::GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
+                        m_cooldownTime = GetMap()->GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
                     m_lootState = GO_READY;
                     break;
                 }
                 case GAMEOBJECT_TYPE_FISHINGNODE:
                 {
                     // fishing code (bobber ready)
-                    if (GameTime::GetGameTime() > m_respawnTime - FISHING_BOBBER_READY_TIME)
+                    if (GetMap()->GetGameTime() > m_respawnTime - FISHING_BOBBER_READY_TIME)
                     {
                         // splash bobber (bobber ready now)
                         Unit* caster = GetOwner();
@@ -539,7 +539,7 @@ void GameObject::Update(uint32 diff)
             {
                 if (m_respawnTime > 0)                          // timer on
                 {
-                    time_t now = GameTime::GetGameTime();
+                    time_t now = GetMap()->GetGameTime();
                     if (m_respawnTime <= now)            // timer expired
                     {
                         m_respawnTime = 0;
@@ -612,7 +612,7 @@ void GameObject::Update(uint32 diff)
                 if (!this->IsInWorld())
                     return;
 
-                if (m_cooldownTime > GameTime::GetGameTimeMS())
+                if (m_cooldownTime > GetMap()->GetGameTimeMS())
                     break;
 
                 // Type 2 (bomb) does not need to be triggered by a unit and despawns after casting its spell.
@@ -687,11 +687,11 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
-                    if (GetAutoCloseTime() && GameTime::GetGameTimeMS() >= m_cooldownTime)
+                    if (GetAutoCloseTime() && GetMap()->GetGameTimeMS() >= m_cooldownTime)
                         ResetDoorOrButton();
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if(GetAutoCloseTime() && (m_cooldownTime < GameTime::GetGameTimeMS()))
+                    if(GetAutoCloseTime() && (m_cooldownTime < GetMap()->GetGameTimeMS()))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                         SetLootState(GO_JUST_DEACTIVATED);
@@ -729,7 +729,7 @@ void GameObject::Update(uint32 diff)
                             CastSpell(target, goInfo->trap.spellId, args);
 
                         // Template value or 4 seconds
-                        m_cooldownTime = GameTime::GetGameTimeMS() + (goInfo->trap.cooldown ? goInfo->trap.cooldown : uint32(4)) * IN_MILLISECONDS;
+                        m_cooldownTime = GetMap()->GetGameTimeMS() + (goInfo->trap.cooldown ? goInfo->trap.cooldown : uint32(4)) * IN_MILLISECONDS;
 
                         if (goInfo->trap.type == 1)
                             SetLootState(GO_JUST_DEACTIVATED);
@@ -823,7 +823,7 @@ void GameObject::Update(uint32 diff)
             if (uint32 scalingMode = sWorld->getIntConfig(CONFIG_RESPAWN_DYNAMICMODE))
                 GetMap()->ApplyDynamicModeRespawnScaling(this, this->m_spawnId, respawnDelay, scalingMode);
 
-            m_respawnTime = GameTime::GetGameTime() + respawnDelay;
+            m_respawnTime = GetMap()->GetGameTime() + respawnDelay;
 
             // if option not set then object will be saved at grid unload
             if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
@@ -1040,7 +1040,7 @@ bool GameObject::LoadFromDB(uint32 spawnId, Map* map, bool addToMap, bool)
             m_respawnTime = GetMap()->GetGORespawnTime(m_spawnId);
 
             // ready to respawn
-            if (m_respawnTime && m_respawnTime <= GameTime::GetGameTime())
+            if (m_respawnTime && m_respawnTime <= GetMap()->GetGameTime())
             {
                 m_respawnTime = 0;
                 GetMap()->RemoveRespawnTime(SPAWN_TYPE_GAMEOBJECT, m_spawnId);
@@ -1118,7 +1118,7 @@ void GameObject::SetLootState(LootState state, Unit* unit)
 
 void GameObject::SetLootGenerationTime()
 {
-    m_lootGenerationTime = GameTime::GetGameTime();
+    m_lootGenerationTime = GetMap()->GetGameTime();
 }
 
 void GameObject::SetGoState(GOState state, Unit* invoker /* = nullptr */)
@@ -1295,7 +1295,7 @@ bool GameObject::IsTransport() const
 
 void GameObject::SaveRespawnTime(uint32 forceDelay, bool savetodb)
 {
-    if (m_goData && (forceDelay || m_respawnTime > GameTime::GetGameTime()) && m_spawnedByDefault)
+    if (m_goData && (forceDelay || m_respawnTime > GetMap()->GetGameTime()) && m_spawnedByDefault)
     {
         if (m_respawnCompatibilityMode)
         {
@@ -1303,7 +1303,7 @@ void GameObject::SaveRespawnTime(uint32 forceDelay, bool savetodb)
             return;
         }
 
-        uint32 thisRespawnTime = forceDelay ? GameTime::GetGameTime() + forceDelay : m_respawnTime;
+        uint32 thisRespawnTime = forceDelay ? GetMap()->GetGameTime() + forceDelay : m_respawnTime;
         GetMap()->SaveRespawnTime(SPAWN_TYPE_GAMEOBJECT, m_spawnId, GetEntry(), thisRespawnTime, GetZoneId(), Trinity::ComputeGridCoord(GetPositionX(), GetPositionY()).GetId(), m_goData->dbData ? savetodb : false);
     }
 }
@@ -1360,7 +1360,7 @@ void GameObject::Respawn()
 {
     if(m_spawnedByDefault && m_respawnTime > 0)
     {
-        m_respawnTime = GameTime::GetGameTime();
+        m_respawnTime = GetMap()->GetGameTime();
         GetMap()->RemoveRespawnTime(SPAWN_TYPE_GAMEOBJECT, m_spawnId, true);
     }
 }
@@ -1448,7 +1448,7 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternat
     SwitchDoorOrButton(true, alternative, user);
     SetLootState(GO_ACTIVATED, user);
 
-    m_cooldownTime = time_to_restore ? (GameTime::GetGameTimeMS() + time_to_restore * SECOND * IN_MILLISECONDS) : 0;
+    m_cooldownTime = time_to_restore ? (GetMap()->GetGameTimeMS() + time_to_restore * SECOND * IN_MILLISECONDS) : 0;
 }
 
 void GameObject::ResetDoorOrButton()
@@ -1566,10 +1566,10 @@ void GameObject::Use(Unit* user)
     // If cooldown data present in template
     if (uint32 cooldown = GetGOInfo()->GetCooldown())
     {
-        if (GameTime::GetGameTimeMS() < m_cooldownTime)
+        if (GetMap()->GetGameTimeMS() < m_cooldownTime)
             return;
 
-        m_cooldownTime = GameTime::GetGameTimeMS() + cooldown * IN_MILLISECONDS;
+        m_cooldownTime = GetMap()->GetGameTimeMS() + cooldown * IN_MILLISECONDS;
     }
 
     switch(GetGoType())
@@ -1698,7 +1698,7 @@ void GameObject::Use(Unit* user)
             }
 
             //sun: note that this overwrites the cooldown decided by info->GetCooldown() at the beginning of this func. Is this normal?
-            m_cooldownTime = GameTime::GetGameTimeMS() + info->GetAutoCloseTime();
+            m_cooldownTime = GetMap()->GetGameTimeMS() + info->GetAutoCloseTime();
 
             // cast this spell later if provided
             spellId = info->goober.spellId;
@@ -2158,7 +2158,7 @@ void GameObject::AddUse()
 
 void GameObject::SetRespawnTime(int32 respawn)
 {
-    m_respawnTime = respawn > 0 ? GameTime::GetGameTime() + respawn : 0;
+    m_respawnTime = respawn > 0 ? GetMap()->GetGameTime() + respawn : 0;
     m_respawnDelayTime = respawn > 0 ? respawn : 0;
     if (respawn && !m_spawnedByDefault)
         UpdateObjectVisibility(true);
@@ -2326,7 +2326,7 @@ uint32 GameObject::GetAutoCloseTime() const
 
 time_t GameObject::GetRespawnTimeEx() const
 {
-    time_t now = GameTime::GetGameTime();
+    time_t now = GetMap()->GetGameTime();
     if (m_respawnTime > now)
         return m_respawnTime;
     else

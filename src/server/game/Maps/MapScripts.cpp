@@ -41,7 +41,7 @@ void Map::ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo>> const
 
         sa.script = &iter.second;
         //TC_LOG_INFO("SCRIPT: Inserting script with source guid " UI64FMTD " target guid " UI64FMTD " owner guid " UI64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, id);
-        m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + iter.first), sa));
+        m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GetGameTime() + iter.first), sa));
         if (iter.first == 0)
             immedScript = true;
 
@@ -74,7 +74,7 @@ void Map::ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* sou
 
     sa.script = &script;
     //TC_LOG_INFO("SCRIPTCMD: Inserting script with source guid " UI64FMTD " target guid " UI64FMTD " owner guid " UI64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, script.id);
-    m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + delay), sa));
+    m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GetGameTime() + delay), sa));
 
     sMapMgr->IncreaseScheduledScriptsCount();
 
@@ -96,7 +96,7 @@ void Map::ScriptsProcess()
     ///- Process overdue queued scripts
     auto iter = m_scriptSchedule.begin();
                                                             // ok as multimap is a *sorted* associative container
-    while (!m_scriptSchedule.empty() && (iter->first <= GameTime::GetGameTime()))
+    while (!m_scriptSchedule.empty() && (iter->first <= GetGameTime()))
     {
         ScriptAction const& step = iter->second;
 

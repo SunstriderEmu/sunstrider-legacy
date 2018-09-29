@@ -398,7 +398,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     if (mover->GetGUID() != _player->GetGUID())
         movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
 
-    uint32 mstime = GameTime::GetGameTimeMS();
+    uint32 mstime = _player->GetMap()->GetGameTimeMS();
     /*----------------------*/
     if (m_clientTimeDelay == 0)
         m_clientTimeDelay = mstime - movementInfo.time; //sun: will do some underflow but apparently that's working well enough for logic using it later

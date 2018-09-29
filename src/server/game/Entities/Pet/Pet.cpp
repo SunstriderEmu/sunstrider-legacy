@@ -286,7 +286,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 #ifndef LICH_KING
     SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT);
 #endif
-    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(GameTime::GetGameTime()));
+    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(WorldGameTime::GetGameTime()));
     SetCreatorGUID(owner->GetGUID());
 
     InitStatsForLevel(petlevel);
@@ -352,7 +352,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     _LoadSpellCooldowns();
 
     // since last save (in seconds)
-    uint32 timediff = (GameTime::GetGameTime() - fields[18].GetUInt32());
+    uint32 timediff = (map->GetGameTime() - fields[18].GetUInt32());
     _LoadAuras(timediff); //sunstrider: special pet handling in there, we don't load aura saved too long ago since last dismiss
 
     if (!isTemporarySummon)
@@ -535,7 +535,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
         }
 
         ss  << "', "
-            << GameTime::GetGameTime() << ", "
+            << GetMap()->GetGameTime() << ", "
             << uint32(m_resetTalentsCost) << ", "
             << uint64(m_resetTalentsTime) << ", "
             << GetUInt32Value(UNIT_CREATED_BY_SPELL) << ", "
@@ -608,7 +608,7 @@ void Pet::Update(uint32 diff)
     {
         case CORPSE:
         {
-            if (m_corpseRemoveTime <= GameTime::GetGameTime())
+            if (m_corpseRemoveTime <= GetMap()->GetGameTime())
             {
                 assert(getPetType()!=SUMMON_PET && "Must be already removed.");
                 if (m_petType != HUNTER_PET)
@@ -1916,7 +1916,7 @@ void Pet::CheckLearning(uint32 spellid)
 
 uint32 Pet::ResetTalentsCost() const
 {
-    uint32 days = (GameTime::GetGameTime() - m_resetTalentsTime)/DAY;
+    uint32 days = (GetMap()->GetGameTime() - m_resetTalentsTime)/DAY;
 
     // The first time reset costs 10 silver; after 1 day cost is reset to 10 silver
     if(m_resetTalentsCost < 10*SILVER || days > 0)

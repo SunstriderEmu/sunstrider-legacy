@@ -145,7 +145,7 @@ void Group::LoadGroupFromDB(Field* fields)
     m_dbStoreId = fields[16].GetUInt32();
     m_guid = ObjectGuid(HighGuid::Group, sGroupMgr->GenerateGroupId());
     m_leaderGuid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
-    m_leaderLogoutTime = GameTime::GetGameTime(); // Give the leader a chance to keep his position after a server crash
+    m_leaderLogoutTime = WorldGameTime::GetGameTime(); // Give the leader a chance to keep his position after a server crash
 
     // group leader not exist
     if (!sCharacterCache->GetCharacterNameByGuid(m_leaderGuid, m_leaderName))
@@ -688,7 +688,7 @@ void Group::CheckLeader(ObjectGuid guid, bool isLogout)
     if(IsLeader(guid))
     {
         if(isLogout)
-            m_leaderLogoutTime = GameTime::GetGameTime();
+            m_leaderLogoutTime = WorldGameTime::GetGameTime();
         else
             m_leaderLogoutTime = 0;
     }
@@ -711,7 +711,7 @@ void Group::CheckLeader(ObjectGuid guid, bool isLogout)
 
             if(!leader || !leader->IsInWorld())
             {
-                m_leaderLogoutTime = GameTime::GetGameTime();
+                m_leaderLogoutTime = WorldGameTime::GetGameTime();
             }
         }
     }
@@ -1804,7 +1804,7 @@ void Group::Update(time_t diff)
     //change the leader if it has disconnect for a long time
     if (m_leaderLogoutTime) 
     {
-        time_t thisTime = GameTime::GetGameTime();
+        time_t thisTime = WorldGameTime::GetGameTime();
 
         if (thisTime > m_leaderLogoutTime + sWorld->getConfig(CONFIG_GROUPLEADER_RECONNECT_PERIOD)) {
             ChangeLeaderToFirstOnlineMember();

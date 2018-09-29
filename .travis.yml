@@ -13,6 +13,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+	  - sourceline: 'ppa:kzemek/boost'
     packages:
       - g++-6
       - libssl-dev
@@ -20,13 +21,13 @@ addons:
       - libreadline6-dev
       - zlib1g-dev
       - libbz2-dev
-      - libboost-dev
-      - libboost-filesystem-dev
-      - libboost-iostreams-dev
-      - libboost-program-options-dev
-      - libboost-regex-dev
-      - libboost-system-dev
-      - libboost-thread-dev
+      - libboost1.58-dev
+      - libboost-filesystem1.58-dev
+      - libboost-iostreams1.58-dev
+      - libboost-program-options1.58-dev
+      - libboost-regex1.58-dev
+      - libboost-system1.58-dev
+      - libboost-thread1.58-dev
       # For data archive
       - p7zip
       # For post run debug

@@ -2551,7 +2551,7 @@ void Spell::TargetInfo::DoTargetSpellHit(Spell* spell, uint8 effIndex)
     if (unit->IsAlive() != IsAlive)
         return;
 
-    if (spell->getState() == SPELL_STATE_DELAYED && !spell->IsPositive() && (GameTime::GetGameTimeMS() - TimeDelay) <= unit->m_lastSanctuaryTime)
+    if (spell->getState() == SPELL_STATE_DELAYED && !spell->IsPositive() && (unit->GetMap()->GetGameTimeMS() - TimeDelay) <= unit->m_lastSanctuaryTime)
         return;                                             // No missinfo in that case
 
     if (_spellHitTarget)
@@ -4672,7 +4672,7 @@ void Spell::SendSpellGo()
     castData.CastID = m_cast_count;
     castData.SpellID = m_spellInfo->Id;
     castData.CastFlags = castFlags;
-    castData.CastTime = GameTime::GetGameTimeMS();
+    castData.CastTime = m_caster->GetMap()->GetGameTimeMS();
 
     UpdateSpellCastDataTargets(castData);
 

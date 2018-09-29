@@ -251,10 +251,10 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     AH->bidder = 0;
     AH->bid = 0;
     AH->buyout = buyout;
-    AH->expire_time = GameTime::GetGameTime() + auction_time;
+    AH->expire_time = WorldGameTime::GetGameTime() + auction_time;
     AH->deposit = deposit;
     AH->auctionHouseEntry = auctionHouseEntry;
-    AH->deposit_time = GameTime::GetGameTime();
+    AH->deposit_time = WorldGameTime::GetGameTime();
 
     TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", itemGUID.GetCounter(), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
@@ -313,9 +313,9 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
     
     // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
-    if ((auction->deposit_time + 60) > GameTime::GetGameTime()) {
+    if ((auction->deposit_time + 60) > WorldGameTime::GetGameTime()) {
         if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
-            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - GameTime::GetGameTime()));
+            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - WorldGameTime::GetGameTime()));
             return;
         }
     }

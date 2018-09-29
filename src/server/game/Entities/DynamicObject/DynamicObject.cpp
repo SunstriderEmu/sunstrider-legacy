@@ -116,7 +116,7 @@ bool DynamicObject::CreateDynamicObject(ObjectGuid::LowType guidlow, Unit *caste
     SetFloatValue( DYNAMICOBJECT_POS_X, pos.GetPositionX() );
     SetFloatValue( DYNAMICOBJECT_POS_Y, pos.GetPositionY() );
     SetFloatValue( DYNAMICOBJECT_POS_Z, pos.GetPositionZ() );
-    SetUInt32Value( DYNAMICOBJECT_CASTTIME, GameTime::GetGameTimeMS()); 
+    SetUInt32Value( DYNAMICOBJECT_CASTTIME, GetMap()->GetGameTimeMS());
 
     if (IsWorldObject())
         SetKeepActive(true);    //must before add to map to be put in world container

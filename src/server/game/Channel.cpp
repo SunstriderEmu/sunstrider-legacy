@@ -38,7 +38,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         gmbanned.clear();
         std::string safe_name = name;
         CharacterDatabase.EscapeString(safe_name);
-        QueryResult result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " UI64FMTD " ORDER BY expire", safe_name.c_str(), GameTime::GetGameTime());
+        QueryResult result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " UI64FMTD " ORDER BY expire", safe_name.c_str(), WorldGameTime::GetGameTime());
         if (result) {
             do {
                 Field *fields = result->Fetch();
@@ -65,7 +65,7 @@ bool Channel::IsBannedByGM(ObjectGuid const guid)
     
     GMBannedList::const_iterator itr = gmbanned.find(accountId);
     if (itr != gmbanned.end()) {        // Account is banned, check expiration date
-        if (itr->second > GameTime::GetGameTime())
+        if (itr->second > WorldGameTime::GetGameTime())
             return true;
     }
     
@@ -1040,7 +1040,7 @@ void Channel::LeaveNotify(ObjectGuid guid)
 
 void Channel::RemoveGMBan(uint64 accountid)
 {
-    gmbanned[accountid] = GameTime::GetGameTime();
+    gmbanned[accountid] = WorldGameTime::GetGameTime();
 }
 
 uint32 Channel::GetNumPlayers()

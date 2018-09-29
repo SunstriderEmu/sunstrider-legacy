@@ -494,14 +494,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 void WorldSession::ResetTimeOutTime(bool onlyActive)
 {
     if (GetPlayer())
-        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME_ACTIVE));
+        m_timeOutTime = WorldGameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME_ACTIVE));
     else if (!onlyActive)
-        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
+        m_timeOutTime = WorldGameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
 }
 
 bool WorldSession::IsConnectionIdle() const
 {
-    return m_timeOutTime < GameTime::GetGameTime() && !m_inQueue;
+    return m_timeOutTime < WorldGameTime::GetGameTime() && !m_inQueue;
 }
 
 void WorldSession::ProcessQueryCallbacks()

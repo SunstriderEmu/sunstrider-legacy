@@ -32,7 +32,7 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES)
 
     m_type = type;
 
-    m_time = GameTime::GetGameTime();
+    m_time = WorldGameTime::GetGameTime();
 
     lootRecipient = nullptr;
 }
@@ -211,5 +211,5 @@ bool Corpse::IsExpired(time_t t) const
 
 void Corpse::ResetGhostTime() 
 { 
-    m_time = GameTime::GetGameTime(); 
+    m_time = WorldGameTime::GetGameTime();
 }

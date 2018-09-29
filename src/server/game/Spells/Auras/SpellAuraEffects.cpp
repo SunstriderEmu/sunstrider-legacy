@@ -2964,7 +2964,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
 
                 if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
                 {
-                    /* GameObject* elemPower = */ caster->ToPlayer()->SummonGameObject(183933, Position(m_target->GetPositionX(), m_target->GetPositionY(), (m_target->GetPositionZ() + 2.5f), m_target->GetOrientation()), G3D::Quat(), (m_target->ToCreature())->GetRespawnTime() - GameTime::GetGameTime());
+                    /* GameObject* elemPower = */ caster->ToPlayer()->SummonGameObject(183933, Position(m_target->GetPositionX(), m_target->GetPositionY(), (m_target->GetPositionZ() + 2.5f), m_target->GetOrientation()), G3D::Quat(), (m_target->ToCreature())->GetRespawnTime() - m_target->GetMap()->GetGameTime());
                     //elemPower->SetLootState(GO_READY);
                 }
                 return;

@@ -15,7 +15,7 @@
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
-    time_t currenttime = GameTime::GetGameTime();
+    time_t currenttime = WorldGameTime::GetGameTime();
     // if the state is conditions or nextphase, then the event should be active
     if (mGameEvent[entry].state == GAMEEVENT_WORLD_CONDITIONS || mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE) {
         return true;
@@ -48,7 +48,7 @@ bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 
 uint32 GameEventMgr::NextCheck(uint16 entry) const
 {
-    time_t currenttime = GameTime::GetGameTime();
+    time_t currenttime = WorldGameTime::GetGameTime();
 
     // for NEXTPHASE state world events, return the delay to start the next event, so the followup event will be checked correctly
     if ((mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE || mGameEvent[entry].state == GAMEEVENT_WORLD_FINISHED) && mGameEvent[entry].nextstart >= currenttime)
@@ -93,7 +93,7 @@ bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
         ApplyNewEvent(event_id);
         if(overwrite)
         {
-            mGameEvent[event_id].start = GameTime::GetGameTime();
+            mGameEvent[event_id].start = WorldGameTime::GetGameTime();
             if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
                 mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
         }
@@ -133,7 +133,7 @@ void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 
     if(overwrite && !serverwide_evt)
     {
-        mGameEvent[event_id].start = GameTime::GetGameTime() - mGameEvent[event_id].length * MINUTE;
+        mGameEvent[event_id].start = WorldGameTime::GetGameTime() - mGameEvent[event_id].length * MINUTE;
         if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
             mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
     }
@@ -861,7 +861,7 @@ uint32 GameEventMgr::Initialize()                              // return the nex
 
 uint32 GameEventMgr::Update()                                  // return the next event delay in ms
 {
-    time_t currenttime = GameTime::GetGameTime();
+    time_t currenttime = WorldGameTime::GetGameTime();
     uint32 nextEventDelay = max_ge_check_delay;             // 1 day
     uint32 calcDelay;
     std::set<uint16> activate, deactivate;
@@ -1473,7 +1473,7 @@ bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
     // set the followup events' start time
     if(!mGameEvent[event_id].nextstart)
     {
-        time_t currenttime = GameTime::GetGameTime();
+        time_t currenttime = WorldGameTime::GetGameTime();
         mGameEvent[event_id].nextstart = currenttime + mGameEvent[event_id].length * 60;
     }
     return true;

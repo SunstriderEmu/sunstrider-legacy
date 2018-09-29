@@ -813,7 +813,7 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
             bg = sBattlegroundMgr->GetBattleground(ginfo.IsInvitedToBGInstanceGUID, bgTypeId);
             if (!bg)
                 continue;
-            uint32 remainingTime = GetMSTimeDiff(GameTime::GetGameTimeMS(), ginfo.RemoveInviteTime);
+            uint32 remainingTime = GetMSTimeDiff(WorldGameTime::GetGameTimeMS(), ginfo.RemoveInviteTime);
             // send status invited to Battleground
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, i, STATUS_WAIT_JOIN, remainingTime, 0, arenaType, 0);
             SendPacket(&data);
@@ -831,7 +831,7 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
 
             uint32 avgTime = bgQueue.GetAverageQueueWaitTime(&ginfo, bracketEntry->GetBracketId());
             // send status in Battleground Queue
-            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, i, STATUS_WAIT_QUEUE, avgTime, GetMSTimeDiff(ginfo.JoinTime, GameTime::GetGameTimeMS()), arenaType, 0);
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, i, STATUS_WAIT_QUEUE, avgTime, GetMSTimeDiff(ginfo.JoinTime, WorldGameTime::GetGameTimeMS()), arenaType, 0);
             SendPacket(&data);
         }
     }

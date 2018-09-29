@@ -903,7 +903,7 @@ void Spell::EffectDummy(uint32 i)
                             if (!root->isSpawned())
                                 break;
                             _unitCaster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
-                            _unitCaster->SummonGameObject(187072, root->GetPosition(), G3D::Quat(), (root->GetRespawnTime() - GameTime::GetGameTime()));
+                            _unitCaster->SummonGameObject(187072, root->GetPosition(), G3D::Quat(), (root->GetRespawnTime() - _unitCaster->GetMap()->GetGameTime()));
                             root->SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
@@ -1269,7 +1269,7 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->RemoveCorpse();
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
 
-                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), G3D::Quat(), creatureTarget->GetRespawnTime() - GameTime::GetGameTime());
+                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), G3D::Quat(), creatureTarget->GetRespawnTime() - creatureTarget->GetMap()->GetGameTime());
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
@@ -4628,7 +4628,7 @@ void Spell::EffectSummonPet(uint32 effIndex)
 
     // this enables popup window (pet dismiss, cancel), hunter pet additional flags set later
     pet->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, GameTime::GetGameTime());
+    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, pet->GetMap()->GetGameTime());
 
     // generate new name for summon pet
     std::string new_name=sObjectMgr->GeneratePetName(petentry);
@@ -5956,7 +5956,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         _unitCaster->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
 
     // makes spells cast before this time fizzle
-    unitTarget->m_lastSanctuaryTime = GameTime::GetGameTimeMS();
+    unitTarget->m_lastSanctuaryTime = unitTarget->GetMap()->GetGameTimeMS();
 }
 
 void Spell::EffectAddComboPoints(uint32 /*i*/)
