@@ -46,13 +46,12 @@ before_install:
   - sudo mkdir /opt/cmake
   - wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
   - sudo sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
-  - sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
  
 install:
   - mysql -uroot -e 'create database test_mysql'
   - mkdir bin logs data
   - cd bin
-  - cmake ../ -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=check_install
+  - /opt/cmake/bin/cmake ../ -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=check_install
   - cd ..
 
 script:
