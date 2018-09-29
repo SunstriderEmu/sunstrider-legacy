@@ -36,9 +36,26 @@ struct AreaTableEntry
     float     maxDepth;                                     // 33
 
     // helpers
-    bool IsSanctuary() const;
+    bool IsSanctuary() const 
+    {
+        if (mapid == 609)
+            return true;
 
-    bool IsFlyable() const;
+        return (flags & AREA_FLAG_SANCTUARY);
+    }
+
+    bool IsFlyable() const
+    {
+        if (flags & AREA_FLAG_OUTLAND)
+        {
+#ifdef LICH_KING
+            if (!(flags & AREA_FLAG_NO_FLY_ZONE))
+#endif
+                return true;
+        }
+
+        return false;
+    }
 };
 
 struct AreaTriggerEntry

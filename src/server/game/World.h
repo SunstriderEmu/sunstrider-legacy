@@ -576,7 +576,6 @@ class TC_GAME_API World
         Weather* AddWeather(uint32 zone_id);
         void RemoveWeather(uint32 zone_id);
 
-        bool IsZoneSanctuary(uint32) const;
         bool IsZoneFFA(uint32) const;
 
         /// Get the active session server limit (or security level limitations)
@@ -804,8 +803,7 @@ class TC_GAME_API World
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
 
-        void LoadSanctuaryAndFFAZones();
-        std::set<uint32> configSanctuariesZones;
+        void LoadCustomFFAZones();
         std::set<uint32> configFFAZones;
 
         void LoadFishingWords();

@@ -1958,13 +1958,6 @@ AlwaysMaxWeaponSkill = 0
 FFAZone = ""
 
 #
-#     SanctuaryZone
-#         Defines custom sanctuary zones (separated by commas)
-#
-
-SanctuaryZone = ""
-
-#
 #    PvPToken.Enable
 #        Enable/disable PvP Token System. Players will get a token after slaying another player that gives honor.
 #

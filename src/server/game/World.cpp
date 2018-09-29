@@ -1365,7 +1365,7 @@ void World::LoadConfigSettings(bool reload)
     if (m_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] > GUILD_BANKLOG_MAX_RECORDS)
         m_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = GUILD_BANKLOG_MAX_RECORDS;
 
-    LoadSanctuaryAndFFAZones();
+    LoadCustomFFAZones();
     LoadFishingWords();
 
     // call ScriptMgr if we're reloading the configuration
@@ -3009,35 +3009,8 @@ void World::LoadDBVersion()
         m_DBVersion = "unknown world database";
 }
 
-void World::LoadSanctuaryAndFFAZones()
+void World::LoadCustomFFAZones()
 {
-    {
-        configSanctuariesZones.clear();
-
-        std::string zonestr = sConfigMgr->GetStringDefault("SanctuaryZone", "3703");
-        std::vector<std::string> v;
-        std::vector<std::string>::iterator it;
-        std::string tempstr;
-
-        int cutAt;
-        tempstr = zonestr;
-        while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
-            if (cutAt > 0) {
-                v.push_back(tempstr.substr(0, cutAt));
-            }
-            tempstr = tempstr.substr(cutAt + 1);
-        }
-
-        if (tempstr.length() > 1) {
-            v.push_back(tempstr);
-        }
-
-        for (auto itr : v) {
-            uint32 zoneId = atoi(itr.c_str());
-            configSanctuariesZones.emplace(zoneId);
-        }
-    }
-
     {
         configFFAZones.clear();
 
@@ -3066,11 +3039,6 @@ void World::LoadSanctuaryAndFFAZones()
     }
 }
 
-bool World::IsZoneSanctuary(uint32 zoneid) const
-{
-    auto itr = configSanctuariesZones.find(zoneid);
-    return itr != configSanctuariesZones.end();
-}
 
 bool World::IsZoneFFA(uint32 zoneid) const
 {
