@@ -541,7 +541,6 @@ void GameObject::Update(uint32 diff)
                             udata.BuildPacket(&packet, false);
                             casterPlayer->SendDirectMessage(&packet);
 
-                            PlayDistanceSound(3355, casterPlayer); //Play splash sound
                             SendCustomAnim(GetGoAnimProgress());
                         }
 
