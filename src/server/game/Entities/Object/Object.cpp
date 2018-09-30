@@ -167,6 +167,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         flags |=  UPDATEFLAG_SELF;
 
 
+    //sun: diff with tc, we send UPDATETYPE_CREATE_OBJECT2 for almost all new objects. Not 100% sure about this but this seems to make more sense
     if (m_isNewObject)
     {
         switch (ObjectGuid(GetGUID()).GetHigh())
@@ -175,16 +176,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
         case HighGuid::Pet:
         case HighGuid::Corpse:
         case HighGuid::DynamicObject:
-        case HighGuid::GameObject: //sun: diff with TC, we send this for all gobjects, not just player ones. Not 100% sure about this but this seems to make more sense
-            updateType = UPDATETYPE_CREATE_OBJECT2;
-            break;
+        case HighGuid::GameObject: 
         case HighGuid::Unit:
         case HighGuid::Vehicle:
-        {
-            if (ToUnit()->IsSummon())
-                updateType = UPDATETYPE_CREATE_OBJECT2;
+            updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
-        }
         default:
             break;
         }
@@ -192,27 +188,12 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
     if(flags & UPDATEFLAG_STATIONARY_POSITION)
     {
-        // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
-        if(isType(TYPEMASK_GAMEOBJECT))
-        {
-            switch(((GameObject*)this)->GetGoType())
-            {
-                case GAMEOBJECT_TYPE_TRAP:
-                case GAMEOBJECT_TYPE_DUEL_ARBITER:
-                case GAMEOBJECT_TYPE_FLAGSTAND:
-                case GAMEOBJECT_TYPE_FLAGDROP:
-                    updateType = UPDATETYPE_CREATE_OBJECT2;
-                    break;
-                case GAMEOBJECT_TYPE_TRANSPORT:
 #ifndef LICH_KING
-                    updateType |= UPDATEFLAG_TRANSPORT;
+        //not sure this is still needed
+        if(isType(TYPEMASK_GAMEOBJECT) && ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_TRANSPORT)
+            updateType |= UPDATEFLAG_TRANSPORT;
 #endif
-                    break;
-                default:
-                    break;
-            }
-        }
-
+      
         if (isType(TYPEMASK_UNIT))
         {
             if (ToUnit()->GetVictim())
@@ -224,12 +205,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
     ByteBuffer buf(500);
     buf << (uint8)updateType;
-#ifdef LICH_KING
     buf << GetPackGUID();
-#else
-    buf << (uint8)0xFF << GetGUID();
-#endif
-
     buf << (uint8)m_objectTypeId;
 
     BuildMovementUpdate(&buf, flags);
@@ -242,10 +218,7 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) c
     ByteBuffer buf(500);
 
     buf << (uint8) UPDATETYPE_VALUES;
-    if(target->GetSession()->GetClientBuild() == BUILD_335)
-        buf << GetPackGUID();
-    else
-        buf << (uint8)0xFF << GetGUID();
+    buf << GetPackGUID();
 
     BuildValuesUpdate(UPDATETYPE_VALUES, &buf, target );
 
