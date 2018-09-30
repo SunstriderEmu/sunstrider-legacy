@@ -9,7 +9,9 @@
 #include "GuildTaskMgr.h"
 #include "CharacterCache.h"
 #include "RandomPlayerbotFactory.h"
+#ifdef TESTS
 #include "TestPlayer.h"
+#endif
 
 RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
 {

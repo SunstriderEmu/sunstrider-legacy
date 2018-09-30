@@ -8,7 +8,9 @@
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "RandomPlayerbotFactory.h"
+#ifdef TESTS
 #include "TestPlayer.h"
+#endif
 
 std::map<uint8, std::vector<uint8>> RandomPlayerbotFactory::availableRaces;
 

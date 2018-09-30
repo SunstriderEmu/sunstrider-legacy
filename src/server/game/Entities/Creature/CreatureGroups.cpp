@@ -50,7 +50,7 @@ uint32 FormationMgr::GetInternalGroupId(Creature const* leader)
     {
         uint32 guid = leader->GetGUID().GetCounter();
         if (uint64(guid) + SUMMON_OFFSET > std::numeric_limits<ObjectGuid::LowType>::max()) //make sure we're not overflowing
-            ABORT("FormationMgr::GetInternalGroupId Group internal id overflow");
+            ABORT(); // FormationMgr::GetInternalGroupId Group internal id overflow
 
         internalId = SUMMON_OFFSET + guid;
     }
