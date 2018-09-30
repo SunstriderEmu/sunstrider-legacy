@@ -5065,35 +5065,10 @@ void Spell::EffectSummonObjectWild(uint32 i)
     }
     map->AddToMap(pGameObj, true);
 
-    if(pGameObj->GetMapId() == 489 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //WS
-    {
-        if(m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            Player *pl = m_caster->ToPlayer();
-            Battleground* bg = (m_caster->ToPlayer())->GetBattleground();
-            if(bg && bg->GetTypeID()==BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS)
-            {
-                 uint32 team = ALLIANCE;
-
-                 if(pl->GetTeam() == team)
-                     team = HORDE;
-
-                ((BattlegroundWS*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID(),team);
-            }
-        }
-    }
-
-    if(pGameObj->GetMapId() == 566 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //EY
-    {
-        if(m_caster->GetTypeId() == TYPEID_PLAYER)
-        {
-            Battleground* bg = (m_caster->ToPlayer())->GetBattleground();
-            if(bg && bg->GetTypeID()==BATTLEGROUND_EY && bg->GetStatus() == STATUS_IN_PROGRESS)
-            {
-                ((BattlegroundEY*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID());
-            }
-        }
-    }
+    if (pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)
+        if (Player* player = m_caster->ToPlayer())
+            if (Battleground* bg = player->GetBattleground())
+                bg->SetDroppedFlagGUID(pGameObj->GetGUID(), player->GetTeam() == ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE);
 
     if(uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
