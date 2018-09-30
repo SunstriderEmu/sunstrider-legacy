@@ -48,9 +48,9 @@ uint32 FormationMgr::GetInternalGroupId(Creature const* leader)
     uint32 internalId = leader->GetSpawnId();
     if (!internalId)
     {
-        uint64 guid = leader->GetGUID().GetCounter();
-        if (guid + SUMMON_OFFSET > std::numeric_limits<ObjectGuid::LowType>::max()) //make sure we're not overflowing
-            return 0;
+        uint32 guid = leader->GetGUID().GetCounter();
+        if (uint64(guid) + SUMMON_OFFSET > std::numeric_limits<ObjectGuid::LowType>::max()) //make sure we're not overflowing
+            ABORT("FormationMgr::GetInternalGroupId Group internal id overflow");
 
         internalId = SUMMON_OFFSET + guid;
     }
@@ -250,8 +250,12 @@ FormationInfo& CreatureGroup::AddMember(Creature* member)
         formationInfo = *dbFormationInfo;
     else
     { //generate default from current creature position. This is currently used by SMART_ACTION_ADD_TO_FORMATION
-        formationInfo.followAngle = _leader->GetAbsoluteAngle(member) - _leader->GetOrientation();
-        formationInfo.followDist  = sqrtf(pow(_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(_leader->GetPositionY() - member->GetPositionY(), int(2)));
+        if (_leader)
+        {
+            formationInfo.followAngle = _leader->GetAbsoluteAngle(member) - _leader->GetOrientation();
+            formationInfo.followDist = sqrtf(pow(_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(_leader->GetPositionY() - member->GetPositionY(), int(2)));
+        } else
+            TC_LOG_WARN("entities.unit", "CreatureGroup::AddMember Adding unit (GUID: %u) to group (%u) which has currently no leader. No follow dist/angles were generated.", member->GetGUID().GetCounter(), groupID);
     }
     //else we keep default values from FormationInfo constructor
 
