@@ -1613,22 +1613,17 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
 
     *p_data << (uint32)char_flags;                          // character flags
 
-    if (session->GetClientBuild() == BUILD_335)
-    {
 #ifdef LICH_KING
-        // character customize flags
-        if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
-            *p_data << uint32(CHAR_CUSTOMIZE_FLAG_CUSTOMIZE);
-        else if (atLoginFlags & AT_LOGIN_CHANGE_FACTION)
-            *p_data << uint32(CHAR_CUSTOMIZE_FLAG_FACTION);
-        else if (atLoginFlags & AT_LOGIN_CHANGE_RACE)
-            *p_data << uint32(CHAR_CUSTOMIZE_FLAG_RACE);
-        else
-            *p_data << uint32(CHAR_CUSTOMIZE_FLAG_NONE);
-#else
-        *p_data << uint32(0);
+    // character customize flags
+    if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
+        *p_data << uint32(CHAR_CUSTOMIZE_FLAG_CUSTOMIZE);
+    else if (atLoginFlags & AT_LOGIN_CHANGE_FACTION)
+        *p_data << uint32(CHAR_CUSTOMIZE_FLAG_FACTION);
+    else if (atLoginFlags & AT_LOGIN_CHANGE_RACE)
+        *p_data << uint32(CHAR_CUSTOMIZE_FLAG_RACE);
+    else
+        *p_data << uint32(CHAR_CUSTOMIZE_FLAG_NONE);
 #endif
-    }
 
     // First login
     *p_data << uint8(atLoginFlags & AT_LOGIN_FIRST ? 1 : 0);
@@ -1689,23 +1684,20 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
         *p_data << (uint8)proto->InventoryType;
         *p_data << (uint32)(enchant ? enchant->aura_id : 0);
     }
+#ifdef LICH_KING
     //LK also sends bag
-    if(session->GetClientBuild() == BUILD_335)
+    for (uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; slot++)
     {
-        for(uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; slot++)
-        {
-            *p_data << (uint32)0;
-            *p_data << (uint8)0;
-            *p_data << (uint32)0;
-        }
-    }
-    if (session->GetClientBuild() == BUILD_243)
-    {
-        //first bag info ?
         *p_data << (uint32)0;
         *p_data << (uint8)0;
         *p_data << (uint32)0;
     }
+#else
+    //first bag info ?
+    *p_data << (uint32)0;
+    *p_data << (uint8)0;
+    *p_data << (uint32)0;
+#endif
 
     return true;
 }
@@ -16510,28 +16502,22 @@ void Player::SendRaidInfo()
                 uint32 nextReset = save->GetResetTime() - now;
 
                 data << (save->GetMapId());
-                if (GetSession()->GetClientBuild() == BUILD_335)
-                {
-                    data << uint32(save->GetDifficulty());                     // difficulty
-                    data << uint64(save->GetInstanceId());                     // instance id
-                    /* TODO LK
-                    data << uint8(bind.extendState != EXTEND_STATE_EXPIRED);   // expired = 0
-                    data << uint8(bind.extendState == EXTEND_STATE_EXTENDED);  // extended = 1
-                    time_t nextReset = save->GetResetTime();
-                    if (bind.extendState == EXTEND_STATE_EXTENDED) {
-                        nextReset = sInstanceSaveMgr->GetSubsequentResetTime(save->GetMapId(), save->GetDifficulty(), save->GetResetTime());
-                    }
-                    data << uint32(nextReset);                // reset time
-                    */
-                    data << uint8(0);
-                    data << uint8(0);
-                    data << uint32(0);
-                } else {
-                    data << uint32(nextReset);
-                    data << uint32(save->GetInstanceId());
-                    data << uint32(counter);
-                    counter--;
+#ifdef LICH_KING
+                data << uint32(save->GetDifficulty());                     // difficulty
+                data << uint64(save->GetInstanceId());                     // instance id
+                data << uint8(bind.extendState != EXTEND_STATE_EXPIRED);   // expired = 0
+                data << uint8(bind.extendState == EXTEND_STATE_EXTENDED);  // extended = 1
+                time_t nextReset = save->GetResetTime();
+                if (bind.extendState == EXTEND_STATE_EXTENDED) {
+                    nextReset = sInstanceSaveMgr->GetSubsequentResetTime(save->GetMapId(), save->GetDifficulty(), save->GetResetTime());
                 }
+                data << uint32(nextReset);                // reset time
+#else
+                data << uint32(nextReset);
+                data << uint32(save->GetInstanceId());
+                data << uint32(counter);
+                counter--;
+#endif
             }
         }
     }

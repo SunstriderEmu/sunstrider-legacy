@@ -2505,7 +2505,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 
     // 0x80
 #ifdef LICH_KING
-    if ((build == BUILD_335) && flags & UPDATEFLAG_VEHICLE)
+    if (flags & UPDATEFLAG_VEHICLE)
     {
         /// @todo Allow players to aquire this updateflag.
         *data << uint32(unit->GetVehicleKit()->GetVehicleInfo()->m_ID);

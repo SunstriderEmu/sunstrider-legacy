@@ -1029,29 +1029,20 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
 
     if (uncompress(addonInfo.contents(), &uSize, data.contents() + pos, data.size() - pos) == Z_OK)
     {
-        switch(GetClientBuild())
-        {
 #ifdef LICH_KING
-            case BUILD_335:
-            {
-                uint32 addonsCount;
-                addonInfo >> addonsCount;                         // addons count
+        uint32 addonsCount;
+        addonInfo >> addonsCount;                         // addons count
 
-                for (uint32 i = 0; i < addonsCount; ++i)
-                    ReadAddon(addonInfo);
+        for (uint32 i = 0; i < addonsCount; ++i)
+            ReadAddon(addonInfo);
 
-                uint32 currentTime;
-                addonInfo >> currentTime;
-                TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
-            } break;
+        uint32 currentTime;
+        addonInfo >> currentTime;
+        TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
+#else
+        while (addonInfo.rpos() < addonInfo.size())
+            ReadAddon(addonInfo);
 #endif
-            case BUILD_243:
-            default:
-            {
-                while(addonInfo.rpos() < addonInfo.size())
-                    ReadAddon(addonInfo);
-            } break;
-        }
     }
     else
         TC_LOG_ERROR("misc", "Addon packet uncompress error!");
@@ -1519,32 +1510,21 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
 
 void WorldSession::SendAccountDataTimes(uint32 mask /* = 0 */)
 {
-    switch(GetClientBuild())
-    {
 #ifdef LICH_KING
-    case BUILD_335:
-    {
-        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
-        data << uint32(time(NULL));                             // Server time
-        data << uint8(1);
-        data << uint32(mask);                                   // type mask
-        for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
-            if (mask & (1 << i))
-                data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
-        SendPacket(&data);
-    }
-    break;
+    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
+    data << uint32(time(NULL));                             // Server time
+    data << uint8(1);
+    data << uint32(mask);                                   // type mask
+    for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+        if (mask & (1 << i))
+            data << uint32(GetAccountData(AccountDataType(i))->Time);// also unix time
+    SendPacket(&data);
+#else
+    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 128);
+    for (int i = 0; i < 32; i++)
+        data << uint32(0);
+    SendPacket(&data);
 #endif
-    case BUILD_243:
-    default:
-    {
-        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 128 );
-        for(int i = 0; i < 32; i++)
-            data << uint32(0);
-        SendPacket(&data);
-    }
-    break;
-    }
 }
 
 void WorldSession::SendMountResult(MountResult res)

@@ -834,9 +834,6 @@ void Map::Update(const uint32& t_diff)
     GameTime = time(nullptr);
     GameMSTime = GetMSTime();
 
-    if(GetId() == 545)
-        bool a = true;
-
     _dynamicTree.update(t_diff);
     /// update worldsessions for existing players
     for(m_mapRefIter = m_mapRefManager.begin(); m_mapRefIter != m_mapRefManager.end(); ++m_mapRefIter)

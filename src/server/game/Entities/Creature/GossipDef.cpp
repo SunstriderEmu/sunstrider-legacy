@@ -397,11 +397,10 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote const& eEmote, const std::string
             data << uint32(questID);
             data << uint32(qmi.QuestIcon);
             data << uint32(quest->GetQuestLevel());
-            if(_session->GetClientBuild() == BUILD_335)
-            {
-                data << uint32(quest->GetFlags());             // 3.3.3 quest flags
-                data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
-            }
+#ifdef LICH_KING
+            data << uint32(quest->GetFlags());             // 3.3.3 quest flags
+            data << uint8(0);                              // 3.3.3 changes icon: blue question or yellow exclamation
+#endif
             data << title;
         }
     }
@@ -522,10 +521,9 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
     data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
+#ifdef LICH_KING
     if(_session->GetClientBuild() == BUILD_335)
     {
-        //TODO LK
-        /*
         data << uint32(quest->GetBonusTalents());               // bonus talents
         data << uint32(quest->GetRewArenaPoints());             // reward arena points
         data << uint32(0);                                      // unk
@@ -538,14 +536,8 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
 
         for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
             data << int32(quest->RewardFactionValueIdOverride[i]);
-
-            */
-        data << uint32(0); 
-        data << uint32(0); 
-        data << uint32(0); 
-        for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT*3; ++i)
-            data << uint32(0);     
     }
+#endif
     data << uint32(QUEST_EMOTE_COUNT);
     for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
     {

@@ -72,15 +72,8 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
         }
     }
 
-    static ClientBuild build = BUILD_243;
-
-    //Todo: select build depending on build in realmlist. At this point, client hasn't given its build yet. (though it gave it to worldserver)
-    /*
-    BUILD_335 = 12340,
-    BUILD_243 = 8606,
-    */
     AsyncRead();
-    HandleSendAuthSession(build);
+    HandleSendAuthSession();
 }
 
 bool WorldSocket::Update()
@@ -129,7 +122,7 @@ bool WorldSocket::Update()
     return true;
 }
 
-void WorldSocket::HandleSendAuthSession(ClientBuild build)
+void WorldSocket::HandleSendAuthSession()
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
     //at this point, authserver knows client build but we don't
