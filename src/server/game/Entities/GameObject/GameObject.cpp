@@ -412,6 +412,25 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
 
     switch (goinfo->type)
     {
+#ifdef LICH_KING
+    case GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING:
+        m_goValue.Building.Health = goinfo->building.intactNumHits + goinfo->building.damagedNumHits;
+        m_goValue.Building.MaxHealth = m_goValue.Building.Health;
+        SetGoAnimProgress(255);
+        break;
+    case GAMEOBJECT_TYPE_TRANSPORT:
+        SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pause);
+        SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
+        SetGoAnimProgress(animprogress);
+        m_goValue.Transport.PathProgress = 0;
+        m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->entry);
+        m_goValue.Transport.CurrentSeg = 0;
+        break;
+#endif
+    case GAMEOBJECT_TYPE_FISHINGHOLE:
+        SetGoAnimProgress(animprogress);
+        m_goValue.FishingHole.MaxOpens = urand(GetGOInfo()->fishinghole.minSuccessOpens, GetGOInfo()->fishinghole.maxSuccessOpens);
+        break;
     case GAMEOBJECT_TYPE_TRAP:
         if (GetGOInfo()->trap.stealthed)
         {
@@ -425,6 +444,9 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
             m_invisibility.AddValue(INVISIBILITY_TRAP, 300);
         }
         break;
+ 	case GAMEOBJECT_TYPE_FISHINGNODE:
+ 		SetGoAnimProgress(0);
+ 		break;
     default:
         SetGoAnimProgress(animprogress);
         break;
