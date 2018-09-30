@@ -34,6 +34,7 @@
 #include "SpellAuraEffects.h"
 #include "TotemAI.h"
 #include "ReputationMgr.h"
+#include "Spell.h"
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"

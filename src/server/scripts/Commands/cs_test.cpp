@@ -1,7 +1,9 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#ifdef TESTS
 #include "TestMgr.h"
+#endif
 
 class test_commandscript : public CommandScript
 {
@@ -107,12 +109,12 @@ public:
 
 #else
     static bool HandleTestsStartCommand(ChatHandler* handler, char const* args) { handler->SendSysMessage("Core has not been compiled with tests"); return true; }
-    static bool HandleTestsListCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
-    static bool HandleTestsRunningCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
-    static bool HandleTestsGoCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
-    static bool HandleTestsCancelCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
-    static bool HandleTestsJoinCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
-    static bool HandleTestsLoopCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(args); }
+    static bool HandleTestsListCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
+    static bool HandleTestsRunningCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
+    static bool HandleTestsGoCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
+    static bool HandleTestsCancelCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
+    static bool HandleTestsJoinCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
+    static bool HandleTestsLoopCommand(ChatHandler* handler, char const* args) { return HandleTestsStartCommand(handler, args); }
 #endif
 };
 

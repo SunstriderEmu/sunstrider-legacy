@@ -1,4 +1,5 @@
 #include "UnitAI.h"
+#include "Spell.h"
 
 void UnitAI::AttackStart(Unit *victim)
 {

@@ -33,7 +33,7 @@ class PlayerAntiCheat
 public:
     PlayerAntiCheat(WorldSession* session);
 
-    static void RegisterModule(const string& name, ModuleFactory* m);
+    static void RegisterModule(const std::string& name, ModuleFactory* m);
 
     void OnClientPacketReceived(WorldPacket const& packet);
     void OnPlayerMoved(Unit const* moved, MovementInfo const& movementInfo, OpcodeClient opcode);

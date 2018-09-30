@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "Pet.h"
 
 class reset_commandscript : public CommandScript
 {

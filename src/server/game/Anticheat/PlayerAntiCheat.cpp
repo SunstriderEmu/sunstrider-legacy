@@ -2,7 +2,7 @@
 
 std::list<ModuleFactory*> PlayerAntiCheat::factories;
 
-void PlayerAntiCheat::RegisterModule(const string& /*name*/, ModuleFactory* m)
+void PlayerAntiCheat::RegisterModule(const std::string& /*name*/, ModuleFactory* m)
 {
     factories.push_back(m);
 }

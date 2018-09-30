@@ -1,3 +1,4 @@
+
 #include "TestCase.h"
 #include "MapManager.h"
 #include "TestThread.h"
@@ -8,6 +9,7 @@
 #include "CharacterCache.h"
 #include "SpellHistory.h"
 #include "SpellAuraEffects.h"
+#include "Unit.h"
 //#include "ClassSpells.h" //I'm avoiding including this for now since it is changed often and will break script rebuild it is modified and TestCase.cpp has to be rebuilt too
 
 #include <algorithm>

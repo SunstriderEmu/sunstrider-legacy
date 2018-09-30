@@ -13,6 +13,7 @@
 #include "ScriptReloadMgr.h"
 #include "SmartAI.h"
 #include "OutdoorPvPMgr.h"
+#include "Chat.h"
 #ifdef TESTS
 #include "TestCase.h"
 #endif

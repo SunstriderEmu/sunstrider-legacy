@@ -2,6 +2,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "templates.h"
+#include "Pet.h"
 
 
 // Serpent-Coil Braid item (30720)

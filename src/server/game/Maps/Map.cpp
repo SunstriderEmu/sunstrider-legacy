@@ -25,6 +25,7 @@
 #include "MMapManager.h"
 #include "MMapFactory.h"
 #include "IVMapManager.h"
+#include "MapDefines.h"
 #include "PoolMgr.h"
 #include "DynamicTree.h"
 #include "BattleGround.h"
@@ -36,6 +37,7 @@
 #include "Transport.h"
 #include "ScriptMgr.h"
 #include "GameTime.h"
+#include "PathGenerator.h"
 #ifdef TESTS
 #include "TestCase.h"
 #include "TestThread.h"

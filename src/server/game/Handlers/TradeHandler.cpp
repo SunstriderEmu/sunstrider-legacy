@@ -12,6 +12,8 @@
 #include "Language.h"
 #include "LogsDatabaseAccessor.h"
 #include "TradeData.h"
+#include "Spell.h"
+#include "RBAC.h"
 
 void WorldSession::SendTradeStatus(TradeStatusInfo const& info)
 {

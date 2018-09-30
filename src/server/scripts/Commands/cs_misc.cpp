@@ -15,6 +15,7 @@
 #include "MovementDefines.h"
 #include "Mail.h"
 #include "Config.h"
+#include "Pet.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"

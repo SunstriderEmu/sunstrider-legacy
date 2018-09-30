@@ -8,6 +8,7 @@
 #include "CellImpl.h"
 #include "PoolMgr.h"
 #include <boost/algorithm/string.hpp>    
+#include "Pet.h"
 
 bool HandleNpcSpawnGroup(ChatHandler* handler, char const* args)
 {
@@ -1015,7 +1016,7 @@ public:
             if (c != formation->GetLeader())
             {
                 std::stringstream ss;
-                ss << "  Member " << setw(6) << c->GetSpawnId();
+                ss << "  Member " << std::setw(6) << c->GetSpawnId();
                 ss << " | angle " << std::setprecision(3) << fInfo->followAngle << " dist " << fInfo->followDist << " ai " << fInfo->groupAI << " - " << c->GetName();
                 handler->SendSysMessage(ss.str().c_str());
             }
