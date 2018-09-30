@@ -40,6 +40,12 @@ class MapUpdateRequest
         }
 };
 
+MapUpdater::~MapUpdater()
+{
+    if(activated())
+        deactivate();
+}
+
 void MapUpdater::activate(size_t num_threads)
 {
     //spawn instances & battlegrounds threads
@@ -62,8 +68,12 @@ void MapUpdater::deactivate()
     for (auto& thread : _once_maps_workerThreads)
         thread.join();
 
+    _once_maps_workerThreads.clear();
+
     for (auto& thread : _loop_maps_workerThreads)
         thread.join();
+
+    _loop_maps_workerThreads.clear();
 }
 
 void MapUpdater::waitUpdateOnces()

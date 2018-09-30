@@ -21,7 +21,7 @@ class MapUpdater
 public:
 
     MapUpdater() : _cancelationToken(false), _enable_updates_loop(false), pending_once_maps(0), pending_loop_maps(0) {}
-    ~MapUpdater() = default;;
+    ~MapUpdater();
 
     friend class MapUpdateRequest;
 
