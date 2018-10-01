@@ -533,11 +533,10 @@ void GameObject::Update(uint32 diff)
                         if (Player* casterPlayer = caster->ToPlayer())
                         {
                             SetGoState(GO_STATE_ACTIVE);
-                            SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);
 
                             UpdateData udata;
                             WorldPacket packet;
-                            BuildValuesUpdateBlockForPlayer(&udata,(caster->ToPlayer()));
+                            BuildValuesUpdateBlockForPlayer(&udata, casterPlayer);
                             udata.BuildPacket(&packet, false);
                             casterPlayer->SendDirectMessage(&packet);
 

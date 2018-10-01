@@ -358,9 +358,6 @@ ObjectGuid Object::GetGuidValue(uint16 index) const
 
 void Object::BuildValuesUpdate(uint8 updateType, ByteBuffer * data, Player *target) const
 {
-    if(!target)
-        return;
-
     if (!target)
         return;
 
