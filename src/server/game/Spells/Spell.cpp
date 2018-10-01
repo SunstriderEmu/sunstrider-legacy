@@ -3931,11 +3931,11 @@ void Spell::handle_immediate()
 
     // sun: set channel target before processing targets. Aura of channeling spells needs this to be set beforehand.
     if (m_spellInfo->IsChanneled())
-        if (Unit* caster = m_caster->ToUnit())
+        if (_unitCaster)
         {
             ObjectGuid channelTarget = GetStartChannelTarget();
             if (channelTarget)
-                caster->SetChannelObjectGuid(channelTarget);
+                _unitCaster->SetChannelObjectGuid(channelTarget);
         }
 
     // consider spell hit for some spells without target, so they may proc on finish phase correctly
@@ -5051,6 +5051,11 @@ void Spell::SendChannelUpdate(uint32 time, uint32 spellId)
 ObjectGuid Spell::GetStartChannelTarget() const
 {
     ObjectGuid channelTarget = m_targets.GetObjectTargetGUID();
+    //also consider GetChannelObjectGuid from EffectTransmitted 
+    if (!channelTarget)
+        if (_unitCaster)
+            channelTarget = _unitCaster->GetChannelObjectGuid();
+
     if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
         if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
             channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().TargetGUID : m_UniqueGOTargetInfo.front().TargetGUID;

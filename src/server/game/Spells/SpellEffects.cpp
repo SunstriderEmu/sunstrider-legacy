@@ -7086,7 +7086,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         destTarget->GetPosition(fx, fy, fz);
     }
     //FIXME: this can be better check for most objects but still hack
-    else if(m_spellInfo->Effects[effIndex].RadiusEntry->ID && m_spellInfo->Speed==0)
+    else if(m_spellInfo->Effects[effIndex].RadiusEntry && m_spellInfo->Effects[effIndex].RadiusEntry->ID && m_spellInfo->Speed==0)
     {
         float dis = m_spellInfo->Effects[effIndex].CalcRadius(_unitCaster->GetSpellModOwner(), this);
         _unitCaster->GetClosePoint(fx, fy, fz, DEFAULT_PLAYER_BOUNDING_RADIUS, dis);
@@ -7102,7 +7102,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     Map *cMap = m_caster->GetMap();
 
-    if(goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
+    if (goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
     {
         LiquidData liqData;
         // uint32 area_id = m_caster->GetAreaId();
@@ -7143,10 +7143,6 @@ void Spell::EffectTransmitted(uint32 effIndex)
         case GAMEOBJECT_TYPE_FISHINGNODE:
         {
             _unitCaster->SetChannelObjectGuid(pGameObj->GetGUID());
-                                                            // Orientation3
-            pGameObj->SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, 0.88431775569915771 );
-                                                            // Orientation4
-            pGameObj->SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, -0.4668855369091033 );
             _unitCaster->AddGameObject(pGameObj);              // will removed at spell cancel
 
             // end time of range when possible catch fish (FISHING_BOBBER_READY_TIME..GetDuration(m_spellInfo))
