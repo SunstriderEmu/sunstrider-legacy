@@ -14,6 +14,12 @@ public:
 
     std::vector<ChatCommand> GetCommands() const override
     {
+        static std::vector<ChatCommand> debugSnapshotTable =
+        {
+            { "go",             SEC_GAMEMASTER3,  false, &HandleDebugSnapshotGo,              "" },
+            { "",               SEC_GAMEMASTER3,  false, &HandleDebugSnapshot,                "" },
+        };
+
         static std::vector<ChatCommand> debugCommandTable =
         {
             { "batchattack",    SEC_GAMEMASTER3,  false, &HandleDebugBatchAttack,             "" },
@@ -32,7 +38,6 @@ public:
             { "scm",            SEC_GAMEMASTER3,  false, &HandleDebugSendChatMsgCommand,      "" },
             { "getitemstate",   SEC_GAMEMASTER3,  false, &HandleDebugGetItemState,            "" },
             { "playsound",      SEC_GAMEMASTER1,  false, &HandleDebugPlaySoundCommand,        "" },
-            { "update",         SEC_GAMEMASTER3,  false, &HandleDebugUpdateCommand,           "" },
             { "setvalue",       SEC_ADMINISTRATOR,false, &HandleDebugSetValueCommand,         "" },
             { "getvalue",       SEC_GAMEMASTER3,  false, &HandleDebugGetValueCommand,         "" },
             { "anim",           SEC_GAMEMASTER2,  false, &HandleDebugAnimCommand,             "" },
@@ -57,7 +62,7 @@ public:
             { "opcodetest",     SEC_GAMEMASTER3,  false, &HandleDebugOpcodeTestCommand,       "" },
             { "playemote",      SEC_GAMEMASTER2,  false, &HandleDebugPlayEmoteCommand,        "" },
             { "mapheight",      SEC_GAMEMASTER3,  false, &HandleDebugMapHeight,               "" },
-            { "valuessnapshot", SEC_GAMEMASTER3,  false, &HandleDebugValuesSnapshot,          "" },
+            { "snapshot",       SEC_GAMEMASTER3,  false, nullptr,                             "", debugSnapshotTable },
             { "crash",          SEC_SUPERADMIN,   false, &HandleDebugCrashCommand,            "" },
             { "setzonemusic",   SEC_SUPERADMIN,   false, &HandleDebugZoneMusicCommand,        "" },
             { "setzonelight",   SEC_SUPERADMIN,   false, &HandleDebugZoneLightCommand,        "" },
@@ -73,66 +78,6 @@ public:
             { "debug",          SEC_GAMEMASTER1,  false, nullptr,                                        "", debugCommandTable },
         };
         return commandTable;
-    }
-
-    //FIXME: not working for float values
-    static void FillSnapshotValues(WorldObject* target, std::vector<uint32>& values)
-    {
-        uint32 valuesCount = target->GetValuesCount();
-        values.clear();
-        values.resize(valuesCount);
-        for (uint32 i = 0; i < valuesCount; i++)
-            values[i] = target->GetUInt32Value(i);
-    }
-
-    static bool HandleDebugUpdateCommand(ChatHandler* handler, char const* args)
-    {
-        ARGS_CHECK
-
-        uint32 updateIndex;
-        uint32 value;
-
-        char* pUpdateIndex = strtok((char*)args, " ");
-
-        Unit* chr = handler->GetSelectedUnit();
-        if (chr == nullptr)
-        {
-            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        if(!pUpdateIndex)
-        {
-            return true;
-        }
-        updateIndex = atoi(pUpdateIndex);
-        //check updateIndex
-        if(chr->GetTypeId() == TYPEID_PLAYER)
-        {
-            if (updateIndex>=PLAYER_END) return true;
-        }
-        else
-        {
-            if (updateIndex>=UNIT_END) return true;
-        }
-
-        char*  pvalue = strtok(nullptr, " ");
-        if (!pvalue)
-        {
-            value=chr->GetUInt32Value(updateIndex);
-
-            handler->PSendSysMessage(LANG_UPDATE, chr->GetGUID().GetCounter(),updateIndex,value);
-            return true;
-        }
-
-        value=atoi(pvalue);
-
-        handler->PSendSysMessage(LANG_UPDATE_CHANGE, chr->GetGUID().GetCounter(),updateIndex,value);
-
-        chr->SetUInt32Value(updateIndex,value);
-
-        return true;
     }
 
     /** Syntax: .debug batchattack <count> [type]
@@ -1008,8 +953,8 @@ public:
             return false;
         }
 
-        std::vector<uint32> values;
-        FillSnapshotValues(target, values); //todo: no need to fill this for all values
+        WorldSession::SnapshotType values;
+        UpdateFieldsDebug::FillSnapshotValues(target, values); //todo: no need to fill this for all values
 
         TypeID type = TypeID(target->GetTypeId());
         std::string fieldName = "[UNKNOWN]";
@@ -1412,35 +1357,22 @@ public:
         return true;
     }
 
-    /* Syntax: .debug valuessnapshot <start|stop> */
-    static bool HandleDebugValuesSnapshot(ChatHandler* handler, char const* args)
+
+    static bool _HandleDebugSnapshot(ChatHandler* handler, WorldObject* target, std::string arg)
     {
-    #ifdef TRINITY_DEBUG
-        Unit* target = handler->GetSelectedUnit();
-        if (!target)
-        {
-            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-            return true;
-        }
-
-        char* cArg = strtok((char*)args, " ");
-        if (!cArg)
-            return false;
-
-        std::string arg(cArg);
-
+#ifdef TRINITY_DEBUG
         auto& snapshot_values = handler->GetSession()->snapshot_values;
 
         if (arg == "start")
         {
-            FillSnapshotValues(target, snapshot_values);
+            UpdateFieldsDebug::FillSnapshotValues(target, snapshot_values);
             handler->PSendSysMessage("Created snapshot for target %s (guid %u)", target->GetName(), target->GetGUID().GetCounter());
             return true;
         }
         else if (arg == "stop")
         {
-            std::vector<uint32> newValues;
-            FillSnapshotValues(target, newValues);
+            WorldSession::SnapshotType newValues;
+            UpdateFieldsDebug::FillSnapshotValues(target, newValues);
             if (newValues.size() != snapshot_values.size())
             {
                 handler->SendSysMessage("Error: Snapshots sizes do not match");
@@ -1473,12 +1405,80 @@ public:
             }
             handler->PSendSysMessage("Found %u differences", diffCount);
         }
+        else if (arg == "dump")
+        {
+            handler->PSendSysMessage("Dumping value for target %s (lowguid %u): ", target->GetName().c_str(), target->GetGUID().GetCounter());
+            WorldSession::SnapshotType dumpValues;
+            UpdateFieldsDebug::FillSnapshotValues(target, dumpValues);
+            TypeID typeId = TypeID(target->GetTypeId());
+            for (uint32 i = 0; i < dumpValues.size(); i++)
+            {
+                std::stringstream stream;
+                std::string fieldName = "[UNKNOWN]";
+                UpdateFieldsDebug::GetFieldNameString(typeId, i, fieldName);
+                stream << "Index: " << std::setw(4) << i << " | " << fieldName << std::endl;
+                uint32 fieldSize = UpdateFieldsDebug::InsertFieldInStream(typeId, i, dumpValues, stream);
+                stream << std::endl;
+                if (fieldSize > 1)
+                    i += (fieldSize - 1); //this will skip next field for UPDATE_FIELD_TYPE_LONG
+
+                handler->PSendSysMessage("%s", stream.str().c_str());
+            }
+        }
         else {
             return false;
         }
-    #else
+#else
         handler->PSendSysMessage("Command can only be used when compiled in debug mode");
-    #endif
+#endif
+        return true;
+    }
+
+    static bool HandleDebugSnapshotGo(ChatHandler* handler, char const* args)
+    {
+        Tokenizer tokens(args, ' ');
+        if (tokens.size() < 2)
+            return false;
+
+        ObjectGuid::LowType spawnID(uint32(std::stoul(tokens[0])));
+        std::string arg = tokens[1];
+
+        Map* map = handler->GetSession()->GetPlayer()->GetMap();
+        if (!map)
+        {
+            handler->SendSysMessage("Map not found");
+            return true;
+        }
+
+        GameObject* target = map->GetGameObjectBySpawnId(spawnID);
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_COMMAND_GOOBJNOTFOUND);
+            return true;
+        }
+
+        _HandleDebugSnapshot(handler, target, arg);
+
+        return true;
+    }
+
+    /* Syntax: .debug snapshot <start|stop> */
+    static bool HandleDebugSnapshot(ChatHandler* handler, char const* args)
+    {
+        char* cArg = strtok((char*)args, " ");
+        if (!cArg)
+            return false;
+
+        WorldObject* target = handler->GetSelectedUnit();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            return true;
+        }
+
+        std::string arg(cArg);
+        _HandleDebugSnapshot(handler, target, arg);
+
         return true;
     }
 

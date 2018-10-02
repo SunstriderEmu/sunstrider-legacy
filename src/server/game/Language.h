@@ -503,8 +503,8 @@ enum TrinityStrings
     LANG_EXPLORE_AREA                   = 560,
     LANG_UNEXPLORE_AREA                 = 561,
 
-    LANG_UPDATE                         = 562,
-    LANG_UPDATE_CHANGE                  = 563,
+    //REUSE                             = 562,
+    //REUSE                             = 563,
     LANG_TOO_BIG_INDEX                  = 564,
     LANG_SET_UINT                       = 565,              //log
     LANG_SET_UINT_FIELD                 = 566,

@@ -4,16 +4,16 @@
 
 #include "ObjectGuid.h"
 #include "UpdateFields.h"
+#include "WorldSession.h"
 #include <iomanip>
 
-class TC_GAME_API UpdateFieldsDebug
+class WorldObject;
+
+namespace UpdateFieldsDebug
 {
-private:
-    //shouldn't be instanced
-    UpdateFieldsDebug() {}
-public:
     enum UpdateFieldType
     {
+        UPDATE_FIELD_TYPE_GUID,
         UPDATE_FIELD_TYPE_LONG,
         UPDATE_FIELD_TYPE_INT,
         UPDATE_FIELD_TYPE_BYTES,
@@ -26,16 +26,17 @@ public:
     /* Return base index (for multi fields index)
     For example, if you query for UNIT_FIELD_BASEATTACKTIME+1, you'll get UNIT_FIELD_BASEATTACKTIME.
     */
-    static int32 GetBaseIndex(TypeID type, uint32 index);
+    TC_GAME_API Optional<int32> GetBaseIndex(TypeID type, uint32 index);
 
     //get field name for index. Only for units (players and creatures).
-    static bool GetFieldNameString(TypeID type, uint32 index, std::string& str);
+    TC_GAME_API bool GetFieldNameString(TypeID type, uint32 index, std::string& str);
 
-    static UpdateFieldType GetUpdateFieldType(TypeID type, uint32 index);
+    TC_GAME_API UpdateFieldType GetUpdateFieldType(TypeID type, uint32 index);
 
     //return field size
-    static uint32 InsertFieldInStream(TypeID type, uint32 index, std::vector<uint32> const& values, std::stringstream& stream);
+    TC_GAME_API uint32 InsertFieldInStream(TypeID type, uint32 index, WorldSession::SnapshotType const& values, std::stringstream& stream);
 
+    TC_GAME_API void FillSnapshotValues(WorldObject* target, WorldSession::SnapshotType& values);
 };
 
 #endif // _UPDATEFIELDSDEBUG_H

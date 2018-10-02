@@ -1,27 +1,29 @@
 #include "UpdateFieldsDebug.h"
 
-int32 UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
+Optional<int32> UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
 {
-    switch (type)
-    {
-    case TYPEID_UNIT:
-    case TYPEID_PLAYER:
-        break;
-    default:
-        return -1;
-    }
-
-    if (type == TYPEID_UNIT && index >= UNIT_END)
-        return -1;
-
     switch (index)
     {
-        case OBJECT_FIELD_GUID: return OBJECT_FIELD_GUID;
-        case OBJECT_FIELD_TYPE: return OBJECT_FIELD_TYPE;
-        case OBJECT_FIELD_ENTRY: return OBJECT_FIELD_ENTRY;
-        case OBJECT_FIELD_SCALE_X: return OBJECT_FIELD_SCALE_X;
-        case OBJECT_FIELD_PADDING: return OBJECT_FIELD_PADDING;
+    case OBJECT_FIELD_GUID: return OBJECT_FIELD_GUID;
+    case OBJECT_FIELD_TYPE: return OBJECT_FIELD_TYPE;
+    case OBJECT_FIELD_ENTRY: return OBJECT_FIELD_ENTRY;
+    case OBJECT_FIELD_SCALE_X: return OBJECT_FIELD_SCALE_X;
+    case OBJECT_FIELD_PADDING: return OBJECT_FIELD_PADDING;
+    }
 
+    switch (type)
+    {
+    case TYPEID_PLAYER:
+        if (index >= PLAYER_END)
+            return {};
+        [[fallthrough]];
+    case TYPEID_UNIT:
+    {
+        if (index >= UNIT_END)
+            return {};
+
+        switch (index)
+        {
         case UNIT_FIELD_CHARM: return UNIT_FIELD_CHARM;
         case UNIT_FIELD_SUMMON: return UNIT_FIELD_SUMMON;
         case UNIT_FIELD_CHARMEDBY: return UNIT_FIELD_CHARMEDBY;
@@ -353,494 +355,564 @@ int32 UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
         case PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT: return PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT;
         case PLAYER_FIELD_MAX_LEVEL: return PLAYER_FIELD_MAX_LEVEL;
         case PLAYER_FIELD_DAILY_QUESTS_1: return PLAYER_FIELD_DAILY_QUESTS_1;
-        default: 
+        default:
             //if we got here, index is not yet a base index
             //search recursively in previous indexes
             return GetBaseIndex(type, index - 1);
+        }
+    } break;
+    case TYPEID_GAMEOBJECT:
+    {
+        if (index >= GAMEOBJECT_END)
+            return {};
+
+        switch (index)
+        {
+        case OBJECT_FIELD_CREATED_BY:   return OBJECT_FIELD_CREATED_BY;
+        case GAMEOBJECT_DISPLAYID:      return GAMEOBJECT_DISPLAYID;
+        case GAMEOBJECT_FLAGS:          return GAMEOBJECT_FLAGS;
+        case GAMEOBJECT_PARENTROTATION: return GAMEOBJECT_PARENTROTATION;
+        case GAMEOBJECT_STATE:          return GAMEOBJECT_STATE;
+        case GAMEOBJECT_POS_X:          return GAMEOBJECT_POS_X;
+        case GAMEOBJECT_POS_Y:          return GAMEOBJECT_POS_Y;
+        case GAMEOBJECT_POS_Z:          return GAMEOBJECT_POS_Z;
+        case GAMEOBJECT_FACING:         return GAMEOBJECT_FACING;
+        case GAMEOBJECT_DYN_FLAGS:      return GAMEOBJECT_DYN_FLAGS;
+        case GAMEOBJECT_FACTION:        return GAMEOBJECT_FACTION;
+        case GAMEOBJECT_TYPE_ID:        return GAMEOBJECT_TYPE_ID;
+        case GAMEOBJECT_LEVEL:          return GAMEOBJECT_LEVEL;
+        case GAMEOBJECT_ARTKIT:         return GAMEOBJECT_ARTKIT;
+        case GAMEOBJECT_ANIMPROGRESS:   return GAMEOBJECT_ANIMPROGRESS;
+        case GAMEOBJECT_PADDING:        return GAMEOBJECT_PADDING;
+        default:
+            //if we got here, index is not yet a base index
+            //search recursively in previous indexes
+            return GetBaseIndex(type, index - 1);
+        }
+    } break;
+    default:
+        return {};
     }
 }
 
 bool UpdateFieldsDebug::GetFieldNameString(TypeID type, uint32 index, std::string& str)
 {
+    Optional<int32> _index = GetBaseIndex(type, index);
+    if (!(_index))
+        return false;
+
+    index = _index.get();
+
+    switch (index)
+    {
+    case OBJECT_FIELD_GUID:    str = "OBJECT_FIELD_GUID"; break;
+    case OBJECT_FIELD_TYPE:    str = "OBJECT_FIELD_TYPE"; break;
+    case OBJECT_FIELD_ENTRY:   str = "OBJECT_FIELD_ENTRY"; break;
+    case OBJECT_FIELD_SCALE_X: str = "OBJECT_FIELD_SCALE_X"; break;
+    case OBJECT_FIELD_PADDING: str = "OBJECT_FIELD_PADDING"; break;
+    }
+
     switch (type)
     {
-    case TYPEID_UNIT:
     case TYPEID_PLAYER:
-        break;
+        if (index >= PLAYER_END)
+            return false;
+        [[fallthrough]];
+    case TYPEID_UNIT:
+    {
+        if (index >= UNIT_END)
+            return false;
+
+        switch (index)
+        {
+        case UNIT_FIELD_CHARM:
+            str = "UNIT_FIELD_CHARM"; break;
+        case UNIT_FIELD_SUMMON:
+            str = "UNIT_FIELD_SUMMON"; break;
+        case UNIT_FIELD_CHARMEDBY:
+            str = "UNIT_FIELD_CHARMEDBY"; break;
+        case UNIT_FIELD_SUMMONEDBY:
+            str = "UNIT_FIELD_SUMMONEDBY"; break;
+        case UNIT_FIELD_CREATEDBY:
+            str = "UNIT_FIELD_CREATEDBY"; break;
+        case UNIT_FIELD_TARGET:
+            str = "UNIT_FIELD_TARGET"; break;
+        case UNIT_FIELD_PERSUADED:
+            str = "UNIT_FIELD_PERSUADED"; break;
+        case UNIT_FIELD_CHANNEL_OBJECT:
+            str = "UNIT_FIELD_CHANNEL_OBJECT"; break;
+        case UNIT_FIELD_HEALTH: str = "UNIT_FIELD_HEALTH"; break;
+        case UNIT_FIELD_POWER1: str = "UNIT_FIELD_POWER1"; break;
+        case UNIT_FIELD_POWER2: str = "UNIT_FIELD_POWER2"; break;
+        case UNIT_FIELD_POWER3: str = "UNIT_FIELD_POWER3"; break;
+        case UNIT_FIELD_POWER4: str = "UNIT_FIELD_POWER4"; break;
+        case UNIT_FIELD_POWER5: str = "UNIT_FIELD_POWER5"; break;
+        case UNIT_FIELD_MAXHEALTH: str = "UNIT_FIELD_MAXHEALTH"; break;
+        case UNIT_FIELD_MAXPOWER1: str = "UNIT_FIELD_MAXPOWER1"; break;
+        case UNIT_FIELD_MAXPOWER2: str = "UNIT_FIELD_MAXPOWER2"; break;
+        case UNIT_FIELD_MAXPOWER3: str = "UNIT_FIELD_MAXPOWER3"; break;
+        case UNIT_FIELD_MAXPOWER4: str = "UNIT_FIELD_MAXPOWER4"; break;
+        case UNIT_FIELD_MAXPOWER5: str = "UNIT_FIELD_MAXPOWER5"; break;
+        case UNIT_FIELD_LEVEL: str = "UNIT_FIELD_LEVEL"; break;
+        case UNIT_FIELD_FACTIONTEMPLATE: str = "UNIT_FIELD_FACTIONTEMPLATE"; break;
+        case UNIT_FIELD_BYTES_0: str = "UNIT_FIELD_BYTES_0"; break;
+        case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY:
+        case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1:
+        case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2:
+            str = "UNIT_VIRTUAL_ITEM_SLOT_DISPLAY"; break;
+        case UNIT_VIRTUAL_ITEM_INFO:
+        case UNIT_VIRTUAL_ITEM_INFO + 1:
+        case UNIT_VIRTUAL_ITEM_INFO + 2:
+        case UNIT_VIRTUAL_ITEM_INFO + 3:
+        case UNIT_VIRTUAL_ITEM_INFO + 4:
+        case UNIT_VIRTUAL_ITEM_INFO + 5:
+            str = "UNIT_VIRTUAL_ITEM_INFO"; break;
+        case UNIT_FIELD_FLAGS: str = "UNIT_FIELD_FLAGS"; break;
+        case UNIT_FIELD_FLAGS_2: str = "UNIT_FIELD_FLAGS_2"; break;
+        case UNIT_FIELD_AURA:
+            str = "UNIT_FIELD_AURA"; break;
+        case UNIT_FIELD_AURAFLAGS + 0:
+            str = "UNIT_FIELD_AURAFLAGS"; break;
+        case UNIT_FIELD_AURALEVELS + 0:
+            str = "UNIT_FIELD_AURALEVELS"; break;
+        case UNIT_FIELD_AURAAPPLICATIONS + 0:
+            str = "UNIT_FIELD_AURAAPPLICATIONS"; break;
+        case UNIT_FIELD_AURASTATE: str = "UNIT_FIELD_AURASTATE"; break;
+        case UNIT_FIELD_BASEATTACKTIME:
+            str = "UNIT_FIELD_BASEATTACKTIME"; break;
+        case UNIT_FIELD_RANGEDATTACKTIME: str = "UNIT_FIELD_RANGEDATTACKTIME"; break;
+        case UNIT_FIELD_BOUNDINGRADIUS: str = "UNIT_FIELD_BOUNDINGRADIUS"; break;
+        case UNIT_FIELD_COMBATREACH: str = "UNIT_FIELD_COMBATREACH"; break;
+        case UNIT_FIELD_DISPLAYID: str = "UNIT_FIELD_DISPLAYID"; break;
+        case UNIT_FIELD_NATIVEDISPLAYID: str = "UNIT_FIELD_NATIVEDISPLAYID"; break;
+        case UNIT_FIELD_MOUNTDISPLAYID: str = "UNIT_FIELD_MOUNTDISPLAYID"; break;
+        case UNIT_FIELD_MINDAMAGE: str = "UNIT_FIELD_MINDAMAGE"; break;
+        case UNIT_FIELD_MAXDAMAGE: str = "UNIT_FIELD_MAXDAMAGE"; break;
+        case UNIT_FIELD_MINOFFHANDDAMAGE: str = "UNIT_FIELD_MINOFFHANDDAMAGE"; break;
+        case UNIT_FIELD_MAXOFFHANDDAMAGE: str = "UNIT_FIELD_MAXOFFHANDDAMAGE"; break;
+        case UNIT_FIELD_BYTES_1: str = "UNIT_FIELD_BYTES_1"; break;
+        case UNIT_FIELD_PETNUMBER: str = "UNIT_FIELD_PETNUMBER"; break;
+        case UNIT_FIELD_PET_NAME_TIMESTAMP: str = "UNIT_FIELD_PET_NAME_TIMESTAMP"; break;
+        case UNIT_FIELD_PETEXPERIENCE: str = "UNIT_FIELD_PETEXPERIENCE"; break;
+        case UNIT_FIELD_PETNEXTLEVELEXP: str = "UNIT_FIELD_PETNEXTLEVELEXP"; break;
+        case UNIT_DYNAMIC_FLAGS: str = "UNIT_DYNAMIC_FLAGS"; break;
+        case UNIT_CHANNEL_SPELL: str = "UNIT_CHANNEL_SPELL"; break;
+        case UNIT_MOD_CAST_SPEED: str = "UNIT_MOD_CAST_SPEED"; break;
+        case UNIT_CREATED_BY_SPELL: str = "UNIT_CREATED_BY_SPELL"; break;
+        case UNIT_NPC_FLAGS: str = "UNIT_NPC_FLAGS"; break;
+        case UNIT_NPC_EMOTESTATE: str = "UNIT_NPC_EMOTESTATE"; break;
+        case UNIT_TRAINING_POINTS: str = "UNIT_TRAINING_POINTS"; break;
+        case UNIT_FIELD_STAT0: str = "UNIT_FIELD_STAT0"; break;
+        case UNIT_FIELD_STAT1: str = "UNIT_FIELD_STAT1"; break;
+        case UNIT_FIELD_STAT2: str = "UNIT_FIELD_STAT2"; break;
+        case UNIT_FIELD_STAT3: str = "UNIT_FIELD_STAT3"; break;
+        case UNIT_FIELD_STAT4: str = "UNIT_FIELD_STAT4"; break;
+        case UNIT_FIELD_POSSTAT0: str = "UNIT_FIELD_POSSTAT0"; break;
+        case UNIT_FIELD_POSSTAT1: str = "UNIT_FIELD_POSSTAT1"; break;
+        case UNIT_FIELD_POSSTAT2: str = "UNIT_FIELD_POSSTAT2"; break;
+        case UNIT_FIELD_POSSTAT3: str = "UNIT_FIELD_POSSTAT3"; break;
+        case UNIT_FIELD_POSSTAT4: str = "UNIT_FIELD_POSSTAT4"; break;
+        case UNIT_FIELD_NEGSTAT0: str = "UNIT_FIELD_NEGSTAT0"; break;
+        case UNIT_FIELD_NEGSTAT1: str = "UNIT_FIELD_NEGSTAT1"; break;
+        case UNIT_FIELD_NEGSTAT2: str = "UNIT_FIELD_NEGSTAT2"; break;
+        case UNIT_FIELD_NEGSTAT3: str = "UNIT_FIELD_NEGSTAT3"; break;
+        case UNIT_FIELD_NEGSTAT4: str = "UNIT_FIELD_NEGSTAT4"; break;
+        case UNIT_FIELD_RESISTANCES + 0:
+            str = "UNIT_FIELD_RESISTANCES"; break;
+        case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 0:
+            str = "UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE"; break;
+        case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 0:
+            str = "UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE"; break;
+        case UNIT_FIELD_BASE_MANA: str = "UNIT_FIELD_BASE_MANA"; break;
+        case UNIT_FIELD_BASE_HEALTH: str = "UNIT_FIELD_BASE_HEALTH"; break;
+        case UNIT_FIELD_BYTES_2: str = "UNIT_FIELD_BYTES_2"; break;
+        case UNIT_FIELD_ATTACK_POWER: str = "UNIT_FIELD_ATTACK_POWER"; break;
+        case UNIT_FIELD_ATTACK_POWER_MODS: str = "UNIT_FIELD_ATTACK_POWER_MODS"; break;
+        case UNIT_FIELD_ATTACK_POWER_MULTIPLIER: str = "UNIT_FIELD_ATTACK_POWER_MULTIPLIER"; break;
+        case UNIT_FIELD_RANGED_ATTACK_POWER: str = "UNIT_FIELD_RANGED_ATTACK_POWER"; break;
+        case UNIT_FIELD_RANGED_ATTACK_POWER_MODS: str = "UNIT_FIELD_RANGED_ATTACK_POWER_MODS"; break;
+        case UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER: str = "UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER"; break;
+        case UNIT_FIELD_MINRANGEDDAMAGE: str = "UNIT_FIELD_MINRANGEDDAMAGE"; break;
+        case UNIT_FIELD_MAXRANGEDDAMAGE: str = "UNIT_FIELD_MAXRANGEDDAMAGE"; break;
+        case UNIT_FIELD_POWER_COST_MODIFIER + 0:
+            str = "UNIT_FIELD_POWER_COST_MODIFIER"; break;
+        case UNIT_FIELD_POWER_COST_MULTIPLIER + 0:
+            str = "UNIT_FIELD_POWER_COST_MULTIPLIER"; break;
+        case UNIT_FIELD_MAXHEALTHMODIFIER: str = "UNIT_FIELD_MAXHEALTHMODIFIER"; break;
+        case UNIT_FIELD_PADDING: str = "UNIT_FIELD_PADDING"; break;
+
+        case PLAYER_DUEL_ARBITER:
+        case PLAYER_DUEL_ARBITER + 1:
+            str = "PLAYER_DUEL_ARBITER"; break;
+        case PLAYER_FLAGS: str = "PLAYER_FLAGS"; break;
+        case PLAYER_GUILDID: str = "PLAYER_GUILDID"; break;
+        case PLAYER_GUILDRANK: str = "PLAYER_GUILDRANK"; break;
+        case PLAYER_BYTES: str = "PLAYER_BYTES"; break;
+        case PLAYER_BYTES_2: str = "PLAYER_BYTES_2"; break;
+        case PLAYER_BYTES_3: str = "PLAYER_BYTES_3"; break;
+        case PLAYER_DUEL_TEAM: str = "PLAYER_DUEL_TEAM"; break;
+        case PLAYER_GUILD_TIMESTAMP: str = "PLAYER_GUILD_TIMESTAMP"; break;
+        case PLAYER_QUEST_LOG_1_1: str = "PLAYER_QUEST_LOG_1_1"; break;
+        case PLAYER_QUEST_LOG_1_2: str = "PLAYER_QUEST_LOG_1_2"; break;
+        case PLAYER_QUEST_LOG_1_3: str = "PLAYER_QUEST_LOG_1_3"; break;
+        case PLAYER_QUEST_LOG_1_4: str = "PLAYER_QUEST_LOG_1_4"; break;
+        case PLAYER_QUEST_LOG_2_1: str = "PLAYER_QUEST_LOG_2_1"; break;
+        case PLAYER_QUEST_LOG_2_2: str = "PLAYER_QUEST_LOG_2_2"; break;
+        case PLAYER_QUEST_LOG_2_3: str = "PLAYER_QUEST_LOG_2_3"; break;
+        case PLAYER_QUEST_LOG_2_4: str = "PLAYER_QUEST_LOG_2_4"; break;
+        case PLAYER_QUEST_LOG_3_1: str = "PLAYER_QUEST_LOG_3_1"; break;
+        case PLAYER_QUEST_LOG_3_2: str = "PLAYER_QUEST_LOG_3_2"; break;
+        case PLAYER_QUEST_LOG_3_3: str = "PLAYER_QUEST_LOG_3_3"; break;
+        case PLAYER_QUEST_LOG_3_4: str = "PLAYER_QUEST_LOG_3_4"; break;
+        case PLAYER_QUEST_LOG_4_1: str = "PLAYER_QUEST_LOG_4_1"; break;
+        case PLAYER_QUEST_LOG_4_2: str = "PLAYER_QUEST_LOG_4_2"; break;
+        case PLAYER_QUEST_LOG_4_3: str = "PLAYER_QUEST_LOG_4_3"; break;
+        case PLAYER_QUEST_LOG_4_4: str = "PLAYER_QUEST_LOG_4_4"; break;
+        case PLAYER_QUEST_LOG_5_1: str = "PLAYER_QUEST_LOG_5_1"; break;
+        case PLAYER_QUEST_LOG_5_2: str = "PLAYER_QUEST_LOG_5_2"; break;
+        case PLAYER_QUEST_LOG_5_3: str = "PLAYER_QUEST_LOG_5_3"; break;
+        case PLAYER_QUEST_LOG_5_4: str = "PLAYER_QUEST_LOG_5_4"; break;
+        case PLAYER_QUEST_LOG_6_1: str = "PLAYER_QUEST_LOG_6_1"; break;
+        case PLAYER_QUEST_LOG_6_2: str = "PLAYER_QUEST_LOG_6_2"; break;
+        case PLAYER_QUEST_LOG_6_3: str = "PLAYER_QUEST_LOG_6_3"; break;
+        case PLAYER_QUEST_LOG_6_4: str = "PLAYER_QUEST_LOG_6_4"; break;
+        case PLAYER_QUEST_LOG_7_1: str = "PLAYER_QUEST_LOG_7_1"; break;
+        case PLAYER_QUEST_LOG_7_2: str = "PLAYER_QUEST_LOG_7_2"; break;
+        case PLAYER_QUEST_LOG_7_3: str = "PLAYER_QUEST_LOG_7_3"; break;
+        case PLAYER_QUEST_LOG_7_4: str = "PLAYER_QUEST_LOG_7_4"; break;
+        case PLAYER_QUEST_LOG_8_1: str = "PLAYER_QUEST_LOG_8_1"; break;
+        case PLAYER_QUEST_LOG_8_2: str = "PLAYER_QUEST_LOG_8_2"; break;
+        case PLAYER_QUEST_LOG_8_3: str = "PLAYER_QUEST_LOG_8_3"; break;
+        case PLAYER_QUEST_LOG_8_4: str = "PLAYER_QUEST_LOG_8_4"; break;
+        case PLAYER_QUEST_LOG_9_1: str = "PLAYER_QUEST_LOG_9_1"; break;
+        case PLAYER_QUEST_LOG_9_2: str = "PLAYER_QUEST_LOG_9_2"; break;
+        case PLAYER_QUEST_LOG_9_3: str = "PLAYER_QUEST_LOG_9_3"; break;
+        case PLAYER_QUEST_LOG_9_4: str = "PLAYER_QUEST_LOG_9_4"; break;
+        case PLAYER_QUEST_LOG_10_1: str = "PLAYER_QUEST_LOG_10_1"; break;
+        case PLAYER_QUEST_LOG_10_2: str = "PLAYER_QUEST_LOG_10_2"; break;
+        case PLAYER_QUEST_LOG_10_3: str = "PLAYER_QUEST_LOG_10_3"; break;
+        case PLAYER_QUEST_LOG_10_4: str = "PLAYER_QUEST_LOG_10_4"; break;
+        case PLAYER_QUEST_LOG_11_1: str = "PLAYER_QUEST_LOG_11_1"; break;
+        case PLAYER_QUEST_LOG_11_2: str = "PLAYER_QUEST_LOG_11_2"; break;
+        case PLAYER_QUEST_LOG_11_3: str = "PLAYER_QUEST_LOG_11_3"; break;
+        case PLAYER_QUEST_LOG_11_4: str = "PLAYER_QUEST_LOG_11_4"; break;
+        case PLAYER_QUEST_LOG_12_1: str = "PLAYER_QUEST_LOG_12_1"; break;
+        case PLAYER_QUEST_LOG_12_2: str = "PLAYER_QUEST_LOG_12_2"; break;
+        case PLAYER_QUEST_LOG_12_3: str = "PLAYER_QUEST_LOG_12_3"; break;
+        case PLAYER_QUEST_LOG_12_4: str = "PLAYER_QUEST_LOG_12_4"; break;
+        case PLAYER_QUEST_LOG_13_1: str = "PLAYER_QUEST_LOG_13_1"; break;
+        case PLAYER_QUEST_LOG_13_2: str = "PLAYER_QUEST_LOG_13_2"; break;
+        case PLAYER_QUEST_LOG_13_3: str = "PLAYER_QUEST_LOG_13_3"; break;
+        case PLAYER_QUEST_LOG_13_4: str = "PLAYER_QUEST_LOG_13_4"; break;
+        case PLAYER_QUEST_LOG_14_1: str = "PLAYER_QUEST_LOG_14_1"; break;
+        case PLAYER_QUEST_LOG_14_2: str = "PLAYER_QUEST_LOG_14_2"; break;
+        case PLAYER_QUEST_LOG_14_3: str = "PLAYER_QUEST_LOG_14_3"; break;
+        case PLAYER_QUEST_LOG_14_4: str = "PLAYER_QUEST_LOG_14_4"; break;
+        case PLAYER_QUEST_LOG_15_1: str = "PLAYER_QUEST_LOG_15_1"; break;
+        case PLAYER_QUEST_LOG_15_2: str = "PLAYER_QUEST_LOG_15_2"; break;
+        case PLAYER_QUEST_LOG_15_3: str = "PLAYER_QUEST_LOG_15_3"; break;
+        case PLAYER_QUEST_LOG_15_4: str = "PLAYER_QUEST_LOG_15_4"; break;
+        case PLAYER_QUEST_LOG_16_1: str = "PLAYER_QUEST_LOG_16_1"; break;
+        case PLAYER_QUEST_LOG_16_2: str = "PLAYER_QUEST_LOG_16_2"; break;
+        case PLAYER_QUEST_LOG_16_3: str = "PLAYER_QUEST_LOG_16_3"; break;
+        case PLAYER_QUEST_LOG_16_4: str = "PLAYER_QUEST_LOG_16_4"; break;
+        case PLAYER_QUEST_LOG_17_1: str = "PLAYER_QUEST_LOG_17_1"; break;
+        case PLAYER_QUEST_LOG_17_2: str = "PLAYER_QUEST_LOG_17_2"; break;
+        case PLAYER_QUEST_LOG_17_3: str = "PLAYER_QUEST_LOG_17_3"; break;
+        case PLAYER_QUEST_LOG_17_4: str = "PLAYER_QUEST_LOG_17_4"; break;
+        case PLAYER_QUEST_LOG_18_1: str = "PLAYER_QUEST_LOG_18_1"; break;
+        case PLAYER_QUEST_LOG_18_2: str = "PLAYER_QUEST_LOG_18_2"; break;
+        case PLAYER_QUEST_LOG_18_3: str = "PLAYER_QUEST_LOG_18_3"; break;
+        case PLAYER_QUEST_LOG_18_4: str = "PLAYER_QUEST_LOG_18_4"; break;
+        case PLAYER_QUEST_LOG_19_1: str = "PLAYER_QUEST_LOG_19_1"; break;
+        case PLAYER_QUEST_LOG_19_2: str = "PLAYER_QUEST_LOG_19_2"; break;
+        case PLAYER_QUEST_LOG_19_3: str = "PLAYER_QUEST_LOG_19_3"; break;
+        case PLAYER_QUEST_LOG_19_4: str = "PLAYER_QUEST_LOG_19_4"; break;
+        case PLAYER_QUEST_LOG_20_1: str = "PLAYER_QUEST_LOG_20_1"; break;
+        case PLAYER_QUEST_LOG_20_2: str = "PLAYER_QUEST_LOG_20_2"; break;
+        case PLAYER_QUEST_LOG_20_3: str = "PLAYER_QUEST_LOG_20_3"; break;
+        case PLAYER_QUEST_LOG_20_4: str = "PLAYER_QUEST_LOG_20_4"; break;
+        case PLAYER_QUEST_LOG_21_1: str = "PLAYER_QUEST_LOG_21_1"; break;
+        case PLAYER_QUEST_LOG_21_2: str = "PLAYER_QUEST_LOG_21_2"; break;
+        case PLAYER_QUEST_LOG_21_3: str = "PLAYER_QUEST_LOG_21_3"; break;
+        case PLAYER_QUEST_LOG_21_4: str = "PLAYER_QUEST_LOG_21_4"; break;
+        case PLAYER_QUEST_LOG_22_1: str = "PLAYER_QUEST_LOG_22_1"; break;
+        case PLAYER_QUEST_LOG_22_2: str = "PLAYER_QUEST_LOG_22_2"; break;
+        case PLAYER_QUEST_LOG_22_3: str = "PLAYER_QUEST_LOG_22_3"; break;
+        case PLAYER_QUEST_LOG_22_4: str = "PLAYER_QUEST_LOG_22_4"; break;
+        case PLAYER_QUEST_LOG_23_1: str = "PLAYER_QUEST_LOG_23_1"; break;
+        case PLAYER_QUEST_LOG_23_2: str = "PLAYER_QUEST_LOG_23_2"; break;
+        case PLAYER_QUEST_LOG_23_3: str = "PLAYER_QUEST_LOG_23_3"; break;
+        case PLAYER_QUEST_LOG_23_4: str = "PLAYER_QUEST_LOG_23_4"; break;
+        case PLAYER_QUEST_LOG_24_1: str = "PLAYER_QUEST_LOG_24_1"; break;
+        case PLAYER_QUEST_LOG_24_2: str = "PLAYER_QUEST_LOG_24_2"; break;
+        case PLAYER_QUEST_LOG_24_3: str = "PLAYER_QUEST_LOG_24_3"; break;
+        case PLAYER_QUEST_LOG_24_4: str = "PLAYER_QUEST_LOG_24_4"; break;
+        case PLAYER_QUEST_LOG_25_1: str = "PLAYER_QUEST_LOG_25_1"; break;
+        case PLAYER_QUEST_LOG_25_2: str = "PLAYER_QUEST_LOG_25_2"; break;
+        case PLAYER_QUEST_LOG_25_3: str = "PLAYER_QUEST_LOG_25_3"; break;
+        case PLAYER_QUEST_LOG_25_4: str = "PLAYER_QUEST_LOG_25_4"; break;
+        case PLAYER_VISIBLE_ITEM_1_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_1_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_1_0:
+            str = "PLAYER_VISIBLE_ITEM_1_0"; break;
+        case PLAYER_VISIBLE_ITEM_1_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_1_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_1_PAD: str = "PLAYER_VISIBLE_ITEM_1_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_2_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_2_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_2_0:
+            str = "PLAYER_VISIBLE_ITEM_2_0"; break;
+        case PLAYER_VISIBLE_ITEM_2_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_2_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_2_PAD: str = "PLAYER_VISIBLE_ITEM_2_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_3_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_3_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_3_0:
+            str = "PLAYER_VISIBLE_ITEM_3_0"; break;
+        case PLAYER_VISIBLE_ITEM_3_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_3_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_3_PAD: str = "PLAYER_VISIBLE_ITEM_3_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_4_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_4_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_4_0:
+            str = "PLAYER_VISIBLE_ITEM_4_0"; break;
+        case PLAYER_VISIBLE_ITEM_4_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_4_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_4_PAD: str = "PLAYER_VISIBLE_ITEM_4_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_5_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_5_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_5_0:
+            str = "PLAYER_VISIBLE_ITEM_5_0"; break;
+        case PLAYER_VISIBLE_ITEM_5_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_5_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_5_PAD: str = "PLAYER_VISIBLE_ITEM_5_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_6_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_6_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_6_0:
+            str = "PLAYER_VISIBLE_ITEM_6_0"; break;
+        case PLAYER_VISIBLE_ITEM_6_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_6_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_6_PAD: str = "PLAYER_VISIBLE_ITEM_6_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_7_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_7_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_7_0: str = "PLAYER_VISIBLE_ITEM_7_0"; break;
+        case PLAYER_VISIBLE_ITEM_7_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_7_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_7_PAD: str = "PLAYER_VISIBLE_ITEM_7_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_8_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_8_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_8_0:
+            str = "PLAYER_VISIBLE_ITEM_8_0"; break;
+        case PLAYER_VISIBLE_ITEM_8_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_8_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_8_PAD: str = "PLAYER_VISIBLE_ITEM_8_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_9_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_9_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_9_0:
+            str = "PLAYER_VISIBLE_ITEM_9_0"; break;
+        case PLAYER_VISIBLE_ITEM_9_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_9_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_9_PAD: str = "PLAYER_VISIBLE_ITEM_9_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_10_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_10_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_10_0:
+            str = "PLAYER_VISIBLE_ITEM_10_0"; break;
+        case PLAYER_VISIBLE_ITEM_10_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_10_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_10_PAD: str = "PLAYER_VISIBLE_ITEM_10_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_11_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_11_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_11_0:
+            str = "PLAYER_VISIBLE_ITEM_11_0"; break;
+        case PLAYER_VISIBLE_ITEM_11_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_11_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_11_PAD: str = "PLAYER_VISIBLE_ITEM_11_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_12_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_12_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_12_0:
+            str = "PLAYER_VISIBLE_ITEM_12_0"; break;
+        case PLAYER_VISIBLE_ITEM_12_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_12_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_12_PAD: str = "PLAYER_VISIBLE_ITEM_12_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_13_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_13_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_13_0:
+            str = "PLAYER_VISIBLE_ITEM_13_0"; break;
+        case PLAYER_VISIBLE_ITEM_13_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_13_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_13_PAD: str = "PLAYER_VISIBLE_ITEM_13_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_14_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_14_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_14_0:
+            str = "PLAYER_VISIBLE_ITEM_14_0"; break;
+        case PLAYER_VISIBLE_ITEM_14_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_14_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_14_PAD: str = "PLAYER_VISIBLE_ITEM_14_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_15_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_15_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_15_0:
+            str = "PLAYER_VISIBLE_ITEM_15_0"; break;
+        case PLAYER_VISIBLE_ITEM_15_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_15_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_15_PAD: str = "PLAYER_VISIBLE_ITEM_15_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_16_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_16_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_16_0:
+            str = "PLAYER_VISIBLE_ITEM_16_0"; break;
+        case PLAYER_VISIBLE_ITEM_16_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_16_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_16_PAD: str = "PLAYER_VISIBLE_ITEM_16_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_17_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_17_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_17_0:
+            str = "PLAYER_VISIBLE_ITEM_17_0"; break;
+        case PLAYER_VISIBLE_ITEM_17_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_17_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_17_PAD: str = "PLAYER_VISIBLE_ITEM_17_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_18_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_18_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_18_0:
+            str = "PLAYER_VISIBLE_ITEM_18_0"; break;
+        case PLAYER_VISIBLE_ITEM_18_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_18_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_18_PAD: str = "PLAYER_VISIBLE_ITEM_18_PAD"; break;
+        case PLAYER_VISIBLE_ITEM_19_CREATOR:
+            str = "PLAYER_VISIBLE_ITEM_19_CREATOR"; break;
+        case PLAYER_VISIBLE_ITEM_19_0:
+            str = "PLAYER_VISIBLE_ITEM_19_0"; break;
+        case PLAYER_VISIBLE_ITEM_19_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_19_PROPERTIES"; break;
+        case PLAYER_VISIBLE_ITEM_19_PAD: str = "PLAYER_VISIBLE_ITEM_19_PAD"; break;
+        case PLAYER_CHOSEN_TITLE: str = "PLAYER_CHOSEN_TITLE"; break;
+        case PLAYER_FIELD_PAD_0:
+            str = "PLAYER_FIELD_PAD_0"; break;
+        case PLAYER_FIELD_INV_SLOT_HEAD + 0:
+            str = "PLAYER_FIELD_INV_SLOT_HEAD"; break;
+        case PLAYER_FIELD_PACK_SLOT_1 + 0:
+            str = "PLAYER_FIELD_PACK_SLOT_1"; break;
+        case PLAYER_FIELD_BANK_SLOT_1 + 0:
+            str = "PLAYER_FIELD_BANK_SLOT_1"; break;
+        case PLAYER_FIELD_BANKBAG_SLOT_1 + 0:
+            str = "PLAYER_FIELD_BANKBAG_SLOT_1"; break;
+        case PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + 0:
+            str = "PLAYER_FIELD_VENDORBUYBACK_SLOT_1"; break;
+        case PLAYER_FIELD_KEYRING_SLOT_1 + 0:
+            str = "PLAYER_FIELD_KEYRING_SLOT_1"; break;
+        case PLAYER_FIELD_VANITYPET_SLOT_1 + 0:
+            str = "PLAYER_FIELD_VANITYPET_SLOT_1"; break;
+        case PLAYER_FARSIGHT:
+            str = "PLAYER_FARSIGHT"; break;
+        case PLAYER_FIELD_KNOWN_TITLES:
+            str = "PLAYER_FIELD_KNOWN_TITLES"; break;
+        case PLAYER_XP: str = "PLAYER_XP"; break;
+        case PLAYER_NEXT_LEVEL_XP: str = "PLAYER_NEXT_LEVEL_XP"; break;
+        case PLAYER_SKILL_INFO_1_1 + 0:
+            str = "PLAYER_SKILL_INFO_1_1"; break;
+        case PLAYER_CHARACTER_POINTS1: str = "PLAYER_CHARACTER_POINTS1"; break;
+        case PLAYER_CHARACTER_POINTS2: str = "PLAYER_CHARACTER_POINTS2"; break;
+        case PLAYER_TRACK_CREATURES: str = "PLAYER_TRACK_CREATURES"; break;
+        case PLAYER_TRACK_RESOURCES: str = "PLAYER_TRACK_RESOURCES"; break;
+        case PLAYER_BLOCK_PERCENTAGE: str = "PLAYER_BLOCK_PERCENTAGE"; break;
+        case PLAYER_DODGE_PERCENTAGE: str = "PLAYER_DODGE_PERCENTAGE"; break;
+        case PLAYER_PARRY_PERCENTAGE: str = "PLAYER_PARRY_PERCENTAGE"; break;
+        case PLAYER_EXPERTISE: str = "PLAYER_EXPERTISE"; break;
+        case PLAYER_OFFHAND_EXPERTISE: str = "PLAYER_OFFHAND_EXPERTISE"; break;
+        case PLAYER_CRIT_PERCENTAGE: str = "PLAYER_CRIT_PERCENTAGE"; break;
+        case PLAYER_RANGED_CRIT_PERCENTAGE: str = "PLAYER_RANGED_CRIT_PERCENTAGE"; break;
+        case PLAYER_OFFHAND_CRIT_PERCENTAGE: str = "PLAYER_OFFHAND_CRIT_PERCENTAGE"; break;
+        case PLAYER_SPELL_CRIT_PERCENTAGE1 + 0:
+            str = "PLAYER_SPELL_CRIT_PERCENTAGE1"; break;
+        case PLAYER_SHIELD_BLOCK: str = "PLAYER_SHIELD_BLOCK"; break;
+        case PLAYER_EXPLORED_ZONES_1 + 0:
+            str = "PLAYER_EXPLORED_ZONES_1"; break;
+        case PLAYER_REST_STATE_EXPERIENCE: str = "PLAYER_REST_STATE_EXPERIENCE"; break;
+        case PLAYER_FIELD_COINAGE: str = "PLAYER_FIELD_COINAGE"; break;
+        case PLAYER_FIELD_MOD_DAMAGE_DONE_POS: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_POS"; break;
+        case PLAYER_FIELD_MOD_DAMAGE_DONE_NEG: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_NEG"; break;
+        case PLAYER_FIELD_MOD_DAMAGE_DONE_PCT: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_PCT"; break;
+        case PLAYER_FIELD_MOD_HEALING_DONE_POS: str = "PLAYER_FIELD_MOD_HEALING_DONE_POS"; break;
+        case PLAYER_FIELD_MOD_TARGET_RESISTANCE: str = "PLAYER_FIELD_MOD_TARGET_RESISTANCE"; break;
+        case PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE: str = "PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE"; break;
+        case PLAYER_FIELD_BYTES: str = "PLAYER_FIELD_BYTES"; break;
+        case PLAYER_AMMO_ID: str = "PLAYER_AMMO_ID"; break;
+        case PLAYER_SELF_RES_SPELL: str = "PLAYER_SELF_RES_SPELL"; break;
+        case PLAYER_FIELD_PVP_MEDALS: str = "PLAYER_FIELD_PVP_MEDALS"; break;
+        case PLAYER_FIELD_BUYBACK_PRICE_1 + 0:
+            str = "PLAYER_FIELD_BUYBACK_PRICE_1"; break;
+        case PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + 0:
+            str = "PLAYER_FIELD_BUYBACK_TIMESTAMP_1"; break;
+        case PLAYER_FIELD_KILLS: str = "PLAYER_FIELD_KILLS"; break;
+        case PLAYER_FIELD_TODAY_CONTRIBUTION: str = "PLAYER_FIELD_TODAY_CONTRIBUTION"; break;
+        case PLAYER_FIELD_YESTERDAY_CONTRIBUTION: str = "PLAYER_FIELD_YESTERDAY_CONTRIBUTION"; break;
+        case PLAYER_FIELD_LIFETIME_HONORABLE_KILLS: str = "PLAYER_FIELD_LIFETIME_HONORABLE_KILLS"; break;
+        case PLAYER_FIELD_BYTES2: str = "PLAYER_FIELD_BYTES2"; break;
+        case PLAYER_FIELD_WATCHED_FACTION_INDEX: str = "PLAYER_FIELD_WATCHED_FACTION_INDEX"; break;
+        case PLAYER_FIELD_COMBAT_RATING_1 + 0:
+            str = "PLAYER_FIELD_COMBAT_RATING_1"; break;
+        case PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 0:
+            str = "PLAYER_FIELD_ARENA_TEAM_INFO_1_1"; break;
+        case PLAYER_FIELD_HONOR_CURRENCY: str = "PLAYER_FIELD_HONOR_CURRENCY"; break;
+        case PLAYER_FIELD_ARENA_CURRENCY: str = "PLAYER_FIELD_ARENA_CURRENCY"; break;
+        case PLAYER_FIELD_MOD_MANA_REGEN: str = "PLAYER_FIELD_MOD_MANA_REGEN"; break;
+        case PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT: str = "PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT"; break;
+        case PLAYER_FIELD_MAX_LEVEL: str = "PLAYER_FIELD_MAX_LEVEL"; break;
+        case PLAYER_FIELD_DAILY_QUESTS_1 + 0:
+            str = "PLAYER_FIELD_DAILY_QUESTS_1"; break;
+        default:
+            return false;
+        }
+    } break;
+    case TYPEID_GAMEOBJECT:
+    {
+        if (index >= GAMEOBJECT_END)
+            return false;
+
+        switch (index)
+        {
+        case OBJECT_FIELD_CREATED_BY:   str = "OBJECT_FIELD_CREATED_BY"; break;
+        case GAMEOBJECT_DISPLAYID:      str = "GAMEOBJECT_DISPLAYID"; break;
+        case GAMEOBJECT_FLAGS:          str = "GAMEOBJECT_FLAGS"; break;
+        case GAMEOBJECT_PARENTROTATION: str = "GAMEOBJECT_PARENTROTATION"; break;
+        case GAMEOBJECT_STATE:          str = "GAMEOBJECT_STATE"; break;
+        case GAMEOBJECT_POS_X:          str = "GAMEOBJECT_POS_X"; break;
+        case GAMEOBJECT_POS_Y:          str = "GAMEOBJECT_POS_Y"; break;
+        case GAMEOBJECT_POS_Z:          str = "GAMEOBJECT_POS_Z"; break;
+        case GAMEOBJECT_FACING:         str = "GAMEOBJECT_FACING"; break;
+        case GAMEOBJECT_DYN_FLAGS:      str = "GAMEOBJECT_DYN_FLAGS"; break;
+        case GAMEOBJECT_FACTION:        str = "GAMEOBJECT_FACTION"; break;
+        case GAMEOBJECT_TYPE_ID:        str = "GAMEOBJECT_TYPE_ID"; break;
+        case GAMEOBJECT_LEVEL:          str = "GAMEOBJECT_LEVEL"; break;
+        case GAMEOBJECT_ARTKIT:         str = "GAMEOBJECT_ARTKIT"; break;
+        case GAMEOBJECT_ANIMPROGRESS:   str = "GAMEOBJECT_ANIMPROGRESS"; break;
+        case GAMEOBJECT_PADDING:        str = "GAMEOBJECT_PADDING"; break;
+        }
+    } break;
     default:
         return false;
     }
 
-    if (type == TYPEID_UNIT && index >= UNIT_END)
-        return false;
 
-    index = GetBaseIndex(type, index);
-    if (index == -1)
-        return false;
-
-    switch (index)
-    {
-    case OBJECT_FIELD_GUID: 
-        str = "OBJECT_FIELD_GUID"; break;
-    case OBJECT_FIELD_TYPE: str = "OBJECT_FIELD_TYPE"; break;
-    case OBJECT_FIELD_ENTRY: str = "OBJECT_FIELD_ENTRY"; break;
-    case OBJECT_FIELD_SCALE_X: str = "OBJECT_FIELD_SCALE_X"; break;
-    case OBJECT_FIELD_PADDING: str = "OBJECT_FIELD_PADDING"; break;
-    case UNIT_FIELD_CHARM: 
-        str = "UNIT_FIELD_CHARM"; break;
-    case UNIT_FIELD_SUMMON: 
-        str = "UNIT_FIELD_SUMMON"; break;
-    case UNIT_FIELD_CHARMEDBY:
-        str = "UNIT_FIELD_CHARMEDBY"; break;
-    case UNIT_FIELD_SUMMONEDBY:
-        str = "UNIT_FIELD_SUMMONEDBY"; break;
-    case UNIT_FIELD_CREATEDBY:
-        str = "UNIT_FIELD_CREATEDBY"; break;
-    case UNIT_FIELD_TARGET:
-        str = "UNIT_FIELD_TARGET"; break;
-    case UNIT_FIELD_PERSUADED:
-        str = "UNIT_FIELD_PERSUADED"; break;
-    case UNIT_FIELD_CHANNEL_OBJECT:
-        str = "UNIT_FIELD_CHANNEL_OBJECT"; break;
-    case UNIT_FIELD_HEALTH: str = "UNIT_FIELD_HEALTH"; break;
-    case UNIT_FIELD_POWER1: str = "UNIT_FIELD_POWER1"; break;
-    case UNIT_FIELD_POWER2: str = "UNIT_FIELD_POWER2"; break;
-    case UNIT_FIELD_POWER3: str = "UNIT_FIELD_POWER3"; break;
-    case UNIT_FIELD_POWER4: str = "UNIT_FIELD_POWER4"; break;
-    case UNIT_FIELD_POWER5: str = "UNIT_FIELD_POWER5"; break;
-    case UNIT_FIELD_MAXHEALTH: str = "UNIT_FIELD_MAXHEALTH"; break;
-    case UNIT_FIELD_MAXPOWER1: str = "UNIT_FIELD_MAXPOWER1"; break;
-    case UNIT_FIELD_MAXPOWER2: str = "UNIT_FIELD_MAXPOWER2"; break;
-    case UNIT_FIELD_MAXPOWER3: str = "UNIT_FIELD_MAXPOWER3"; break;
-    case UNIT_FIELD_MAXPOWER4: str = "UNIT_FIELD_MAXPOWER4"; break;
-    case UNIT_FIELD_MAXPOWER5: str = "UNIT_FIELD_MAXPOWER5"; break;
-    case UNIT_FIELD_LEVEL: str = "UNIT_FIELD_LEVEL"; break;
-    case UNIT_FIELD_FACTIONTEMPLATE: str = "UNIT_FIELD_FACTIONTEMPLATE"; break;
-    case UNIT_FIELD_BYTES_0: str = "UNIT_FIELD_BYTES_0"; break;
-    case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY:
-    case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+1:
-    case UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+2:
-        str = "UNIT_VIRTUAL_ITEM_SLOT_DISPLAY"; break;
-    case UNIT_VIRTUAL_ITEM_INFO:
-    case UNIT_VIRTUAL_ITEM_INFO+1:
-    case UNIT_VIRTUAL_ITEM_INFO+2:
-    case UNIT_VIRTUAL_ITEM_INFO+3:
-    case UNIT_VIRTUAL_ITEM_INFO+4:
-    case UNIT_VIRTUAL_ITEM_INFO+5:
-        str = "UNIT_VIRTUAL_ITEM_INFO"; break;
-    case UNIT_FIELD_FLAGS: str = "UNIT_FIELD_FLAGS"; break;
-    case UNIT_FIELD_FLAGS_2: str = "UNIT_FIELD_FLAGS_2"; break;
-    case UNIT_FIELD_AURA:
-        str = "UNIT_FIELD_AURA"; break;
-    case UNIT_FIELD_AURAFLAGS + 0:
-        str = "UNIT_FIELD_AURAFLAGS"; break;
-    case UNIT_FIELD_AURALEVELS + 0:
-        str = "UNIT_FIELD_AURALEVELS"; break;
-    case UNIT_FIELD_AURAAPPLICATIONS + 0:
-        str = "UNIT_FIELD_AURAAPPLICATIONS"; break;
-    case UNIT_FIELD_AURASTATE: str = "UNIT_FIELD_AURASTATE"; break;
-    case UNIT_FIELD_BASEATTACKTIME: 
-        str = "UNIT_FIELD_BASEATTACKTIME"; break;
-    case UNIT_FIELD_RANGEDATTACKTIME: str = "UNIT_FIELD_RANGEDATTACKTIME"; break;
-    case UNIT_FIELD_BOUNDINGRADIUS: str = "UNIT_FIELD_BOUNDINGRADIUS"; break;
-    case UNIT_FIELD_COMBATREACH: str = "UNIT_FIELD_COMBATREACH"; break;
-    case UNIT_FIELD_DISPLAYID: str = "UNIT_FIELD_DISPLAYID"; break;
-    case UNIT_FIELD_NATIVEDISPLAYID: str = "UNIT_FIELD_NATIVEDISPLAYID"; break;
-    case UNIT_FIELD_MOUNTDISPLAYID: str = "UNIT_FIELD_MOUNTDISPLAYID"; break;
-    case UNIT_FIELD_MINDAMAGE: str = "UNIT_FIELD_MINDAMAGE"; break;
-    case UNIT_FIELD_MAXDAMAGE: str = "UNIT_FIELD_MAXDAMAGE"; break;
-    case UNIT_FIELD_MINOFFHANDDAMAGE: str = "UNIT_FIELD_MINOFFHANDDAMAGE"; break;
-    case UNIT_FIELD_MAXOFFHANDDAMAGE: str = "UNIT_FIELD_MAXOFFHANDDAMAGE"; break;
-    case UNIT_FIELD_BYTES_1: str = "UNIT_FIELD_BYTES_1"; break;
-    case UNIT_FIELD_PETNUMBER: str = "UNIT_FIELD_PETNUMBER"; break;
-    case UNIT_FIELD_PET_NAME_TIMESTAMP: str = "UNIT_FIELD_PET_NAME_TIMESTAMP"; break;
-    case UNIT_FIELD_PETEXPERIENCE: str = "UNIT_FIELD_PETEXPERIENCE"; break;
-    case UNIT_FIELD_PETNEXTLEVELEXP: str = "UNIT_FIELD_PETNEXTLEVELEXP"; break;
-    case UNIT_DYNAMIC_FLAGS: str = "UNIT_DYNAMIC_FLAGS"; break;
-    case UNIT_CHANNEL_SPELL: str = "UNIT_CHANNEL_SPELL"; break;
-    case UNIT_MOD_CAST_SPEED: str = "UNIT_MOD_CAST_SPEED"; break;
-    case UNIT_CREATED_BY_SPELL: str = "UNIT_CREATED_BY_SPELL"; break;
-    case UNIT_NPC_FLAGS: str = "UNIT_NPC_FLAGS"; break;
-    case UNIT_NPC_EMOTESTATE: str = "UNIT_NPC_EMOTESTATE"; break;
-    case UNIT_TRAINING_POINTS: str = "UNIT_TRAINING_POINTS"; break;
-    case UNIT_FIELD_STAT0: str = "UNIT_FIELD_STAT0"; break;
-    case UNIT_FIELD_STAT1: str = "UNIT_FIELD_STAT1"; break;
-    case UNIT_FIELD_STAT2: str = "UNIT_FIELD_STAT2"; break;
-    case UNIT_FIELD_STAT3: str = "UNIT_FIELD_STAT3"; break;
-    case UNIT_FIELD_STAT4: str = "UNIT_FIELD_STAT4"; break;
-    case UNIT_FIELD_POSSTAT0: str = "UNIT_FIELD_POSSTAT0"; break;
-    case UNIT_FIELD_POSSTAT1: str = "UNIT_FIELD_POSSTAT1"; break;
-    case UNIT_FIELD_POSSTAT2: str = "UNIT_FIELD_POSSTAT2"; break;
-    case UNIT_FIELD_POSSTAT3: str = "UNIT_FIELD_POSSTAT3"; break;
-    case UNIT_FIELD_POSSTAT4: str = "UNIT_FIELD_POSSTAT4"; break;
-    case UNIT_FIELD_NEGSTAT0: str = "UNIT_FIELD_NEGSTAT0"; break;
-    case UNIT_FIELD_NEGSTAT1: str = "UNIT_FIELD_NEGSTAT1"; break;
-    case UNIT_FIELD_NEGSTAT2: str = "UNIT_FIELD_NEGSTAT2"; break;
-    case UNIT_FIELD_NEGSTAT3: str = "UNIT_FIELD_NEGSTAT3"; break;
-    case UNIT_FIELD_NEGSTAT4: str = "UNIT_FIELD_NEGSTAT4"; break;
-    case UNIT_FIELD_RESISTANCES + 0:
-        str = "UNIT_FIELD_RESISTANCES"; break;
-    case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 0:
-        str = "UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE"; break;
-    case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 0:
-        str = "UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE"; break;
-    case UNIT_FIELD_BASE_MANA: str = "UNIT_FIELD_BASE_MANA"; break;
-    case UNIT_FIELD_BASE_HEALTH: str = "UNIT_FIELD_BASE_HEALTH"; break;
-    case UNIT_FIELD_BYTES_2: str = "UNIT_FIELD_BYTES_2"; break;
-    case UNIT_FIELD_ATTACK_POWER: str = "UNIT_FIELD_ATTACK_POWER"; break;
-    case UNIT_FIELD_ATTACK_POWER_MODS: str = "UNIT_FIELD_ATTACK_POWER_MODS"; break;
-    case UNIT_FIELD_ATTACK_POWER_MULTIPLIER: str = "UNIT_FIELD_ATTACK_POWER_MULTIPLIER"; break;
-    case UNIT_FIELD_RANGED_ATTACK_POWER: str = "UNIT_FIELD_RANGED_ATTACK_POWER"; break;
-    case UNIT_FIELD_RANGED_ATTACK_POWER_MODS: str = "UNIT_FIELD_RANGED_ATTACK_POWER_MODS"; break;
-    case UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER: str = "UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER"; break;
-    case UNIT_FIELD_MINRANGEDDAMAGE: str = "UNIT_FIELD_MINRANGEDDAMAGE"; break;
-    case UNIT_FIELD_MAXRANGEDDAMAGE: str = "UNIT_FIELD_MAXRANGEDDAMAGE"; break;
-    case UNIT_FIELD_POWER_COST_MODIFIER + 0:
-        str = "UNIT_FIELD_POWER_COST_MODIFIER"; break;
-    case UNIT_FIELD_POWER_COST_MULTIPLIER + 0:
-        str = "UNIT_FIELD_POWER_COST_MULTIPLIER"; break;
-    case UNIT_FIELD_MAXHEALTHMODIFIER: str = "UNIT_FIELD_MAXHEALTHMODIFIER"; break;
-    case UNIT_FIELD_PADDING: str = "UNIT_FIELD_PADDING"; break;
-
-    case PLAYER_DUEL_ARBITER: 
-    case PLAYER_DUEL_ARBITER+1:
-        str = "PLAYER_DUEL_ARBITER"; break;
-    case PLAYER_FLAGS: str = "PLAYER_FLAGS"; break;
-    case PLAYER_GUILDID: str = "PLAYER_GUILDID"; break;
-    case PLAYER_GUILDRANK: str = "PLAYER_GUILDRANK"; break;
-    case PLAYER_BYTES: str = "PLAYER_BYTES"; break;
-    case PLAYER_BYTES_2: str = "PLAYER_BYTES_2"; break;
-    case PLAYER_BYTES_3: str = "PLAYER_BYTES_3"; break;
-    case PLAYER_DUEL_TEAM: str = "PLAYER_DUEL_TEAM"; break;
-    case PLAYER_GUILD_TIMESTAMP: str = "PLAYER_GUILD_TIMESTAMP"; break;
-    case PLAYER_QUEST_LOG_1_1: str = "PLAYER_QUEST_LOG_1_1"; break;
-    case PLAYER_QUEST_LOG_1_2: str = "PLAYER_QUEST_LOG_1_2"; break;
-    case PLAYER_QUEST_LOG_1_3: str = "PLAYER_QUEST_LOG_1_3"; break;
-    case PLAYER_QUEST_LOG_1_4: str = "PLAYER_QUEST_LOG_1_4"; break;
-    case PLAYER_QUEST_LOG_2_1: str = "PLAYER_QUEST_LOG_2_1"; break;
-    case PLAYER_QUEST_LOG_2_2: str = "PLAYER_QUEST_LOG_2_2"; break;
-    case PLAYER_QUEST_LOG_2_3: str = "PLAYER_QUEST_LOG_2_3"; break;
-    case PLAYER_QUEST_LOG_2_4: str = "PLAYER_QUEST_LOG_2_4"; break;
-    case PLAYER_QUEST_LOG_3_1: str = "PLAYER_QUEST_LOG_3_1"; break;
-    case PLAYER_QUEST_LOG_3_2: str = "PLAYER_QUEST_LOG_3_2"; break;
-    case PLAYER_QUEST_LOG_3_3: str = "PLAYER_QUEST_LOG_3_3"; break;
-    case PLAYER_QUEST_LOG_3_4: str = "PLAYER_QUEST_LOG_3_4"; break;
-    case PLAYER_QUEST_LOG_4_1: str = "PLAYER_QUEST_LOG_4_1"; break;
-    case PLAYER_QUEST_LOG_4_2: str = "PLAYER_QUEST_LOG_4_2"; break;
-    case PLAYER_QUEST_LOG_4_3: str = "PLAYER_QUEST_LOG_4_3"; break;
-    case PLAYER_QUEST_LOG_4_4: str = "PLAYER_QUEST_LOG_4_4"; break;
-    case PLAYER_QUEST_LOG_5_1: str = "PLAYER_QUEST_LOG_5_1"; break;
-    case PLAYER_QUEST_LOG_5_2: str = "PLAYER_QUEST_LOG_5_2"; break;
-    case PLAYER_QUEST_LOG_5_3: str = "PLAYER_QUEST_LOG_5_3"; break;
-    case PLAYER_QUEST_LOG_5_4: str = "PLAYER_QUEST_LOG_5_4"; break;
-    case PLAYER_QUEST_LOG_6_1: str = "PLAYER_QUEST_LOG_6_1"; break;
-    case PLAYER_QUEST_LOG_6_2: str = "PLAYER_QUEST_LOG_6_2"; break;
-    case PLAYER_QUEST_LOG_6_3: str = "PLAYER_QUEST_LOG_6_3"; break;
-    case PLAYER_QUEST_LOG_6_4: str = "PLAYER_QUEST_LOG_6_4"; break;
-    case PLAYER_QUEST_LOG_7_1: str = "PLAYER_QUEST_LOG_7_1"; break;
-    case PLAYER_QUEST_LOG_7_2: str = "PLAYER_QUEST_LOG_7_2"; break;
-    case PLAYER_QUEST_LOG_7_3: str = "PLAYER_QUEST_LOG_7_3"; break;
-    case PLAYER_QUEST_LOG_7_4: str = "PLAYER_QUEST_LOG_7_4"; break;
-    case PLAYER_QUEST_LOG_8_1: str = "PLAYER_QUEST_LOG_8_1"; break;
-    case PLAYER_QUEST_LOG_8_2: str = "PLAYER_QUEST_LOG_8_2"; break;
-    case PLAYER_QUEST_LOG_8_3: str = "PLAYER_QUEST_LOG_8_3"; break;
-    case PLAYER_QUEST_LOG_8_4: str = "PLAYER_QUEST_LOG_8_4"; break;
-    case PLAYER_QUEST_LOG_9_1: str = "PLAYER_QUEST_LOG_9_1"; break;
-    case PLAYER_QUEST_LOG_9_2: str = "PLAYER_QUEST_LOG_9_2"; break;
-    case PLAYER_QUEST_LOG_9_3: str = "PLAYER_QUEST_LOG_9_3"; break;
-    case PLAYER_QUEST_LOG_9_4: str = "PLAYER_QUEST_LOG_9_4"; break;
-    case PLAYER_QUEST_LOG_10_1: str = "PLAYER_QUEST_LOG_10_1"; break;
-    case PLAYER_QUEST_LOG_10_2: str = "PLAYER_QUEST_LOG_10_2"; break;
-    case PLAYER_QUEST_LOG_10_3: str = "PLAYER_QUEST_LOG_10_3"; break;
-    case PLAYER_QUEST_LOG_10_4: str = "PLAYER_QUEST_LOG_10_4"; break;
-    case PLAYER_QUEST_LOG_11_1: str = "PLAYER_QUEST_LOG_11_1"; break;
-    case PLAYER_QUEST_LOG_11_2: str = "PLAYER_QUEST_LOG_11_2"; break;
-    case PLAYER_QUEST_LOG_11_3: str = "PLAYER_QUEST_LOG_11_3"; break;
-    case PLAYER_QUEST_LOG_11_4: str = "PLAYER_QUEST_LOG_11_4"; break;
-    case PLAYER_QUEST_LOG_12_1: str = "PLAYER_QUEST_LOG_12_1"; break;
-    case PLAYER_QUEST_LOG_12_2: str = "PLAYER_QUEST_LOG_12_2"; break;
-    case PLAYER_QUEST_LOG_12_3: str = "PLAYER_QUEST_LOG_12_3"; break;
-    case PLAYER_QUEST_LOG_12_4: str = "PLAYER_QUEST_LOG_12_4"; break;
-    case PLAYER_QUEST_LOG_13_1: str = "PLAYER_QUEST_LOG_13_1"; break;
-    case PLAYER_QUEST_LOG_13_2: str = "PLAYER_QUEST_LOG_13_2"; break;
-    case PLAYER_QUEST_LOG_13_3: str = "PLAYER_QUEST_LOG_13_3"; break;
-    case PLAYER_QUEST_LOG_13_4: str = "PLAYER_QUEST_LOG_13_4"; break;
-    case PLAYER_QUEST_LOG_14_1: str = "PLAYER_QUEST_LOG_14_1"; break;
-    case PLAYER_QUEST_LOG_14_2: str = "PLAYER_QUEST_LOG_14_2"; break;
-    case PLAYER_QUEST_LOG_14_3: str = "PLAYER_QUEST_LOG_14_3"; break;
-    case PLAYER_QUEST_LOG_14_4: str = "PLAYER_QUEST_LOG_14_4"; break;
-    case PLAYER_QUEST_LOG_15_1: str = "PLAYER_QUEST_LOG_15_1"; break;
-    case PLAYER_QUEST_LOG_15_2: str = "PLAYER_QUEST_LOG_15_2"; break;
-    case PLAYER_QUEST_LOG_15_3: str = "PLAYER_QUEST_LOG_15_3"; break;
-    case PLAYER_QUEST_LOG_15_4: str = "PLAYER_QUEST_LOG_15_4"; break;
-    case PLAYER_QUEST_LOG_16_1: str = "PLAYER_QUEST_LOG_16_1"; break;
-    case PLAYER_QUEST_LOG_16_2: str = "PLAYER_QUEST_LOG_16_2"; break;
-    case PLAYER_QUEST_LOG_16_3: str = "PLAYER_QUEST_LOG_16_3"; break;
-    case PLAYER_QUEST_LOG_16_4: str = "PLAYER_QUEST_LOG_16_4"; break;
-    case PLAYER_QUEST_LOG_17_1: str = "PLAYER_QUEST_LOG_17_1"; break;
-    case PLAYER_QUEST_LOG_17_2: str = "PLAYER_QUEST_LOG_17_2"; break;
-    case PLAYER_QUEST_LOG_17_3: str = "PLAYER_QUEST_LOG_17_3"; break;
-    case PLAYER_QUEST_LOG_17_4: str = "PLAYER_QUEST_LOG_17_4"; break;
-    case PLAYER_QUEST_LOG_18_1: str = "PLAYER_QUEST_LOG_18_1"; break;
-    case PLAYER_QUEST_LOG_18_2: str = "PLAYER_QUEST_LOG_18_2"; break;
-    case PLAYER_QUEST_LOG_18_3: str = "PLAYER_QUEST_LOG_18_3"; break;
-    case PLAYER_QUEST_LOG_18_4: str = "PLAYER_QUEST_LOG_18_4"; break;
-    case PLAYER_QUEST_LOG_19_1: str = "PLAYER_QUEST_LOG_19_1"; break;
-    case PLAYER_QUEST_LOG_19_2: str = "PLAYER_QUEST_LOG_19_2"; break;
-    case PLAYER_QUEST_LOG_19_3: str = "PLAYER_QUEST_LOG_19_3"; break;
-    case PLAYER_QUEST_LOG_19_4: str = "PLAYER_QUEST_LOG_19_4"; break;
-    case PLAYER_QUEST_LOG_20_1: str = "PLAYER_QUEST_LOG_20_1"; break;
-    case PLAYER_QUEST_LOG_20_2: str = "PLAYER_QUEST_LOG_20_2"; break;
-    case PLAYER_QUEST_LOG_20_3: str = "PLAYER_QUEST_LOG_20_3"; break;
-    case PLAYER_QUEST_LOG_20_4: str = "PLAYER_QUEST_LOG_20_4"; break;
-    case PLAYER_QUEST_LOG_21_1: str = "PLAYER_QUEST_LOG_21_1"; break;
-    case PLAYER_QUEST_LOG_21_2: str = "PLAYER_QUEST_LOG_21_2"; break;
-    case PLAYER_QUEST_LOG_21_3: str = "PLAYER_QUEST_LOG_21_3"; break;
-    case PLAYER_QUEST_LOG_21_4: str = "PLAYER_QUEST_LOG_21_4"; break;
-    case PLAYER_QUEST_LOG_22_1: str = "PLAYER_QUEST_LOG_22_1"; break;
-    case PLAYER_QUEST_LOG_22_2: str = "PLAYER_QUEST_LOG_22_2"; break;
-    case PLAYER_QUEST_LOG_22_3: str = "PLAYER_QUEST_LOG_22_3"; break;
-    case PLAYER_QUEST_LOG_22_4: str = "PLAYER_QUEST_LOG_22_4"; break;
-    case PLAYER_QUEST_LOG_23_1: str = "PLAYER_QUEST_LOG_23_1"; break;
-    case PLAYER_QUEST_LOG_23_2: str = "PLAYER_QUEST_LOG_23_2"; break;
-    case PLAYER_QUEST_LOG_23_3: str = "PLAYER_QUEST_LOG_23_3"; break;
-    case PLAYER_QUEST_LOG_23_4: str = "PLAYER_QUEST_LOG_23_4"; break;
-    case PLAYER_QUEST_LOG_24_1: str = "PLAYER_QUEST_LOG_24_1"; break;
-    case PLAYER_QUEST_LOG_24_2: str = "PLAYER_QUEST_LOG_24_2"; break;
-    case PLAYER_QUEST_LOG_24_3: str = "PLAYER_QUEST_LOG_24_3"; break;
-    case PLAYER_QUEST_LOG_24_4: str = "PLAYER_QUEST_LOG_24_4"; break;
-    case PLAYER_QUEST_LOG_25_1: str = "PLAYER_QUEST_LOG_25_1"; break;
-    case PLAYER_QUEST_LOG_25_2: str = "PLAYER_QUEST_LOG_25_2"; break;
-    case PLAYER_QUEST_LOG_25_3: str = "PLAYER_QUEST_LOG_25_3"; break;
-    case PLAYER_QUEST_LOG_25_4: str = "PLAYER_QUEST_LOG_25_4"; break;
-    case PLAYER_VISIBLE_ITEM_1_CREATOR: 
-        str = "PLAYER_VISIBLE_ITEM_1_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_1_0: 
-        str = "PLAYER_VISIBLE_ITEM_1_0"; break;
-    case PLAYER_VISIBLE_ITEM_1_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_1_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_1_PAD: str = "PLAYER_VISIBLE_ITEM_1_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_2_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_2_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_2_0: 
-        str = "PLAYER_VISIBLE_ITEM_2_0"; break;
-    case PLAYER_VISIBLE_ITEM_2_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_2_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_2_PAD: str = "PLAYER_VISIBLE_ITEM_2_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_3_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_3_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_3_0: 
-        str = "PLAYER_VISIBLE_ITEM_3_0"; break;
-    case PLAYER_VISIBLE_ITEM_3_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_3_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_3_PAD: str = "PLAYER_VISIBLE_ITEM_3_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_4_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_4_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_4_0: 
-        str = "PLAYER_VISIBLE_ITEM_4_0"; break;
-    case PLAYER_VISIBLE_ITEM_4_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_4_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_4_PAD: str = "PLAYER_VISIBLE_ITEM_4_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_5_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_5_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_5_0: 
-        str = "PLAYER_VISIBLE_ITEM_5_0"; break;
-    case PLAYER_VISIBLE_ITEM_5_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_5_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_5_PAD: str = "PLAYER_VISIBLE_ITEM_5_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_6_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_6_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_6_0: 
-        str = "PLAYER_VISIBLE_ITEM_6_0"; break;
-    case PLAYER_VISIBLE_ITEM_6_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_6_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_6_PAD: str = "PLAYER_VISIBLE_ITEM_6_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_7_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_7_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_7_0: str = "PLAYER_VISIBLE_ITEM_7_0"; break;
-    case PLAYER_VISIBLE_ITEM_7_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_7_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_7_PAD: str = "PLAYER_VISIBLE_ITEM_7_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_8_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_8_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_8_0: 
-        str = "PLAYER_VISIBLE_ITEM_8_0"; break;
-    case PLAYER_VISIBLE_ITEM_8_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_8_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_8_PAD: str = "PLAYER_VISIBLE_ITEM_8_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_9_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_9_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_9_0: 
-        str = "PLAYER_VISIBLE_ITEM_9_0"; break;
-    case PLAYER_VISIBLE_ITEM_9_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_9_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_9_PAD: str = "PLAYER_VISIBLE_ITEM_9_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_10_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_10_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_10_0: 
-        str = "PLAYER_VISIBLE_ITEM_10_0"; break;
-    case PLAYER_VISIBLE_ITEM_10_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_10_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_10_PAD: str = "PLAYER_VISIBLE_ITEM_10_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_11_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_11_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_11_0: 
-        str = "PLAYER_VISIBLE_ITEM_11_0"; break;
-    case PLAYER_VISIBLE_ITEM_11_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_11_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_11_PAD: str = "PLAYER_VISIBLE_ITEM_11_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_12_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_12_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_12_0: 
-        str = "PLAYER_VISIBLE_ITEM_12_0"; break;
-    case PLAYER_VISIBLE_ITEM_12_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_12_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_12_PAD: str = "PLAYER_VISIBLE_ITEM_12_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_13_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_13_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_13_0: 
-        str = "PLAYER_VISIBLE_ITEM_13_0"; break;
-    case PLAYER_VISIBLE_ITEM_13_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_13_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_13_PAD: str = "PLAYER_VISIBLE_ITEM_13_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_14_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_14_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_14_0: 
-        str = "PLAYER_VISIBLE_ITEM_14_0"; break;
-    case PLAYER_VISIBLE_ITEM_14_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_14_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_14_PAD: str = "PLAYER_VISIBLE_ITEM_14_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_15_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_15_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_15_0: 
-        str = "PLAYER_VISIBLE_ITEM_15_0"; break;
-    case PLAYER_VISIBLE_ITEM_15_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_15_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_15_PAD: str = "PLAYER_VISIBLE_ITEM_15_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_16_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_16_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_16_0: 
-        str = "PLAYER_VISIBLE_ITEM_16_0"; break;
-    case PLAYER_VISIBLE_ITEM_16_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_16_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_16_PAD: str = "PLAYER_VISIBLE_ITEM_16_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_17_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_17_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_17_0: 
-        str = "PLAYER_VISIBLE_ITEM_17_0"; break;
-    case PLAYER_VISIBLE_ITEM_17_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_17_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_17_PAD: str = "PLAYER_VISIBLE_ITEM_17_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_18_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_18_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_18_0: 
-        str = "PLAYER_VISIBLE_ITEM_18_0"; break;
-    case PLAYER_VISIBLE_ITEM_18_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_18_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_18_PAD: str = "PLAYER_VISIBLE_ITEM_18_PAD"; break;
-    case PLAYER_VISIBLE_ITEM_19_CREATOR:
-        str = "PLAYER_VISIBLE_ITEM_19_CREATOR"; break;
-    case PLAYER_VISIBLE_ITEM_19_0: 
-        str = "PLAYER_VISIBLE_ITEM_19_0"; break;
-    case PLAYER_VISIBLE_ITEM_19_PROPERTIES: str = "PLAYER_VISIBLE_ITEM_19_PROPERTIES"; break;
-    case PLAYER_VISIBLE_ITEM_19_PAD: str = "PLAYER_VISIBLE_ITEM_19_PAD"; break;
-    case PLAYER_CHOSEN_TITLE: str = "PLAYER_CHOSEN_TITLE"; break;
-    case PLAYER_FIELD_PAD_0: 
-        str = "PLAYER_FIELD_PAD_0"; break;
-    case PLAYER_FIELD_INV_SLOT_HEAD + 0:
-        str = "PLAYER_FIELD_INV_SLOT_HEAD"; break;
-    case PLAYER_FIELD_PACK_SLOT_1 + 0:
-        str = "PLAYER_FIELD_PACK_SLOT_1"; break;
-    case PLAYER_FIELD_BANK_SLOT_1 + 0:
-        str = "PLAYER_FIELD_BANK_SLOT_1"; break;
-    case PLAYER_FIELD_BANKBAG_SLOT_1 + 0:
-        str = "PLAYER_FIELD_BANKBAG_SLOT_1"; break;
-    case PLAYER_FIELD_VENDORBUYBACK_SLOT_1 + 0:
-        str = "PLAYER_FIELD_VENDORBUYBACK_SLOT_1"; break;
-    case PLAYER_FIELD_KEYRING_SLOT_1 + 0:
-        str = "PLAYER_FIELD_KEYRING_SLOT_1"; break;
-    case PLAYER_FIELD_VANITYPET_SLOT_1 + 0:
-        str = "PLAYER_FIELD_VANITYPET_SLOT_1"; break;
-    case PLAYER_FARSIGHT:
-        str = "PLAYER_FARSIGHT"; break;
-    case PLAYER_FIELD_KNOWN_TITLES:
-        str = "PLAYER_FIELD_KNOWN_TITLES"; break;
-    case PLAYER_XP: str = "PLAYER_XP"; break;
-    case PLAYER_NEXT_LEVEL_XP: str = "PLAYER_NEXT_LEVEL_XP"; break;
-    case PLAYER_SKILL_INFO_1_1 + 0:
-        str = "PLAYER_SKILL_INFO_1_1"; break;
-    case PLAYER_CHARACTER_POINTS1: str = "PLAYER_CHARACTER_POINTS1"; break;
-    case PLAYER_CHARACTER_POINTS2: str = "PLAYER_CHARACTER_POINTS2"; break;
-    case PLAYER_TRACK_CREATURES: str = "PLAYER_TRACK_CREATURES"; break;
-    case PLAYER_TRACK_RESOURCES: str = "PLAYER_TRACK_RESOURCES"; break;
-    case PLAYER_BLOCK_PERCENTAGE: str = "PLAYER_BLOCK_PERCENTAGE"; break;
-    case PLAYER_DODGE_PERCENTAGE: str = "PLAYER_DODGE_PERCENTAGE"; break;
-    case PLAYER_PARRY_PERCENTAGE: str = "PLAYER_PARRY_PERCENTAGE"; break;
-    case PLAYER_EXPERTISE: str = "PLAYER_EXPERTISE"; break;
-    case PLAYER_OFFHAND_EXPERTISE: str = "PLAYER_OFFHAND_EXPERTISE"; break;
-    case PLAYER_CRIT_PERCENTAGE: str = "PLAYER_CRIT_PERCENTAGE"; break;
-    case PLAYER_RANGED_CRIT_PERCENTAGE: str = "PLAYER_RANGED_CRIT_PERCENTAGE"; break;
-    case PLAYER_OFFHAND_CRIT_PERCENTAGE: str = "PLAYER_OFFHAND_CRIT_PERCENTAGE"; break;
-    case PLAYER_SPELL_CRIT_PERCENTAGE1 + 0:
-        str = "PLAYER_SPELL_CRIT_PERCENTAGE1"; break;
-    case PLAYER_SHIELD_BLOCK: str = "PLAYER_SHIELD_BLOCK"; break;
-    case PLAYER_EXPLORED_ZONES_1 + 0:
-        str = "PLAYER_EXPLORED_ZONES_1"; break;
-    case PLAYER_REST_STATE_EXPERIENCE: str = "PLAYER_REST_STATE_EXPERIENCE"; break;
-    case PLAYER_FIELD_COINAGE: str = "PLAYER_FIELD_COINAGE"; break;
-    case PLAYER_FIELD_MOD_DAMAGE_DONE_POS: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_POS"; break;
-    case PLAYER_FIELD_MOD_DAMAGE_DONE_NEG: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_NEG"; break;
-    case PLAYER_FIELD_MOD_DAMAGE_DONE_PCT: str = "PLAYER_FIELD_MOD_DAMAGE_DONE_PCT"; break;
-    case PLAYER_FIELD_MOD_HEALING_DONE_POS: str = "PLAYER_FIELD_MOD_HEALING_DONE_POS"; break;
-    case PLAYER_FIELD_MOD_TARGET_RESISTANCE: str = "PLAYER_FIELD_MOD_TARGET_RESISTANCE"; break;
-    case PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE: str = "PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE"; break;
-    case PLAYER_FIELD_BYTES: str = "PLAYER_FIELD_BYTES"; break;
-    case PLAYER_AMMO_ID: str = "PLAYER_AMMO_ID"; break;
-    case PLAYER_SELF_RES_SPELL: str = "PLAYER_SELF_RES_SPELL"; break;
-    case PLAYER_FIELD_PVP_MEDALS: str = "PLAYER_FIELD_PVP_MEDALS"; break;
-    case PLAYER_FIELD_BUYBACK_PRICE_1 + 0:
-        str = "PLAYER_FIELD_BUYBACK_PRICE_1"; break;
-    case PLAYER_FIELD_BUYBACK_TIMESTAMP_1 + 0:
-        str = "PLAYER_FIELD_BUYBACK_TIMESTAMP_1"; break;
-    case PLAYER_FIELD_KILLS: str = "PLAYER_FIELD_KILLS"; break;
-    case PLAYER_FIELD_TODAY_CONTRIBUTION: str = "PLAYER_FIELD_TODAY_CONTRIBUTION"; break;
-    case PLAYER_FIELD_YESTERDAY_CONTRIBUTION: str = "PLAYER_FIELD_YESTERDAY_CONTRIBUTION"; break;
-    case PLAYER_FIELD_LIFETIME_HONORABLE_KILLS: str = "PLAYER_FIELD_LIFETIME_HONORABLE_KILLS"; break;
-    case PLAYER_FIELD_BYTES2: str = "PLAYER_FIELD_BYTES2"; break;
-    case PLAYER_FIELD_WATCHED_FACTION_INDEX: str = "PLAYER_FIELD_WATCHED_FACTION_INDEX"; break;
-    case PLAYER_FIELD_COMBAT_RATING_1 + 0:
-        str = "PLAYER_FIELD_COMBAT_RATING_1"; break;
-    case PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 0:
-        str = "PLAYER_FIELD_ARENA_TEAM_INFO_1_1"; break;
-    case PLAYER_FIELD_HONOR_CURRENCY: str = "PLAYER_FIELD_HONOR_CURRENCY"; break;
-    case PLAYER_FIELD_ARENA_CURRENCY: str = "PLAYER_FIELD_ARENA_CURRENCY"; break;
-    case PLAYER_FIELD_MOD_MANA_REGEN: str = "PLAYER_FIELD_MOD_MANA_REGEN"; break;
-    case PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT: str = "PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT"; break;
-    case PLAYER_FIELD_MAX_LEVEL: str = "PLAYER_FIELD_MAX_LEVEL"; break;
-    case PLAYER_FIELD_DAILY_QUESTS_1 + 0:
-        str = "PLAYER_FIELD_DAILY_QUESTS_1"; break;
-    default: 
-        return false;
-    }
     return true;
 }
 
 UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID type, uint32 index)
 {
-    switch (type)
+    Optional<int32> baseIndex = GetBaseIndex(type, index);
+    if (!(baseIndex))
+        UPDATE_FIELD_TYPE_UNKNOWN;
+
+    switch (baseIndex.get())
     {
-    case TYPEID_UNIT:
-    case TYPEID_PLAYER:
-        break;
-    default:
-        return UPDATE_FIELD_TYPE_UNKNOWN;
-    }
-
-    if (type == TYPEID_UNIT && index >= UNIT_END)
-        return UPDATE_FIELD_TYPE_UNKNOWN;
-
-    uint32 baseIndex = GetBaseIndex(type, index);
-    if (baseIndex == -1)
-        return UPDATE_FIELD_TYPE_UNKNOWN;
-
-    switch (baseIndex)
-    {
-        case OBJECT_FIELD_GUID: return UPDATE_FIELD_TYPE_LONG;
+        case OBJECT_FIELD_GUID: return UPDATE_FIELD_TYPE_GUID;
         case OBJECT_FIELD_TYPE: return UPDATE_FIELD_TYPE_INT;
         case OBJECT_FIELD_ENTRY: return UPDATE_FIELD_TYPE_INT;
         case OBJECT_FIELD_SCALE_X: return UPDATE_FIELD_TYPE_FLOAT;
         case OBJECT_FIELD_PADDING: return UPDATE_FIELD_TYPE_INT;
+    }
 
-        case UNIT_FIELD_CHARM: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_SUMMON: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_CHARMEDBY: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_SUMMONEDBY: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_CREATEDBY: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_TARGET: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_PERSUADED: return UPDATE_FIELD_TYPE_LONG;
-        case UNIT_FIELD_CHANNEL_OBJECT: return UPDATE_FIELD_TYPE_LONG;
+    switch (type)
+    {
+    case TYPEID_PLAYER:
+        if (index >= PLAYER_END)
+            break;
+        [[fallthrough]];
+    case TYPEID_UNIT:
+    {
+        if (index >= UNIT_END)
+            break;
+
+        switch (baseIndex.get())
+        {
+        case UNIT_FIELD_CHARM: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_SUMMON: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_CHARMEDBY: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_SUMMONEDBY: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_CREATEDBY: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_TARGET: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_PERSUADED: return UPDATE_FIELD_TYPE_GUID;
+        case UNIT_FIELD_CHANNEL_OBJECT: return UPDATE_FIELD_TYPE_GUID;
         case UNIT_FIELD_HEALTH: return UPDATE_FIELD_TYPE_INT;
         case UNIT_FIELD_POWER1: return UPDATE_FIELD_TYPE_INT;
         case UNIT_FIELD_POWER2: return UPDATE_FIELD_TYPE_INT;
@@ -922,7 +994,7 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
         case UNIT_FIELD_MAXHEALTHMODIFIER: return UPDATE_FIELD_TYPE_FLOAT;
         case UNIT_FIELD_PADDING: return UPDATE_FIELD_TYPE_INT;
 
-        case PLAYER_DUEL_ARBITER: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_DUEL_ARBITER: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_FLAGS: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_GUILDID: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_GUILDRANK: return UPDATE_FIELD_TYPE_INT;
@@ -1031,92 +1103,92 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
         case PLAYER_QUEST_LOG_25_2: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_QUEST_LOG_25_3: return UPDATE_FIELD_TYPE_BYTES;
         case PLAYER_QUEST_LOG_25_4: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_1_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_1_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_1_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_1_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_1_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_2_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_2_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_2_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_2_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_2_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_3_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_3_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_3_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_3_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_3_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_4_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_4_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_4_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_4_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_4_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_5_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_5_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_5_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_5_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_5_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_6_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_6_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_6_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_6_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_6_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_7_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_7_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_7_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_7_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_7_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_8_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_8_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_8_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_8_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_8_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_9_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_9_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_9_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_9_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_9_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_10_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_10_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_10_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_10_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_10_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_11_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_11_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_11_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_11_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_11_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_12_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_12_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_12_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_12_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_12_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_13_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_13_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_13_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_13_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_13_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_14_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_14_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_14_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_14_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_14_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_15_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_15_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_15_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_15_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_15_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_16_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_16_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_16_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_16_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_16_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_17_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_17_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_17_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_17_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_17_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_18_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_18_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_18_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_18_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_18_PAD: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_VISIBLE_ITEM_19_CREATOR: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_VISIBLE_ITEM_19_CREATOR: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_VISIBLE_ITEM_19_0: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_VISIBLE_ITEM_19_PROPERTIES: return UPDATE_FIELD_TYPE_TWO_SHORTS;
         case PLAYER_VISIBLE_ITEM_19_PAD: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_CHOSEN_TITLE: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_FIELD_PAD_0: return UPDATE_FIELD_TYPE_INT;
-        case PLAYER_FIELD_INV_SLOT_HEAD: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_PACK_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_BANK_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_BANKBAG_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_VENDORBUYBACK_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_KEYRING_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FIELD_VANITYPET_SLOT_1: return UPDATE_FIELD_TYPE_LONG;
-        case PLAYER_FARSIGHT: return UPDATE_FIELD_TYPE_LONG;
+        case PLAYER_FIELD_INV_SLOT_HEAD: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_PACK_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_BANK_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_BANKBAG_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_VENDORBUYBACK_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_KEYRING_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FIELD_VANITYPET_SLOT_1: return UPDATE_FIELD_TYPE_GUID;
+        case PLAYER_FARSIGHT: return UPDATE_FIELD_TYPE_GUID;
         case PLAYER_FIELD_KNOWN_TITLES: return UPDATE_FIELD_TYPE_LONG;
         case PLAYER_XP: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_NEXT_LEVEL_XP: return UPDATE_FIELD_TYPE_INT;
@@ -1164,13 +1236,41 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
         case PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT: return UPDATE_FIELD_TYPE_FLOAT;
         case PLAYER_FIELD_MAX_LEVEL: return UPDATE_FIELD_TYPE_INT;
         case PLAYER_FIELD_DAILY_QUESTS_1: return UPDATE_FIELD_TYPE_INT;
+        }
+    } break;
+    case TYPEID_GAMEOBJECT:
+    {
+        if (index >= GAMEOBJECT_END)
+            break;
+
+        switch (baseIndex.get())
+        {
+        case OBJECT_FIELD_CREATED_BY:   return UPDATE_FIELD_TYPE_GUID;   
+        case GAMEOBJECT_DISPLAYID:      return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_FLAGS:          return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_PARENTROTATION: return UPDATE_FIELD_TYPE_FLOAT;  
+        case GAMEOBJECT_STATE:          return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_POS_X:          return UPDATE_FIELD_TYPE_FLOAT;  
+        case GAMEOBJECT_POS_Y:          return UPDATE_FIELD_TYPE_FLOAT;  
+        case GAMEOBJECT_POS_Z:          return UPDATE_FIELD_TYPE_FLOAT;  
+        case GAMEOBJECT_FACING:         return UPDATE_FIELD_TYPE_FLOAT;  
+        case GAMEOBJECT_DYN_FLAGS:      return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_FACTION:        return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_TYPE_ID:        return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_LEVEL:          return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_ARTKIT:         return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_ANIMPROGRESS:   return UPDATE_FIELD_TYPE_INT;    
+        case GAMEOBJECT_PADDING:        return UPDATE_FIELD_TYPE_INT;    
+        }
+    } break;
+    default:
+        break;
     }
 
     return UPDATE_FIELD_TYPE_UNKNOWN;
 }
 
-//FIXME: not working for float values
-uint32 UpdateFieldsDebug::InsertFieldInStream(TypeID type, uint32 index, std::vector<uint32> const& values, std::stringstream& stream)
+uint32 UpdateFieldsDebug::InsertFieldInStream(TypeID type, uint32 index, WorldSession::SnapshotType const& values, std::stringstream& stream)
 {
     if (index >= values.size())
         return 0;
@@ -1180,26 +1280,51 @@ uint32 UpdateFieldsDebug::InsertFieldInStream(TypeID type, uint32 index, std::ve
     uint32 fieldSize = 1;
     switch (fieldType)
     {
-    case UPDATE_FIELD_TYPE_LONG:
+    case UPDATE_FIELD_TYPE_GUID:
+    {
+        uint64 const* cast = reinterpret_cast<uint64 const*>(&(values[index]));
+        ObjectGuid guid(*cast);
         fieldSize = 2;
-        stream << "0x" << std::hex << std::setw(8) << std::setfill('0') << values[index+1] << std::setw(8) << std::setfill('0') << values[index];
+        stream << std::dec << guid.ToString();
         break;
+    }
+    case UPDATE_FIELD_TYPE_LONG:
+    {
+        uint64 const* cast = reinterpret_cast<uint64 const*>(&(values[index]));
+        fieldSize = 2;
+        stream << std::dec << *cast;
+        break;
+    }
     case UPDATE_FIELD_TYPE_BYTES:
         for (uint32 i = 0; i < 4; i++) //4 bytes in one field
-            stream << "0x" << std::hex << std::setw(2) << std::setfill('0') << ((values[index] & (0xFF << i*8)) >> i*8) << " ";
+            stream << "0x" << std::hex << std::setw(2) << ((values[index] & (0xFF << i*8)) >> i*8) << " ";
         break;
     case UPDATE_FIELD_TYPE_FLOAT:
-        stream << std::setprecision(10) << float(values[index]);
+    {
+        float const* cast = reinterpret_cast<float const*>(&(values[index]));
+        stream << std::setprecision(9) << *cast;
         break;
+    }
     case UPDATE_FIELD_TYPE_TWO_SHORTS:
         for (uint32 i = 0; i < 2; i++) //2 shorts in one field
-            stream << "0x" << std::hex << std::setw(4) << std::setfill('0') << ((values[index] & (0xFFFF << i * 16)) >> i * 16) << " ";
+            stream << "0x" << std::hex << std::setw(4) << ((values[index] & (0xFFFF << i * 16)) >> i * 16) << " ";
         break;
     case UPDATE_FIELD_TYPE_INT:
     case UPDATE_FIELD_TYPE_UNKNOWN:
     default:
-        stream << std::dec << std::setw(11) << std::setfill('0') << values[index];
+        stream << std::dec << values[index];
         break;
     }
     return fieldSize;
+}
+
+void UpdateFieldsDebug::FillSnapshotValues(WorldObject* target, WorldSession::SnapshotType& values)
+{
+    //all values are stored as uint32, user will need to reinterprest cast them later
+    uint32 valuesCount = target->GetValuesCount();
+    values.clear();
+    values.resize(valuesCount);
+    TypeID type = TypeID(target->GetTypeId());
+    for (uint32 i = 0; i < valuesCount; i++)
+        values[i] = target->GetUInt32Value(i);
 }
