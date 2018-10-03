@@ -1,6 +1,6 @@
 #include "UpdateFieldsDebug.h"
 
-Optional<int32> UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
+Optional<uint32> UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
 {
     switch (index)
     {
@@ -397,7 +397,7 @@ Optional<int32> UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
 
 bool UpdateFieldsDebug::GetFieldNameString(TypeID type, uint32 index, std::string& str)
 {
-    Optional<int32> _index = GetBaseIndex(type, index);
+    Optional<uint32> _index = GetBaseIndex(type, index);
     if (!(_index))
         return false;
 
@@ -879,11 +879,13 @@ bool UpdateFieldsDebug::GetFieldNameString(TypeID type, uint32 index, std::strin
 
 UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID type, uint32 index)
 {
-    Optional<int32> baseIndex = GetBaseIndex(type, index);
-    if (!(baseIndex))
-        UPDATE_FIELD_TYPE_UNKNOWN;
+    Optional<uint32> _index = GetBaseIndex(type, index);
+    if (!(_index))
+        return UPDATE_FIELD_TYPE_UNKNOWN;
 
-    switch (baseIndex.get())
+    index = _index.get();
+
+    switch (index)
     {
         case OBJECT_FIELD_GUID: return UPDATE_FIELD_TYPE_GUID;
         case OBJECT_FIELD_TYPE: return UPDATE_FIELD_TYPE_INT;
@@ -903,7 +905,7 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
         if (index >= UNIT_END)
             break;
 
-        switch (baseIndex.get())
+        switch (index)
         {
         case UNIT_FIELD_CHARM: return UPDATE_FIELD_TYPE_GUID;
         case UNIT_FIELD_SUMMON: return UPDATE_FIELD_TYPE_GUID;
@@ -1243,7 +1245,7 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
         if (index >= GAMEOBJECT_END)
             break;
 
-        switch (baseIndex.get())
+        switch (index)
         {
         case OBJECT_FIELD_CREATED_BY:   return UPDATE_FIELD_TYPE_GUID;   
         case GAMEOBJECT_DISPLAYID:      return UPDATE_FIELD_TYPE_INT;    

@@ -26,7 +26,7 @@ namespace UpdateFieldsDebug
     /* Return base index (for multi fields index)
     For example, if you query for UNIT_FIELD_BASEATTACKTIME+1, you'll get UNIT_FIELD_BASEATTACKTIME.
     */
-    TC_GAME_API Optional<int32> GetBaseIndex(TypeID type, uint32 index);
+    TC_GAME_API Optional<uint32> GetBaseIndex(TypeID type, uint32 index);
 
     //get field name for index. Only for units (players and creatures).
     TC_GAME_API bool GetFieldNameString(TypeID type, uint32 index, std::string& str);

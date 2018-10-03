@@ -1587,7 +1587,7 @@ bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, Wor
     *p_data << uint8(facialStyle);
 
     *p_data << uint8(fields[7].GetUInt8());                     // level
-    *p_data << uint32(fields[8].GetUInt32());                   // zone
+    *p_data << uint32(fields[8].GetUInt16());                   // zone
     *p_data << uint32(fields[9].GetUInt32());                   // map
 
     *p_data << fields[10].GetFloat();                           // x
@@ -14911,7 +14911,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     InitPrimaryProffesions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    uint32 transGUIDLow = fields[LOAD_DATA_TRANSGUID].GetUInt64();
+    uint32 transGUIDLow = fields[LOAD_DATA_TRANSGUID].GetUInt32();
     uint32 mapId = fields[LOAD_DATA_MAP].GetUInt32();
     uint32 instanceId = fields[LOAD_DATA_INSTANCE_ID].GetUInt32();
 
@@ -15274,7 +15274,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     m_nextSave = urand(m_nextSave / 2, m_nextSave * 3 / 2);
 
     time_t now = map->GetGameTime();
-    time_t logoutTime = time_t(fields[LOAD_DATA_LOGOUT_TIME].GetUInt64());
+    time_t logoutTime = time_t(fields[LOAD_DATA_LOGOUT_TIME].GetUInt32());
 
     // since last logout (in seconds)
     uint64 time_diff = uint64(now - logoutTime);
@@ -15292,7 +15292,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     m_Played_time[1]= fields[LOAD_DATA_LEVELTIME].GetUInt32();
 
     m_resetTalentsCost = fields[LOAD_DATA_RESETTALENTS_COST].GetUInt32();
-    m_resetTalentsTime = time_t(fields[LOAD_DATA_RESETTALENTS_TIME].GetUInt64());
+    m_resetTalentsTime = time_t(fields[LOAD_DATA_RESETTALENTS_TIME].GetUInt32());
 
     // reserve some flags
     uint32 old_safe_flags = GetUInt32Value(PLAYER_FLAGS) & ( PLAYER_FLAGS_HIDE_CLOAK | PLAYER_FLAGS_HIDE_HELM );
@@ -15359,7 +15359,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
     float bubble1 = 0.125;
 
-    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt64() > 0)
+    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt32() > 0)
     {
         float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt8() > 0
             ? bubble1*sWorld->GetRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)

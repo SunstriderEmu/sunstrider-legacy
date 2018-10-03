@@ -170,9 +170,9 @@ bool ArenaTeam::LoadArenaTeamFromDB(QueryResult const result)
     CaptainGuid  = ObjectGuid(HighGuid::Player, fields[2].GetUInt32());
     Type = fields[3].GetUInt8();
     BackgroundColor = fields[4].GetUInt32();
-    EmblemStyle = fields[5].GetUInt32();
+    EmblemStyle = fields[5].GetUInt8();
     EmblemColor = fields[6].GetUInt32();
-    BorderStyle = fields[7].GetUInt32();
+    BorderStyle = fields[7].GetUInt8();
     BorderColor = fields[8].GetUInt32();
     Stats.Rating = fields[9].GetUInt16();
     Stats.WeekGames = fields[10].GetUInt16();
@@ -180,7 +180,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(QueryResult const result)
     Stats.SeasonGames = fields[12].GetUInt16();
     Stats.SeasonWins = fields[13].GetUInt16();
     Stats.Rank = fields[14].GetUInt32();
-    Stats.NonPlayedWeeks = fields[15].GetUInt32();
+    Stats.NonPlayedWeeks = fields[15].GetUInt16();
 
     return true;
 }
