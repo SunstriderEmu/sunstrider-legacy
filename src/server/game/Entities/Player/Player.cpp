@@ -6098,15 +6098,20 @@ void Player::CheckAreaExploreAndOutdoor()
     if (IsInFlight())
         return;
 
+    if (GetTransport())
+        return;
+
     if (!IsOutdoors())
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
     else 
     {
         // Check if we need to reapply outdoor only passive spells
         const PlayerSpellMap& sp_list = GetSpellMap();
-        for (const auto & itr : sp_list) {
+        for (const auto & itr : sp_list)
+        {
             if (itr.second->state == PLAYERSPELL_REMOVED)
                 continue;
+
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr.first);
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAuraEffect(itr.first, EFFECT_0))
                 continue;
@@ -6137,7 +6142,9 @@ void Player::CheckAreaExploreAndOutdoor()
     {
         SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset, (uint32)(currFields | val));
 
-        //TC LK UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
+#ifdef LICH_KING
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
+#endif
 
         if (areaEntry->area_level > 0)
         {
