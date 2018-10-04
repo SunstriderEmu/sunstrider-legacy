@@ -1298,13 +1298,10 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDi
     }
 
     Position pos = GetPosition();
-    float newZ = z + GetCollisionHeight();
-    WorldObject::UpdateAllowedPositionZ(GetPhaseMask(), GetMapId(), x, y, newZ, canSwim, canFly, waterWalk, maxDist);
-    if (newZ != z + GetCollisionHeight())
-        z = newZ;
+    WorldObject::UpdateAllowedPositionZ(GetPhaseMask(), GetMapId(), x, y, z, canSwim, canFly, waterWalk, GetCollisionHeight(), maxDist);
 }
 
-void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
+void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float collisionHeight, float maxDist)
 {
     // non fly unit don't must be in air
     // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
@@ -1313,7 +1310,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x
     {
         float ground_z = z;
         float max_z = canSwim
-            ? baseMap->GetWaterOrGroundLevel(phaseMask, x, y, z, &ground_z, !waterWalk)
+            ? baseMap->GetWaterOrGroundLevel(phaseMask, x, y, z, &ground_z, !waterWalk, collisionHeight)
             : ((ground_z = baseMap->GetHeight(phaseMask, x, y, z, true)));
 
         if (max_z > INVALID_HEIGHT)

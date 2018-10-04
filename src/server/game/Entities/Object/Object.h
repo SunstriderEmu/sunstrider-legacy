@@ -445,7 +445,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         //Set Z to closest allowed position, depending on fly/swim/waterwalk ability of object
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
         //Set Z to closest allowed position, depending on given fly/swim/waterwalk abilities given
-        static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float collisionHeight, float maxDist = 50.0f);
         float SelectBestZForDestination(float x, float y, float z, bool excludeCollisionHeight) const;
 
         void GetRandomPoint(Position const& pos, float distance, float &rand_x, float &rand_y, float &rand_z) const;
