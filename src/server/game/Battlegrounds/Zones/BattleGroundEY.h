@@ -298,7 +298,7 @@ class BattlegroundEY : public Battleground
         void HandleKillPlayer(Player *player, Player *killer) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
         bool SetupBattleground() override;
-        void ResetBGSubclass() override;
+        void Reset() override;
         void UpdateTeamScore(uint32 Team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
         void FillInitialWorldStates(WorldPacket& data) override;

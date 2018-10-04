@@ -9,6 +9,7 @@
 #include "Position.h"
 
 struct PvPDifficultyEntry;
+class ChatHandler;
 
 enum BattlegroundSounds
 {
@@ -61,6 +62,15 @@ enum BattlegroundSpells
     SPELL_AURA_PLAYER_INACTIVE      = 43681                 // After 1 min Idle
 };
 
+enum BattleGroundCreatureSpawnMode
+{
+    DESPAWN_FORCED   = 0,
+    RESPAWN_STOP     = 1,
+    RESPAWN_START    = 2,
+    RESPAWN_FORCED   = 3
+};
+#define BG_CREATURE_SPAWN_MODE_COUNT 4
+
 enum BattlegroundTimeIntervals
 {
     CHECK_PLAYER_POSITION_INVERVAL  = 1 * SECOND * IN_MILLISECONDS,  // ms
@@ -78,6 +88,17 @@ enum BattlegroundTimeIntervals
     RESPAWN_IMMEDIATELY             = 0,                    // secs
     BUFF_RESPAWN_TIME               = 3 * MINUTE,           // secs
     BG_HONOR_SCORE_TICKS            = 330                   // points
+};
+
+// magic event-numbers
+#define BG_EVENT_NONE 255
+// those generic events should get a high event id
+#define BG_EVENT_DOOR 254
+
+struct BattleGroundEventIdx
+{
+    uint8 event1;
+    uint8 event2;
 };
 
 enum BattlegroundBuffObjects
@@ -240,14 +261,15 @@ class TC_GAME_API Battleground
         /*Battleground(const Battleground& bg);*/
         virtual ~Battleground();
         virtual void Update(time_t diff);                   // must be implemented in BG subclass of BG specific update code, but must in begginning call parent version
-        virtual bool SetupBattleground()                    // must be implemented in BG subclass
-        {
-            return true;
-        }
-        void Reset();                                       // resets all common properties for battlegrounds
-        virtual void ResetBGSubclass()                      // must be implemented in BG subclass
-        {
-        }
+        virtual bool SetupBattleground() { return true; }    // must be implemented in BG subclass
+        virtual void Reset();                               // resets all common properties for battlegrounds
+
+        // Called after event state changed (event add or remove).
+        virtual void HandleCommand(Player* player, ChatHandler* handler, char const* args);
+        virtual void OnEventStateChanged(uint8 event1, uint8 event2, bool actived) {}
+        virtual void StartingEventCloseDoors() {}
+        virtual void StartingEventOpenDoors() {}
+        virtual void StartingEventDespawnDoors();
 
         /* Battleground */
         // Get methods:
@@ -443,6 +465,29 @@ class TC_GAME_API Battleground
 
         virtual void RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
+                                                            /* event related */
+                                                            // called when a creature gets added to map (NOTE: only triggered if
+                                                            // a player activates the cell of the creature)
+        void OnObjectDBLoad(Creature* creature);
+        //Returns true if obj was added to map
+        bool OnObjectDBLoad(GameObject* obj);
+        // (de-)spawns creatures and gameobjects from an event
+        void SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay = 0);
+        void SetSpawnEventMode(uint8 event1, uint8 event2, BattleGroundCreatureSpawnMode mode);
+        bool IsActiveEvent(uint8 event1, uint8 event2)
+        {
+            if (m_ActiveEvents.find(event1) == m_ActiveEvents.end())
+                return false;
+            return m_ActiveEvents[event1] == event2;
+        }
+        void ActivateEventWithoutSpawn(uint8 event1, uint8 event2)
+        {
+            m_ActiveEvents[event1] = event2;
+        }
+        ObjectGuid GetSingleCreatureGuid(uint8 event1, uint8 event2);
+
+        void OpenDoorEvent(uint8 event1, uint8 event2 = 0);
+        bool IsDoor(uint8 event1, uint8 event2);
 
         void HandleTriggerBuff(ObjectGuid const& go_guid);
         void SetHoliday(bool is_holiday);
@@ -450,17 +495,25 @@ class TC_GAME_API Battleground
         // TODO: make this protected:
         GuidVector BgObjects;
         GuidVector BgCreatures;
-        void SpawnBGObject(uint32 type, uint32 respawntime);
+        //Return true if object was added to map
+        bool SpawnBGObject(GameObject* object, uint32 respawntime);
+        bool SpawnBGObject(ObjectGuid guid, uint32 respawntime);
+        bool SpawnBGObject(uint32 type, uint32 respawntime); //for compat
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0, bool inactive = false);
-//        void SpawnBGCreature(uint32 type, uint32 respawntime);
+        void SpawnBGCreature(ObjectGuid guid, BattleGroundCreatureSpawnMode mode) = delete;
+        void SpawnBGCreature(uint32 spawnID, BattleGroundCreatureSpawnMode mode);
+        void SpawnBGCreature(Creature* c, BattleGroundCreatureSpawnMode mode);
         Creature* AddCreature(uint32 entry, uint32 type, float x, float y, float z, float o, uint32 respawntime = 0);
         bool DelCreature(uint32 type);
         bool DelObject(uint32 type);
         bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, uint32 team);
         int32 GetObjectType(ObjectGuid const& guid);
 
-        void DoorOpen(uint32 type);
-        void DoorClose(uint32 type);
+        void DoorOpen(GameObject* gob);
+        void DoorOpen(ObjectGuid guid);
+        void DoorOpen(uint32 type); //old compat
+        void DoorClose(ObjectGuid guid);
+        void DoorClose(uint32 type);  //old compat
         static const char* GetTrinityString(int32 entry);
 
         virtual bool HandlePlayerUnderMap(Player * plr) {return false;}
@@ -518,6 +571,12 @@ class TC_GAME_API Battleground
         uint32 m_score[2];                    //array that keeps general team scores, used to determine who gets most marks when bg ends prematurely
 
         BGHonorMode m_HonorMode;
+
+        // this must be filled first in BattleGroundXY::Reset().. else
+        // creatures will get added wrong
+        // door-events are automaticly added - but _ALL_ other must be in this vector
+        std::map<uint8, uint8> m_ActiveEvents;
+
     private:
         /* Battleground */
         BattlegroundTypeId m_TypeID;                        //Battleground type
@@ -584,6 +643,17 @@ class TC_GAME_API Battleground
         uint32 ScriptId;
         
         std::map<ObjectGuid, PlayerLogInfo*> m_team1LogInfo, m_team2LogInfo;
+
+        struct EventObjects
+        {
+            GuidVector gameobjects;
+            GuidVector creatures;
+        };
+
+        // cause we create it dynamicly i use a map - to avoid resizing when
+        // using vector - also it contains 2*events concatenated with PAIR32
+        // this is needed to avoid overhead of a 2dimensional std::map
+        std::map<uint32, EventObjects> m_EventObjects;
 
         SpectatorList m_Spectators;
 };

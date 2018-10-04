@@ -44,6 +44,7 @@ public:
             { "lootrecipient",  SEC_GAMEMASTER2,  false, &HandleDebugGetLootRecipient,        "" },
             { "arena",          SEC_GAMEMASTER3,  false, &HandleDebugArenaCommand,            "" },
             { "bg",             SEC_GAMEMASTER3,  false, &HandleDebugBattleGroundCommand,     "" },
+            { "bgevent",        SEC_GAMEMASTER3,  false, &HandleDebugBattleGroundEventCommand,"" },
             { "threatlist",     SEC_GAMEMASTER2,  false, &HandleDebugThreatListCommand,       "" },
             { "threatunitlist", SEC_GAMEMASTER2,  false, &HandleDebugCombatListCommand,       "" },
             { "threatinfo",     SEC_GAMEMASTER2,  false, &HandleDebugThreatInfoCommand,       "" },
@@ -605,6 +606,21 @@ public:
         else
             handler->SendGlobalGMSysMessage("Arenas are set to normal playercount.");
 
+        return true;
+    }
+    
+    static bool HandleDebugBattleGroundEventCommand(ChatHandler* handler, const char* args)
+    {
+        Player *chr = handler->GetSession()->GetPlayer();
+        ASSERT(chr);
+        Battleground* bg = chr->GetBattleground();
+        if (!bg)
+        {
+            handler->SendSysMessage("You are not in a battleground");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        bg->HandleCommand(chr, handler, args);
         return true;
     }
 
@@ -1423,6 +1439,7 @@ public:
                     i += (fieldSize - 1); //this will skip next field for UPDATE_FIELD_TYPE_LONG
 
                 handler->PSendSysMessage("%s", stream.str().c_str());
+                TC_LOG_DEBUG("snapshot", "%", stream.str().c_str());
             }
         }
         else {
@@ -1434,6 +1451,7 @@ public:
         return true;
     }
 
+    /* Syntax: .debug snapshot go <start|stop|dump> */
     static bool HandleDebugSnapshotGo(ChatHandler* handler, char const* args)
     {
         Tokenizer tokens(args, ' ');
@@ -1462,7 +1480,7 @@ public:
         return true;
     }
 
-    /* Syntax: .debug snapshot <start|stop> */
+    /* Syntax: .debug snapshot <start|stop|dump> */
     static bool HandleDebugSnapshot(ChatHandler* handler, char const* args)
     {
         char* cArg = strtok((char*)args, " ");

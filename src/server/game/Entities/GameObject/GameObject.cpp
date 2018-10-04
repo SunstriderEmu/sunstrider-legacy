@@ -1,5 +1,4 @@
 
-
 #include "Common.h"
 #include "QuestDef.h"
 #include "GameObject.h"
@@ -164,6 +163,36 @@ std::string GameObject::GetAIName() const
     return sObjectMgr->GetGameObjectTemplate(GetEntry())->AIName;
 }
 
+std::string GetFieldName(uint32 index)
+{
+    switch (index)
+    {
+    case 0x0000:              return "OBJECT_FIELD_GUID";
+    case 0x0002:              return "OBJECT_FIELD_TYPE";
+    case 0x0003:              return "OBJECT_FIELD_ENTRY";
+    case 0x0004:              return "OBJECT_FIELD_SCALE_X";
+    case 0x0005:              return "OBJECT_FIELD_PADDING";
+    case OBJECT_END + 0x0000: return "OBJECT_FIELD_CREATED_BY";
+    case OBJECT_END + 0x0002: return "GAMEOBJECT_DISPLAYID";
+    case OBJECT_END + 0x0003: return "GAMEOBJECT_FLAGS";
+    case OBJECT_END + 0x0004: return "GAMEOBJECT_PARENTROTATION";
+    case OBJECT_END + 0x0008: return "GAMEOBJECT_STATE";
+    case OBJECT_END + 0x0009: return "GAMEOBJECT_POS_X";
+    case OBJECT_END + 0x000A: return "GAMEOBJECT_POS_Y";
+    case OBJECT_END + 0x000B: return "GAMEOBJECT_POS_Z";
+    case OBJECT_END + 0x000C: return "GAMEOBJECT_FACING";
+    case OBJECT_END + 0x000D: return "GAMEOBJECT_DYN_FLAGS";
+    case OBJECT_END + 0x000E: return "GAMEOBJECT_FACTION";
+    case OBJECT_END + 0x000F: return "GAMEOBJECT_TYPE_ID";
+    case OBJECT_END + 0x0010: return "GAMEOBJECT_LEVEL";
+    case OBJECT_END + 0x0011: return "GAMEOBJECT_ARTKIT";
+    case OBJECT_END + 0x0012: return "GAMEOBJECT_ANIMPROGRESS";
+    case OBJECT_END + 0x0013: return "GAMEOBJECT_PADDING";
+    case OBJECT_END + 0x0014: return "GAMEOBJECT_END";
+    }
+    return "<unknown field>";
+}
+
 void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target) const
 {
     if (!target)
@@ -182,6 +211,9 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
     if (GetOwnerGUID() == target->GetGUID())
         visibleFlag |= UF_FLAG_OWNER;
 
+    std::stringstream ss;
+    ss << "Gamemobject packet dump. Update type: " << updateType << std::endl;
+
     for (uint16 index = 0; index < m_valuesCount; ++index)
     {
         if (_fieldNotifyFlags & flags[index] ||
@@ -189,6 +221,7 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
             (index == GAMEOBJECT_FLAGS && forcedFlags))
         {
             updateMask.SetBit(index);
+            ss << index << " " << GetFieldName(index) << " | ";
 
             //LK if (index == GAMEOBJECT_DYNAMIC)
             if (index == GAMEOBJECT_DYN_FLAGS)
@@ -256,11 +289,19 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
                         _flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE;
 
                 fieldBuffer << _flags;
+                ss << _flags;
             }
             else
+            {
                 fieldBuffer << m_uint32Values[index];                // other cases
+                ss << m_uint32Values[index];
+            }
+            ss << std::endl;
         }
     }
+
+    ss << "---------" << std::endl;
+    std::cout << ss.str();
 
     *data << uint8(updateMask.GetBlockCount());
     updateMask.AppendToPacket(data);
@@ -587,8 +628,7 @@ void GameObject::Update(uint32 diff)
                             //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
                             if (!GetGoState())
                                 SwitchDoorOrButton(false);
-                            //flags in AB are type_button and we need to add them here so no break!
-                            [[fallthrough]];
+                            break;
                         case GAMEOBJECT_TYPE_FISHINGHOLE:
                             // Initialize a new max fish count on respawn
                             m_goValue.FishingHole.MaxOpens = urand(GetGOInfo()->fishinghole.minSuccessOpens, GetGOInfo()->fishinghole.maxSuccessOpens);

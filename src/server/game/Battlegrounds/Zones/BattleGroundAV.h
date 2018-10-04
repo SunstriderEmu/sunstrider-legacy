@@ -1498,7 +1498,7 @@ class BattlegroundAV : public Battleground
         void RemovePlayer(Player *plr,ObjectGuid guid) override;
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         bool SetupBattleground() override;
-        void ResetBGSubclass() override;
+        void Reset() override;
 
         /*general stuff*/
         void UpdateScore(uint16 team, int16 points);

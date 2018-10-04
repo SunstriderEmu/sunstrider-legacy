@@ -352,8 +352,6 @@ inline void Battleground::_ProcessLeave(uint32 diff)
         for (ObjectGuid const& m_Spectator : m_Spectators)
             RemovePlayerAtLeave(m_Spectator, true, true);
     }
-
-
 }
 
 void Battleground::SetTeamStartPosition(TeamId teamID, Position const& pos)
@@ -1198,6 +1196,9 @@ void Battleground::Reset()
 
     m_Events = 0;
 
+    // door-event2 is always 0
+    m_ActiveEvents[BG_EVENT_DOOR] = 0;
+
     if (m_InvitedAlliance > 0 || m_InvitedHorde > 0)
         TC_LOG_ERROR("battleground","Battleground system ERROR: bad counter, m_InvitedAlliance: %d, m_InvitedHorde: %d", m_InvitedAlliance, m_InvitedHorde);
 
@@ -1208,9 +1209,6 @@ void Battleground::Reset()
     m_Players.clear();
     m_Spectators.clear();
     PlayerScores.clear();
-
-    // reset BGSubclass
-    ResetBGSubclass();
 }
 
 void Battleground::StartBattleground()
@@ -1518,11 +1516,16 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     return true;
 }
 
-//some doors aren't despawned so we cannot handle their closing in gameobject::update()
-//it would be nice to correctly implement GO_ACTIVATED state and open/close doors in gameobject code
 void Battleground::DoorClose(uint32 type)
 {
-    if(GameObject *obj = GetBgMap()->GetGameObject(BgObjects[type]))
+    DoorClose(BgObjects[type]);
+}
+
+//some doors aren't despawned so we cannot handle their closing in gameobject::update()
+//it would be nice to correctly implement GO_ACTIVATED state and open/close doors in gameobject code
+void Battleground::DoorClose(ObjectGuid guid)
+{
+    if(GameObject *obj = GetBgMap()->GetGameObject(guid))
     {
         //if doors are open, close it
         if( obj->getLootState() == GO_ACTIVATED && !obj->GetGoState() )
@@ -1533,21 +1536,29 @@ void Battleground::DoorClose(uint32 type)
         }
     }
     else
-        TC_LOG_ERROR("bg.battleground", "Battleground::DoorClose: door gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-            type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
+        TC_LOG_ERROR("bg.battleground", "Battleground::DoorClose: door gameobject (%s) not found for BG (map: %u, instance id: %u)!",
+            guid.ToString().c_str(), m_MapId, m_InstanceID);
 }
 
 void Battleground::DoorOpen(uint32 type)
 {
-    if(GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]))
-    {
-        //change state to be sure they will be opened
-        obj->SetLootState(GO_READY);
-        obj->UseDoorOrButton(RESPAWN_ONE_DAY);
-    }
+    DoorOpen(BgObjects[type]);
+}
+
+void Battleground::DoorOpen(GameObject* gob)
+{
+    //change state to be sure they will be opened
+    gob->SetLootState(GO_READY);
+    gob->UseDoorOrButton(RESPAWN_ONE_DAY);
+}
+
+void Battleground::DoorOpen(ObjectGuid guid)
+{
+    if(GameObject* obj = GetBgMap()->GetGameObject(guid))
+        DoorOpen(obj);
     else
-        TC_LOG_ERROR("bg.battleground", "Battleground::DoorOpen: door gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-            type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
+        TC_LOG_ERROR("bg.battleground", "Battleground::DoorOpen: door gameobject (%s) not found for BG (map: %u, instance id: %u)!",
+            guid.ToString().c_str(), m_MapId, m_InstanceID);
 }
 
 GameObject* Battleground::GetBGObject(uint32 type, bool logError)
@@ -1580,28 +1591,42 @@ Creature* Battleground::GetBGCreature(uint32 type, bool logError)
     return creature;
 }
 
-void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
+bool Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
+{
+    return SpawnBGObject(BgObjects[type], respawntime);
+}
+
+bool Battleground::SpawnBGObject(GameObject* obj, uint32 respawntime)
+{
+    if (respawntime)
+        obj->SetLootState(GO_JUST_DEACTIVATED);
+    else
+    {
+        if (obj->getLootState() == GO_JUST_DEACTIVATED)
+            // Change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
+            obj->SetLootState(GO_READY);
+        if (obj->IsInactive())
+            obj->SetInactive(false);
+    }
+    obj->SetRespawnTime(respawntime);
+
+    if (!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
+    {
+        obj->GetMap()->AddToMap(obj);
+        return true;
+    }
+    else if (!respawntime) //Immediately recreate object at client (else player would have to move for the object to appear)
+        obj->UpdateObjectVisibility(true);
+
+    return false;
+}
+
+bool Battleground::SpawnBGObject(ObjectGuid guid, uint32 respawntime)
 {
     if (Map* map = FindBgMap())
-        if (GameObject* obj = map->GetGameObject(BgObjects[type]))
-        {
-            if (respawntime)
-                obj->SetLootState(GO_JUST_DEACTIVATED);
-            else
-            {
-                if (obj->getLootState() == GO_JUST_DEACTIVATED)
-                    // Change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
-                    obj->SetLootState(GO_READY);
-                if (obj->IsInactive())
-                    obj->SetInactive(false);
-            }
-            obj->SetRespawnTime(respawntime);
-            
-            if (!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
-                map->AddToMap(obj);
-            else if(!respawntime) //Immediately recreate object at client (else player would have to move for the object to appear)
-                obj->UpdateObjectVisibility(true);
-        }
+        if (GameObject* obj = map->GetGameObject(guid))
+            return SpawnBGObject(obj, respawntime);
+    return false;
 }
 
 Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y, float z, float o, uint32 respawntime)
@@ -2223,5 +2248,261 @@ void Battleground::BuildPvPLogDataPacket(WorldPacket& data)
             data << uint32(0);
             break;
         }
+    }
+}
+
+void Battleground::OnObjectDBLoad(Creature* creature)
+{
+    std::vector<BattleGroundEventIdx> const& eventsVector = sBattlegroundMgr->GetCreatureEventsVector(creature->GetSpawnId());
+    ASSERT(eventsVector.size());
+    if (eventsVector[0].event1 == BG_EVENT_NONE)
+        return;
+    for (int i = 0; i < eventsVector.size(); ++i)
+    {
+        m_EventObjects[MAKE_PAIR32(eventsVector[i].event1, eventsVector[i].event2)].creatures.push_back(creature->GetGUID());
+        if (!IsActiveEvent(eventsVector[i].event1, eventsVector[i].event2))
+            SpawnBGCreature(creature, DESPAWN_FORCED);
+    }
+}
+
+ObjectGuid Battleground::GetSingleCreatureGuid(uint8 event1, uint8 event2)
+{
+    GuidVector::const_iterator itr = m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.begin();
+    if (itr != m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.end())
+        if (Creature* c = GetBgMap()->GetCreatureBySpawnId(*itr))
+            return c->GetGUID();
+
+    return ObjectGuid();
+}
+
+bool Battleground::IsDoor(uint8 event1, uint8 event2)
+{
+    if (event1 == BG_EVENT_DOOR)
+    {
+        if (event2 > 0)
+        {
+            TC_LOG_ERROR("battlegrounds", "BattleGround too high event2 for event1:%u", event1);
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Battleground::OnObjectDBLoad(GameObject* obj)
+{
+    std::vector<BattleGroundEventIdx> const& eventsVector = sBattlegroundMgr->GetGameObjectEventsVector(obj->GetSpawnId());
+    ASSERT(eventsVector.size());
+    if (eventsVector[0].event1 == BG_EVENT_NONE)
+        return false;
+    for (int i = 0; i < eventsVector.size(); ++i)
+    {
+        m_EventObjects[MAKE_PAIR32(eventsVector[i].event1, eventsVector[i].event2)].gameobjects.push_back(obj->GetGUID());
+        if (!IsActiveEvent(eventsVector[i].event1, eventsVector[i].event2))
+            SpawnBGObject(obj, RESPAWN_ONE_DAY);
+        else
+        {
+            // it's possible, that doors aren't spawned anymore (wsg)
+            if (GetStatus() >= STATUS_IN_PROGRESS && IsDoor(eventsVector[i].event1, eventsVector[i].event2))
+                DoorOpen(obj);
+        }
+    }
+    return obj->IsInWorld();
+}
+
+void Battleground::SpawnBGCreature(uint32 spawnID, BattleGroundCreatureSpawnMode mode)
+{
+    Map* map = GetBgMap();
+    Creature* c = map->GetCreatureBySpawnId(spawnID);
+    if (!c)
+        return;
+
+    SpawnBGCreature(c, mode);
+}
+
+void Battleground::SpawnBGCreature(Creature* creature, BattleGroundCreatureSpawnMode mode)
+{
+    if (mode == RESPAWN_FORCED)
+    {
+        creature->SetRespawnDelay(2 * MINUTE);
+        if (creature->GetRespawnTime() > time(nullptr))
+            creature->SetRespawnTime(1);
+    }
+    else if (mode == DESPAWN_FORCED)
+    {
+        creature->SetRespawnDelay(4 * DAY);
+        creature->SetDeathState(JUST_DIED);
+        creature->RemoveCorpse();
+    }
+    else if (mode == RESPAWN_START)
+    {
+        creature->SetRespawnDelay(2 * MINUTE);
+        if (creature->GetRespawnTime() > time(nullptr))
+            creature->SetRespawnTime(1);
+    }
+    else if (mode == RESPAWN_STOP)
+    {
+        creature->SetRespawnDelay(4 * DAY);
+        if (!creature->IsInWorld())
+        {
+            creature->SetDeathState(JUST_DIED);
+            creature->RemoveCorpse();
+        }
+        else
+        {
+            if (creature->GetRespawnTime() < time(nullptr))
+                creature->SetRespawnTime(1);
+        }
+    }
+
+    /*
+    switch (mode)
+    {
+    case RESPAWN_START:
+    case RESPAWN_FORCED:
+        map->ForceRespawn(SPAWN_TYPE_CREATURE, spawnId);
+        break;
+    case DESPAWN_FORCED:
+    case RESPAWN_STOP:
+        obj->DisappearAndDie();
+        map->SaveRespawnTime(SPAWN_TYPE_CREATURE, spawnId, obj->GetEntry(), 4 * DAY, obj->GetZoneId());
+        break;
+    }*/
+}
+
+void Battleground::SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay)
+{
+    // stop if we want to spawn something which was already spawned
+    // or despawn something which was already despawned
+    if (event2 == BG_EVENT_NONE || (spawn && m_ActiveEvents[event1] == event2)
+        || (!spawn && m_ActiveEvents[event1] != event2))
+        return;
+
+    if (spawn)
+    {
+        // if event gets spawned, the current active event must get despawned
+        SpawnEvent(event1, m_ActiveEvents[event1], false, forced_despawn);
+        m_ActiveEvents[event1] = event2;                    // set this event to active
+    }
+    else
+        m_ActiveEvents[event1] = BG_EVENT_NONE;             // no event active if event2 gets despawned
+
+    GuidVector::const_iterator itr = m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.begin();
+    for (; itr != m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.end(); ++itr)
+    {
+        Creature* c = GetBgMap()->GetCreature(*itr);
+        if (!c)
+            continue;
+        std::vector<BattleGroundEventIdx> const& eventsVector = sBattlegroundMgr->GetCreatureEventsVector(c->GetSpawnId());
+        ASSERT(eventsVector.size());
+        bool spawnThisCreature = spawn;
+        for (int i = 0; i < eventsVector.size(); ++i)
+        {
+            if (!IsActiveEvent(eventsVector[i].event1, eventsVector[i].event2))
+            {
+                spawnThisCreature = false;
+                break;
+            }
+        }
+        SpawnBGCreature(c, spawnThisCreature ? RESPAWN_FORCED : (forced_despawn ? DESPAWN_FORCED : RESPAWN_STOP));
+    }
+
+    GuidVector::const_iterator itr2 = m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.begin();
+    for (; itr2 != m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.end(); ++itr2)
+        SpawnBGObject(*itr2, (spawn) ? delay : RESPAWN_ONE_DAY);
+
+    OnEventStateChanged(event1, event2, spawn);
+}
+
+void Battleground::SetSpawnEventMode(uint8 event1, uint8 event2, BattleGroundCreatureSpawnMode mode)
+{
+    if (event2 == BG_EVENT_NONE)
+        return;
+
+    bool isSpawnMode = mode == RESPAWN_FORCED;
+    GuidVector::const_iterator itr = m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.begin();
+    for (; itr != m_EventObjects[MAKE_PAIR32(event1, event2)].creatures.end(); ++itr)
+    {
+        Creature* c = GetBgMap()->GetCreature(*itr);
+        if (!c)
+            continue;
+        std::vector<BattleGroundEventIdx> const& eventsVector = sBattlegroundMgr->GetCreatureEventsVector(c->GetSpawnId());
+        ASSERT(eventsVector.size());
+        bool spawnThisCreature = true;
+        for (int i = 0; i < eventsVector.size(); ++i)
+        {
+            if (!IsActiveEvent(eventsVector[i].event1, eventsVector[i].event2))
+            {
+                spawnThisCreature = false;
+                break;
+            }
+        }
+        if (spawnThisCreature == isSpawnMode)
+            SpawnBGCreature(c, mode);
+    }
+}
+
+void Battleground::OpenDoorEvent(uint8 event1, uint8 event2 /*=0*/)
+{
+    if (!IsDoor(event1, event2))
+    {
+        TC_LOG_ERROR("battlegrounds", "BattleGround:OpenDoorEvent this is no door event1:%u event2:%u", event1, event2);
+        return;
+    }
+    if (!IsActiveEvent(event1, event2))                 // maybe already despawned (eye)
+    {
+        TC_LOG_ERROR("battlegrounds", "BattleGround:OpenDoorEvent this event isn't active event1:%u event2:%u", event1, event2);
+        return;
+    }
+    GuidVector::const_iterator itr = m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.begin();
+    for (; itr != m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.end(); ++itr)
+        DoorOpen(*itr);
+}
+
+void Battleground::StartingEventDespawnDoors()
+{
+    if (!IsDoor(BG_EVENT_DOOR, 0))
+        return;
+
+    if (!IsActiveEvent(BG_EVENT_DOOR, 0))                 // maybe already despawned (eye)
+        return;
+
+    GuidVector::const_iterator itr = m_EventObjects[MAKE_PAIR32(BG_EVENT_DOOR, 0)].gameobjects.begin();
+    for (; itr != m_EventObjects[MAKE_PAIR32(BG_EVENT_DOOR, 0)].gameobjects.end(); ++itr)
+    {
+        GameObject *obj = GetBgMap()->GetGameObjectBySpawnId(*itr);
+        if (obj)
+            obj->AddObjectToRemoveList();
+    }
+}
+
+void Battleground::HandleCommand(Player* player, ChatHandler* handler, char const* args)
+{
+    std::stringstream in(args);
+    std::string commandType;
+    in >> commandType;
+    if (commandType == "event")
+    {
+        in >> commandType;
+        bool spawn = false;
+        bool force = true;
+        int event1, event2;
+        if (commandType == "spawn")
+            spawn = true;
+        in >> event1 >> event2;
+        in >> commandType;
+        if (commandType == "respawn")
+            force = false;
+        SpawnEvent(event1, event2, spawn, force);
+        handler->PSendSysMessage("Event (%u, %u) %s", event1, event2, spawn ? "spawned" : "despawned");
+    }
+    else if (commandType == "eventi")
+    {
+        int eventIdx;
+        in >> eventIdx;
+        handler->PSendSysMessage("Event %u current status: %u", eventIdx, m_ActiveEvents[eventIdx]);
+        for (int j = 0; j < 0xFF; ++j)
+            if (m_EventObjects[MAKE_PAIR32(eventIdx, j)].gameobjects.size() || m_EventObjects[MAKE_PAIR32(eventIdx, j)].creatures.size())
+                handler->PSendSysMessage("Event (%u, %u): %u gobj / %u creatures", eventIdx, j, m_EventObjects[MAKE_PAIR32(eventIdx, j)].gameobjects.size(), m_EventObjects[MAKE_PAIR32(eventIdx, j)].creatures.size());
     }
 }

@@ -669,8 +669,10 @@ bool BattlegroundWS::SetupBattleground()
     return true;
 }
 
-void BattlegroundWS::ResetBGSubclass()
+void BattlegroundWS::Reset()
 {
+    Battleground::Reset();
+
     m_FlagKeepers[TEAM_ALLIANCE].Clear();
     m_FlagKeepers[TEAM_HORDE].Clear();
     m_DroppedFlagGUID[TEAM_ALLIANCE].Clear();

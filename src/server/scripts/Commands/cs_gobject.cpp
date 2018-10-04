@@ -340,14 +340,14 @@ public:
             o = chr->GetOrientation();
         }
 
-        float rot2 = sin(o / 2);
-        float rot3 = cos(o / 2);
 
         chr->GetMap()->RemoveFromMap(obj, false);
 
         obj->Relocate(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), o);
 
         obj->SetFloatValue(GAMEOBJECT_FACING, o);
+        float rot2 = sin(o / 2.f);
+        float rot3 = cos(o / 2.f);
         obj->SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, rot2);
         obj->SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, rot3);
 

@@ -1738,6 +1738,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading BattleMasters..." );
     sObjectMgr->LoadBattleMastersEntry();
 
+    TC_LOG_INFO("server.loading", "Loading BattleGround event indexes...");
+    sBattlegroundMgr->LoadBattleEventIndexes();
+
     TC_LOG_INFO("server.loading", "Loading GameTeleports..." );
     sObjectMgr->LoadGameTele();
 

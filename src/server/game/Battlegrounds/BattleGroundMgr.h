@@ -12,6 +12,8 @@ typedef std::map<uint32, Battleground*> BattlegroundContainer;
 typedef std::set<uint32> BattlegroundClientIdsContainer;
 
 typedef std::unordered_map<uint32, BattlegroundTypeId> BattleMastersMap;
+typedef std::unordered_map<uint32, std::vector<BattleGroundEventIdx> > CreatureBattleEventIndexesMap;
+typedef std::unordered_map<uint32, std::vector<BattleGroundEventIdx> > GameObjectBattleEventIndexesMap;
 
 // handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
 
@@ -113,6 +115,37 @@ class TC_GAME_API BattlegroundMgr
         uint32 GetMaxRatingDifference() const;
         uint32 GetRatingDiscardTimer()  const;
 
+        void LoadBattleEventIndexes();
+        const BattleGroundEventIdx GetCreatureEventIndex(uint32 spawnID) const
+        {
+            CreatureBattleEventIndexesMap::const_iterator itr = m_CreatureBattleEventIndexMap.find(spawnID);
+            if (itr != m_CreatureBattleEventIndexMap.end())
+                return itr->second[0];
+            return m_CreatureBattleEventIndexMap.find(-1)->second[0];
+        }
+        const BattleGroundEventIdx GetGameObjectEventIndex(uint32 spawnID) const
+        {
+            GameObjectBattleEventIndexesMap::const_iterator itr = m_GameObjectBattleEventIndexMap.find(spawnID);
+            if (itr != m_GameObjectBattleEventIndexMap.end())
+                return itr->second[0];
+            return m_GameObjectBattleEventIndexMap.find(-1)->second[0];
+        }
+        // Nostalrius: allow multiple events per creature ... Avoid when possible.
+        std::vector<BattleGroundEventIdx> const& GetCreatureEventsVector(uint32 spawnID) const
+        {
+            CreatureBattleEventIndexesMap::const_iterator itr = m_CreatureBattleEventIndexMap.find(spawnID);
+            if (itr != m_CreatureBattleEventIndexMap.end())
+                return itr->second;
+            return m_CreatureBattleEventIndexMap.find(-1)->second;
+        }
+        std::vector<BattleGroundEventIdx> const& GetGameObjectEventsVector(uint32 spawnID) const
+        {
+            GameObjectBattleEventIndexesMap::const_iterator itr = m_GameObjectBattleEventIndexMap.find(spawnID);
+            if (itr != m_GameObjectBattleEventIndexMap.end())
+                return itr->second;
+            return m_GameObjectBattleEventIndexMap.find(-1)->second;
+        }
+
         void InitAutomaticArenaPointDistribution();
         //TC compat
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const { return sObjectMgr->GetBattleMasterBG(entry); }
@@ -139,8 +172,9 @@ class TC_GAME_API BattlegroundMgr
         uint32 m_AutoDistributionTimeChecker;
         uint32 m_UpdateTimer;
         bool   m_ArenaTesting;
-        bool   m_Testing; 
-
+        bool   m_Testing;
+        CreatureBattleEventIndexesMap m_CreatureBattleEventIndexMap;
+        GameObjectBattleEventIndexesMap m_GameObjectBattleEventIndexMap;
 
         BattlegroundTemplate const* GetBattlegroundTemplateByTypeId(BattlegroundTypeId id)
         {

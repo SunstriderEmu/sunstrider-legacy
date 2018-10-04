@@ -3439,6 +3439,8 @@ uint32 Spell::prepare(SpellCastTargets const& targets, AuraEffect const* trigger
                 tmpPlayer->SendSpectatorAddonMsgToBG(msg);
             }
 
+    CallScriptSpellStartHandlers();
+
     //Containers for channeled spells have to be set
     // Why check duration? 29350: channelled triggers channelled
     //sun: if after changes, TRIGGERED_CAST_DIRECTLY works for channeled, also fix _TestPowerCost
@@ -8447,6 +8449,19 @@ void Spell::CallScriptAfterCastHandlers()
     {
         m_loadedScript->_PrepareScriptCall(SPELL_SCRIPT_HOOK_AFTER_CAST);
         auto hookItrEnd = m_loadedScript->AfterCast.end(), hookItr = m_loadedScript->AfterCast.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+            (*hookItr).Call(m_loadedScript);
+
+        m_loadedScript->_FinishScriptCall();
+    }
+}
+
+void Spell::CallScriptSpellStartHandlers()
+{
+    for (auto & m_loadedScript : m_loadedScripts)
+    {
+        m_loadedScript->_PrepareScriptCall(SPELL_SCRIPT_HOOK_ON_START);
+        auto hookItrEnd = m_loadedScript->OnSpellStart.end(), hookItr = m_loadedScript->OnSpellStart.begin();
         for (; hookItr != hookItrEnd; ++hookItr)
             (*hookItr).Call(m_loadedScript);
 

@@ -42,18 +42,17 @@ class BattlegroundBE : public Battleground
         void Update(time_t diff);
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        virtual void AddPlayer(Player *plr) override;
 
-        void RemovePlayer(Player *plr, ObjectGuid guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        bool SetupBattleground();
-        void ResetBGSubclass();
-        virtual void FillInitialWorldStates(WorldPacket &d);
-        void HandleKillPlayer(Player* player, Player *killer);
-        bool HandlePlayerUnderMap(Player * plr);
+        void RemovePlayer(Player *plr, ObjectGuid guid) override;
+        void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
+        bool SetupBattleground() override;
+        virtual void FillInitialWorldStates(WorldPacket &d) override;
+        void HandleKillPlayer(Player* player, Player *killer) override;
+        bool HandlePlayerUnderMap(Player * plr) override;
 
         /* Scorekeeping */
-        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
 };
 #endif
 

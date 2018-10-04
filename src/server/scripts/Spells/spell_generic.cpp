@@ -405,6 +405,31 @@ class spell_gen_elune_candle : public SpellScript
     }
 };
 
+// 21651 - Battleground flag opening spell - Play visual effect
+class spell_opening : public SpellScript
+{
+    PrepareSpellScript(spell_opening);
+
+    void HandleSpellStart()
+    {
+        GameObject* target = GetCaster()->GetMap()->GetGameObject(GetSpell()->m_targets.GetObjectTargetGUID());
+        if (!target)
+            return;
+
+        LockEntry const *lockInfo = sLockStore.LookupEntry(target->GetGOInfo()->GetLockId());
+        if (!lockInfo || !(lockInfo->Index[1] == LOCKTYPE_SLOW_OPEN))
+            return;
+
+        //24390 periodically triggers 24391
+        GetCaster()->CastSpell(target, 24390, true);
+    }
+
+    void Register() override
+    {
+        OnSpellStart += SpellCastFn(spell_opening::HandleSpellStart);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -415,4 +440,5 @@ void AddSC_generic_spell_scripts()
     RegisterAuraScript(spell_gen_enlightenment);
     RegisterAuraScript(spell_gen_creature_permanent_feign_death);
     RegisterSpellScript(spell_gen_elune_candle);
+    RegisterSpellScript(spell_opening);
 }

@@ -184,11 +184,6 @@ void BattlegroundBE::FillInitialWorldStates(WorldPacket &data)
     data << uint32(0x9f3) << uint32(1);           // 9
 }
 
-void BattlegroundBE::ResetBGSubclass()
-{
-
-}
-
 bool BattlegroundBE::SetupBattleground()
 {
     // gates

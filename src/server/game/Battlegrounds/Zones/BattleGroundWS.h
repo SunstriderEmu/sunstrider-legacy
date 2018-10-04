@@ -163,7 +163,7 @@ class BattlegroundWS : public Battleground
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         void HandleKillPlayer(Player *player, Player *killer) override;
         bool SetupBattleground() override;
-        void ResetBGSubclass() override;
+        void Reset() override;
 
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);

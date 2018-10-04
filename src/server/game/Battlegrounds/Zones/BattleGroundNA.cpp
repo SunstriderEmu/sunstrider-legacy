@@ -177,11 +177,6 @@ void BattlegroundNA::FillInitialWorldStates(WorldPacket &data)
     data << uint32(0xa11) << uint32(1);           // 9
 }
 
-void BattlegroundNA::ResetBGSubclass()
-{
-
-}
-
 bool BattlegroundNA::SetupBattleground()
 {
     // gates

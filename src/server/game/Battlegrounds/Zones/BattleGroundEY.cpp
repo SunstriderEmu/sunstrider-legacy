@@ -54,8 +54,6 @@ void BattlegroundEY::Update(time_t diff)
             SpawnBGObject(BG_EY_OBJECT_DOOR_A, RESPAWN_IMMEDIATELY);
             SpawnBGObject(BG_EY_OBJECT_DOOR_H, RESPAWN_IMMEDIATELY);
 
-//            SpawnBGCreature(EY_SPIRIT_MAIN_ALLIANCE, RESPAWN_IMMEDIATELY);
-//            SpawnBGCreature(EY_SPIRIT_MAIN_HORDE, RESPAWN_IMMEDIATELY);
             for(uint32 i = BG_EY_OBJECT_A_BANNER_FEL_REALVER_CENTER; i < BG_EY_OBJECT_MAX; ++i)
                 SpawnBGObject(i, RESPAWN_ONE_DAY);
 
@@ -504,8 +502,10 @@ bool BattlegroundEY::SetupBattleground()
     return true;
 }
 
-void BattlegroundEY::ResetBGSubclass()
+void BattlegroundEY::Reset()
 {
+    Battleground::Reset();
+
     m_TeamScores[TEAM_ALLIANCE] = 0;
     m_TeamScores[TEAM_HORDE] = 0;
     m_TeamPointsCount[TEAM_ALLIANCE] = 0;
@@ -723,8 +723,6 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     if(!sg || !AddSpiritGuide(Point, sg->x, sg->y, sg->z, 3.124139f, Team))
         TC_LOG_ERROR("bg.battleground","BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
             Point, Team, m_CapturingPointTypes[Point].GraveYardId);
-
-//    SpawnBGCreature(Point,RESPAWN_IMMEDIATELY);
 
     UpdatePointsIcons(Team, Point);
     UpdatePointsCount(Team);

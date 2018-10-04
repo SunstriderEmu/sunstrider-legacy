@@ -47,14 +47,14 @@ const uint32 BG_AB_OP_NODESTATES[5] =    {1767, 1782, 1772, 1792, 1787};
 const uint32 BG_AB_OP_NODEICONS[5]  =    {1842, 1846, 1845, 1844, 1843};
 
 /* Note: code uses that these IDs follow each other */
-enum BG_AB_NodeObjectId
+/*enum BG_AB_NodeObjectId
 {
     BG_AB_OBJECTID_NODE_BANNER_0    = 180087,       // Stables banner
     BG_AB_OBJECTID_NODE_BANNER_1    = 180088,       // Blacksmith banner
     BG_AB_OBJECTID_NODE_BANNER_2    = 180089,       // Farm banner
     BG_AB_OBJECTID_NODE_BANNER_3    = 180090,       // Lumber mill banner
     BG_AB_OBJECTID_NODE_BANNER_4    = 180091        // Gold mine banner
-};
+};*/
 
 enum BG_AB_ObjectType
 {
@@ -90,7 +90,7 @@ enum BG_AB_ObjectType
 };
 
 /* Object id templates from DB */
-enum BG_AB_ObjectTypes
+/*enum BG_AB_ObjectTypes
 {
     BG_AB_OBJECTID_BANNER_A             = 180058,
     BG_AB_OBJECTID_BANNER_CONT_A        = 180059,
@@ -103,7 +103,7 @@ enum BG_AB_ObjectTypes
 
     BG_AB_OBJECTID_GATE_A               = 180255,
     BG_AB_OBJECTID_GATE_H               = 180256
-};
+};*/
 
 enum BG_AB_Timers
 {
@@ -154,21 +154,6 @@ enum BG_AB_Sounds
     SOUND_NEAR_VICTORY                  = 8456
 };
 
-// x, y, z, o
-const float BG_AB_NodePositions[BG_AB_DYNAMIC_NODES_COUNT][4] = {
-    { 1166.785f, 1200.132f, -56.70859f, 0.9075713f },         // stables
-    { 977.0156f, 1046.616f, -44.80923f, -2.600541f },         // blacksmith
-    { 806.1821f, 874.2723f, -55.99371f, -2.303835f },         // farm
-    { 856.1419f, 1148.902f, 11.18469f, -2.303835f },          // lumber mill
-    { 1146.923f, 848.1782f, -110.917f, -0.7330382f }          // gold mine
-};
-
-// x, y, z, o, rot0, rot1, rot2, rot3
-const float BG_AB_DoorPositions[2][8] = {
-    {1284.597f, 1281.167f, -15.97792f, 0.7068594f, 0.012957f, -0.060288f, 0.344959f, 0.93659f},
-    {708.0903f, 708.4479f, -17.8342f, -2.391099f, 0.050291f, 0.015127f, 0.929217f, -0.365784f}
-};
-
 // Tick intervals and given points: case 0,1,2,3,4,5 captured nodes
 const uint32 BG_AB_TickIntervals[6] = {0, 12000, 9000, 6000, 3000, 1000};
 const uint32 BG_AB_TickPoints[6] = {0, 10, 10, 10, 10, 30};
@@ -183,17 +168,6 @@ const float BG_AB_BuffPositions[BG_AB_DYNAMIC_NODES_COUNT][4] = {
     { 818.0089f, 842.3543f, -56.54062f, 3.176533f },         // farm
     { 808.8463f, 1185.417f,  11.92161f, 5.619962f },         // lumber mill
     { 1147.091f, 816.8362f, -98.39896f, 6.056293f }          // gold mine
-};
-
-// x, y, z, o
-const float BG_AB_SpiritGuidePos[BG_AB_ALL_NODES_COUNT][4] = {
-    { 1200.03f, 1171.09f, -56.47f, 5.15f },                   // stables
-    { 1017.43f, 960.61f, -42.95f, 4.88f },                    // blacksmith
-    { 833.00f, 793.00f, -57.25f, 5.27f },                     // farm
-    { 775.17f, 1206.40f, 15.79f, 1.90f },                     // lumber mill
-    { 1207.48f, 787.00f, -83.36f, 5.51f },                    // gold mine
-    { 1354.05f, 1275.48f, -11.30f, 4.77f },                   // alliance starting base
-    { 714.61f, 646.15f, -10.87f, 4.34f }                      // horde starting base
 };
 
 struct BG_AB_BannerTimer
@@ -225,8 +199,10 @@ class BattlegroundAB : public Battleground
         void RemovePlayer(Player *plr,ObjectGuid guid) override;
         void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
         bool SetupBattleground() override;
-        void ResetBGSubclass() override;
+        void Reset() override;
         WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
+        void StartingEventCloseDoors() override;
+        void StartingEventOpenDoors() override;
 
         /* Scorekeeping */
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
@@ -238,12 +214,10 @@ class BattlegroundAB : public Battleground
 
     private:
         /* Gameobject spawning/despawning */
-        void _CreateBanner(uint8 node, uint8 type, uint8 teamIndex, bool delay);
+        void _CreateBanner(uint8 node, uint8 type, uint8 teamIndex);
         void _DelBanner(uint8 node, uint8 type, uint8 teamIndex);
         void _SendNodeUpdate(uint8 node);
 
-        /* Creature spawning/despawning */
-        // TODO: working, scripted peons spawning
         void _NodeOccupied(uint8 node,Team team);
         void _NodeDeOccupied(uint8 node);
 
