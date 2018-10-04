@@ -270,7 +270,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
                 buildShortcut = true;
         }
 
-        if (buildShortcut)
+        if (buildShortcut || _forceDestination)
         {
             BuildShortcut();
             _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
