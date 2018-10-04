@@ -1112,7 +1112,7 @@ void BattlegroundMgr::LoadBattleEventIndexes()
         if (fields[5].GetUInt32() != spawnID)
         {
             TC_LOG_ERROR("sql.sql", "BattleGroundEvent: %s with nonexistent spawnID %u for event: map:%u, event1:%u, event2:%u (\"%s\")",
-                (gameobject) ? "gameobject" : "creature", spawnID, map, events.event1, events.event2, description);
+                (gameobject) ? "gameobject" : "creature", spawnID, map, events.event1, events.event2, description.c_str());
             continue;
         }
 

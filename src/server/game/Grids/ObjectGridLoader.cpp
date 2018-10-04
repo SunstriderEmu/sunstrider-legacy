@@ -10,7 +10,7 @@
 #include "CellImpl.h"
 #include "Transport.h"
 #include "ScriptMgr.h"
-#include "Battleground.h"
+#include "BattleGround.h"
 
 void ObjectGridEvacuator::Visit(CreatureMapType &m)
 {
