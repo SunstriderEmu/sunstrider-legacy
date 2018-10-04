@@ -1757,7 +1757,7 @@ float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, fl
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
         // we need ground level (including grid height version) for proper return water level in point
-        float ground_z = GetHeight(phasemask, x, y, z + collisionHeight, true, maxSearchDist, collisionHeight);
+        float ground_z = GetHeight(phasemask, x, y, z, true, maxSearchDist, collisionHeight);
         if (ground)
             *ground = ground_z;
 
@@ -1780,7 +1780,7 @@ float Map::GetWaterOrGroundLevel(uint32 phasemask, float x, float y, float z, fl
 
 float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool checkVMap /*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, float collisionHeight, bool walkableOnly /*= false*/) const
 {
-    return std::max<float>(GetHeight(x, y, z, checkVMap, maxSearchDist, collisionHeight, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
+    return std::max<float>(GetHeight(x, y, z, checkVMap, maxSearchDist, collisionHeight, walkableOnly), _dynamicTree.getHeight(x, y, z + collisionHeight, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
 }
 
 Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject)
