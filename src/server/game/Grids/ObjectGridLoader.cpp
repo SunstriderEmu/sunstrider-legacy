@@ -88,9 +88,6 @@ template <>
 void AddObjectHelper(CellCoord &cell, CreatureMapType &m, uint32 &count, Map* map, Creature *obj)
 {
     obj->AddToGrid(m);
-    //HACKZ TO REMOVE
-    if (obj->IsSpiritService())
-        obj->SetDeathState(DEAD);
     ObjectGridLoader::SetObjectCell(obj, cell);
     obj->AddToWorld();
     if (obj->isActiveObject())

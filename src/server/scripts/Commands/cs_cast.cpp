@@ -258,7 +258,7 @@ public:
             return false;
         }
 
-        target->CastSpell(target, spell, TRIGGERED_NONE);
+        target->CastSpell(target, spell);
 
         return true;
     }
