@@ -36,7 +36,7 @@ class BattlegroundRL : public Battleground
     public:
         BattlegroundRL();
         ~BattlegroundRL();
-        void Update(time_t diff);
+        void Update(time_t diff) override;
 
         /* inherited from BattlegroundClass */
         void AddPlayer(Player *plr) override;

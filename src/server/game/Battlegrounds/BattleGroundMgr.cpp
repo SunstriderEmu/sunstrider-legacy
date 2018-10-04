@@ -1122,7 +1122,7 @@ void BattlegroundMgr::LoadBattleEventIndexes()
             // there is an event missing
             if (spawnID == 0)
             {
-                TC_LOG_ERROR("sql.sql", "BattleGroundEvent: missing db-data for map:%u, event1:%u, event2:%u (\"%s\")", desc_map, desc_event1, desc_event2, description);
+                TC_LOG_ERROR("sql.sql", "BattleGroundEvent: missing db-data for map:%u, event1:%u, event2:%u (\"%s\")", desc_map, desc_event1, desc_event2, description.c_str());
                 continue;
             }
             // we have an event which shouldn't exist

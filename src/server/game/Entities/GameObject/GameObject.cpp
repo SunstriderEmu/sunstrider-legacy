@@ -534,12 +534,7 @@ void GameObject::Update(uint32 diff)
                         if (Player* casterPlayer = caster->ToPlayer())
                         {
                             SetGoState(GO_STATE_ACTIVE);
-
-                            UpdateData udata;
-                            WorldPacket packet;
-                            BuildValuesUpdateBlockForPlayer(&udata, casterPlayer);
-                            udata.BuildPacket(&packet, false);
-                            casterPlayer->SendDirectMessage(&packet);
+                            SendUpdateToPlayer(casterPlayer);
 
                             SendCustomAnim(GetGoAnimProgress());
                         }
@@ -586,7 +581,7 @@ void GameObject::Update(uint32 diff)
                         case GAMEOBJECT_TYPE_DOOR:
                         case GAMEOBJECT_TYPE_BUTTON:
                             //we need to open doors if they are closed (add there another condition if this code breaks some usage, but it need to be here for battlegrounds)
-                            if (!GetGoState())
+                            if (GetGoState() != GO_STATE_READY)
                                 SwitchDoorOrButton(false);
                             break;
                         case GAMEOBJECT_TYPE_FISHINGHOLE:

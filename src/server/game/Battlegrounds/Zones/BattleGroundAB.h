@@ -214,8 +214,8 @@ class BattlegroundAB : public Battleground
 
     private:
         /* Gameobject spawning/despawning */
-        void _CreateBanner(uint8 node, uint8 type, uint8 teamIndex);
-        void _DelBanner(uint8 node, uint8 type, uint8 teamIndex);
+        void _CreateBanner(uint8 node, uint8 type, uint8 teamIndex, Player* invoker = nullptr);
+        void _DelBanner(uint8 node, uint8 type, uint8 teamIndex, Player* invoker = nullptr);
         void _SendNodeUpdate(uint8 node);
 
         void _NodeOccupied(uint8 node,Team team);

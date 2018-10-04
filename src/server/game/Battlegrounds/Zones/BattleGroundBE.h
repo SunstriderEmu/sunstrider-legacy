@@ -39,7 +39,7 @@ class BattlegroundBE : public Battleground
     public:
         BattlegroundBE();
         ~BattlegroundBE();
-        void Update(time_t diff);
+        void Update(time_t diff) override;
 
         /* inherited from BattlegroundClass */
         virtual void AddPlayer(Player *plr) override;

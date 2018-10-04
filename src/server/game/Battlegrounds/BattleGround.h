@@ -472,7 +472,7 @@ class TC_GAME_API Battleground
         //Returns true if obj was added to map
         bool OnObjectDBLoad(GameObject* obj);
         // (de-)spawns creatures and gameobjects from an event
-        void SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay = 0);
+        void SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay = 0, Player* invoker = nullptr);
         void SetSpawnEventMode(uint8 event1, uint8 event2, BattleGroundCreatureSpawnMode mode);
         bool IsActiveEvent(uint8 event1, uint8 event2)
         {
@@ -496,9 +496,9 @@ class TC_GAME_API Battleground
         GuidVector BgObjects;
         GuidVector BgCreatures;
         //Return true if object was added to map
-        bool SpawnBGObject(GameObject* object, uint32 respawntime);
-        bool SpawnBGObject(ObjectGuid guid, uint32 respawntime);
-        bool SpawnBGObject(uint32 type, uint32 respawntime); //for compat
+        bool SpawnBGObject(GameObject* object, uint32 respawntime, Player* invoker = nullptr);
+        bool SpawnBGObject(ObjectGuid guid, uint32 respawntime, Player* invoker = nullptr);
+        bool SpawnBGObject(uint32 type, uint32 respawntime, Player* invoker = nullptr); //for compat
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0, bool inactive = false);
         void SpawnBGCreature(ObjectGuid guid, BattleGroundCreatureSpawnMode mode) = delete;
         void SpawnBGCreature(uint32 spawnID, BattleGroundCreatureSpawnMode mode);

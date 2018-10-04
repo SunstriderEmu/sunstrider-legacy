@@ -1591,20 +1591,32 @@ Creature* Battleground::GetBGCreature(uint32 type, bool logError)
     return creature;
 }
 
-bool Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
+bool Battleground::SpawnBGObject(uint32 type, uint32 respawntime, Player* invoker /*= nullptr*/)
 {
-    return SpawnBGObject(BgObjects[type], respawntime);
+    return SpawnBGObject(BgObjects[type], respawntime, invoker);
 }
 
-bool Battleground::SpawnBGObject(GameObject* obj, uint32 respawntime)
+bool Battleground::SpawnBGObject(GameObject* obj, uint32 respawntime, Player* invoker /*= nullptr*/)
 {
     if (respawntime)
+    {
+        obj->SetGoState(GO_STATE_ACTIVE);
         obj->SetLootState(GO_JUST_DEACTIVATED);
+        // sun: Bit of a hack to fix #41, client expects GAMEOBJECT_STATE to change but it changed while the banners are invisible
+        // So the state change is never sent and client still waits for it, refusing to click again when the banner is respawner
+        // Force update now to avoid this
+        if (invoker && respawntime == RESPAWN_ONE_DAY)
+            obj->SendUpdateToPlayer(invoker);
+    }
     else
     {
-        if (obj->getLootState() == GO_JUST_DEACTIVATED)
-            // Change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
+        // Change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
+        if (obj->getLootState() == GO_JUST_DEACTIVATED) 
             obj->SetLootState(GO_READY);
+
+        if (obj->GetGOInfo()->type != GAMEOBJECT_TYPE_FLAGSTAND)
+            obj->SetGoState(GO_STATE_READY);
+
         if (obj->IsInactive())
             obj->SetInactive(false);
     }
@@ -1621,11 +1633,11 @@ bool Battleground::SpawnBGObject(GameObject* obj, uint32 respawntime)
     return false;
 }
 
-bool Battleground::SpawnBGObject(ObjectGuid guid, uint32 respawntime)
+bool Battleground::SpawnBGObject(ObjectGuid guid, uint32 respawntime, Player* invoker /*= nullptr*/)
 {
     if (Map* map = FindBgMap())
         if (GameObject* obj = map->GetGameObject(guid))
-            return SpawnBGObject(obj, respawntime);
+            return SpawnBGObject(obj, respawntime, invoker);
     return false;
 }
 
@@ -2370,7 +2382,7 @@ void Battleground::SpawnBGCreature(Creature* creature, BattleGroundCreatureSpawn
     }*/
 }
 
-void Battleground::SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay)
+void Battleground::SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool forced_despawn, uint32 delay, Player* invoker /*= nullptr*/)
 {
     // stop if we want to spawn something which was already spawned
     // or despawn something which was already despawned
@@ -2381,7 +2393,7 @@ void Battleground::SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool force
     if (spawn)
     {
         // if event gets spawned, the current active event must get despawned
-        SpawnEvent(event1, m_ActiveEvents[event1], false, forced_despawn);
+        SpawnEvent(event1, m_ActiveEvents[event1], false, forced_despawn, 0, invoker);
         m_ActiveEvents[event1] = event2;                    // set this event to active
     }
     else
@@ -2409,7 +2421,7 @@ void Battleground::SpawnEvent(uint8 event1, uint8 event2, bool spawn, bool force
 
     GuidVector::const_iterator itr2 = m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.begin();
     for (; itr2 != m_EventObjects[MAKE_PAIR32(event1, event2)].gameobjects.end(); ++itr2)
-        SpawnBGObject(*itr2, (spawn) ? delay : RESPAWN_ONE_DAY);
+        SpawnBGObject(*itr2, (spawn) ? delay : RESPAWN_ONE_DAY, invoker);
 
     OnEventStateChanged(event1, event2, spawn);
 }
