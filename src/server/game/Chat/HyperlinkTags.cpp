@@ -101,7 +101,10 @@ bool Trinity::Hyperlinks::LinkTags::item::StoreTo(ItemLinkData& val, char const*
     val.Item = sObjectMgr->GetItemTemplate(itemId);
     return val.Item && t.TryConsumeTo(val.EnchantId) && t.TryConsumeTo(val.GemEnchantId[0]) && t.TryConsumeTo(val.GemEnchantId[1]) &&
         t.TryConsumeTo(val.GemEnchantId[2]) && t.TryConsumeTo(dummy) && t.TryConsumeTo(val.RandomPropertyId) && t.TryConsumeTo(val.RandomPropertySeed) &&
-        t.TryConsumeTo(val.RenderLevel) && t.IsEmpty() && !dummy;
+#ifdef LICH_KING
+        t.TryConsumeTo(val.RenderLevel) &&
+#endif
+        t.IsEmpty() && !dummy;
 }
 
 bool Trinity::Hyperlinks::LinkTags::quest::StoreTo(QuestLinkData& val, char const* pos, size_t len)

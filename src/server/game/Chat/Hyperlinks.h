@@ -61,7 +61,9 @@ struct ItemLinkData
     uint32 GemEnchantId[3];
     int32 RandomPropertyId;
     int32 RandomPropertySeed;
+#ifdef LICH_KING
     uint8 RenderLevel;
+#endif
 };
 
 struct QuestLinkData
