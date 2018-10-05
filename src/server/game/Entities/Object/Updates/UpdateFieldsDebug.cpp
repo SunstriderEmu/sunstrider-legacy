@@ -13,13 +13,14 @@ Optional<uint32> UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
 
     switch (type)
     {
-    case TYPEID_PLAYER:
-        if (index >= PLAYER_END)
-            return {};
-        [[fallthrough]];
     case TYPEID_UNIT:
     {
         if (index >= UNIT_END)
+            return {};
+
+        [[fallthrough]];
+    case TYPEID_PLAYER:
+        if (index >= PLAYER_END)
             return {};
 
         switch (index)
@@ -414,13 +415,14 @@ bool UpdateFieldsDebug::GetFieldNameString(TypeID type, uint32 index, std::strin
 
     switch (type)
     {
-    case TYPEID_PLAYER:
-        if (index >= PLAYER_END)
-            return false;
-        [[fallthrough]];
     case TYPEID_UNIT:
     {
         if (index >= UNIT_END)
+            return false;
+
+        [[fallthrough]];
+    case TYPEID_PLAYER:
+        if (index >= PLAYER_END)
             return false;
 
         switch (index)
@@ -896,13 +898,14 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
 
     switch (type)
     {
-    case TYPEID_PLAYER:
-        if (index >= PLAYER_END)
-            break;
-        [[fallthrough]];
     case TYPEID_UNIT:
     {
         if (index >= UNIT_END)
+            break;
+
+        [[fallthrough]];
+    case TYPEID_PLAYER:
+        if (index >= PLAYER_END)
             break;
 
         switch (index)
