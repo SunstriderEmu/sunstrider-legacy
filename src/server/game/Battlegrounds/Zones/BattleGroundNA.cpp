@@ -142,12 +142,6 @@ void BattlegroundNA::HandleKillPlayer(Player *player, Player *killer)
     }
 }
 
-bool BattlegroundNA::HandlePlayerUnderMap(Player *player)
-{
-    player->TeleportTo(GetMapId(),4055.504395,2919.660645,13.611241,player->GetOrientation(),false);
-    return true;
-}
-
 void BattlegroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)

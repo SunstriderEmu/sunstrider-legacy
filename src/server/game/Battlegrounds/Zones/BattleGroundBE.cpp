@@ -145,12 +145,6 @@ void BattlegroundBE::HandleKillPlayer(Player *player, Player *killer)
     }
 }
 
-bool BattlegroundBE::HandlePlayerUnderMap(Player *player)
-{
-    player->TeleportTo(GetMapId(),6238.930176,262.963470,0.889519,player->GetOrientation(),false);
-    return true;
-}
-
 void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.

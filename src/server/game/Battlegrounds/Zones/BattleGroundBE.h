@@ -49,7 +49,6 @@ class BattlegroundBE : public Battleground
         bool SetupBattleground() override;
         virtual void FillInitialWorldStates(WorldPacket &d) override;
         void HandleKillPlayer(Player* player, Player *killer) override;
-        bool HandlePlayerUnderMap(Player * plr) override;
 
         /* Scorekeeping */
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;

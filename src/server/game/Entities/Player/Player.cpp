@@ -4373,6 +4373,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 
     // remove death flag + set aura
     SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, 0x00);
+    RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
     if(GetRace() == RACE_NIGHTELF)
         RemoveAurasDueToSpell(20584);                       // speed bonuses
     RemoveAurasDueToSpell(8326);                            // SPELL_AURA_GHOST
@@ -21875,33 +21876,6 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     }
 }
 
-void Player::HandleFallUnderMap()
-{
-    if(InBattleground()
-        && GetBattleground()
-        && GetBattleground()->HandlePlayerUnderMap(this))
-    {
-        // do nothing, the handle already did if returned true
-    }
-    else
-    {
-        // NOTE: this is actually called many times while falling
-        // even after the player has been teleported away
-        // TODO: discard movement packets after the player is rooted
-        if(IsAlive())
-        {
-            EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetMaxHealth());
-            // change the death state to CORPSE to prevent the death timer from
-            // starting in the next player update
-            KillPlayer();
-            BuildPlayerRepop();
-        }
-
-        // cancel the death timer here if started
-        RepopAtGraveyard();
-    }
-}
-
 void Player::StopCastingBindSight(Aura* except /* = nullptr*/)
 {
     if(WorldObject* target = GetViewpoint())
@@ -23471,4 +23445,25 @@ bool Player::IsTestingBot() const
 #else
     return nullptr;
 #endif
+}
+
+void Player::SaveSafePosition(Position pos)
+{
+    _lastSafePosition = pos;
+}
+
+bool Player::UndermapRecall()
+{
+    if (!_lastSafePosition.is_initialized() || IsBeingTeleported())
+        return false;
+
+    if (GetDistance2d(_lastSafePosition->GetPositionX(), _lastSafePosition->GetPositionY()) > 50.0f)
+    {
+        _lastSafePosition.reset();
+        return false;
+    }
+
+    NearTeleportTo(*_lastSafePosition, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
+    _lastSafePosition.reset();
+    return true;
 }

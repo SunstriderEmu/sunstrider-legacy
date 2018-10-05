@@ -18,6 +18,7 @@
 #include "Chat.h"
 #include "PlayerAntiCheat.h"
 #include "GameTime.h"
+#include "Map.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 
@@ -464,31 +465,38 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         mover->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LANDING); // Parachutes
 #endif
 
-    if (plrMover)                                            // nothing is charmed, or player charmed
+    if (plrMover) // Nothing is charmed, or player charmed
     {
         plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
-        //used to handle spell interrupts on move (client does not always does it by itself)
+        // Used to handle spell interrupts on move (client does not always does it by itself)
         if (plrMover->isMoving())
             plrMover->SetHasMovedInUpdate(true);
 
-        if (movementInfo.pos.GetPositionZ() < plrMover->GetMap()->GetMinHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY()))
+        // Anti Undermap
+        float minHeight = plrMover->GetMap()->GetMinHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY());
+        if (movementInfo.pos.GetPositionZ() < minHeight)
         {
-            if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
+            // Is there any ground existing above min height? If there is a ground at this position, we very probably fell undermap, try to recover player.
+            // Else, just kill him
+            float gridMapHeight = plrMover->GetMap()->GetGridMapHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY());
+            if(gridMapHeight > minHeight)
+                plrMover->UndermapRecall(); // Port player back to last safe position
+            else
             {
-                // NOTE: this is actually called many times while falling
-                // even after the player has been teleported away
-                if (plrMover->IsAlive())
+                plrMover->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
+                if (plrMover->IsAlive()) // Still alive while falling
                 {
-                    plrMover->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
-                    plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
-                    // player can be alive if GM/etc
-                    // change the death state to CORPSE to prevent the death timer from
-                    // starting in the next player update
-                    if (!plrMover->IsAlive())
-                        plrMover->KillPlayer();
+                    plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, plrMover->GetHealth());
+                    // Change the death state to CORPSE to prevent the death timer from
+                    // Starting in the next player update
+                    plrMover->KillPlayer();
                 }
             }
+        }
+        else if (plrMover->CanFreeMove() && !movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING)) // If player is able to move and not falling or jumping..
+        {
+            plrMover->SaveSafePosition(movementInfo.pos); // Save current position for UndermapRecall()
         }
     }
 

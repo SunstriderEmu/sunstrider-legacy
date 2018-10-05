@@ -46,7 +46,6 @@ class BattlegroundRL : public Battleground
         bool SetupBattleground() override;
         void FillInitialWorldStates(WorldPacket &d) override;
         void HandleKillPlayer(Player* player, Player *killer) override;
-        bool HandlePlayerUnderMap(Player * plr) override;
 };
 #endif
 

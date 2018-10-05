@@ -2305,6 +2305,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendCinematicStart(uint32 CinematicSequenceId) const;
         void SendMovieStart(uint32 MovieId) const;
 
+        // Anti Undermap
+        void SaveSafePosition(Position pos);
+        bool UndermapRecall();
+
+        Optional<Position> _lastSafePosition;
+
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/

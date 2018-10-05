@@ -1924,7 +1924,7 @@ float Map::GetGridMapHeight(float x, float y) const
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
         return gmap->getHeight(x, y);
 
-    return VMAP_INVALID_HEIGHT_VALUE;
+    return INVALID_HEIGHT;
 }
 
 float Map::GetVMapFloor(float x, float y, float z, float maxSearchDist, float collisionHeight) const
