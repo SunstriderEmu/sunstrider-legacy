@@ -290,16 +290,6 @@ vmap.enableLOS = 1
 vmap.enableHeight = 1
 
 #
-#    TargetPosRecalculateRange
-#        Max distance from movement target point (+moving unit size) and targeted object (+size)
-#        after that new target movmeent point calculated. Max: melee attack range (5), min: contact range (0.5)
-#        More distance let have better performence, less distance let have more sensitive reaction at target move.
-#        Default: 0.5
-#
-
-TargetPosRecalculateRange = 0.5
-
-#
 #    UpdateUptimeInterval
 #        Update realm uptime period in minutes (for save data in 'uptime' table). Must be > 0
 #        Default: 10 (minutes)
