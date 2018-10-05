@@ -452,9 +452,10 @@ void Player::SetMapAtCreation(PlayerInfo const* info)
         RelocateToBetaZone();
     else
     {
-        Relocate(info->positionX, info->positionY, info->positionZ);
+        Relocate(info->positionX, info->positionY, info->positionZ, info->positionO);
         SetMap(sMapMgr->CreateMap(info->mapId, this));
     }
+
     UpdatePositionData();
 }
 

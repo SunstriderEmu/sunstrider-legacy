@@ -2580,8 +2580,8 @@ void ObjectMgr::LoadPlayerInfo()
 {
     // Load playercreate
     {
-        //                                                0     1      2    3     4           5           6
-        QueryResult result = WorldDatabase.Query("SELECT race, class, map, zone, position_x, position_y, position_z FROM playercreateinfo");
+        //                                               0     1      2    3     4           5           6           7
+        QueryResult result = WorldDatabase.Query("SELECT race, class, map, zone, position_x, position_y, position_z, position_o FROM playercreateinfo");
 
         uint32 count = 0;
 
@@ -2595,49 +2595,50 @@ void ObjectMgr::LoadPlayerInfo()
         {
             Field* fields = result->Fetch();
 
-            uint32 current_race     = fields[0].GetUInt8();
-            uint32 current_class    = fields[1].GetUInt8();
-            uint32 mapId            = fields[2].GetUInt16();
-            uint32 areaId           = fields[3].GetUInt32();
-            float  positionX        = fields[4].GetFloat();
-            float  positionY        = fields[5].GetFloat();
-            float  positionZ        = fields[6].GetFloat();
+            uint32 current_race  = fields[0].GetUInt8();
+            uint32 current_class = fields[1].GetUInt8();
+            uint32 mapId         = fields[2].GetUInt16();
+            uint32 areaId        = fields[3].GetUInt32();
+            float positionX      = fields[4].GetFloat();
+            float positionY      = fields[5].GetFloat();
+            float positionZ      = fields[6].GetFloat();
+            float positionO      = fields[7].GetFloat();
 
-            if(current_race >= MAX_RACES)
+            if (current_race >= MAX_RACES)
             {
-                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
+                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.", current_race);
                 continue;
             }
 
             ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(current_race);
-            if(!rEntry)
+            if (!rEntry)
             {
-                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.",current_race);
+                TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo` table, ignoring.", current_race);
                 continue;
             }
 
-            if(current_class >= MAX_CLASSES)
+            if (current_class >= MAX_CLASSES)
             {
-                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.", current_class);
                 continue;
             }
 
-            if(!sChrClassesStore.LookupEntry(current_class))
+            if (!sChrClassesStore.LookupEntry(current_class))
             {
-                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo` table, ignoring.", current_class);
                 continue;
             }
 
             // accept DB data only for valid position (and non instanceable)
-            if( !MapManager::IsValidMapCoord(mapId,positionX,positionY,positionZ) )
+            if (!MapManager::IsValidMapCoord(mapId, positionX, positionY, positionZ, positionO))
             {
-                TC_LOG_ERROR("sql.sql","Wrong home position for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
+                TC_LOG_ERROR("sql.sql","Wrong home position for class %u race %u pair in `playercreateinfo` table, ignoring.", current_class, current_race);
                 continue;
             }
 
-            if( sMapStore.LookupEntry(mapId)->Instanceable() )
+            if (sMapStore.LookupEntry(mapId)->Instanceable())
             {
-                TC_LOG_ERROR("sql.sql","Home position in instanceable map for class %u race %u pair in `playercreateinfo` table, ignoring.",current_class,current_race);
+                TC_LOG_ERROR("sql.sql","Home position in instanceable map for class %u race %u pair in `playercreateinfo` table, ignoring.", current_class, current_race);
                 continue;
             }
 
@@ -2648,6 +2649,7 @@ void ObjectMgr::LoadPlayerInfo()
             info->positionX = positionX;
             info->positionY = positionY;
             info->positionZ = positionZ;
+            info->positionO = positionO;
             info->displayId_m = rEntry->model_m;
             info->displayId_f = rEntry->model_f;
 
@@ -2657,7 +2659,7 @@ void ObjectMgr::LoadPlayerInfo()
         }
         while (result->NextRow());
 
-        TC_LOG_INFO("server.loading", ">> Loaded %u player create definitions", count );
+        TC_LOG_INFO("server.loading", ">> Loaded %u player create definitions", count);
     }
 
     // Load playercreate items
