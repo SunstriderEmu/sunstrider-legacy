@@ -669,8 +669,6 @@ void PathGenerator::CreateFilter()
     if(SourceCanWalk())
         includeFlags |= NAV_GROUND;
 
-    DEBUG_ASSERT(includeFlags != 0);
-
     _filter.setIncludeFlags(includeFlags);
     _filter.setExcludeFlags(excludeFlags);
 

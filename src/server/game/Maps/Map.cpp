@@ -2991,10 +2991,12 @@ bool InstanceMap::AddPlayerToMap(Player *player)
                                 TC_LOG_ERROR("maps", "MapSave players: %d, group count: %d", mapSave->GetPlayerCount(), mapSave->GetGroupCount());
                             else
                                 TC_LOG_ERROR("maps", "MapSave NULL");
+
                             if (groupBind->save)
                                 TC_LOG_ERROR("maps", "GroupBind save players: %d, group count: %d", groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount());
                             else
                                 TC_LOG_ERROR("maps", "GroupBind save NULL");
+
                             ABORT();
                         }
                         // if the group/leader is permanently bound to the instance
