@@ -635,7 +635,8 @@ void PathGenerator::NormalizePath()
     for (uint32 i = 0; i < _pathPoints.size(); ++i)
     {
         float searchDist = (_forceDestination && i == (_pathPoints.size() - 1)) ? 5.0f : 20.0f; //sunstrider: do not normalize last point as much if destination is forced
-        WorldObject::UpdateAllowedPositionZ(_sourceUnit ? _sourceUnit->GetPhaseMask() : PHASEMASK_NORMAL, _sourceMapId, _pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, SourceCanSwim(), SourceCanFly() || SourceIgnorePathfinding(), SourceCanWaterwalk(), searchDist);
+        float collisionHeight = _sourceUnit ? _sourceUnit->GetCollisionHeight() : DEFAULT_COLLISION_HEIGHT;
+        WorldObject::UpdateAllowedPositionZ(_sourceUnit ? _sourceUnit->GetPhaseMask() : PHASEMASK_NORMAL, _sourceMapId, _pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, SourceCanSwim(), SourceCanFly() || SourceIgnorePathfinding(), SourceCanWaterwalk(), collisionHeight, searchDist);
     }
 }
 

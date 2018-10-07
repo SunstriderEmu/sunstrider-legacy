@@ -19,7 +19,7 @@ class Transport;
 #define MAX_PATH_LENGTH         74
 #define MAX_POINT_PATH_LENGTH   74
 
-#define SMOOTH_PATH_STEP_SIZE   2.0f
+#define SMOOTH_PATH_STEP_SIZE   2.0f //Changed, nost value here
 #define SMOOTH_PATH_SLOP        0.3f
 
 #define VERTEX_SIZE       3

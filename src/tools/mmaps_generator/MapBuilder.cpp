@@ -751,6 +751,7 @@ namespace MMAP
                 // 5.1 walkableClimbTerrain >= walkableClimbModelTransition so do it first
                 rcFilterLowHangingWalkableObstacles(m_rcContext, config.walkableClimb, *tile.solid);
                 rcFilterLedgeSpans(m_rcContext, tileCfg.walkableHeight, config.walkableClimb, *tile.solid);
+
                 /// 6. Now we are happy because we have the correct flags.
                 // Set's cleanup tmp flags used by the generator, so we don't have a too
                 // complicated navmesh in the end.
