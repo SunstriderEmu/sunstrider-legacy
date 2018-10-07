@@ -156,9 +156,7 @@ TC_GAME_API uint32 TestMgr::GetRemainingTestsCount() const
 
 std::string TestMgr::GetStatusString() const
 {
-    std::stringstream ss;
-    ss << _remainingTests.size() << " test(s) left" << std::endl;
-    return ss.str();
+    return Trinity::StringFormat("%u test(s) left", _remainingTests.size());
 }
 
 std::string TestMgr::ListAvailable(std::string filter) const

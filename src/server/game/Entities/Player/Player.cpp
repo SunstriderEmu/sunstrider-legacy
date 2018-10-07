@@ -6709,7 +6709,7 @@ uint32 Player::GetZoneIdFromDB(ObjectGuid guid)
 {
     std::ostringstream ss;
 
-    ss<<"SELECT zone FROM characters WHERE guid='"<<guid.GetCounter()<<"'";
+    ss << "SELECT zone FROM characters WHERE guid='" << guid.GetCounter() << "'";
     QueryResult result = CharacterDatabase.Query( ss.str().c_str() );
     if (!result)
         return 0;

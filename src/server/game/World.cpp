@@ -2689,11 +2689,7 @@ void World::ShutdownMsg(bool show, Player* player, const std::string& reason)
 
         uint32 msgid = (m_ShutdownMask & SHUTDOWN_MASK_RESTART) ? SERVER_MSG_RESTART_TIME : SERVER_MSG_SHUTDOWN_TIME;
 
-        std::stringstream sst;
-        std::string msgToSend;
-        sst << str.c_str() << ": " << reason;
-        msgToSend = sst.str();
-
+        std::string const msgToSend = Trinity::StringFormat("%s: %s", str.c_str(), reason.c_str());
         SendServerMessage(msgid, msgToSend.c_str(), player);
         TC_LOG_DEBUG("misc","Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shutting down"),str.c_str());
     }
