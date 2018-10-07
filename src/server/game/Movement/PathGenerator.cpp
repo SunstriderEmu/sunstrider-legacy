@@ -21,6 +21,7 @@ PathGenerator::PathGenerator(const Unit* owner) :
     _sourcePos.Relocate(owner);
     
     UpdateOptions();
+    CreateFilter(); //update filter after setting options
     //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUID().GetCounter());
 }
 
