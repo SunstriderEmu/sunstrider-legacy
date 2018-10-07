@@ -342,7 +342,7 @@ enum Opcodes : uint16
     SMSG_ATTACKSTOP                                 = 0x144,
     SMSG_ATTACKSWING_NOTINRANGE                     = 0x145,
     SMSG_ATTACKSWING_BADFACING                      = 0x146,
-    SMSG_ATTACKSWING_NOTSTANDING = 0x147,
+    SMSG_ATTACKSWING_NOTSTANDING                    = 0x147,
     SMSG_ATTACKSWING_DEADTARGET                     = 0x148,
     SMSG_ATTACKSWING_CANT_ATTACK                    = 0x149,
     SMSG_ATTACKERSTATEUPDATE                        = 0x14A,
@@ -2424,7 +2424,7 @@ enum SessionStatus
 
 enum PacketProcessing
 {
-    PROCESS_INPLACE = 0,                                    //process packet whenever we receive it - mostly for non-handled or non-implemented packets (sunstrider: more exactly, packet is processed not immediately whenever we update sessions, be it in maps or World::UpdateSessions())
+    PROCESS_INPLACE = 0,                                    //process packet whenever we receive it - mostly for non-handled or non-implemented packets (sunstrider: more exactly, packet is processed not immediately but whenever we update sessions, be it in maps or World::UpdateSessions())
     PROCESS_THREADUNSAFE,                                   //packet is not thread-safe - process it in World::UpdateSessions()
     PROCESS_THREADSAFE                                      //packet is thread-safe - process it in Map::Update()
 };
