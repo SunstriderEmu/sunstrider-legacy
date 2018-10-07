@@ -43,6 +43,12 @@ class ChaseMovementGenerator : public MovementGenerator, public AbstractFollower
         void UnitSpeedChanged() override { _lastTargetPosition.reset(); }
 
     private:
+        void DoSpreadIfNeeded(Unit* owner, Unit* target);
+
+        TimeTrackerSmall _spreadTimer;
+        bool _canSpread = true;
+        uint8 _spreadAttempts = 0;
+
         static constexpr uint32 RANGE_CHECK_INTERVAL = 100; // time (ms) until we attempt to recalculate
 
         Optional<ChaseRange> const _range;

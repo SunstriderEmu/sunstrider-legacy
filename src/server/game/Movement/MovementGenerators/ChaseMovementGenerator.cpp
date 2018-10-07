@@ -60,6 +60,64 @@ bool ChaseMovementGenerator::Initialize(Unit* owner)
     _path = nullptr;
     return true;
 }
+#define MAX_SPREAD_ATTEMPTS 3
+
+void ChaseMovementGenerator::DoSpreadIfNeeded(Unit* owner, Unit* target)
+{
+    // Move away from any NPC deep in our bounding box. There's no limit to the
+    // angle moved; NPCs will eventually start spreading behind the target if
+    // there's enough of them.
+    Unit* spreadingTarget = nullptr;
+
+    for (auto& attacker : target->GetAttackers())
+    {
+        if (attacker->GetTypeId() == TYPEID_UNIT && (attacker != owner) &&   // Get other creature attacker
+            (owner->GetCombatReach() - 2.0f < attacker->GetCombatReach()) && // With smaller, equal or slighty bigger combat reach (why?)
+            !attacker->isMoving() &&                                         // And not moving
+                                                                             // And close to us
+            (owner->GetDistanceSqr(attacker->GetPositionX(), attacker->GetPositionY(), attacker->GetPositionZ()) < std::min(std::max(owner->GetCombatReach(), attacker->GetCombatReach()), 0.25f)))
+        {
+            spreadingTarget = attacker;
+            break;
+        }
+    }
+
+    if (!spreadingTarget)
+    {
+        _canSpread = false;
+        return;
+    }
+
+    float const myAngle = target->GetAbsoluteAngle(owner);
+    float const hisAngle = target->GetAbsoluteAngle(spreadingTarget);
+    float const newAngle = (hisAngle > myAngle) ? myAngle - frand(0.4f, 1.0f) : myAngle + frand(0.4f, 1.0f);
+    //hitboxSum and maxRange match chase max range logic in Update
+    float const hitboxSum = owner->GetCombatReach() + target->GetCombatReach();
+    float maxRange = _range ? _range->MaxRange + hitboxSum : owner->GetMeleeRange(target); // melee range already includes hitboxes
+    maxRange -= owner->GetCombatReach(); // Combat reach gets added again in GetNearPoint
+    static float const minSpreadRange = 0.8f;
+    if (maxRange < minSpreadRange)
+    {
+        _canSpread = false;
+        return;
+    }
+
+    float const nearRange = frand(minSpreadRange, std::min(target->GetAttackers().size() > 5 ? 4.0f : 2.0f, maxRange));
+
+    float x, y, z;
+    target->GetNearPoint(owner, x, y, z, nearRange, newAngle);
+
+    _spreadAttempts++;
+
+    // Don't circle target infinitely if too many attackers.
+    if (_spreadAttempts >= MAX_SPREAD_ATTEMPTS)
+        _canSpread = false;
+
+    Movement::MoveSplineInit init(owner);
+    init.MoveTo(x, y, z);
+    init.SetWalk(true);
+    init.Launch();
+}
 
 void ChaseMovementGenerator::Reset(Unit* owner)
 {
@@ -122,19 +180,18 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
         }
     }
 
-    // if we're done moving, we want to clean up
-    if (owner->HasUnitState(UNIT_STATE_CHASE_MOVE) && owner->movespline->Finalized())
-    {
-        _path = nullptr;
-        if (cOwner)
-            cOwner->SetCannotReachTarget(false);
-        owner->ClearUnitState(UNIT_STATE_CHASE_MOVE);
-        owner->SetInFront(target);
-        DoMovementInform(owner, target);
-    }
-
     // if the target moved, we have to consider whether to adjust
-    if (!_lastTargetPosition || _lastTargetPosition.get() != target->GetPosition() || mutualChase != _mutualChase)
+    bool positionChanged = false;
+    if (mutualChase != _mutualChase)
+        positionChanged = true;
+    else if (!_lastTargetPosition)
+        positionChanged = true;
+    else if (_lastTargetPosition->GetPositionX() != target->GetPositionX()
+          || _lastTargetPosition->GetPositionY() != target->GetPositionY()
+          || _lastTargetPosition->GetPositionZ() != target->GetPositionZ()) // we can't just used == operator because we want to ignore orientation
+        positionChanged = true;
+
+    if (positionChanged)
     {
         _lastTargetPosition = target->GetPosition();
         _mutualChase = mutualChase;
@@ -152,12 +209,9 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             // figure out which way we want to move
             bool const moveToward = !owner->IsInDist(target, maxRange);
 
-            // make a new path if we have to...
-            if (!_path || moveToward != _movingTowards)
-                _path = std::make_unique<PathGenerator>(owner);
-            else 
-                _path->UpdateOptions(); //sun: also update generator fly/walk/swim, they could have changed
-
+            //sun: always create a new Generator, creature fly/walk/swim may have changed
+            _path = std::make_unique<PathGenerator>(owner);
+      
             Transport* targetTransport = target->GetTransport();
             _path->SetTransport(targetTransport);
 
@@ -173,17 +227,16 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             else
             {
                 // otherwise, we fall back to nearpoint finding
+                //sun: note that LoS in checked in GetNearPoint, it'll try to get a closer position if target is not in los
                 target->GetNearPoint(owner, x, y, z, (moveToward ? maxTarget : minTarget) - hitboxSum, angle ? target->ToAbsoluteAngle(angle->RelativeAngle) : target->GetAbsoluteAngle(owner));
                 shortenPath = false;
-                //sun: note that LoS in checked in GetNearPoint, it'll try to get a closer position if target is not in los
             }
 
             if (owner->IsHovering())
                 owner->UpdateAllowedPositionZ(x, y, z);
 
-            // -- sun logic 
-            bool forceDest = (owner->GetTypeId() == TYPEID_UNIT && (owner->ToCreature()->IsWorldBoss() || owner->ToCreature()->IsDungeonBoss())); // force for all bosses, even not in instances
-            // --
+            // sun: force dest for all bosses
+            bool forceDest = cOwner && (cOwner->IsWorldBoss() || cOwner->IsDungeonBoss()); 
 
             bool success = _path->CalculatePath(x, y, z, forceDest);
             if (!success || (_path->GetPathType() & PATHFIND_NOPATH))
@@ -211,6 +264,43 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             init.Launch();
 
             _movingTowards = moveToward;
+        }
+    }
+
+    if (owner->movespline->Finalized())
+    {
+        // We just finished a chase move, set in front and notify
+        if (owner->HasUnitState(UNIT_STATE_CHASE_MOVE))
+        {
+            _path = nullptr;
+            if (cOwner)
+                cOwner->SetCannotReachTarget(false);
+
+            owner->ClearUnitState(UNIT_STATE_CHASE_MOVE);
+            owner->SetInFront(target);
+
+            DoMovementInform(owner, target);
+
+            _spreadAttempts = 0;
+            _canSpread = true;
+            _spreadTimer.Reset(1000);
+        }
+        // Handle spreading
+        else if(cOwner 
+            && !cOwner->IsPet() 
+            && maxRange < 5.0f
+            && !cOwner->IsDungeonBoss() 
+            && !cOwner->IsWorldBoss() 
+            && !target->isMoving() 
+            && _canSpread)
+        {
+            //!(cOwner->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CHASE_GEN_NO_BACKING) 
+            _spreadTimer.Update(diff);
+            if (_spreadTimer.Passed())
+            {
+                _spreadTimer.Reset(urand(1500, 2500));
+                DoSpreadIfNeeded(owner, target);
+            }
         }
     }
 
