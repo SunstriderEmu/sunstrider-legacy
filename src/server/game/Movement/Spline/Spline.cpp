@@ -253,14 +253,14 @@ void SplineBase::InitCatmullRom(const Vector3* controls, index_type count, bool 
         if (cyclic_point == 0)
             points[0] = controls[count-1];
         else
-            points[0] = controls[0] - G3D::Vector3{ cos(initialOrientation), sin(initialOrientation), 0.0f }; // sun: from TrinityCore/TrinityCore/issues/22435
+            points[0] = controls[0] - G3D::Vector3{ cos(initialOrientation), sin(initialOrientation), 0.0f }; 
 
         points[high_index+1] = controls[cyclic_point];
         points[high_index+2] = controls[cyclic_point+1];
     }
     else
     {
-        points[0] = controls[0] - G3D::Vector3{ cos(initialOrientation), sin(initialOrientation), 0.0f }; // sun: from TrinityCore/TrinityCore/issues/22435
+        points[0] = controls[0] - G3D::Vector3{ cos(initialOrientation), sin(initialOrientation), 0.0f };
         points[high_index + 1] = controls[count - 1];
     }
 
