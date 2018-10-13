@@ -430,7 +430,10 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
 #endif
     case GAMEOBJECT_TYPE_FISHINGHOLE:
         SetGoAnimProgress(animprogress);
-        m_goValue.FishingHole.MaxOpens = urand(GetGOInfo()->fishinghole.minSuccessOpens, GetGOInfo()->fishinghole.maxSuccessOpens);
+        if (GetGOInfo()->fishinghole.maxSuccessOpens) //one gob has no max
+            m_goValue.FishingHole.MaxOpens = urand(GetGOInfo()->fishinghole.minSuccessOpens, GetGOInfo()->fishinghole.maxSuccessOpens);
+        else
+            m_goValue.FishingHole.MaxOpens = GetGOInfo()->fishinghole.minSuccessOpens;
         break;
     case GAMEOBJECT_TYPE_TRAP:
         if (GetGOInfo()->trap.stealthed)
