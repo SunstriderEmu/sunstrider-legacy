@@ -553,7 +553,7 @@ void GameEventMgr::LoadFromDB()
             Field *fields = result->Fetch();
 
             ObjectGuid::LowType guid     = fields[0].GetUInt32();
-            uint16 event_id = fields[1].GetUInt32();
+            uint16 event_id = fields[1].GetUInt16();
             uint32 creatureID = fields[4].GetUInt32();
 
             if(event_id >= mGameEventModelEquip.size())
@@ -603,7 +603,7 @@ void GameEventMgr::LoadFromDB()
 
             uint32 id       = fields[0].GetUInt32();
             uint32 quest    = fields[1].GetUInt32();
-            uint16 event_id = fields[2].GetUInt32();
+            uint16 event_id = fields[2].GetUInt16();
 
             if(event_id >= mGameEventCreatureQuests.size())
             {
