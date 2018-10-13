@@ -1419,7 +1419,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         float dis = (float)rand_norm() * (max_dis - min_dis) + min_dis;
         float x, y, z, angle;
         angle = (float)rand_norm() * static_cast<float>(M_PI * 35.0f / 180.0f) - static_cast<float>(M_PI * 17.5f / 180.0f);
-        m_caster->GetClosePoint(x, y, z, dis, angle);
+        m_caster->GetClosePoint(x, y, z, DEFAULT_PLAYER_BOUNDING_RADIUS, dis, angle);
 
         float ground = m_caster->GetMapHeight(x, y, z);
         float liquidLevel = VMAP_INVALID_HEIGHT_VALUE;

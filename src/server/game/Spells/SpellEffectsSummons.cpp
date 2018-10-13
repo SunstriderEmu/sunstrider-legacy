@@ -389,7 +389,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             // x     x 
             float x, y, z;
             float newAngle = Trinity::NormalizeOrientation(M_PI / 2.0f * (numGuardians / 2.0f) * (count+1) + M_PI / 4.0f);
-            m_caster->GetClosePoint(x, y, z, radius, newAngle);
+            m_caster->GetClosePoint(x, y, z, m_caster->GetCombatReach(), radius, newAngle);
             pos.Relocate(x, y, z);
         }
 

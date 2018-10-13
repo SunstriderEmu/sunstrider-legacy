@@ -144,8 +144,8 @@ public:
     {
         ARGS_CHECK
 
-            // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
-            uint32 spell =  handler->extractSpellIdFromLink((char*)args);
+        // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+        uint32 spell =  handler->extractSpellIdFromLink((char*)args);
         if (!spell)
             return false;
 
