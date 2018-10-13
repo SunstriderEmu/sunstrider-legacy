@@ -1097,7 +1097,7 @@ void BattlegroundMgr::LoadBattleEventIndexes()
         if (fields[2].GetUInt8() == BG_EVENT_NONE || fields[3].GetUInt8() == BG_EVENT_NONE)
             continue;                                       // we don't need to add those to the eventmap
 
-        bool gameobject = (fields[0].GetInt64() == 0);
+        bool gameobject = (fields[0].GetUInt32() == 0);
         uint32 spawnID = fields[1].GetUInt32();
         events.event1 = fields[2].GetUInt8();
         events.event2 = fields[3].GetUInt8();
