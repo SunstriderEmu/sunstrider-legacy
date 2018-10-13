@@ -3935,7 +3935,7 @@ void Spell::EffectSummonChangeItem(uint32 i)
             m_castItemGUID.Clear();
             m_castItemEntry = 0;
 
-            player->EquipItem(dest, pNewItem, true);
+            player->EquipItem(dest, pNewItem, true, false);
             player->AutoUnequipOffhandIfNeed();
             player->SendNewItem(pNewItem, 1, true, false);
             player->ItemAddedQuestCheck(newitemid, 1);

@@ -676,7 +676,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, const std::string& name, uint8 
             if( msg == EQUIP_ERR_OK )
             {
                 RemoveItem(INVENTORY_SLOT_BAG_0, i,true);
-                EquipItem( eDest, pItem, true);
+                EquipItem( eDest, pItem, true, false);
             }
             // move other items to more appropriate slots (ammo not equipped in special bag)
             else
@@ -10371,9 +10371,10 @@ InventoryResult Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, boo
 
                 if(IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
-
+#ifdef LICH_KING
                 if(IsNonMeleeSpellCast(false))
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;
+#endif
             }
 
             uint8 eslot = FindEquipSlot( pProto, slot, swap );
@@ -11007,10 +11008,15 @@ Item* Player::EquipNewItem(uint16 pos, uint32 item, bool update)
     return nullptr;
 }
 
-Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
+Item* Player::EquipItem(uint16 pos, Item *pItem, bool update, bool interruptSpells)
 {
     if(pItem)
     {
+#ifndef LICH_KING
+        if (interruptSpells && IsNonMeleeSpellCast(false))
+            InterruptNonMeleeSpells(false);
+#endif
+
         AddEnchantmentDurations(pItem);
         AddItemDurations(pItem);
 

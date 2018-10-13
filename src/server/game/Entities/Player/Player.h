@@ -2684,7 +2684,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool m_hasMovedInUpdate;
 
         //sun: keep EquipItem in private, they're really use to missuse
-        Item* EquipItem(uint16 pos, Item *pItem, bool update);
+        Item* EquipItem(uint16 pos, Item *pItem, bool update, bool interruptSpells = true);
 
     private:
         // internal common parts for CanStore/StoreItem functions
