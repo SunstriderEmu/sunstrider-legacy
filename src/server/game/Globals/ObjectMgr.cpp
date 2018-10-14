@@ -276,7 +276,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.Name             = fields[f++].GetString();
     creatureTemplate.Title            = fields[f++].GetString();
     creatureTemplate.IconName         = fields[f++].GetString();
-    creatureTemplate.GossipMenuId     = fields[f++].GetUInt32();
+    creatureTemplate.GossipMenuId     = fields[f++].GetUInt16();
     creatureTemplate.minlevel         = fields[f++].GetUInt8();
     creatureTemplate.maxlevel         = fields[f++].GetUInt8();
     creatureTemplate.expansion        = fields[f++].GetUInt16();
