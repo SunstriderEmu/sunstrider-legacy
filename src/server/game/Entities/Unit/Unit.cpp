@@ -9187,7 +9187,7 @@ void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
         movementGenerator->Resume(timer);
 }
 
-void WorldObject::BuildHeartBeatMsg(WorldPacket* data) const
+void Unit::BuildHeartBeatMsg(WorldPacket* data) const
 {
     data->Initialize(MSG_MOVE_HEARTBEAT, 32);
     *data << GetPackGUID();
