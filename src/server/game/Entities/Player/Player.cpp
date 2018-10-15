@@ -10812,14 +10812,14 @@ void Player::SetAmmo( uint32 item )
         return;
 
     // already set
-    if( GetUInt32Value(PLAYER_AMMO_ID) == item )
+    if (GetUInt32Value(PLAYER_AMMO_ID) == item)
         return;
 
     // check ammo
-    InventoryResult msg = CanUseAmmo( item );
-    if( msg != EQUIP_ERR_OK )
+    InventoryResult msg = CanUseAmmo(item);
+    if (msg != EQUIP_ERR_OK)
     {
-        SendEquipError( msg, nullptr, nullptr );
+        SendEquipError(msg, nullptr, nullptr, item);
         return;
     }
 
