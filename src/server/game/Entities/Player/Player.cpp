@@ -12201,6 +12201,7 @@ void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, 
 #ifdef LICH_KING
         case EQUIP_ERR_PURCHASE_LEVEL_TOO_LOW:
 #endif
+        {
             ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
             data << uint32(proto ? proto->RequiredLevel : 0);
             break;
@@ -12217,6 +12218,7 @@ void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, 
 #endif
         default:
             break;
+        }
     }
     SendDirectMessage(&data);
 }
