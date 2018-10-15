@@ -260,6 +260,7 @@ void InstanceScript::UpdateSpawnGroups()
         else if (info.Flags & InstanceSpawnGroupInfo::FLAG_ACTIVATE_SPAWN)
             curValue = SPAWN;
     }
+
     for (auto const& pair : newStates)
     {
         uint32 const groupId = pair.first;

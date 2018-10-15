@@ -105,6 +105,7 @@ typedef std::map<uint32 /*entry*/, uint32 /*type*/> ObjectInfoMap;
 
 class TC_GAME_API InstanceScript : public ZoneScript
 {
+friend class InstanceMap;
     public:
 
         InstanceScript(Map *map);

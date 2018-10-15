@@ -3114,6 +3114,8 @@ void InstanceMap::CreateInstanceData(bool load)
             {
                 TC_LOG_DEBUG("maps", "Loading instance data for `%s` with id %u", sObjectMgr->GetScriptName(i_script_id).c_str(), i_InstanceId);
                 i_data->Load(data);
+                if (!i_data->HasAnyBossState()) //old instance scripts are directly overriding the Load function, but won't do the correct call to update UpdateSpawnGroups
+                    i_data->UpdateSpawnGroups();
             }
         }
     }
