@@ -336,7 +336,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
             ClearCharmInfoFlags();
             me->GetCharmInfo()->SetIsCommandAttack(oldCmdAttack); // For passive pets commanded to attack so they will use spells
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance(), (float)M_PI);
+            me->GetMotionMaster()->MoveChase(target, me->GetPetChaseDistance());
         }
         else // (Stay && ((Aggressive || Defensive) && In Melee Range)))
         {

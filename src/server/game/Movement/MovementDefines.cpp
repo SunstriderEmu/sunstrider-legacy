@@ -23,7 +23,8 @@
 
 // ---- ChaseRange ---- //
 
-ChaseRange::ChaseRange(float range) : MinRange(range > CONTACT_DISTANCE ? 0 : range - CONTACT_DISTANCE), MinTolerance(range), MaxRange(range + CONTACT_DISTANCE), MaxTolerance(range) {}
+//sun: fixed MinRange condition
+ChaseRange::ChaseRange(float range) : MinRange(range <= CONTACT_DISTANCE ? 0 : range - CONTACT_DISTANCE), MinTolerance(range), MaxRange(range + CONTACT_DISTANCE), MaxTolerance(range) {}
 ChaseRange::ChaseRange(float min, float max) : MinRange(min), MinTolerance(std::min(min + CONTACT_DISTANCE, (min + max) / 2)), MaxRange(max), MaxTolerance(std::max(max - CONTACT_DISTANCE, MinTolerance)) {}
 ChaseRange::ChaseRange(float min, float tMin, float tMax, float max) : MinRange(min), MinTolerance(tMin), MaxRange(max), MaxTolerance(tMax) {}
 
