@@ -1098,7 +1098,7 @@ public:
 
         FormationInfo group_member;
         group_member.groupID       = groupID;
-        group_member.followAngle   = member->GetAbsoluteAngle(leader) - leader->GetOrientation();
+        group_member.followAngle   = leader->GetAbsoluteAngle(leader) - member->GetOrientation();
         group_member.followDist    = sqrtf(pow(leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(leader->GetPositionY() - member->GetPositionY(), int(2)));
         group_member.groupAI       = groupAI;
         creatureGroup->AddMember(member);
