@@ -1198,6 +1198,8 @@ void ObjectMgr::LoadCreatures()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
+    std::unordered_map<uint32 /*spawnId*/, CreatureData::SpawnDataIds> spawnEntries;
+
     do
     {
         Field* fields = result2->Fetch();
@@ -1222,8 +1224,8 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        CreatureData& data = _creatureDataStore[spawnId];
-        data.ids.emplace_back(templateId, equipmentId);
+        CreatureData::SpawnDataIds& data = spawnEntries[spawnId];
+        data.emplace_back(templateId, equipmentId);
 
     } while (result2->NextRow());
 
@@ -1234,14 +1236,12 @@ void ObjectMgr::LoadCreatures()
         uint32 spawnId = fields[0].GetUInt32();
 
         // we create a _creatureDataStore entry in creature_entry loading
-        auto itr = _creatureDataStore.find(spawnId);
-        if (itr == _creatureDataStore.end())
+        auto spawnEntryItr = spawnEntries.find(spawnId);
+        if (spawnEntryItr == spawnEntries.end())
         {
             TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) with no listed creature id in table creature_entry, skipped.", spawnId);
             continue;
         }
-
-        CreatureData& data = _creatureDataStore[spawnId];
 
         uint32 mapId = fields[1].GetUInt16();
         MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
@@ -1250,7 +1250,10 @@ void ObjectMgr::LoadCreatures()
             TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", spawnId, mapId);
             continue;
         }
-        data.spawnMask = fields[2].GetUInt8();
+        CreatureData& data = _creatureDataStore[spawnId];
+
+        data.ids = spawnEntryItr->second;
+        data.spawnMask       = fields[2].GetUInt8();
 
         data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
         data.displayid       = fields[ 3].GetUInt32();
