@@ -431,20 +431,6 @@ enum UnitState : uint32
     UNIT_STATE_ALL_STATE           = 0xffffffff                      //(UNIT_STATE_STOPPED | UNIT_STATE_MOVING | UNIT_STATE_IN_COMBAT | UNIT_STATE_IN_FLIGHT)
 };
 
-enum UnitMoveType : uint8
-{
-    MOVE_WALK           = 0,
-    MOVE_RUN            = 1,
-    MOVE_RUN_BACK       = 2,
-    MOVE_SWIM           = 3,
-    MOVE_SWIM_BACK      = 4,
-    MOVE_TURN_RATE      = 5,
-    MOVE_FLIGHT         = 6,
-    MOVE_FLIGHT_BACK    = 7,
-};
-
-#define MAX_MOVE_TYPE 8
-
 TC_GAME_API extern float baseMoveSpeed[MAX_MOVE_TYPE];
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
@@ -1682,6 +1668,7 @@ class TC_GAME_API Unit : public WorldObject
         Player* GetPlayerBeingMoved() const;
         // returns the player that this unit is BEING CONTROLLED BY
         Player* GetPlayerMovingMe() const { return m_playerMovingMe; }
+        bool IsMovedByPlayer() const { return m_playerMovingMe != nullptr; }
         // only set for direct client control (possess effects, vehicles and similar)
         Player* m_playerMovingMe;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
@@ -1944,6 +1931,8 @@ class TC_GAME_API Unit : public WorldObject
         void SetFacingTo(float ori, bool force = true);
         void SetFacingToObject(WorldObject const* object, bool force = true);
 
+        void BuildHeartBeatMsg(WorldPacket* data) const;
+
         ObjectGuid GetTarget() const { return GetGuidValue(UNIT_FIELD_TARGET); }
         virtual void SetTarget(ObjectGuid /*guid*/) = 0;
 
@@ -1974,8 +1963,11 @@ class TC_GAME_API Unit : public WorldObject
         /// Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
         TransportBase* GetDirectTransport() const;
 
+        // should only be used by packet handlers to validate and apply incoming MovementInfos from clients. Do not use internally to modify m_movementInfo
+        void UpdateMovementInfo(MovementInfo movementInfo);
+
         void BuildMovementPacket(ByteBuffer *data) const;
-		static void BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data);
+        static void BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data);
 
         bool isMoving() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }

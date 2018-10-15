@@ -21,6 +21,20 @@
 #include "Common.h"
 #include <memory>
 
+enum UnitMoveType : uint8
+{
+    MOVE_WALK           = 0,
+    MOVE_RUN            = 1,
+    MOVE_RUN_BACK       = 2,
+    MOVE_SWIM           = 3,
+    MOVE_SWIM_BACK      = 4,
+    MOVE_TURN_RATE      = 5,
+    MOVE_FLIGHT         = 6,
+    MOVE_FLIGHT_BACK    = 7,
+
+    MAX_MOVE_TYPE,
+};
+
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1
 // assume it is 25 yard per 0.6 second

@@ -2438,6 +2438,7 @@ Logger.maps.script=3,Console Server
 Logger.maps=3,Console Server
 Logger.mapcrash=1,Console Server Mapcrash
 Logger.misc=3,Console Server
+Logger.movement=3,ConsoleDebug Server
 #Logger.movement.flightpath=3,Console Server
 #Logger.movement.motionmaster=3,Console Server
 Logger.network=3,Console Server

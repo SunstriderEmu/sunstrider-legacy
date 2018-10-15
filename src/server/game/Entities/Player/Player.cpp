@@ -172,10 +172,6 @@ Player::Player(WorldSession *session) :
     m_hasMovedInUpdate(false),
     m_seer(this),
     m_needsZoneUpdate(false),
-    m_timeSyncCounter(0),
-    m_timeSyncTimer(0),
-    m_timeSyncClient(0),
-    m_timeSyncServer(0),
     m_teleportToTestInstanceId(0),
     m_speakTime(0),
     m_speakCount(0),
@@ -1364,14 +1360,6 @@ void Player::Update( uint32 p_time )
         }
         else
             m_zoneUpdateTimer -= p_time;
-    }
-
-    if (m_timeSyncTimer > 0)
-    {
-        if (p_time >= m_timeSyncTimer)
-            SendTimeSync();
-        else
-            m_timeSyncTimer -= p_time;
     }
 
     if (IsAlive())
@@ -19896,8 +19884,8 @@ void Player::SendInitialPacketsAfterAddToMap()
     GetZoneAndAreaId(newzone, newarea);
     UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
 
-    ResetTimeSync();
-    SendTimeSync();
+    GetSession()->ResetTimeSync();
+    GetSession()->SendTimeSync();
 
     CastSpell(this, 836, true);                             // LOGINEFFECT
 
@@ -19918,16 +19906,11 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
 
     if(HasAuraType(SPELL_AURA_MOD_STUN))
-        SetMovement(MOVE_ROOT);
+        SetRooted(true);
 
     // manual send package (have code in HandleEffect(true,true); that don't must be re-applied.
     if(HasAuraType(SPELL_AURA_MOD_ROOT))
-    {
-        WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8 + 4);
-        data << GetPackGUID();
-        data << uint32(2);
-        SendMessageToSet(&data,true);
-    }
+        SetRooted(true);
 
     //SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
@@ -22947,25 +22930,6 @@ bool Player::SetDisableGravity(bool disable, bool packetOnly /*= false*/)
     return true;
 }
 
-void Player::ResetTimeSync()
-{
-    m_timeSyncCounter = 0;
-    m_timeSyncTimer = 0;
-    m_timeSyncClient = 0;
-    m_timeSyncServer = WorldGameTime::GetGameTimeMS();
-}
-
-void Player::SendTimeSync()
-{
-    WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
-    data << uint32(m_timeSyncCounter++);
-    SendDirectMessage(&data);
-
-    // Schedule next sync in 10 sec
-    m_timeSyncTimer = 10000;
-    m_timeSyncServer = WorldGameTime::GetGameTimeMS();
-}
-
 void Player::ResummonPetTemporaryUnSummonedIfAny()
 {
     if (!m_temporaryUnsummonedPetNumber)
@@ -23049,11 +23013,12 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     }
                     break;
                 }
-            /*  LK  case GOSSIP_OPTION_LEARNDUALSPEC:
-                    if (!(GetSpecsCount() == 1 && creature->isCanTrainingAndResetTalentsOf(this) && !(getLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
+#ifdef LICH_KING
+                case GOSSIP_OPTION_LEARNDUALSPEC:
+                    if (!(GetSpecsCount() == 1 && creature->isCanTrainingAndResetTalentsOf(this) && !(GetLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
                         canTalk = false;
                     break;
-                    */
+#endif
                 case GOSSIP_OPTION_UNLEARNTALENTS:
                     if (!creature->canResetTalentsOf(this))
                         canTalk = false;

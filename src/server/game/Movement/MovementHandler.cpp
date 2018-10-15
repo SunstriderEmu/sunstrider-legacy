@@ -303,11 +303,18 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 
     recvData.rfinish();                         // prevent warnings spam
 
+    // ignore movement packets if the player is getting far teleported (change of map). keep processing movement packets when the unit is only doing a near teleport.
+    if (plrMover && plrMover->IsBeingTeleportedFar())
+    {
+        recvData.rfinish();                     // prevent warnings spam
+        return;
+    }
+
     if (!movementInfo.pos.IsPositionValid())
         return;
 
     /* handle special cases */
-    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))  // @todo LK: move this stuff. CMSG_MOVE_CHNG_TRANSPORT should be handled elsewhere than here.
     {
         // We were teleported, skip packets that were broadcast before teleport
         if (movementInfo.pos.GetExactDist2d(mover) > SIZE_OF_GRIDS)
@@ -394,15 +401,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             // now client not include swimming flag in case jumping under water
             plrMover->SetInWater(!plrMover->IsInWater() || plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()));
         }
-}
+    }
     // Dont allow to turn on walking if charming other player
     if (mover->GetGUID() != _player->GetGUID())
         movementInfo.flags &= ~MOVEMENTFLAG_WALKING;
-
-    uint32 mstime = _player->GetMap()->GetGameTimeMS();
-    /*----------------------*/
-    if (m_clientTimeDelay == 0)
-        m_clientTimeDelay = mstime - movementInfo.time; //sun: will do some underflow but apparently that's working well enough for logic using it later
 
     // sunwell: do not allow to move with UNIT_FLAG_REMOVE_CLIENT_CONTROL
     if (mover->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
@@ -410,22 +412,17 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         // sunwell: skip moving packets
         if (movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING))
             return;
-        movementInfo.pos.Relocate(mover->GetPositionX(), mover->GetPositionY(), mover->GetPositionZ());
-
-#ifdef LICH_KING
-        if (mover->GetTypeId() == TYPEID_UNIT)
-        {
-            movementInfo.transport.guid = mover->m_movementInfo.transport.guid;
-            movementInfo.transport.pos.Relocate(mover->m_movementInfo.transport.pos.GetPositionX(), mover->m_movementInfo.transport.pos.GetPositionY(), mover->m_movementInfo.transport.pos.GetPositionZ());
-            movementInfo.transport.seat = mover->m_movementInfo.transport.seat;
-        }
-#endif
     }
 
     /* process position-change */
-    WorldPacket data(opcode, recvData.size());
-    movementInfo.time = movementInfo.time + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY;
+    mover->UpdateMovementInfo(movementInfo);
 
+    // as strange as it may be, retail servers actually use MSG_MOVE_START_SWIM_CHEAT & MSG_MOVE_STOP_SWIM_CHEAT to respectively set and unset the 'Flying' movement flag. 
+    // The only thing left to do is to move the handling of CMSG_MOVE_SET_FLY into a different handler
+    if (opcode == CMSG_MOVE_SET_FLY)
+        opcode = movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING) ? MSG_MOVE_START_SWIM_CHEAT : MSG_MOVE_STOP_SWIM_CHEAT;
+
+    WorldPacket data(opcode, recvData.size());
     data.appendPackGUID(mover->GetGUID());
     WriteMovementInfo(&data, &movementInfo);
     mover->SendMessageToSet(&data, _player);
@@ -441,7 +438,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     }
 #endif
 
-    // sunwell: previously always mover->UpdatePosition(movementInfo.pos);
+    // sunwell: previously always mover->UpdatePosition(movementInfo.pos);  // unsure if this can be safely deleted since it is also called in "mover->UpdateMovementInfo(movementInfo)" but the above if blocks may influence the unit's orintation
     if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT && mover->GetTransport())
     {
         float x, y, z, o;
@@ -500,7 +497,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         }
     }
 
-    _player->GetSession()->anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
+    anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
 }
 
 /*
@@ -659,6 +656,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     recvData >> guid;
 #endif
 
+    //no charm handling yet
     if (!_player->m_unitMovedByMe || !_player->m_unitMovedByMe->IsInWorld() || guid != _player->m_unitMovedByMe->GetGUID())
     {
         recvData.rfinish(); // prevent warnings spam
@@ -673,23 +671,12 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 #endif
     ReadMovementInfo(recvData, &movementInfo);
 
-    _player->m_movementInfo = movementInfo;
-
-    // Calculate timestamp
-    uint32 move_time, mstime;
-    mstime = GetMSTime();
-    if (m_clientTimeDelay == 0)
-        m_clientTimeDelay = mstime - movementInfo.time;
-    move_time = (movementInfo.time - (mstime - m_clientTimeDelay)) + mstime + 500;
-    movementInfo.time = move_time;
-
-    // Save movement flags
-    GetPlayer()->SetUnitMovementFlags(movementInfo.GetMovementFlags());
+    _player->UpdateMovementInfo(movementInfo);
 
     // Send packet
     WorldPacket data(MSG_MOVE_KNOCK_BACK, uint16(recvData.size() + 4));
     data.appendPackGUID(guid);
-    _player->BuildMovementPacket(&data);
+    WriteMovementInfo(&data, &movementInfo);
 
     /* This is sent in addition to the rest of the movement data (yes, angle+velocity are sent twice) */
     data << movementInfo.jump.sinAngle;

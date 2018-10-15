@@ -2548,11 +2548,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerTalentMap* m_talents[MAX_TALENT_SPECS];
 #endif
 
-        uint32 m_timeSyncCounter;
-        uint32 m_timeSyncTimer;
-        uint32 m_timeSyncClient;
-        uint32 m_timeSyncServer;
-
         ActionButtonList m_actionButtons;
 
         float m_auraBaseFlatMod[BASEMOD_END];
@@ -2561,9 +2556,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         SpellModContainer m_spellMods[MAX_SPELLMOD];
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
-
-        void ResetTimeSync();
-        void SendTimeSync();
 
         ObjectGuid m_resurrectGUID;
         uint32 m_resurrectMap;

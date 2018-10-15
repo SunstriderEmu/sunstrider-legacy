@@ -9187,6 +9187,13 @@ void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
         movementGenerator->Resume(timer);
 }
 
+void WorldObject::BuildHeartBeatMsg(WorldPacket* data) const
+{
+    data->Initialize(MSG_MOVE_HEARTBEAT, 32);
+    *data << GetPackGUID();
+    BuildMovementPacket(data);
+}
+
 void Unit::SendMovementFlagUpdate()
 {
     WorldPacket data;
@@ -11334,6 +11341,36 @@ void Unit::UpdateHeight(float newZ)
     if (IsVehicle())
         GetVehicleKit()->RelocatePassengers();
 #endif
+}
+
+void Unit::UpdateMovementInfo(MovementInfo movementInfo)
+{
+    if (!IsMovedByPlayer())
+    {
+        TC_LOG_ERROR("movement", "Unit::UpdateMovementInfo call on a unit not moved by a player. This should not happen.");
+        return;
+    }
+
+    if (!GetMap())
+    {
+        TC_LOG_ERROR("movement", "Unit::UpdateMovementInfo call on a unit not in map");
+        return;
+    }
+    //We received the client time but need to send the movement with server time to other players
+    WorldSession* playerSession = GetPlayerMovingMe()->GetSession();
+    playerSession->SetLastMoveClientTimestamp(movementInfo.time); // Needed for speed cheat detection
+    playerSession->SetLastMoveServerTimestamp(GetMap()->GetGameTimeMS());
+     
+    uint32 const STATIC_DELAY = 200;
+    int64 movementTime = (int64)movementInfo.time + playerSession->m_timeSyncClockDelta;
+    if (movementTime < 0 || movementTime > 0xFFFFFFFF)
+    {
+        TC_LOG_WARN("movement", "The computed movement time using clockDelta is erronous. Using fallback instead");
+        movementTime = GetMap()->GetGameTimeMS() + 100;
+    }
+    movementInfo.time = movementTime + STATIC_DELAY; //also add some static delay to further reduce jerkiness
+    UpdatePosition(movementInfo.pos);
+    m_movementInfo = movementInfo;
 }
 
 class SplineHandler

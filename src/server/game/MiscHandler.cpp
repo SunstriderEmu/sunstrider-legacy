@@ -1399,24 +1399,37 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
 {
-    uint32 counter, clientTicks;
-    recvData >> counter >> clientTicks;
+    uint32 counter, clientTimestamp;
+    recvData >> counter >> clientTimestamp;
 
     // time_ seems always more than GetMSTime()
     // uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
 
-    if (counter != _player->m_timeSyncCounter - 1)
+    if (counter != m_timeSyncCounter - 1)
+    {
         TC_LOG_DEBUG("network", "Wrong time sync counter from player %s (cheater?)", _player->GetName().c_str());
+        return;
+    }
 
-#ifdef TRINITY_DEBUG
-    TC_LOG_TRACE("network", "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
-    uint32 ourTicks = clientTicks + (WorldGameTime::GetGameTimeMS() - _player->m_timeSyncServer);
+    //Implement part of http://www.mine-control.com/zack/timesync/timesync.html
+    //May be improved by implementing the rest, not so complicated :) We're currently too sensible to TCP retransmissions
+    // time it took for the request to travel to the client, for the client to process it and reply and for response to travel back to the server.
+    uint32 roundTripDuration = GetMSTimeDiff(m_timeSyncServer, GetMSTime());
 
-    // diff should be small
-    TC_LOG_TRACE("network", "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
-#endif
+    // We want to estimate delay between our request and the client response. The client timestamp is the time he actually received it
+    uint32 lagDelay = roundTripDuration / 2; // we assume that the request processing time is 0
 
-    _player->m_timeSyncClient = clientTicks;
+    /*
+    clockDelta = serverTime - clientTime
+    where
+    serverTime: time that was displayed on the clock of the SERVER at the moment when the client processed the SMSG_TIME_SYNC_REQUEST packet.
+    clientTime: time that was displayed on the clock of the CLIENT at the moment when the client processed the SMSG_TIME_SYNC_REQUEST packet.
+    Once clockDelta has been computed, we can compute the time on server clock of an event when we know the time of the event on the client clock,
+    using this relation:
+    serverTime = clockDelta + clientTime
+    Or in english: delta is the time we need to add to client time to get the server time
+    */
+    m_timeSyncClockDelta = (int64)(m_timeSyncServer + lagDelay) - (int64)clientTimestamp;
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )

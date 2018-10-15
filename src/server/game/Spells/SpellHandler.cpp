@@ -545,12 +545,14 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     if (!creator)
         return;
 
-    WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
+    WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68); //LK OK
     data << uint64(guid);
     data << uint32(creator->GetDisplayId());
     data << uint8(creator->GetRace());
     data << uint8(creator->GetGender());
-    //data << uint8(creator->GetClass());                       // added in 3.x
+#ifdef LICH_KING
+    data << uint8(creator->GetClass());                       // added in 3.x
+#endif
 
     if (creator->GetTypeId() == TYPEID_PLAYER)
     {

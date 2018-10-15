@@ -729,7 +729,7 @@ void MotionMaster::MoveFall(uint32 id /*=0*/)
         return;
 
     _owner->AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
-    _owner->m_movementInfo.SetFallTime(0);
+    _owner->SetFallTime(0);
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {

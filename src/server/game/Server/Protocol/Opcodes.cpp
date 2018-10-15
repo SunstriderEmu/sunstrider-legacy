@@ -1020,7 +1020,7 @@ void OpcodeTable::Initialize()
     /*0x38E*/ DEFINE_HANDLER(MSG_PARTY_ASSIGNMENT,                          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandlePartyAssignmentOpcode     );
     /*0x38F*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_OFFER_PETITION_ERROR,       STATUS_NEVER);
     /*0x390*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_TIME_SYNC_REQ,              STATUS_NEVER);
-    /*0x391*/ DEFINE_HANDLER(CMSG_TIME_SYNC_RESP,                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleTimeSyncResp              );
+    /*0x391*/ DEFINE_HANDLER(CMSG_TIME_SYNC_RESP,                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x392*/ DEFINE_HANDLER(CMSG_SEND_LOCAL_EVENT,                         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x393*/ DEFINE_HANDLER(CMSG_SEND_GENERAL_TRIGGER,                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x394*/ DEFINE_HANDLER(CMSG_SEND_COMBAT_TRIGGER,                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
@@ -2092,7 +2092,7 @@ void OpcodeTable::Initialize()
     /*0x38E*/ DEFINE_HANDLER_LK(LK_MSG_PARTY_ASSIGNMENT,                          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandlePartyAssignmentOpcode );	
     /*0x38F*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_OFFER_PETITION_ERROR,       STATUS_NEVER);	
     /*0x390*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_TIME_SYNC_REQ,              STATUS_NEVER);	
-    /*0x391*/ DEFINE_HANDLER_LK(LK_CMSG_TIME_SYNC_RESP,                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleTimeSyncResp );	
+    /*0x391*/ DEFINE_HANDLER_LK(LK_CMSG_TIME_SYNC_RESP,                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::Handle_NULL );
     /*0x392*/ DEFINE_HANDLER_LK(LK_CMSG_SEND_LOCAL_EVENT,                         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );	
     /*0x393*/ DEFINE_HANDLER_LK(LK_CMSG_SEND_GENERAL_TRIGGER,                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );	
     /*0x394*/ DEFINE_HANDLER_LK(LK_CMSG_SEND_COMBAT_TRIGGER,                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );	

@@ -117,12 +117,17 @@ m_playerLogout(false),
 m_playerRecentlyLogout(false),
 m_playerSave(false),
 m_latency(0),
-m_clientTimeDelay(0),
 m_TutorialsChanged(false),
 _warden(nullptr),
 forceExit(false),
 expireTime(60000), // 1 min after socket loss, session is deleted
-anticheat(new PlayerAntiCheat(this))
+anticheat(new PlayerAntiCheat(this)),
+m_timeSyncClockDelta(0),
+lastMoveClientTimestamp(0),
+lastMoveServerTimestamp(0),
+m_timeSyncCounter(0),
+m_timeSyncTimer(0),
+m_timeSyncServer(0)
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -486,6 +491,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         bool result = m_replayPlayer->UpdateReplay();
         if (!result) //ended or error
             StopReplaying();
+    }
+
+    if (m_timeSyncTimer > 0)
+    {
+        if (diff >= m_timeSyncTimer)
+            SendTimeSync();
+        else
+            m_timeSyncTimer -= diff;
     }
 
     return true;
@@ -1877,3 +1890,21 @@ void CharacterCreateInfo::RandomizeAppearance()
     OutfitId = 0;
     Gender = urand(GENDER_MALE, GENDER_FEMALE);
 }
+
+void WorldSession::ResetTimeSync()
+{
+    m_timeSyncCounter = 0;
+    m_timeSyncTimer = 0;
+    m_timeSyncClockDelta = 0;
+    m_timeSyncServer = GetMSTime();
+}
+
+void WorldSession::SendTimeSync()
+{
+    WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+    data << uint32(m_timeSyncCounter++);
+    SendPacket(&data);
+    // Schedule next sync in 10 sec
+    m_timeSyncTimer = 10000;
+    m_timeSyncServer = GetMSTime();
+} 

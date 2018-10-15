@@ -300,7 +300,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             if (guid != bot->GetGUID())
                 return;
 
-            bot->m_movementInfo.SetMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
+            bot->SetUnitMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_CAN_FLY));
             return;
         }
     case SMSG_MOVE_UNSET_CAN_FLY:
@@ -447,7 +447,7 @@ void PlayerbotAI::DoNextAction()
 
     if (bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
     {
-        bot->m_movementInfo.SetMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
+        bot->SetUnitMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
 
         // TODO
         //WorldPacket packet(CMSG_MOVE_SET_FLY);
@@ -460,7 +460,7 @@ void PlayerbotAI::DoNextAction()
     Player* _master = GetMaster();
     if (bot->IsMounted() && bot->IsFlying())
     {
-        bot->m_movementInfo.SetMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
+        bot->SetUnitMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
 
         bot->SetSpeedRate(MOVE_FLIGHT, 1.0f, true);
         bot->SetSpeedRate(MOVE_RUN, 1.0f, true);

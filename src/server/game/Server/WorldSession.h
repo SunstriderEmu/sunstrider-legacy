@@ -431,7 +431,19 @@ class TC_GAME_API WorldSession
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
-        void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
+
+        // Estimation of latency for this client, handled with CMSG_TIME_SYNC_RESP
+        void ResetTimeSync();
+        void SendTimeSync();
+        int64 m_timeSyncClockDelta;
+        uint32 m_timeSyncCounter;
+        uint32 m_timeSyncTimer;
+        uint32 m_timeSyncServer;
+        // Data from movement packet, may be used for anticheat?
+        void SetLastMoveClientTimestamp(uint32 timestamp) { lastMoveClientTimestamp = timestamp; }
+        void SetLastMoveServerTimestamp(uint32 timestamp) { lastMoveServerTimestamp = timestamp; }
+        uint32 GetLastMoveClientTimestamp() const { return lastMoveClientTimestamp; }
+        uint32 GetLastMoveServerTimestamp() const { return lastMoveServerTimestamp; }
 
         bool IsReplaying() const { return m_replayPlayer != nullptr; }
         bool IsRecording() const { return m_replayRecorder != nullptr; }
@@ -505,8 +517,6 @@ class TC_GAME_API WorldSession
         void HandleMoveTeleportAck(WorldPacket& recvPacket);
         void HandleForceSpeedChangeAck( WorldPacket & recvData );
 
-        void HandlePingOpcode(WorldPacket& recvPacket);
-        void HandleAuthSessionOpcode(WorldPacket& recvPacket);
         void HandleRepopRequestOpcode(WorldPacket& recvPacket);
         void HandleAutostoreLootItemOpcode(WorldPacket& recvPacket);
         void HandleLootMoneyOpcode(WorldPacket& recvPacket);
@@ -526,8 +536,6 @@ class TC_GAME_API WorldSession
         void HandleGMTicketSystemStatusOpcode(WorldPacket& recvPacket);
         void SendGMTicketGetTicket(uint32 status, char const* text);
         void HandleGMSurveySubmit(WorldPacket& recvPacket);
-
-        //void HandleGMSurveySubmit(WorldPacket& recvPacket);
 
         void HandleTogglePvP(WorldPacket& recvPacket);
 
@@ -572,7 +580,6 @@ class TC_GAME_API WorldSession
         void HandleMoveWorldportAck();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
-        //void HandlePossessedMovement(WorldPacket& recvData, MovementInfo& movementInfo, uint32& MovementFlags);
         void HandleSetActiveMoverOpcode(WorldPacket &recvData);
         void HandleMoveNotActiveMover(WorldPacket &recvData);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recvData);
@@ -583,7 +590,6 @@ class TC_GAME_API WorldSession
 
         void HandleGroupInviteOpcode(WorldPacket& recvPacket);
         void _HandleGroupInviteOpcode(Player* player, std::string membername);
-        //void HandleGroupCancelOpcode(WorldPacket& recvPacket);
         void HandleGroupAcceptOpcode(WorldPacket& recvPacket);
         void HandleGroupDeclineOpcode(WorldPacket& recvPacket);
         void HandleGroupUninviteOpcode(WorldPacket& recvPacket);
@@ -701,7 +707,6 @@ class TC_GAME_API WorldSession
         void HandleQueryNextMailTime(WorldPacket & recvData);
         void HandleCancelChanneling(WorldPacket & recvData);
 
-        void SendItemPageInfo(ItemTemplate *itemProto);
         void HandleSplitItemOpcode(WorldPacket& recvPacket);
         void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
         void HandleDestroyItemOpcode(WorldPacket& recvPacket);
@@ -1004,7 +1009,6 @@ class TC_GAME_API WorldSession
         LocaleConstant m_sessionDbcLocale;
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
-        uint32 m_clientTimeDelay;
         
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
@@ -1018,6 +1022,13 @@ class TC_GAME_API WorldSession
 
         std::shared_ptr<ReplayRecorder> m_replayRecorder;
         std::shared_ptr<ReplayPlayer> m_replayPlayer;
+
+         /* Player Movement fields START*/
+        // Timestamp on client clock of the moment the most recently processed movement packet was SENT by the client
+        uint32 lastMoveClientTimestamp;
+        // Timestamp on server clock of the moment the most recently processed movement packet was RECEIVED from the client
+        uint32 lastMoveServerTimestamp;
+        /* Player Movement fields END*/
 };
 #endif
 /// @}

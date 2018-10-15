@@ -1466,24 +1466,6 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
     AddToObjectUpdateIfNeeded();
 }
 
-void WorldObject::BuildHeartBeatMsg(WorldPacket* data) const
-{
-    //Heartbeat message cannot be used for non-units
-    if (!isType(TYPEMASK_UNIT))
-        return;
-
-    data->Initialize(MSG_MOVE_HEARTBEAT, 32);
-    *data << GetPackGUID();
-    *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
-    *data << uint8(0);                                      // 2.3.0
-    *data << GetMSTime();                                   // time
-    *data << m_positionX;
-    *data << m_positionY;
-    *data << m_positionZ;
-    *data << m_orientation;
-    *data << uint32(0);
-}
-
 void WorldObject::SendMessageToSet(WorldPacket const* data, bool self)
 {
     if (IsInWorld()) 
