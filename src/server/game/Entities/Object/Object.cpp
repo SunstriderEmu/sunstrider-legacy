@@ -2701,6 +2701,22 @@ float WorldObject::GetMapHeight(float x, float y, float z, bool vmap/* = true*/,
     return GetMap()->GetHeight(GetPhaseMask(), x, y, z, vmap, distanceToSearch, GetCollisionHeight());
 }
 
+void WorldObject::SetTransport(Transport* transport)
+{
+    if (transport)
+    {
+        m_movementInfo.transport.guid = transport->GetGUID();
+        // could it be possible to initialize the rest of the transport data (seat, time, offset) here?
+        AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+    }
+    else // if(!m_vehicle) ?
+    {
+        m_movementInfo.transport.Reset();
+        RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+    }
+    m_transport = transport;
+}
+
 ObjectGuid WorldObject::GetCharmerOrOwnerOrOwnGUID() const
 {
     if (ObjectGuid guid = GetCharmerOrOwnerGUID())

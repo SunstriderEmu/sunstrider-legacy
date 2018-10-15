@@ -1557,7 +1557,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         virtual void SaveDataFieldToDB();
         static bool SaveValuesArrayInDB(Tokens const& data,ObjectGuid guid);
         static void SetUInt32ValueInArray(Tokens& data,uint16 index, uint32 value);
-        static void SetFloatValueInArray(Tokens& data,uint16 index, float value);
         static void SetUInt32ValueInDB(uint16 index, uint32 value, ObjectGuid guid);
         static void SetFloatValueInDB(uint16 index, float value, ObjectGuid guid);
         static void SavePositionInDB(uint32 mapid, float x,float y,float z,float o,uint32 zone,ObjectGuid guid);
@@ -1614,7 +1613,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void AddNewMailDeliverTime(time_t deliver_time);
         bool IsMailsLoaded() const { return m_mailsLoaded; }
 
-        //void SetMail(Mail *m);
         void RemoveMail(uint32 id);
 
         void AddMail(Mail* mail) { m_mail.push_front(mail);}
@@ -1773,8 +1771,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetDelayedTeleportFlag(bool setting) { m_bHasDelayedTeleport = setting; }
         void ScheduleDelayedOperation(uint32 operation) { if (operation < DELAYED_END) m_DelayedOperations |= operation; }
 
-        bool IsInstanceLoginGameMasterException() const;
-
         void UpdateAfkReport(time_t currTime);
         void UpdatePvPFlag(time_t currTime);
         void SetContestedPvP(Player* attackedPlayer = nullptr);
@@ -1834,8 +1830,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         uint32 GetBaseDefenseSkillValue() const { return GetBaseSkillValue(SKILL_DEFENSE); }
         uint32 GetBaseWeaponSkillValue(WeaponAttackType attType) const;
-
-        uint32 GetSpellByProto(ItemTemplate *proto) const;
 
         float GetHealthBonusFromStamina() const;
         float GetManaBonusFromIntellect() const;
@@ -2182,7 +2176,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void UpdateSpeakTime();
         bool CanSpeak() const;
-        void ChangeSpeakTime(int utime);
 
         /*********************************************************/
         /***                 VARIOUS SYSTEMS                   ***/
@@ -2209,8 +2202,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool CanSwim() const override { return true; }
 
         void HandleDrowning(uint32 time_diff);
-        void HandleFallDamage(MovementInfo& movementInfo);
-        void HandleFallUnderMap();
 
         //relocate without teleporting
         void RelocateToArenaZone(bool secondary = false);

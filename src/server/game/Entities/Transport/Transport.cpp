@@ -128,8 +128,6 @@ void MotionTransport::CleanupsBeforeDelete(bool finalCleanup /*= true*/)
         WorldObject* obj = *_passengers.begin();
         RemovePassenger(obj);
         obj->SetTransport(nullptr);
-        obj->m_movementInfo.transport.Reset();
-        obj->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
     }
 
     GameObject::CleanupsBeforeDelete(finalCleanup);
@@ -338,14 +336,12 @@ void MotionTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPos
     if (_passengers.insert(passenger).second)
     {
         passenger->SetTransport(this);
-        passenger->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
-        passenger->m_movementInfo.transport.guid = GetGUID();
         if (calcPassengerPosition)
         {
             float x, y, z, o;
             passenger->GetPosition(x, y, z, o);
             CalculatePassengerOffset(x, y, z, &o);
-            passenger->m_movementInfo.transport.pos.Relocate(x, y, z, o);
+            passenger->SetTransOffset(x, y, z, o);
         }
 
         if (Player* plr = passenger->ToPlayer())
@@ -360,8 +356,6 @@ void MotionTransport::RemovePassenger(WorldObject* passenger)
     if (_passengers.erase(passenger) || _staticPassengers.erase(passenger))
 {
         passenger->SetTransport(nullptr);
-        passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-        passenger->m_movementInfo.transport.Reset();
         //TC_LOG_DEBUG("entities.transport", "Object %s removed from transport %s.", passenger->GetName().c_str(), GetName().c_str());
 
         if (Player* plr = passenger->ToPlayer())
@@ -391,9 +385,7 @@ Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, Creature
     data->spawnPoint.GetPosition(x, y, z, o);
 
     creature->SetTransport(this);
-    creature->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
-    creature->m_movementInfo.transport.guid = GetGUID();
-    creature->m_movementInfo.transport.pos.Relocate(x, y, z, o);
+    creature->SetTransOffset(x, y, z, o);
     CalculatePassengerPosition(x, y, z, &o);
     creature->Relocate(x, y, z, o);
     creature->SetHomePosition(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
@@ -447,8 +439,7 @@ GameObject* MotionTransport::CreateGOPassenger(ObjectGuid::LowType guid, GameObj
     float o = data->orientation;
 
     go->SetTransport(this);
-    go->m_movementInfo.transport.guid = GetGUID();
-    go->m_movementInfo.transport.pos.Relocate(x, y, z, o);
+    go->SetTransOffset(x, y, z, o);
     CalculatePassengerPosition(x, y, z, &o);
     go->Relocate(x, y, z, o);
 
@@ -1076,8 +1067,6 @@ void StaticTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPos
             t->RemovePassenger(passenger);
 
         passenger->SetTransport(this);
-        passenger->m_movementInfo.flags |= MOVEMENTFLAG_ONTRANSPORT;
-        passenger->m_movementInfo.transport.guid = GetGUID();
         if (calcPassengerPosition)
         {
             float x, y, z, o;
@@ -1096,8 +1085,6 @@ void StaticTransport::RemovePassenger(WorldObject* passenger)
     if (_passengers.erase(passenger))
     {
         passenger->SetTransport(nullptr);
-        passenger->m_movementInfo.flags &= ~MOVEMENTFLAG_ONTRANSPORT;
-        passenger->m_movementInfo.transport.Reset();
 
         if (Player* plr = passenger->ToPlayer())
         {
