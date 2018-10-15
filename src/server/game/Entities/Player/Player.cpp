@@ -12184,7 +12184,7 @@ void Player::RemoveItemFromBuyBackSlot(uint32 slot, bool del)
     }
 }
 
-void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, uint32 /*itemid*/ /*= 0*/) const
+void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, uint32 itemid /*= 0*/) const
 {
     WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, (msg == EQUIP_ERR_CANT_EQUIP_LEVEL_I ? 22 : (msg == EQUIP_ERR_OK ? 1 : 18)));
     data << uint8(msg);
@@ -12198,14 +12198,25 @@ void Player::SendEquipError(uint8 msg, Item* pItem, Item* pItem2 /*= nullptr*/, 
         switch(msg)
         {
         case EQUIP_ERR_CANT_EQUIP_LEVEL_I:
-            uint32 level = 0;
-            if(pItem)
-                if(ItemTemplate const* proto =  pItem->GetTemplate())
-                    level = proto->RequiredLevel;
-
-            data << uint32(level);                          // new 2.4.0
+#ifdef LICH_KING
+        case EQUIP_ERR_PURCHASE_LEVEL_TOO_LOW:
+#endif
+            ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
+            data << uint32(proto ? proto->RequiredLevel : 0);
             break;
         }
+#ifdef LICH_KING
+        case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED:
+        case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_SOCKETED_EXCEEDED:
+        case EQUIP_ERR_ITEM_MAX_LIMIT_CATEGORY_EQUIPPED_EXCEEDED:
+        {
+            ItemTemplate const* proto = pItem ? pItem->GetTemplate() : sObjectMgr->GetItemTemplate(itemid);
+            data << uint32(proto ? proto->ItemLimitCategory : 0);
+            break;
+        }  
+#endif
+        default:
+            break;
     }
     SendDirectMessage(&data);
 }
