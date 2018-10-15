@@ -1458,7 +1458,7 @@ public:
         QueryResult result = WorldDatabase.PQuery("SELECT c.spawnId, ce.entry, position_x, position_y, position_z, map, gec.event, "
             "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
             "FROM creature c " 
-            "JOIN creature_entry ce ON c.spawnID = ce.spawnID"
+            "JOIN creature_entry ce ON c.spawnID = ce.spawnID "
             "LEFT JOIN game_event_creature gec ON c.spawnId = gec.guid "
             "WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' " 
             "ORDER BY order_",
