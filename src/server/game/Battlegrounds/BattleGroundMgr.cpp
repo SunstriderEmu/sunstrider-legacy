@@ -1053,35 +1053,35 @@ void BattlegroundMgr::LoadBattleEventIndexes()
     uint32 count = 0;
 
     QueryResult result =
-        //                          0         1              2                3                4              5              6
-        WorldDatabase.Query("SELECT data.typ, data.spawnID1, data.ev1 AS ev1, data.ev2 AS ev2, data.map AS m, data.spawnID2, description.map, "
+        //                          0                           1              2                3                4              5              6
+        WorldDatabase.Query("SELECT CAST(data.typ AS UNSIGNED), data.spawnID1, data.ev1 AS ev1, data.ev2 AS ev2, data.map AS m, data.spawnID2, description.map, "
             //                              7                  8                   9
             "description.event1, description.event2, description.description "
             "FROM "
-            "(SELECT 0 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.guid AS spawnID2 "
+            "(SELECT 1 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.guid AS spawnID2 "
             "FROM gameobject_battleground AS a "
-            "LEFT OUTER JOIN gameobject AS b ON a.spawnID = b.guid "
+            "LEFT JOIN gameobject AS b ON a.spawnID = b.guid "
             "UNION "
-            "SELECT 1 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.spawnID AS spawnID2 "
+            "SELECT 0 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.spawnID AS spawnID2 "
             "FROM creature_battleground AS a "
-            "LEFT OUTER JOIN creature AS b ON a.spawnID = b.spawnID "
+            "LEFT JOIN creature AS b ON a.spawnID = b.spawnID "
             ") data "
-            "RIGHT OUTER JOIN battleground_events AS description ON data.map = description.map "
+            "RIGHT JOIN battleground_events AS description ON data.map = description.map "
             "AND data.ev1 = description.event1 AND data.ev2 = description.event2 "
             // full outer join doesn't work in mysql :-/ so just UNION-select the same again and add a left outer join
             "UNION "
-            "SELECT data.typ, data.spawnID1, data.ev1, data.ev2, data.map, data.spawnID2, description.map, "
+            "SELECT CAST(data.typ AS UNSIGNED), data.spawnID1, data.ev1, data.ev2, data.map, data.spawnID2, description.map, "
             "description.event1, description.event2, description.description "
             "FROM "
-            "(SELECT 0 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.guid AS spawnID2 "
+            "(SELECT 1 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.guid AS spawnID2 "
             "FROM gameobject_battleground AS a "
-            "LEFT OUTER JOIN gameobject AS b ON a.spawnID = b.guid "
+            "LEFT JOIN gameobject AS b ON a.spawnID = b.guid "
             "UNION "
-            "SELECT 1 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.spawnID AS spawnID2 "
+            "SELECT 0 AS typ, a.spawnID AS spawnID1, a.event1 AS ev1, a.event2 AS ev2, b.map AS map, b.spawnID AS spawnID2 "
             "FROM creature_battleground AS a "
-            "LEFT OUTER JOIN creature AS b ON a.spawnID = b.spawnID "
+            "LEFT JOIN creature AS b ON a.spawnID = b.spawnID "
             ") data "
-            "LEFT OUTER JOIN battleground_events AS description ON data.map = description.map "
+            "LEFT JOIN battleground_events AS description ON data.map = description.map "
             "AND data.ev1 = description.event1 AND data.ev2 = description.event2 "
             "ORDER BY m, ev1, ev2");
 
@@ -1094,22 +1094,22 @@ void BattlegroundMgr::LoadBattleEventIndexes()
     do
     {
         Field* fields = result->Fetch();
-        if (fields[2].GetUInt8() == BG_EVENT_NONE || fields[3].GetUInt8() == BG_EVENT_NONE)
-            continue;                                       // we don't need to add those to the eventmap
-
-        bool gameobject = (fields[0].GetUInt32() == 0);
+        bool gameobject = (fields[0].GetUInt64() == 0);
         uint32 spawnID = fields[1].GetUInt32();
         events.event1 = fields[2].GetUInt8();
         events.event2 = fields[3].GetUInt8();
-        uint32 map = fields[4].GetUInt16();
+        if (events.event1 == BG_EVENT_NONE || events.event2 == BG_EVENT_NONE)
+            continue;                                       // we don't need to add those to the eventmap
 
+        uint32 map = fields[4].GetUInt16();
+        uint32 spawnID2 = fields[5].GetUInt32();
         uint32 desc_map = fields[6].GetUInt16();
         uint8 desc_event1 = fields[7].GetUInt8();
         uint8 desc_event2 = fields[8].GetUInt8();
         std::string description = fields[9].GetString();
 
         // checking for NULL - through right outer join this will mean following:
-        if (fields[5].GetUInt32() != spawnID)
+        if (spawnID2 != spawnID)
         {
             TC_LOG_ERROR("sql.sql", "BattleGroundEvent: %s with nonexistent spawnID %u for event: map:%u, event1:%u, event2:%u (\"%s\")",
                 (gameobject) ? "gameobject" : "creature", spawnID, map, events.event1, events.event2, description.c_str());
