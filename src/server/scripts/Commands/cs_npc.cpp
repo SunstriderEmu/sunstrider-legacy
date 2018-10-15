@@ -305,8 +305,6 @@ public:
                 if (Creature* creature = trans->CreateNPCPassenger(guid, &data))
                 {
                     sObjectMgr->AddCreatureToGrid(guid, &data);
-                    // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
-                    WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", creature->GetSpawnId(), id);
                     creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
                 }
                 else {
@@ -333,8 +331,6 @@ public:
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
         uint32 spawnId = creature->GetSpawnId(); //spawn id gets generated in SaveToDB
-        // Fill creature_entry. Shouldn't have any entry of this type but replace just to be sure in case database is not sane
-        WorldDatabase.PExecute("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", spawnId, id);
 
         CreatureData& data = sObjectMgr->NewOrExistCreatureData(spawnId);
         data.ids.emplace_back(id);
@@ -1090,7 +1086,7 @@ public:
             creatureGroup = sFormationMgr->AddCreatureToGroup(groupID, leader);
             leader->SearchFormation();
 
-            WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
+            WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
                 groupID, groupID, uint32(groupAI));
 
             handler->PSendSysMessage("Created formation with leader %u", groupID);
@@ -1098,7 +1094,7 @@ public:
 
         FormationInfo group_member;
         group_member.groupID       = groupID;
-        group_member.followAngle   = leader->GetAbsoluteAngle(leader) - member->GetOrientation();
+        group_member.followAngle   = leader->GetAbsoluteAngle(member) - member->GetOrientation();
         group_member.followDist    = sqrtf(pow(leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(leader->GetPositionY() - member->GetPositionY(), int(2)));
         group_member.groupAI       = groupAI;
         creatureGroup->AddMember(member);

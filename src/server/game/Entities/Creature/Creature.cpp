@@ -1509,6 +1509,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     stmt->setUInt32(0, m_spawnId);
     trans->Append(stmt);
 
+    trans->PAppend("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", m_spawnId, GetEntry());
+
     std::ostringstream ss;
     ss << "INSERT INTO creature (spawnId,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
         << m_spawnId << ","
