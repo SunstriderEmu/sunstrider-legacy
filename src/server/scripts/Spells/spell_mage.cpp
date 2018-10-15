@@ -9,6 +9,7 @@ enum MageSpells
     SPELL_MAGE_BURNOUT = 29077,
     SPELL_MAGE_COLD_SNAP = 11958,
     SPELL_MAGE_FROST_WARDING_R1 = 11189,
+    SPELL_MAGE_MOLTEN_SHIELD_R1 = 11094,
     SPELL_MAGE_IGNITE = 12654,
     SPELL_MAGE_MASTER_OF_ELEMENTS_ENERGIZE = 29077,
     SPELL_MAGE_SQUIRREL_FORM = 32813,
@@ -145,7 +146,7 @@ public:
     {
         PrepareAuraScript(spell_mage_fire_frost_ward_AuraScript);
 
-        void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+        void CalculateAmount0(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
         {
             canBeRecalculated = false;
             if (Unit* caster = GetCaster())
@@ -165,9 +166,31 @@ public:
             }
         }
 
+        void CalculateAmount1(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+        {
+            canBeRecalculated = false;
+            if (Unit* caster = GetCaster())
+            {
+                //both molten shield and frost warding have a dummy effect containing the reflect % value
+                //Also note fire ward has its own family flag but frost ward does not, making it complicated to implement this as an aura modifier
+                switch (GetSpellInfo()->SchoolMask)
+                {
+                case SPELL_SCHOOL_MASK_FROST:
+                    if (AuraEffect* effect = caster->GetAuraEffectOfRankedSpell(SPELL_MAGE_FROST_WARDING_R1, EFFECT_0))
+                        amount += effect->GetSpellInfo()->Effects[EFFECT_1].CalcValue();
+                    break;
+                case SPELL_SCHOOL_MASK_FIRE:
+                    if (AuraEffect* effect = caster->GetAuraEffectOfRankedSpell(SPELL_MAGE_MOLTEN_SHIELD_R1, EFFECT_1))
+                        amount += effect->GetSpellInfo()->Effects[EFFECT_0].CalcValue();
+                    break;
+                }
+            }
+        }
+
         void Register() override
         {
-            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_fire_frost_ward_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_fire_frost_ward_AuraScript::CalculateAmount0, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_fire_frost_ward_AuraScript::CalculateAmount1, EFFECT_1, SPELL_AURA_REFLECT_SPELLS_SCHOOL);
         }
     };
 
