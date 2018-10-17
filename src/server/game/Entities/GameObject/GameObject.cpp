@@ -460,14 +460,6 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
         m_charges = goinfo->GetCharges();
 
-    //Notify the map's instance data.
-    //Only works if you create the object in it, not if it is moves to that map.
-    //Normally non-players do not teleport to other maps.
-    if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-    {
-        ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectCreate(this);
-    }
-    
     LastUsedScriptID = GetScriptId();
     AIM_Initialize();
 
