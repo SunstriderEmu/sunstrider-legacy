@@ -96,6 +96,7 @@ enum RotateDirection : uint8
 
 struct TC_GAME_API ChaseRange
 {
+    //ranges here will be added to combat reach
     ChaseRange(float range);
     ChaseRange(float _minRange, float _maxRange);
     ChaseRange(float _minRange, float _minTolerance, float _maxTolerance, float _maxRange);
