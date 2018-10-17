@@ -2945,7 +2945,7 @@ void Creature::AllLootRemovedFromCorpse()
     CreatureTemplate const *cinfo = GetCreatureTemplate();
 
     // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
-    if (cinfo && cinfo->SkinLootId)
+    if (loot.loot_type == LOOT_SKINNING)
         m_corpseRemoveTime = now;
     else
         m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
