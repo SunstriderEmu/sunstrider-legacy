@@ -36,6 +36,7 @@ public:
     static void RegisterModule(const std::string& name, ModuleFactory* m);
 
     void OnClientPacketReceived(WorldPacket const& packet);
+    //movementInfo contains original packet from client, with time untouched
     void OnPlayerMoved(Unit const* moved, MovementInfo const& movementInfo, OpcodeClient opcode);
     void OnPlayerSetFlying(Unit const* moved, bool set);
     void OnPlayerKnockBack(Unit const* moved);

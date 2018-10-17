@@ -11361,7 +11361,7 @@ void Unit::UpdateMovementInfo(MovementInfo movementInfo)
     playerSession->SetLastMoveClientTimestamp(movementInfo.time); // Needed for speed cheat detection
     playerSession->SetLastMoveServerTimestamp(GetMap()->GetGameTimeMS());
      
-    uint32 const STATIC_DELAY = 200;
+    uint32 const STATIC_DELAY = 100;
     int64 movementTime = (int64)movementInfo.time + playerSession->m_timeSyncClockDelta;
     if (movementTime < 0 || movementTime > 0xFFFFFFFF)
     {

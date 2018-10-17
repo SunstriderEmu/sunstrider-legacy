@@ -424,9 +424,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 
     WorldPacket data(opcode, recvData.size());
     data.appendPackGUID(mover->GetGUID());
-    WriteMovementInfo(&data, &movementInfo);
+    WriteMovementInfo(&data, &mover->m_movementInfo); //this contains the server time, not the time provided by client
     mover->SendMessageToSet(&data, _player);
-    mover->m_movementInfo = movementInfo;
 
 #ifdef LICH_KING
     // this is almost never true (sunwell: only one packet when entering vehicle), normally use mover->IsVehicle()
