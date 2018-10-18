@@ -42,7 +42,7 @@ void WorldSession::HandleMoveWorldportAck()
     WorldLocation &loc = player->GetTeleportDest();
 
     // possible errors in the coordinate validity check
-    if(!MapManager::IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation))
+    if (!MapManager::IsValidMapCoord(loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation))
     {
         LogoutPlayer(false);
         return;
@@ -435,27 +435,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     WorldPacket data(opcode, recvData.size());
     mover->GetMovementInfo().WriteContentIntoPacket(&data, true);  //this contains the server time, not the time provided by client
     mover->SendMessageToSet(&data, _player);
-
-#ifdef LICH_KING
-    // this is almost never true (sunwell: only one packet when entering vehicle), normally use mover->IsVehicle()
-    if (mover->GetVehicle())
-    {
-        mover->SetOrientation(movementInfo.pos.GetOrientation());
-        mover->UpdatePosition(movementInfo.pos);
-        return;
-    }
-#endif
-
-    // sunwell: previously always mover->UpdatePosition(movementInfo.pos); mover->UpdatePosition(movementInfo.pos); // unsure if this can be safely deleted since it is also called in "mover->UpdateMovementInfo(movementInfo)" but the above if blocks may influence the unit's orintation
-    if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT && mover->GetTransport())
-    {
-        float x, y, z, o;
-        movementInfo.transport.pos.GetPosition(x, y, z, o);
-        mover->GetTransport()->CalculatePassengerPosition(x, y, z, &o);
-        mover->UpdatePosition(x, y, z, o);
-    }
-    else
-        mover->UpdatePosition(movementInfo.pos);
 
     if (!mover->IsStandState() && (movementInfo.flags & (MOVEMENTFLAG_MASK_MOVING | MOVEMENTFLAG_MASK_TURNING)))
         mover->SetStandState(UNIT_STAND_STATE_STAND);

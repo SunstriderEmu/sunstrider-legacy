@@ -11417,6 +11417,14 @@ void Unit::UpdateMovementInfo(MovementInfo movementInfo)
         TC_LOG_ERROR("movement", "Unit::UpdateMovementInfo call on a unit not in map");
         return;
     }
+
+    Transport* transport = GetTransport();
+    if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT && !transport)
+    {
+        //we where given a position on transport but we're not on a transport... can't really do anything with given position
+        return;
+    }
+
     //We received the client time but need to send the movement with server time to other players
     WorldSession* playerSession = GetPlayerMovingMe();
     playerSession->SetLastMoveClientTimestamp(movementInfo.time); // Needed for speed cheat detection
@@ -11430,7 +11438,37 @@ void Unit::UpdateMovementInfo(MovementInfo movementInfo)
         movementTime = GetMap()->GetGameTimeMS() + 100;
     }
     movementInfo.time = movementTime + STATIC_DELAY; //also add some static delay to further reduce jerkiness
-    UpdatePosition(movementInfo.pos);
+
+#ifdef LICH_KING
+    // Some vehicles allow the passenger to turn by himself
+    if (Vehicle* vehicle = GetVehicle())
+    {
+        if (VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(this))
+        {
+            if (seat->m_flags & VEHICLE_SEAT_FLAG_ALLOW_TURNING)
+            {
+                if (movementInfo.pos.GetOrientation() != GetOrientation())
+                {
+                    SetOrientation(movementInfo.pos.GetOrientation());
+                    RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
+                }
+            }
+        }
+        return;
+    }
+#endif
+
+    // Handle position if a transport position was given
+    if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT)
+    {
+        float x, y, z, o;
+        movementInfo.transport.pos.GetPosition(x, y, z, o);
+        transport->CalculatePassengerPosition(x, y, z, &o);
+        UpdatePosition(x, y, z, o);
+    }
+    else
+        UpdatePosition(movementInfo.pos);
+
     m_movementInfo = movementInfo;
 }
 
