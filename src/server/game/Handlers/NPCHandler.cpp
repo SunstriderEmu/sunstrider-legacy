@@ -621,7 +621,7 @@ void WorldSession::HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, Pre
         return;
     }
 
-    auto  newPet = new Pet(_player, HUNTER_PET);
+    Pet* newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -753,14 +753,15 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
     _player->RemovePet(pet, PetSaveMode(slot));
 
     // summon unstabled pet
-    auto  newPet = new Pet(_player, HUNTER_PET);
+    Pet* newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
         SendStableResult(STABLE_ERR_STABLE);
+        return;
     }
-    else
-        SendStableResult(STABLE_SUCCESS_UNSTABLE);
+
+    SendStableResult(STABLE_SUCCESS_UNSTABLE);
 }
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )

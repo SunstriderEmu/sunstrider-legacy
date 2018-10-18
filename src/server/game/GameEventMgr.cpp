@@ -1069,7 +1069,7 @@ void GameEventMgr::SpawnCreature(uint32 spawnId)
         // We use spawn coords to spawn
         if(!map->Instanceable() && map->IsGridLoaded(data->spawnPoint))
         {
-            auto  pCreature = new Creature;
+            Creature* pCreature = new Creature;
             //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
             if (!pCreature->LoadFromDB(spawnId, map, true, false))
             {

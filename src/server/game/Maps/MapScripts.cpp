@@ -121,7 +121,7 @@ void Map::ScriptsProcess()
                     break;
             case HighGuid::Transport:
                 case HighGuid::GameObject:
-                    source = source = GetGameObject(step.sourceGUID);
+                    source = GetGameObject(step.sourceGUID);
                     break;
                 case HighGuid::Corpse:
                     source = GetCorpse(step.sourceGUID);
@@ -403,7 +403,6 @@ void Map::ScriptsProcess()
                 }
 
                 if( go->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE ||
-                    go->GetGoType()==GAMEOBJECT_TYPE_FISHINGNODE ||
                     go->GetGoType()==GAMEOBJECT_TYPE_DOOR        ||
                     go->GetGoType()==GAMEOBJECT_TYPE_BUTTON      ||
                     go->GetGoType()==GAMEOBJECT_TYPE_TRAP )

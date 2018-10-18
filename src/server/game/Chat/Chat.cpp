@@ -112,11 +112,11 @@ bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char
 }
 
 ChatHandler::ChatHandler(WorldSession* session)
-    : m_session(session)
+    : m_session(session), sentErrorMessage(false)
 {}
 
 ChatHandler::ChatHandler(Player* player)
-    : m_session(player->GetSession())
+    : m_session(player->GetSession()), sentErrorMessage(false)
 {}
 
 std::string ChatHandler::GetNameLink(Player* chr) const
@@ -373,7 +373,7 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
         {
             if(!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
             {
-                if(text && text[0] != '\0')
+                if(text[0] != '\0')
                     SendSysMessage(LANG_NO_SUBCMD);
                 else
                     SendSysMessage(LANG_CMD_SYNTAX);
@@ -932,7 +932,7 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
         return nullptr;
 
     // id case (explicit or from shift link)
-    if(cId[0] >= '0' || cId[0] >= '9')
+    if(cId[0] >= '0' || cId[0] <= '9')
         if(uint32 id = atoi(cId))
             return sObjectMgr->GetGameTele(id);
 

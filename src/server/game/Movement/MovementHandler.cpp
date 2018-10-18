@@ -23,20 +23,6 @@
 #include "RBAC.h"
 #include "Language.h"
 
-/*
-Sun:
-Changes from chaosdib Movement implementation at https://github.com/TrinityCore/TrinityCore/pull/18771:
-- Completely reworked active mover system
-    - Among other things, delay SetMovedUnit to CMSG_SET_ACTIVE_MOVER, instead of setting it at SMSG_CLIENT_CONTROL_UPDATE. This is needed to properly handle
-        incoming move packets on the right unit (especially needed on TBC since client does not send the moved unit guid)
-- Moved pending changes to session level
-    - Immediately resolve remaining changes when CMSG_MOVE_NOT_ACTIVE_MOVER
-- Work with map time instead of world time
-- Added HasPendingMovementChange opcode validation
-- Fixed SetLastMoveServerTimestamp time
-- Moved handling of pending changes into PlayerMovementPendingChange class
-*/
-
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recvData*/)
 {
    // TC_LOG_DEBUG("network", "WORLD: got MSG_MOVE_WORLDPORT_ACK.");

@@ -4045,6 +4045,11 @@ void Player::DeleteOldCharacters()
     uint32 keepDays = sWorld->getIntConfig(CONFIG_CHARDELETE_KEEP_DAYS);
     if (!keepDays)
         return;
+    if (uint64(keepDays) * DAY > INT_MAX)
+    {
+        TC_LOG_ERROR("entities.player", "Player::DeleteOldCharacters: Invalid % days, reverting to 1 year", keepDays);
+        keepDays = 365;
+    }
 
     TC_LOG_INFO("entities.player", "Player::DeleteOldCharacters: Deleting all characters which have been deleted %u days before...", keepDays);
 
@@ -11020,7 +11025,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update, bool interruptSpel
 
                 _ApplyItemMods(pItem, slot, true);
 
-                if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
+                if(IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
                     uint32 cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s;
 
@@ -12257,7 +12262,7 @@ void Player::UpdateItemDuration(uint32 time, bool realtimeonly)
         Item* item = *itr;
         ++itr;                                              // current element can be erased in UpdateDuration
 
-        if (realtimeonly && (item->GetTemplate()->Duration < 0 || !realtimeonly))
+        if (realtimeonly && (item->GetTemplate()->Duration < 0))
             item->UpdateDuration(this,time);
     }
 }
@@ -14607,15 +14612,14 @@ void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
         std::string strTitle = pQuest->GetTitle();
 
         LocaleConstant loc_idx = pReceiver->GetSession()->GetSessionDbcLocale();
-
-        if (loc_idx >= 0) {
-            if (const QuestLocale* pLocale = sObjectMgr->GetQuestLocale(pQuest->GetQuestId())) {
+        if (loc_idx != DEFAULT_LOCALE)
+        {
+            if (QuestLocale const* pLocale = sObjectMgr->GetQuestLocale(pQuest->GetQuestId()))
                 if (pLocale->Title.size() > loc_idx && !pLocale->Title[loc_idx].empty())
                     strTitle = pLocale->Title[loc_idx];
-            }
         }
 
-        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8));
+        WorldPacket data(SMSG_QUEST_CONFIRM_ACCEPT, (4 + strTitle.size() + 8)); // LK OK
         data << uint32(pQuest->GetQuestId());
         data << strTitle;
         data << uint64(GetGUID());
@@ -16147,7 +16151,7 @@ void Player::LoadPet()
     // just not added to the map
     if(IsInWorld())
     {
-        auto pet = new Pet(this);
+        Pet* pet = new Pet(this);
         if(!pet->LoadPetFromDB(this,0,0,true))
             delete pet;
     }
@@ -16214,13 +16218,9 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                 questStatusData.uState = QUEST_UNCHANGED;
 
                 // add to quest log
-                if( slot < MAX_QUEST_LOG_SIZE &&
-                    ( questStatusData.Status == QUEST_STATUS_INCOMPLETE ||
-                    (questStatusData.Status == QUEST_STATUS_COMPLETE &&
-                    (!questStatusData.Rewarded || pQuest->IsDaily())) )
-                  )
+                if (slot < MAX_QUEST_LOG_SIZE && questStatusData.Status != QUEST_STATUS_NONE)
                 {
-                    SetQuestSlot(slot,quest_id,quest_time);
+                    SetQuestSlot(slot, quest_id, uint32(quest_time)); // cast can't be helped
 
                     if(questStatusData.Status == QUEST_STATUS_COMPLETE)
                         SetQuestSlotState(slot,QUEST_STATE_COMPLETE);
@@ -17884,7 +17884,7 @@ Pet* Player::GetPet() const
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
-    auto pet = new Pet(this, petType);
+    Pet* pet = new Pet(this, petType);
 
     if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
     {
@@ -18306,7 +18306,7 @@ void Player::CharmSpellInitialize()
     size_t spellsCountPos = data.wpos();
     uint8 addlist = 0;
     data << uint8(addlist);                             //placeholder
-    for(uint32 i = 0; i < MAX_CREATURE_SPELLS; ++i)
+    for(uint32 i = 0; i < MAX_SPELL_CHARM; ++i)
     {
         CharmSpellInfo* cspell = charmInfo->GetCharmSpell(i);
         if (cspell->GetAction())

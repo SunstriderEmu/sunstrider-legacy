@@ -11,7 +11,7 @@ EscortAI::EscortAI(Creature *c) : ScriptedAI(c),
 _playerCheckTimer(1000), _maxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE), _pauseTimer(2500),
 _despawnAtEnd(true), _despawnAtFar(true), _escortState(STATE_ESCORT_NONE), _escortQuest(nullptr),
 _hasImmuneToNPCFlags(false), _started(false), _ended(false), _resume(false), _manualPath(false),
-_running(false), _instantRespawn(false), _returnToStart(false), _activeAttacker(true)
+_running(false), _instantRespawn(false), _returnToStart(false), _activeAttacker(true), _useUnitWalkFlag(false)
 {
 }
 

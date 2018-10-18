@@ -932,8 +932,12 @@ void BattlegroundMgr::UpdateAllQueues()
 
 void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
 {
-    // The current code supports battlegrounds up to BattlegroundTypeId(31)
-    for (uint32 bgtype = 1; bgtype < MAX_BATTLEGROUND_TYPE_ID && bgtype < 32; ++bgtype)
+    
+    for (uint32 bgtype = 1; bgtype < MAX_BATTLEGROUND_TYPE_ID 
+#ifdef LICH_KING
+        && bgtype < 32 // The current code supports battlegrounds up to BattlegroundTypeId(31)
+#endif
+        ; ++bgtype)
         if (Battleground* bg = GetBattlegroundTemplate(BattlegroundTypeId(bgtype)))
             bg->SetHoliday((mask & (1 << bgtype)) != 0);
 }

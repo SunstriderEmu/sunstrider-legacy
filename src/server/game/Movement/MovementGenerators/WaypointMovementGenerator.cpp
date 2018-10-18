@@ -493,8 +493,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         break;
     case WAYPOINT_MOVE_TYPE_TAKEOFF:
         init.SetAnimation(Movement::ToFly);
-#endif
         break;
+#endif
     case WAYPOINT_MOVE_TYPE_RUN:
         init.SetWalk(false);
         break;

@@ -280,7 +280,7 @@ void OutdoorPvP::DeleteSpawns()
 }
 
 OutdoorPvP::OutdoorPvP() 
-    : m_map(nullptr)
+    : m_map(nullptr), m_TypeId(0)
 {
 }
 

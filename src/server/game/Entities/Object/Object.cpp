@@ -794,6 +794,7 @@ WorldObject::WorldObject(bool isWorldObject) :
     m_isTempWorldObject(false),
     m_transport(nullptr),
     m_phaseMask(PHASEMASK_NORMAL),
+    m_outdoors(false),
     _forceHitResultOverride(SPELL_FORCE_HIT_DEFAULT)
 {
     m_positionX         = 0.0f;
@@ -3829,10 +3830,10 @@ bool WorldObject::IsValidAssistTarget(WorldObject const* target, SpellInfo const
     }
     // PvC case - player can assist creature only if has specific type flags or if player is charmed by it
     // !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED) &&
-    else if (unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)
+    else if (unit && unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED
         && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
-        && (unitTarget && !unitTarget->IsPvP())
-        && (unit && unitTarget && unit->GetCharmerGUID() != unitTarget->GetGUID())
+        && unitTarget && !unitTarget->IsPvP()
+        && unit->GetCharmerGUID() != unitTarget->GetGUID())
         )
     {
         if (Creature const* creatureTarget = target->ToCreature())

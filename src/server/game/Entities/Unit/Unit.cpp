@@ -256,6 +256,10 @@ Unit::Unit(bool isWorldObject)
     m_transformSpell(0),
     _oldFactionId(0),
     _isWalkingBeforeCharm(false),
+    m_currentSpells(),
+    m_AutoRepeatFirstCast(false),
+    m_reactiveTimer(), 
+    m_charmInfo(nullptr),
     collisionHeight(DEFAULT_COLLISION_HEIGHT)
 {
     m_objectType |= TYPEMASK_UNIT;
@@ -339,12 +343,6 @@ Unit::Unit(bool isWorldObject)
 
     collisionHeight = 0.0f;
 
-    m_charmInfo = nullptr;
-
-    // remove aurastates allowing special moves
-    for(uint32 & i : m_reactiveTimer)
-        i = 0;
-        
     _targetLocked = false;
     m_ChaseRange = 0;//MELEE_RANGE;
 
@@ -970,7 +968,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
         damage = 0;
 
     //hackzz Hailstone Chill
-    if (spellInfo && spellInfo->Id == 46576)
+    if (spellInfo->Id == 46576)
     {
         if (Aura* aur = pVictim->GetAura(46458))
             damage = 300 * aur->GetStackAmount();
@@ -5370,6 +5368,12 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, ui
 
 uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, uint8 effIndex, Optional<float> const& donePctTotal, uint32 stack)
 {
+    if(!spellProto || !victim || damagetype == DIRECT_DAMAGE )
+        return pdamage;
+        
+    if (spellProto->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS))
+        return pdamage;
+
     //HACK TIME
     switch (spellProto->SpellFamilyName)
     {
@@ -5379,12 +5383,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
             return pdamage;
         break;
     }
-
-    if(!spellProto || !victim || damagetype == DIRECT_DAMAGE )
-        return pdamage;
-        
-    if (spellProto->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS))
-        return pdamage;
 
     // Done total percent damage auras
     float ApCoeffMod = 1.0f;
@@ -10167,11 +10165,11 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
     if (type != CHARM_TYPE_VEHICLE && !GetCharmInfo())
     {
-        InitCharmInfo();
+        CharmInfo* info = InitCharmInfo();
         if (type == CHARM_TYPE_POSSESS)
-            GetCharmInfo()->InitPossessCreateSpells();
+            info->InitPossessCreateSpells();
         else
-            GetCharmInfo()->InitCharmCreateSpells();
+            info->InitCharmCreateSpells();
     }
 
     if (playerCharmer)
@@ -10272,8 +10270,8 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
 #ifdef LICH_KING
     // Vehicle should not attack its passenger after he exists the seat
-#endif
     if (type != CHARM_TYPE_VEHICLE)
+#endif
         LastCharmerGUID = charmer->GetGUID();
 
     ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
@@ -11341,7 +11339,7 @@ void Unit::ValidateMovementInfo(MovementInfo* mi)
     #define CHECK_FOR_VIOLATING_FLAGS(check) \
                         if (check) \
                         { \
-                            GetPlayerMovingMe()->GetSession()->KickPlayer(); \
+                            GetPlayerMovingMe()->KickPlayer(); \
                             return; \
                         } \
 

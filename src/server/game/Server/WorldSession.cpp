@@ -901,8 +901,8 @@ void WorldSession::LoadAccountData(PreparedQueryResult result, uint32 mask)
 std::string WorldSession::GetLocalizedItemName(const ItemTemplate* proto)
 {
     std::string name = proto->Name1;
-    LocaleConstant loc_idx = GetSessionDbcLocale();
-    if ( loc_idx >= 0 )
+    LocaleConstant loc_idx = GetSessionDbLocaleIndex();
+    if (loc_idx != DEFAULT_LOCALE)
     {
         ItemLocale const *il = sObjectMgr->GetItemLocale(proto->ItemId);
         if (il)

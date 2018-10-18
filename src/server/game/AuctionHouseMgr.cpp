@@ -334,8 +334,8 @@ void AuctionHouseMgr::LoadAuctions()
         {
             AuctionHouseMgr::SendAuctionExpiredMail(aItem, trans);
             aItem->DeleteFromDB(trans);
+            TC_LOG_ERROR("misc", "Auction %u has not a existing auctioneer (GUID : %u Entry: %u)", aItem->Id, aItem->auctioneer, auctioneerData->GetFirstSpawnEntry());
             delete aItem;
-            TC_LOG_ERROR("misc","Auction %u has not a existing auctioneer (GUID : %u Entry: %u)", aItem->Id, aItem->auctioneer, auctioneerData->GetFirstSpawnEntry());
             continue;
         }
 

@@ -1071,7 +1071,7 @@ private:
 
         // Find all source files of a changed script module and removes
         // it from the changed source list, invoke the build afterwards.
-        bool rebuild_buildfiles;
+        bool rebuild_buildfiles = false;
         auto module_name = [&]
         {
             auto itr = _sources_changed.begin();

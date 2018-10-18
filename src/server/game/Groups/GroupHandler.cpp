@@ -898,7 +898,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
         return;
     }
 
-    Pet *pet = player->GetPet();
+    Pet* pet = player->GetPet();
     Powers powerType = player->GetPowerType();
 
     //LK OK
@@ -990,16 +990,16 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 
     if (updateFlags & GROUP_UPDATE_FLAG_PET_CUR_HP)
 #ifdef LICH_KING
-        data << uint32(pet->GetHealth());
+        data << uint32(pet ? pet->GetHealth() : 0);
 #else
-        data << uint16(pet->GetHealth());
+        data << uint16(pet ? pet->GetHealth() : 0);
 #endif
 
     if (updateFlags & GROUP_UPDATE_FLAG_PET_MAX_HP)
 #ifdef LICH_KING
-        data << uint32(pet->GetMaxHealth());
+        data << uint32(pet ? pet->GetMaxHealth() : 0);
 #else
-        data << uint16(pet->GetMaxHealth());
+        data << uint16(pet? pet->GetMaxHealth() : 0);
 #endif
 
     Powers petpowertype = pet ? pet->GetPowerType() : POWER_MANA; //not used if no pet

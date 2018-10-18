@@ -11,7 +11,8 @@ public:
         _pcktReading(nullptr), 
         _pcktReadSpeedRate(1.0f), 
         _pcktReadTimer(0), 
-        _pcktReadLastUpdate(0)
+        _pcktReadLastUpdate(0),
+        _recorderGuid()
     {}
     ~ReplayPlayer();
 

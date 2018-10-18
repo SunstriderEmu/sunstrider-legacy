@@ -103,7 +103,10 @@ ObjectMgr::ObjectMgr() :
     _hiPetNumber(1),
     _ItemTextId(1),
     _mailid(1),
-    _auctionId(1)
+    _auctionId(1),
+    maxSpellId(0),
+    _GMticketid(0),
+    DBCLocaleIndex(LOCALE_enUS)
 {
     for (uint8 i = 0; i < MAX_CLASSES; ++i)
     {

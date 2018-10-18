@@ -1288,7 +1288,7 @@ void WorldSession::HandleTimeSyncResp(WorldPacket & recvData)
     serverTime = clockDelta + clientTime
     Or in english: delta is the time we need to add to client time to get the server time
     */
-    m_timeSyncClockDelta = (int64)(m_timeSyncServer + lagDelay) - (int64)clientTimestamp;
+    m_timeSyncClockDelta = int64(m_timeSyncServer) + lagDelay - int64(clientTimestamp);
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )

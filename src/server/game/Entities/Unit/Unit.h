@@ -693,7 +693,7 @@ class TC_GAME_API CharmInfo
     private:
         Unit* _unit;
         UnitActionBarEntry PetActionBar[MAX_UNIT_ACTION_BAR_INDEX];
-        CharmSpellInfo _charmspells[4];
+        CharmSpellInfo _charmspells[MAX_SPELL_CHARM];
         CommandStates   _CommandState;
         uint32          _petnumber;
 

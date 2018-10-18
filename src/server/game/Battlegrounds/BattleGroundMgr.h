@@ -165,7 +165,6 @@ class TC_GAME_API BattlegroundMgr
 
         std::mutex m_QueueUpdateSchedulerLock;
         std::vector<uint64> m_QueueUpdateScheduler;
-        uint32 m_NextRatingDiscardUpdate;
         uint32 m_NextRatedArenaUpdate;
         //bool   m_AutoDistributePoints;
         uint64 m_NextAutoDistributionTime;

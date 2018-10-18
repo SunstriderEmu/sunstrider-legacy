@@ -295,7 +295,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 GetPlayer()->Say(msg, Language(lang));
             else if(type == CHAT_MSG_EMOTE)
                 GetPlayer()->TextEmote(msg);
-            else if(type == CHAT_MSG_YELL)
+            else //if(type == CHAT_MSG_YELL)
                 GetPlayer()->Yell(msg, Language(lang));
         } break;
 

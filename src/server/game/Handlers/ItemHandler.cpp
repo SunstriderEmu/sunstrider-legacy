@@ -928,8 +928,8 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 {
     uint32 itemid;
     recvData >> itemid;
-    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( itemid );
-    if( pProto )
+    ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemid);
+    if (pProto)
     {
         std::string name = GetLocalizedItemName(pProto);
                                                             // guess size

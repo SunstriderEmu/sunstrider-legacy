@@ -83,7 +83,10 @@ Player* PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccoun
 
     bot = botSession->GetPlayer();
     if (!bot)
+    {
+        delete botSession;
         return nullptr;
+    }
 
     PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
     bot->SetPlayerbotMgr(nullptr);

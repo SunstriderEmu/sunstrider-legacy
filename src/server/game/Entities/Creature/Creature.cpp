@@ -1800,7 +1800,7 @@ void Creature::SetSpawnHealth()
         curhealth = m_creatureData->curhealth;
         if (curhealth)
         {
-            curhealth = uint32(curhealth /* * _GetHealthMod(GetCreatureTemplate()->rank)*/);
+            //curhealth = uint32(curhealth * _GetHealthMod(GetCreatureTemplate()->rank));
             if (curhealth < 1)
                 curhealth = 1;
         }
@@ -3075,7 +3075,7 @@ TrainerSpellData const* Creature::GetTrainerSpells() const
 // overwrite WorldObject function for proper name localization
 std::string const& Creature::GetNameForLocaleIdx(LocaleConstant loc_idx) const
 {
-    if (loc_idx >= 0)
+    if (loc_idx != DEFAULT_LOCALE)
     {
         CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(GetEntry());
         if (cl)

@@ -124,7 +124,7 @@ void LootStore::Verify() const
 // All checks of the loaded template are called from here, no error reports at loot generation required
 uint32 LootStore::LoadLootTable()
 {
-    LootTemplateMap::const_iterator tab;
+    LootTemplateMap::const_iterator tab = m_LootTemplates.end();
     uint32 count = 0;
 
     // Clearing store (for reloading case)

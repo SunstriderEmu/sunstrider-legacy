@@ -862,13 +862,13 @@ void Battleground::SetStatus(BattlegroundStatus Status)
 
 void Battleground::RewardMark(Player* plr, uint32 count)
 {
-    // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
-    if(plr->GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
-        return;
-
     if(!plr || !count)
         return;
-   
+
+    // 'Inactive' this aura prevents the player from gaining honor points and battleground tokens
+    if (plr->GetDummyAura(SPELL_AURA_PLAYER_INACTIVE))
+        return;
+
     // Give less marks if the player has been disconnected during the battleground
     auto itr = m_Players.find(plr->GetGUID());
     if (itr != m_Players.end())

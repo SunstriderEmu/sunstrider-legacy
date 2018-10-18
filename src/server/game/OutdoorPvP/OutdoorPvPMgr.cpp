@@ -4,7 +4,7 @@
 #include "MapManager.h"
 #include "ScriptMgr.h"
 
-OutdoorPvPMgr::OutdoorPvPMgr()
+OutdoorPvPMgr::OutdoorPvPMgr() : m_OutdoorPvPDatas()
 {
     m_UpdateTimer = 0;
 }

@@ -111,7 +111,7 @@ class TC_GAME_API ChatHandler
         bool ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd);
 
     protected:
-        explicit ChatHandler() : m_session(nullptr) {}      // for CLI subclass
+        explicit ChatHandler() : m_session(nullptr), sentErrorMessage(false) {}      // for CLI subclass
         static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand);
 
         bool hasStringAbbr(const char* name, const char* part) const;

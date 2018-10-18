@@ -290,8 +290,8 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
         {
             std::string Text = pPage->Text;
 
-            LocaleConstant loc_idx = GetSessionDbcLocale();
-            if (loc_idx >= 0)
+            LocaleConstant loc_idx = GetSessionDbLocaleIndex();
+            if (loc_idx != DEFAULT_LOCALE)
             {
                 PageTextLocale const *pl = sObjectMgr->GetPageTextLocale(pageID);
                 if (pl)
