@@ -1798,7 +1798,7 @@ bool WorldSession::HasPendingMovementChange(uint32 counter, uint16 opcode, Objec
     if (!found)
     {
         TC_LOG_ERROR("network", "Received ack with existing counter %u but incorrect type %u or guid %s or apply %u (expected type %u and guid %s and apply %u)",
-            counter, type, guid.ToString().c_str(), change.movementChangeType, change.guid.ToString().c_str(), uint8(change.apply), uint8(apply));
+            counter, type, guid.ToString().c_str(), uint8(apply), change.movementChangeType, change.guid.ToString().c_str(), uint8(change.apply));
     }
     return found;
 }

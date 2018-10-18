@@ -244,13 +244,14 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
     if (!mover)
     {
-        TC_LOG_INFO("cheat", "WorldSession::HandleMoveTeleportAck: Player %s tried to teleport unit not found %s",
+        TC_LOG_INFO("cheat", "WorldSession::HandleMoveTeleportAck: Player %s (account %u) tried to teleport unit not found %s",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId(), guid.ToString().c_str());
         return;
     }
 
     PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
-    pendingChange.Resolve(pendingChange, this, mover, &mover->GetMovementInfo()); //GetMovementInfo wont be used here
+    MovementInfo info = mover->GetMovementInfo();
+    pendingChange.Resolve(pendingChange, this, mover, &info); //GetMovementInfo wont be used here
 }
 
 /*
