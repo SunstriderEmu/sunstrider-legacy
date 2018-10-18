@@ -685,6 +685,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         // Return the current positional/physical state of the object
         MovementInfo GetMovementInfo() const;
+        MovementInfo* _GetMovementInfo() const;
         virtual float ComputeCollisionHeight() const { return 0.0f; }
         virtual float GetCollisionHeight() const { return 0.0f; }
         float GetMapWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr) const;

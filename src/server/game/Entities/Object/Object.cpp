@@ -2826,6 +2826,11 @@ void WorldObject::SetTransport(Transport* transport)
     m_transport = transport;
 }
 
+MovementInfo* WorldObject::_GetMovementInfo() const
+{
+    return &m_movementInfo;
+}
+
 MovementInfo WorldObject::GetMovementInfo() const
 {
     MovementInfo mInfo;

@@ -250,8 +250,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     }
 
     PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
-    MovementInfo info = mover->GetMovementInfo();
-    pendingChange.Resolve(pendingChange, this, mover, &info); //GetMovementInfo wont be used here
+    pendingChange.Resolve(pendingChange, this, mover, mover->_GetMovementInfo()); //GetMovementInfo wont be used here
 }
 
 /*
@@ -645,7 +644,7 @@ Unit* WorldSession::GetAllowedActiveMover() const
     if (_activeMover && _allowedClientMove.count(_activeMover->GetGUID()) > 0)
         return _activeMover;
     else
-        return false;
+        return nullptr;
 }
 
 void WorldSession::ResetActiveMover(bool onDelete /*= false*/)
@@ -1204,7 +1203,7 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
                 guid.ToString().c_str(), session->GetPlayer()->GetName().c_str(), session->GetPlayer()->GetGUID().ToString().c_str());
             return;
         }
-        movementInfo = &mover->GetMovementInfo();
+        movementInfo = mover->_GetMovementInfo();
     }
     else 
     {
