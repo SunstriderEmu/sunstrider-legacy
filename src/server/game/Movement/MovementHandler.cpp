@@ -414,6 +414,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             return;
     }
 
+    anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
+
     /* process position-change */
     mover->UpdateMovementInfo(movementInfo);
 
@@ -495,8 +497,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             plrMover->SaveSafePosition(movementInfo.pos); // Save current position for UndermapRecall()
         }
     }
-
-    anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
 }
 
 /*
