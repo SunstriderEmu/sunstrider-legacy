@@ -29,7 +29,7 @@ bool SuggestWhatToDoAction::Execute(Event event)
         return true;
     }
 
-    if (bot->GetInstanceId() || suggested)
+    if (bot->GetInstanceId())
         return false;
 
     int index = rand() % suggestions.size();

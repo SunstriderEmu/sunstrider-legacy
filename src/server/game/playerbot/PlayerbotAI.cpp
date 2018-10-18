@@ -27,7 +27,6 @@ using namespace std;
 
 vector<std::string>& split(const std::string &s, char delim, vector<std::string> &elems);
 vector<std::string> split(const std::string &s, char delim);
-ObjectGuid extractGuid(WorldPacket& packet);
 std::string &trim(std::string &s);
 
 PlayerbotChatHandler::PlayerbotChatHandler(Player* pMasterPlayer) 
@@ -63,7 +62,7 @@ void PacketHandlingHelper::AddPacket(const WorldPacket& packet)
 
 
 PlayerbotAI::PlayerbotAI() : PlayerbotAIBase(), bot(nullptr), aiObjectContext(nullptr),
-    currentEngine(nullptr), chatHelper(this), chatFilter(this), accountId(0), security(nullptr), master(nullptr)
+    currentEngine(nullptr), chatHelper(this), chatFilter(this), accountId(0), security(nullptr), master(nullptr), currentState(BOT_STATE_NON_COMBAT)
 {
     for (int i = 0 ; i < BOT_STATE_MAX; i++)
         engines[i] = nullptr;
@@ -464,7 +463,7 @@ void PlayerbotAI::DoNextAction()
         bot->SetSpeedRate(MOVE_FLIGHT, 1.0f, true);
         bot->SetSpeedRate(MOVE_RUN, 1.0f, true);
 
-        if (master)
+        if (_master)
         {
             bot->SetSpeedRate(MOVE_FLIGHT, _master->GetSpeedRate(MOVE_FLIGHT), true);
             bot->SetSpeedRate(MOVE_RUN, _master->GetSpeedRate(MOVE_FLIGHT), true);
@@ -668,7 +667,7 @@ Unit* PlayerbotAI::GetUnit(ObjectGuid guid)
     if (!guid)
         return nullptr;
 
-    Map* map = bot->GetMap();
+    Map* map = bot->FindMap();
     if (!map)
         return nullptr;
 
@@ -684,7 +683,7 @@ Creature* PlayerbotAI::GetCreature(ObjectGuid guid)
     if (!guid)
         return NULL;
 
-    Map* map = bot->GetMap();
+    Map* map = bot->FindMap();
     if (!map)
         return NULL;
 
@@ -696,7 +695,7 @@ GameObject* PlayerbotAI::GetGameObject(ObjectGuid guid)
     if (!guid)
         return NULL;
 
-    Map* map = bot->GetMap();
+    Map* map = bot->FindMap();
     if (!map)
         return NULL;
 

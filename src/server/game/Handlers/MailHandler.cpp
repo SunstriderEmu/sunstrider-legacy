@@ -645,7 +645,7 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData) //LK ok
     for (PlayerMails::iterator itr = player->GetMailBegin(); itr != player->GetMailEnd(); ++itr)
     {
         // Only first 50 mails are displayed
-        if (mailsCount >= 50)
+        if (mailsCount >= 50) //more on TBC?
         {
             realCount += 1;
             continue;
@@ -743,26 +743,16 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData) //LK ok
 
         ++realCount;
         ++mailsCount;
-        if (mailsCount > 100) 
-        {
-            partial = true;
-            break;
-        }
     }
 
 #ifdef LICH_KING
-    data.put<uint32>(0, realCount);                         // this will display warning about undelivered mail to player if realCount > mailsCount
+    data.put<uint32>(0, realCount);                        // this will display warning about undelivered mail to player if realCount > mailsCount
     data.put<uint8>(4, mailsCount);                        // set real send mails to client
 #else
     data.put<uint8>(0, mailsCount); // set real send mails to client
 #endif
 
     SendPacket(&data);
-
-#ifndef LICH_KING
-    if (partial)
-        ChatHandler(_player).SendSysMessage(LANG_MAIL_LIST_PARTIAL);
-#endif
 
     // recalculate m_nextMailDelivereTime and unReadMails
     _player->UpdateNextMailTimeAndUnreads();

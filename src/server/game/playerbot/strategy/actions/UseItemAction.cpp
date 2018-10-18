@@ -120,6 +120,8 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
             bool fit = SocketItem(itemTarget, item) || SocketItem(itemTarget, item, true);
             if (!fit)
                 ai->TellMaster("Socket does not fit");
+
+            delete packet;
             return fit;
         }
         else

@@ -15,7 +15,9 @@
 #include "Cryptography/ARC4.h"
 #include "GameTime.h"
 
-WardenBase::WardenBase() : iCrypto(16), oCrypto(16), _wardenCheckTimer(10000/*10 sec*/), _wardenKickTimer(0), _wardenDataSent(false), m_initialized(false)
+WardenBase::WardenBase() : 
+    iCrypto(16), oCrypto(16), _wardenCheckTimer(10000/*10 sec*/), _wardenKickTimer(0), 
+    _wardenDataSent(false), m_initialized(false), _wardenTimer(0)
 {
 }
 
@@ -23,7 +25,7 @@ WardenBase::~WardenBase()
 {
     delete[] Module->CompressedData;
     delete Module;
-    Module = NULL;
+    Module = nullptr;
     m_initialized = false;
 }
 

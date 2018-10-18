@@ -23,12 +23,11 @@ Unit* PartyMemberValue::FindPartyMember(list<Player*>* party, FindPlayerPredicat
         if (!pet)
             continue;
 
-        Unit* unit = (Unit*)pet;
-        if (unit && Check(unit) && predicate.Check(unit))
-            return unit;
+        if (Check(pet) && predicate.Check(pet))
+            return pet;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate &predicate)

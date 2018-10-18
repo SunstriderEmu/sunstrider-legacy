@@ -113,7 +113,7 @@ void LoadSkillExtraItemTable()
     }
 }
 
-bool canCreateExtraItems(Player * player, uint32 spellId, float &additionalChance, uint8 &additionalMax)
+bool CanCreateExtraItems(Player * player, uint32 spellId, float &additionalChance, uint8 &additionalMax)
 {
     // get the info for the specified spell
     SkillExtraItemMap::const_iterator ret = SkillExtraItemStore.find(spellId);
@@ -121,10 +121,6 @@ bool canCreateExtraItems(Player * player, uint32 spellId, float &additionalChanc
         return false;
 
     SkillExtraItemEntry const* specEntry = &ret->second;
-
-    // if no entry, then no extra items can be created
-    if(!specEntry)
-        return false;
 
     // the player doesn't have the required specialization, return false
     if(!player->HasSpell(specEntry->requiredSpecialization))

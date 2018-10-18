@@ -52,7 +52,7 @@ uint32 const LevelStartLoyalty[6] =
 Pet::Pet(Player* owner, PetType type) 
     : Guardian(NULL, owner, true),
     m_removed(false),
-    m_regenTimer(4000), 
+    m_regenFocusTimer(4000),
     m_loading(false)
 {
     m_unitTypeMask |= UNIT_MASK_PET;
@@ -651,13 +651,13 @@ void Pet::Update(uint32 diff)
                 break;
 
             //regenerate Focus
-            if(m_regenTimer <= diff)
+            if(m_regenFocusTimer <= diff)
             {
                 Regenerate(POWER_FOCUS);
-                m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
+                m_regenFocusTimer = PET_FOCUS_REGEN_INTERVAL;
             }
             else
-                m_regenTimer -= diff;
+                m_regenFocusTimer -= diff;
 
             //don't loose happiness for arena server
             if(!sWorld->getConfig(CONFIG_ARENASERVER_ENABLED))

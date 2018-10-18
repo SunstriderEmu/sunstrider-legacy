@@ -1531,14 +1531,14 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     SpellInfo const* triggeredSpellInfo = sSpellMgr->GetSpellInfo(triggerSpellId);
     if (!triggeredSpellInfo)
     {
-        if(triggerSpellId)
+       /* if(triggerSpellId)
             TC_LOG_WARN("spells", "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u has non-existent spell %u in EffectTriggered[%d] and is therefore not triggered.", GetId(), triggerSpellId, GetEffIndex());
-        return;
+        return;*/
     }
 
     bool castByTarget = false;
     //sun: Spells such as 34168, 29213, 38652 are broken if cast by target. Tentative generic fix with SPELL_ATTR0_UNK11
-    if (!triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_UNK11))
+    if (triggeredSpellInfo && !triggeredSpellInfo->NeedsToBeTriggeredByCaster(m_spellInfo) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_UNK11))
         castByTarget = true;
 
     Unit* triggerCaster = castByTarget ? target : caster;
@@ -1987,7 +1987,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
 
     SpellCastTargets targets;
     targets.SetUnitTarget(target);
-    if (triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
+    if (triggeredSpellInfo && triggeredSpellInfo->IsChannelCategorySpell() && GetBase()->GetChannelTargetData())
     {
         targets.SetDstChannel(GetBase()->GetChannelTargetData()->spellDst);
         targets.SetObjectTargetChannel(GetBase()->GetChannelTargetData()->channelGUID);
@@ -3906,7 +3906,6 @@ void AuraEffect::HandleChannelDeathItem(AuraApplication const* aurApp, uint8 mod
         return;
 
     Unit* caster = GetCaster();
-    Player* plCaster = caster->ToPlayer();
     Unit* victim = aurApp->GetTarget();
     if (!caster || caster->GetTypeId() != TYPEID_PLAYER || !victim)
         return;
@@ -3923,6 +3922,7 @@ void AuraEffect::HandleChannelDeathItem(AuraApplication const* aurApp, uint8 mod
     Creature *cr = victim->ToCreature();
 
     // Soul Shard only from non-grey units
+    Player* plCaster = caster->ToPlayer();
     if (spellInfo->Effects[m_effIndex].ItemType == 6265 && plCaster)
     {
         if (!plCaster->IsHonorOrXPTarget(victim) ||
@@ -4629,7 +4629,7 @@ void AuraEffect::HandleAuraModTotalThreat(AuraApplication const* aurApp, uint8 m
         return;
 
     Unit* caster = GetCaster();
-    if (caster || caster->IsAlive())
+    if (caster && caster->IsAlive())
         caster->GetThreatManager().UpdateMyTempModifiers();
 }
 

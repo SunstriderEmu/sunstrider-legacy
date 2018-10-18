@@ -274,16 +274,14 @@ Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
     else if (creature->GetEntry() == 13816) //Prospector Stonehewer
         creature->SetRespawnDelay(300);
 
-    if((isStatic && cinfoid>=10 && cinfoid<=14) || (!isStatic && ((cinfoid >= AV_NPC_A_GRAVEDEFENSE0 && cinfoid<=AV_NPC_A_GRAVEDEFENSE3) ||
-        (cinfoid>=AV_NPC_H_GRAVEDEFENSE0 && cinfoid<=AV_NPC_H_GRAVEDEFENSE3))))
+    if ((isStatic && cinfoid >= 10 && cinfoid <= 14)
+        || (!isStatic && ((cinfoid >= AV_NPC_A_GRAVEDEFENSE0 && cinfoid <= AV_NPC_A_GRAVEDEFENSE3) ||
+            (cinfoid >= AV_NPC_H_GRAVEDEFENSE0 && cinfoid <= AV_NPC_H_GRAVEDEFENSE3))))
     {
-        if(!isStatic && ((cinfoid>=AV_NPC_A_GRAVEDEFENSE0 && cinfoid<=AV_NPC_A_GRAVEDEFENSE3)
-            || (cinfoid>=AV_NPC_H_GRAVEDEFENSE0 && cinfoid<=AV_NPC_H_GRAVEDEFENSE3)))
-        {
-            CreatureData &data = sObjectMgr->NewOrExistCreatureData(creature->GetSpawnId());
-            data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
-            data.spawndist      = 5;
-        }
+        CreatureData &data = sObjectMgr->NewOrExistCreatureData(creature->GetSpawnId());
+        data.spawnGroupData = sObjectMgr->GetDefaultSpawnGroup();
+        data.spawndist      = 5;
+
         //else spawndist will be 15, so creatures move maximum=10
         //creature->SetDefaultMovementType(RANDOM_MOTION_TYPE);
         creature->GetMotionMaster()->Initialize();
@@ -591,27 +589,26 @@ void BattlegroundAV::RemovePlayer(Player* plr, ObjectGuid /*guid*/)
 }
 
 
-void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundAV::HandleAreaTrigger(Player* player, uint32 trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    uint32 SpellId = 0;
-    switch(Trigger)
+    switch(trigger)
     {
         case 95:
         case 2608:
-            if(Source->GetTeam() != ALLIANCE)
-                Source->GetSession()->SendAreaTriggerMessage("Only The Alliance can use that portal");
+            if(player->GetTeam() != ALLIANCE)
+                player->GetSession()->SendAreaTriggerMessage("Only The Alliance can use that portal");
             else
-                Source->LeaveBattleground();
+                player->LeaveBattleground();
             break;
         case 2606:
-            if(Source->GetTeam() != HORDE)
-                Source->GetSession()->SendAreaTriggerMessage("Only The Horde can use that portal");
+            if(player->GetTeam() != HORDE)
+                player->GetSession()->SendAreaTriggerMessage("Only The Horde can use that portal");
             else
-                Source->LeaveBattleground();
+                player->LeaveBattleground();
             break;
         case 3326:
         case 3327:
@@ -622,12 +619,10 @@ void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
             //Source->Dismount();
             break;
         default:
-            TC_LOG_ERROR("bg.battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            Battleground::HandleAreaTrigger(player, trigger);
+            //TC_LOG_ERROR("bg.battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", trigger);
             break;
     }
-
-    if(SpellId)
-        Source->CastSpell(Source, SpellId, true);
 }
 
 void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
@@ -1202,7 +1197,7 @@ void BattlegroundAV::FillInitialWorldStates(WorldPacket& data)
 {
     bool stateok;
     //graveyards
-    for (uint8 i = BG_AV_NODES_FIRSTAID_STATION; i <= BG_AV_NODES_FROSTWOLF_HUT; i++)
+    for (uint8 i = BG_AV_NODES_FIRSTAID_STATION; i <= BG_AV_NODES_FROSTWOLF_GRAVE; i++)
     {
         for (uint8 j =1; j <= 3; j+=2)
         {//j=1=assaulted j=3=controled
@@ -1213,7 +1208,7 @@ void BattlegroundAV::FillInitialWorldStates(WorldPacket& data)
     }
 
     //towers
-    for (uint8 i = BG_AV_NODES_DUNBALDAR_SOUTH; i <= BG_AV_NODES_MAX; i++)
+    for (uint8 i = BG_AV_NODES_DUNBALDAR_SOUTH; i < BG_AV_NODES_MAX; i++)
         for (uint8 j =1; j <= 3; j+=2)
         {//j=1=assaulted j=3=controled //i dont have j=2=destroyed cause destroyed is the same like enemy-team controll
             stateok = (m_Nodes[i].State == j || (m_Nodes[i].State == POINT_DESTROYED && j==3));
@@ -1244,29 +1239,29 @@ const uint8 BattlegroundAV::GetWorldStateType(uint8 state, uint16 team) //this i
 //a_c a_a h_c h_a the positions in worldstate-array
     if(team == ALLIANCE)
     {
-        if(state==POINT_CONTROLED || state==POINT_DESTROYED)
+        if (state == POINT_CONTROLED || state == POINT_DESTROYED)
             return 0;
         if(state==POINT_ASSAULTED)
             return 1;
     }
     if(team == HORDE)
     {
-        if(state==POINT_DESTROYED || state==POINT_CONTROLED)
+        if (state == POINT_DESTROYED || state == POINT_CONTROLED)
             return 2;
         if(state==POINT_ASSAULTED)
             return 3;
     }
     TC_LOG_ERROR("bg.battleground","BG_AV: should update a strange worldstate state:%i team:%i",state,team);
-    return 5; //this will crash the game, but i want to know if something is wrong here
+    ASSERT(false);
 }
 
 void BattlegroundAV::UpdateNodeWorldState(BG_AV_Nodes node)
 {
-    UpdateWorldState(BG_AV_NodeWorldStates[node][GetWorldStateType(m_Nodes[node].State,m_Nodes[node].Owner)],1);
+    UpdateWorldState(BG_AV_NodeWorldStates[node][GetWorldStateType(m_Nodes[node].State, m_Nodes[node].Owner)], 1);
     if(m_Nodes[node].PrevOwner == AV_NEUTRAL_TEAM) //currently only snowfall is supported as neutral node (i don't want to make an extra row (neutral states) in worldstatesarray just for one node
         UpdateWorldState(AV_SNOWFALL_N,0);
     else
-        UpdateWorldState(BG_AV_NodeWorldStates[node][GetWorldStateType(m_Nodes[node].PrevState,m_Nodes[node].PrevOwner)],0);
+        UpdateWorldState(BG_AV_NodeWorldStates[node][GetWorldStateType(m_Nodes[node].PrevState, m_Nodes[node].PrevOwner)], 0);
 }
 
 void BattlegroundAV::SendMineWorldStates(uint32 mine)
@@ -1297,7 +1292,7 @@ void BattlegroundAV::SendMineWorldStates(uint32 mine)
 }
 
 
-WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(float x, float y, float z, uint32 team)
+WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(float x, float y, float /*z*/, uint32 team)
 {
     WorldSafeLocsEntry const* good_entry = nullptr;
     if( GetStatus() == STATUS_IN_PROGRESS)
@@ -1308,11 +1303,11 @@ WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(float x, float y, 
         {
             if (m_Nodes[i].Owner != team || m_Nodes[i].State != POINT_CONTROLED)
                 continue;
-            WorldSafeLocsEntry const*entry = sWorldSafeLocsStore.LookupEntry( BG_AV_GraveyardIds[i] );
+            WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(BG_AV_GraveyardIds[i]);
             if( !entry )
                 continue;
-            float dist = (entry->x - x)*(entry->x - x)+(entry->y - y)*(entry->y - y);
-            if( mindist > dist )
+            float dist = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y);
+            if (mindist > dist)
             {
                 mindist = dist;
                 good_entry = entry;
@@ -1320,7 +1315,7 @@ WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(float x, float y, 
         }
     }
     // If not, place ghost on starting location
-    if( !good_entry )
+    if (!good_entry)
         good_entry = sWorldSafeLocsStore.LookupEntry( BG_AV_GraveyardIds[GetTeamIndexByTeamId(team)+7] );
 
     return good_entry;

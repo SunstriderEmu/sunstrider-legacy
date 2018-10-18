@@ -133,7 +133,7 @@ class TC_GAME_API Pet : public Guardian
         Player* GetOwner() const;
 
     protected:
-        uint32  m_regenTimer;
+        uint32  m_regenFocusTimer;
         uint32  m_happinessTimer;
         uint32  m_loyaltyTimer;
         PetType m_petType;

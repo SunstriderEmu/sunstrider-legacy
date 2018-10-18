@@ -308,32 +308,33 @@ void ArenaTeam::DeleteMember(ObjectGuid guid, bool cleanDb)
         }
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_LEAVE), GetType(), guid.GetCounter(), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
+            GetId(), uint32(AT_EV_LEAVE), GetType(), guid.GetCounter(), player->GetSession()->GetRemoteAddress().c_str(), time(nullptr));
     }
     if(cleanDb)
         CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), guid.GetCounter());
 }
 
-void ArenaTeam::Disband(WorldSession *session)
+void ArenaTeam::Disband(WorldSession* session)
 {
-    if(session)
-        if (Player *plr = session->GetPlayer()) {
-            if (plr->InArena()) {
+    if (session)
+    {
+        if (Player *plr = session->GetPlayer()) 
+        {
+            if (plr->InArena()) 
+            {
                 ChatHandler chH = ChatHandler(plr);
                 //chH.PSendSysMessage("Vous ne pouvez pas détruire une équipe d'arène pendant un match d'arène."); //TODO TRanslate
                 chH.PSendSysMessage("Not while in arena.");
                 return;
             }
         }
-    
-    // Broadcast update
-    if (session)
-    {
+
+        // Broadcast update
         WorldPacket data;
         session->BuildArenaTeamEventPacket(&data, ERR_ARENA_TEAM_DISBANDED_S, 2, session->GetPlayerName(), GetName(), "");
         BroadcastPacket(&data);
     }
-
+    
     while (!Members.empty())
     {
         // Removing from Members is done in DeleteMember.
@@ -345,7 +346,7 @@ void ArenaTeam::Disband(WorldSession *session)
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUID().GetCounter(), GetType(), GetId());
   
     LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUID().GetCounter() : 0), session->GetRemoteAddress().c_str(), time(nullptr));
+            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUID().GetCounter() : 0), session ? session->GetRemoteAddress().c_str() : "", time(nullptr));
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
 

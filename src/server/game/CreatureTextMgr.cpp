@@ -328,7 +328,7 @@ void CreatureTextMgr::SendNonChatPacket(WorldObject* source, WorldPacket* data, 
             uint32 areaId = source->GetAreaId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if (player.GetSource()->GetAreaId() == areaId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if (player.GetSource()->GetAreaId() == areaId && (team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     player.GetSource()->SendDirectMessage(data);
             return;
         }
@@ -337,7 +337,7 @@ void CreatureTextMgr::SendNonChatPacket(WorldObject* source, WorldPacket* data, 
             uint32 zoneId = source->GetZoneId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if (player.GetSource()->GetZoneId() == zoneId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if (player.GetSource()->GetZoneId() == zoneId && (team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     player.GetSource()->SendDirectMessage(data);
             return;
         }
@@ -345,7 +345,7 @@ void CreatureTextMgr::SendNonChatPacket(WorldObject* source, WorldPacket* data, 
         {
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if ((!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if ((team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     player.GetSource()->SendDirectMessage(data);
             return;
         }
@@ -354,7 +354,7 @@ void CreatureTextMgr::SendNonChatPacket(WorldObject* source, WorldPacket* data, 
             SessionMap const& smap = sWorld->GetAllSessions();
             for (const auto & iter : smap)
                 if (Player* player = iter.second->GetPlayer())
-                    if (player->GetSession()  && (!team || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
+                    if (player->GetSession()  && (team == TEAM_OTHER || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
                         player->SendDirectMessage(data);
             return;
         }

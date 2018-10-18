@@ -219,7 +219,7 @@ private:
     Targets _target;
 
 public:
-    SpellImplicitTargetInfo() : _target(Targets(0)) { }
+    SpellImplicitTargetInfo() : _target(TARGET_UNIT_CASTER) { }
     SpellImplicitTargetInfo(uint32 target);
 
     bool IsArea() const;

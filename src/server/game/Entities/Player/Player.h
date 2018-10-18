@@ -1305,7 +1305,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             if(!pItem)
                 return EQUIP_ERR_ITEM_NOT_FOUND;
             uint32 count = pItem->GetCount();
-            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, nullptr, pItem ? pItem->GetTemplate() : nullptr );
+            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, nullptr, pItem->GetTemplate());
 
         }
         InventoryResult CanStoreItems( std::vector<Item*> const& items, uint32 count, uint32* itemLimitCategory) const;

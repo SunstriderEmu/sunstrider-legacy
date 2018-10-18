@@ -101,7 +101,7 @@ enum ServerMessageType
 
 /// World constructor
 World::World()
-    : _CITesting(false)
+    : _CITesting(false), pvp_ranks(), m_startTime(0), mail_timer(0), mail_timer_expires(0), rate_values()
 {
     m_playerLimit = 0;
     m_allowedSecurityLevel = SEC_PLAYER;

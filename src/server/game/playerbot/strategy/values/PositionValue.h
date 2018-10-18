@@ -6,7 +6,7 @@ namespace ai
     class Position
     {
     public:
-        Position() : valueSet(false) {}
+        Position() : valueSet(false), x(), y(), z() {}
         void Set(double _x, double _y, double _z) { this->x = _x; this->y = _y; this->z = _z; this->valueSet = true; }
         void Reset() { valueSet = false; }
         bool isSet() { return valueSet; }

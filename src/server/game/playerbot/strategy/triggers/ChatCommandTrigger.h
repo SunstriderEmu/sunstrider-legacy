@@ -6,7 +6,7 @@ namespace ai
 {
     class ChatCommandTrigger : public Trigger {
     public:
-        ChatCommandTrigger(PlayerbotAI* ai, std::string command) : Trigger(ai, command), triggered(false) {}
+        ChatCommandTrigger(PlayerbotAI* ai, std::string command) : Trigger(ai, command), triggered(false), owner(nullptr) {}
 
         virtual void ExternalEvent(std::string _param, Player* _owner = nullptr)
         {

@@ -133,7 +133,7 @@ void PlayerbotFactory::InitPet()
         if (bot->GetClass() != CLASS_HUNTER)
             return;
 
-        Map* map = bot->GetMap();
+        Map* map = bot->FindMap();
         if (!map)
             return;
 
@@ -577,8 +577,6 @@ void PlayerbotFactory::InitEquipment(bool incremental)
             {
                 uint32 itemId = i->first;
                 ItemTemplate const* proto = &i->second;
-                if (!proto)
-                    continue;
 
                 if (proto->Class != ITEM_CLASS_WEAPON &&
                     proto->Class != ITEM_CLASS_ARMOR &&
@@ -774,7 +772,7 @@ void PlayerbotFactory::InitBags()
     {
         uint32 itemId = i->first;
         ItemTemplate const* proto = &i->second;
-        if (!proto || proto->Class != ITEM_CLASS_CONTAINER)
+        if (proto->Class != ITEM_CLASS_CONTAINER)
             continue;
 
         if (!CanEquipItem(proto, ITEM_QUALITY_NORMAL))

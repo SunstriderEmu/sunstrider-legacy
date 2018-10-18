@@ -205,7 +205,7 @@ bool OpenLootAction::CanOpenLock(LootObject& lootObject, const SpellInfo* pSpell
 bool OpenLootAction::CanOpenLock(uint32 skillId, uint32 reqSkillValue)
 {
     uint32 skillValue = bot->GetSkillValue(skillId);
-    return skillValue >= reqSkillValue || !reqSkillValue;
+    return !reqSkillValue || skillValue >= reqSkillValue;
 }
 
 bool StoreLootAction::Execute(Event event)

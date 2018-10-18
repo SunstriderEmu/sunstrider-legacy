@@ -211,7 +211,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid guid1, uint32 spe
             int16 result = spell->CheckPetCast(unit_target);
 
             //auto turn to target unless possessed
-            if(unit_target && result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
+            if(result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
             {
                 if (unit_target)
                 {
@@ -677,7 +677,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, WorldGameTime::GetGameTime());
 }
 
-void WorldSession::HandlePetAbandon( WorldPacket & recvData )
+void WorldSession::HandlePetAbandon(WorldPacket & recvData)
 {
     ObjectGuid guid;
     recvData >> guid;                                      //pet guid
@@ -693,10 +693,10 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
             if(pet->GetGUID() == _player->GetMinionGUID())
             {
                 uint32 feelty = pet->GetPower(POWER_HAPPINESS);
-                pet->SetPower(POWER_HAPPINESS ,(feelty-50000) > 0 ?(feelty-50000) : 0);
+                pet->SetPower(POWER_HAPPINESS, feelty > 50000 ? (feelty - 50000) : 0);
             }
 
-            _player->RemovePet((Pet*)pet,PET_SAVE_AS_DELETED);
+            _player->RemovePet((Pet*)pet, PET_SAVE_AS_DELETED);
         }
         //this opcode is also used for some controlled creature other than pets
         else if(pet->GetGUID() == _player->GetCharmedGUID())

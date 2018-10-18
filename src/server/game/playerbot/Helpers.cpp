@@ -50,29 +50,6 @@ char *strstri(const char *haystack, const char *needle)
     return 0;
 }
 
-ObjectGuid extractGuid(WorldPacket& packet)
-{
-    uint8 mask;
-    packet >> mask;
-    uint64 guid = 0;
-    uint8 bit = 0;
-    uint8 testMask = 1;
-    while (true)
-    {
-        if (mask & testMask)
-        {
-            uint8 word;
-            packet >> word;
-            guid += (word << bit);
-        }
-        if (bit == 7)
-            break;
-        ++bit;
-        testMask <<= 1;
-    }
-    return ObjectGuid(guid);
-}
-
 std::string &ltrim(std::string &s) 
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {

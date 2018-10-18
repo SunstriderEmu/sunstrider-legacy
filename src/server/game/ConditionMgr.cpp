@@ -260,7 +260,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         case CONDITION_INSTANCE_INFO:
         {
             Map* map = object->GetMap();
-            if (map && map->IsDungeon())
+            if (map->IsDungeon())
             {
                 if (InstanceScript const* instance = ((InstanceMap*)map)->GetInstanceScript())
                 {
@@ -393,7 +393,6 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
                 if (toUnit && unit)
                     condMeets = ((1 << unit->GetReactionTo(toUnit)) & ConditionValue2) != 0;
             }
-            condMeets = true;
             break;
         }
         case CONDITION_DISTANCE_TO:
@@ -526,6 +525,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         case CONDITION_FACTION:
             if (Unit const* unit = object->ToUnit())
                 condMeets = unit->GetFaction() == ConditionValue1;
+            break;
         default:
             condMeets = false;
             break;
@@ -1450,9 +1450,13 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond) const
                 }
 
                 if (!assigned)
+                {
                     delete sharedList;
+                    sharedList = nullptr;
+                }
             }
-            sharedList->push_back(cond);
+            if(sharedList)
+                sharedList->push_back(cond);
             break;
         }
     }

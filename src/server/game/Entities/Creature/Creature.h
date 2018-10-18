@@ -419,7 +419,6 @@ struct CreatureData : public SpawnData
     uint8 movementType = 0;
     uint32 poolId = 0; //old windrunner link system
     uint32 unit_flags = 0;
-    uint32 scriptId = 0;
 };
 
 // from `creature_addon` table
@@ -844,8 +843,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SignalFormationMovement(Position const& destination, uint32 id = 0, uint32 moveType = 0, bool orientation = false);
         bool IsFormationLeaderMoveAllowed() const;
 
-        void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
-        bool IsReputationGainDisabled() const { return DisableReputationGain; }
+        void SetDisableReputationGain(bool disable) { disableReputationGain = disable; }
+        bool IsReputationGainDisabled() const { return disableReputationGain; }
         bool IsDamageEnoughForLootingAndReward() const { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ) || (m_PlayerDamageReq == 0); }
         void LowerPlayerDamageReq(uint32 unDamage)
         {
@@ -991,7 +990,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         Position m_homePosition;
         Position m_transportHomePosition;
 
-        bool DisableReputationGain;
+        bool disableReputationGain;
         
         uint32 m_questPoolId;
         

@@ -204,10 +204,6 @@ public:
     void ModChargesDelayed(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
     void DropChargeDelayed(uint32 delay, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
-    // Allow Apply Aura Handler to modify and access m_AuraDRGroup
-    void setDiminishGroup(DiminishingGroup group) { m_AuraDRGroup = group; }
-    DiminishingGroup getDiminishGroup() const { return m_AuraDRGroup; }
-        
     int32 GetStackAmount() const {return m_stackAmount;}
     void SetStackAmount(int32 amount);
     bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT, bool resetPeriodicTimer = true);
@@ -333,7 +329,6 @@ protected:
     //int32 m_periodicTimer; //time until next tick
     int32 m_amplitude;
     uint32 m_PeriodicEventId;
-    DiminishingGroup m_AuraDRGroup;
 
     int32 m_stackAmount;
 

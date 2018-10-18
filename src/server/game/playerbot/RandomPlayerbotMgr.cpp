@@ -548,8 +548,8 @@ vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
             uint32 guid = fields[0].GetUInt32();
             uint8 race = fields[1].GetUInt8();
             if (bots.find(guid) == bots.end() &&
-                    ((alliance && IsAlliance(race)) || ((!alliance && !IsAlliance(race))
-            )))
+                    (alliance == IsAlliance(race))
+               )
                 guids.push_back(guid);
         } while (result->NextRow());
     }

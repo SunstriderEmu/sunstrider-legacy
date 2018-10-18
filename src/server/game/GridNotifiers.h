@@ -730,7 +730,8 @@ namespace Trinity
             float i_range;
 
             // prevent clone this object
-            NearestAttackableUnitInObjectRangeCheck(NearestAttackableUnitInObjectRangeCheck const&);
+            NearestAttackableUnitInObjectRangeCheck(NearestAttackableUnitInObjectRangeCheck const&) = delete;
+            NearestAttackableUnitInObjectRangeCheck& operator=(NearestAttackableUnitInObjectRangeCheck const &_Right) = delete;
     };
 
     class TC_GAME_API AnyAoETargetUnitInObjectRangeCheck
@@ -1090,7 +1091,8 @@ namespace Trinity
             float  i_range;
 
             // prevent clone this object
-            NearestAssistCreatureInCreatureRangeCheck(NearestAssistCreatureInCreatureRangeCheck const&);
+            NearestAssistCreatureInCreatureRangeCheck(NearestAssistCreatureInCreatureRangeCheck const&) = delete;
+            NearestAssistCreatureInCreatureRangeCheck& operator=(NearestAssistCreatureInCreatureRangeCheck const &_Right) = delete;
     };
 
     class TC_GAME_API NearestGeneralizedAssistCreatureInCreatureRangeCheck
@@ -1108,7 +1110,8 @@ namespace Trinity
             float  i_range;
 
             // prevent cloning this object
-            NearestGeneralizedAssistCreatureInCreatureRangeCheck(NearestGeneralizedAssistCreatureInCreatureRangeCheck const&);
+            NearestGeneralizedAssistCreatureInCreatureRangeCheck(NearestGeneralizedAssistCreatureInCreatureRangeCheck const&) = delete;
+            NearestGeneralizedAssistCreatureInCreatureRangeCheck& operator=(NearestGeneralizedAssistCreatureInCreatureRangeCheck const &_Right) = delete;
     };
 
 

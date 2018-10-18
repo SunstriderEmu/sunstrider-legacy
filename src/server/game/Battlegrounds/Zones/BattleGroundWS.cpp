@@ -330,7 +330,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     }
     else
     {
-        m_FlagsTimer[GetTeamIndexByTeamId(Source->GetTeam()) ? 0 : 1] = BG_WS_FLAG_RESPAWN_TIME;
+        m_FlagsTimer[GetTeamIndexByTeamId(Source->GetTeam()) == TEAM_ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE] = BG_WS_FLAG_RESPAWN_TIME;
     }
 }
 
@@ -416,7 +416,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
         else
             UpdateWorldState(BG_WS_FLAG_UNK_ALLIANCE, uint32(-1));
 
-        m_FlagsDropTimer[GetTeamIndexByTeamId(Source->GetTeam()) ? 0 : 1] = BG_WS_FLAG_DROP_TIME;
+        m_FlagsDropTimer[GetTeamIndexByTeamId(Source->GetTeam()) == TEAM_ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE] = BG_WS_FLAG_DROP_TIME;
     }
 }
 

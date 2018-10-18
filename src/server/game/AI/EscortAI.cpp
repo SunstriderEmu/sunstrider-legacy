@@ -172,7 +172,7 @@ void EscortAI::UpdateAI(uint32 diff)
 
                 bool isEscort = false;
                 if (CreatureData const* creatureData = me->GetCreatureData())
-                    isEscort = (sWorld->getBoolConfig(CONFIG_RESPAWN_DYNAMIC_ESCORTNPC) && (creatureData->spawnGroupData->flags & SPAWNGROUP_FLAG_ESCORTQUESTNPC));
+                    isEscort = sWorld->getBoolConfig(CONFIG_RESPAWN_DYNAMIC_ESCORTNPC) && (creatureData->spawnGroupData->flags & SPAWNGROUP_FLAG_ESCORTQUESTNPC);
 
                 if (_instantRespawn)
                 {

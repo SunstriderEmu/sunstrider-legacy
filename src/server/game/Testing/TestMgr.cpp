@@ -35,7 +35,7 @@ void TestMgr::_Load(std::string name_or_pattern, Player* joiner /*= nullptr*/)
             {
                 TestCase* _testCase = testCase.get();
                 std::shared_ptr<TestThread> testThread = std::make_shared<TestThread>(std::move(testCase));
-                ASSERT(testCase == nullptr); //testcase in now owned by TestThread
+                //testCase is now nullptr, it is owned by TestThread
                 _testCase->_SetThread(testThread);
                 _testCase->SetUsedPattern(name_or_pattern);
                 _remainingTests[testId] = testThread; //will immediately start a new thread running the test

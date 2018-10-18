@@ -596,16 +596,13 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
 
     if (attacker && pVictim->GetTypeId() == TYPEID_PLAYER && attacker != pVictim)
     {
-        if (attacker != pVictim)
+        // Signal to pets that their owner was attacked - except when DOT.
+        if (damagetype != DOT)
         {
-            // Signal to pets that their owner was attacked - except when DOT.
-            if (damagetype != DOT)
-            {
-                for (Unit* controlled : pVictim->m_Controlled)
-                    if (Creature* cControlled = controlled->ToCreature())
-                        if (CreatureAI* controlledAI = cControlled->AI())
-                            controlledAI->OwnerAttackedBy(attacker);
-            }
+            for (Unit* controlled : pVictim->m_Controlled)
+                if (Creature* cControlled = controlled->ToCreature())
+                    if (CreatureAI* controlledAI = cControlled->AI())
+                        controlledAI->OwnerAttackedBy(attacker);
         }
 
         //sunstrider: moved out of last check, some damage are caused by self
@@ -763,7 +760,7 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
         if (pVictim->GetTypeId() != TYPEID_PLAYER)
         {
             // Part of Evade mechanics. DoT's and Thorns / Retribution Aura do not contribute to this
-            if (damagetype != DOT && damage > 0 && !pVictim->GetOwnerGUID().IsPlayer() && (!spellProto || !spellProto->HasAura(SPELL_AURA_DAMAGE_SHIELD)))
+            if (damagetype != DOT && !pVictim->GetOwnerGUID().IsPlayer() && (!spellProto || !spellProto->HasAura(SPELL_AURA_DAMAGE_SHIELD)))
                 pVictim->ToCreature()->SetLastDamagedTime(pVictim->GetMap()->GetGameTime() + MAX_AGGRO_RESET_TIME);
 
             if(attacker)
@@ -2594,8 +2591,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
         if (spellInfo->GetCategory() == 351)
             return SPELL_MISS_NONE;
 
-        canParry = false;
-        canDodge = false;
+        //canParry = false;
+        //canDodge = false;
 
 #ifdef LICH_KING
         // only if in front
@@ -4530,7 +4527,7 @@ Pet* Unit::GetPet() const
         if (!pet)
             return nullptr;
 
-        if (IsInWorld() && pet)
+        if (IsInWorld())
             return pet;
 
         //there may be a guardian in slot
@@ -4993,7 +4990,7 @@ void Unit::DealHeal(HealInfo& healInfo)
         if (UnitAI* victimAI = victim->GetAI())
             victimAI->HealReceived(healer, addhealth);
 
-        if (UnitAI* healerAI = healer ? healer->GetAI() : nullptr)
+        if (UnitAI* healerAI = healer->GetAI())
             healerAI->HealDone(victim, addhealth);
     }
 
@@ -5152,7 +5149,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
     }
 
     // Combined Spells with Both Over Time and Direct Damage
-    if (overTime > 0 && CastingTime > 0 && DirectDamage)
+    if (overTime > 0 && /*CastingTime > 0 &&*/ DirectDamage)
     {
         // mainly for DoTs which are 3500 here otherwise
         uint32 OriginalCastTime = spellProto->CalcCastTime();
@@ -11412,7 +11409,7 @@ void Unit::UpdateMovementInfo(MovementInfo movementInfo)
         return;
     }
 
-    if (!GetMap())
+    if (!FindMap())
     {
         TC_LOG_ERROR("movement", "Unit::UpdateMovementInfo call on a unit not in map");
         return;

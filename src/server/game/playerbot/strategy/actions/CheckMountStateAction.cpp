@@ -7,8 +7,6 @@
 
 using namespace ai;
 
-ObjectGuid extractGuid(WorldPacket& packet);
-
 bool CheckMountStateAction::Execute(Event event)
 {
     Player* master = GetMaster();

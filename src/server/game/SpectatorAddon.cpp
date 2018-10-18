@@ -22,10 +22,8 @@
 #include "Chat.h"
 
 SpectatorAddonMsg::SpectatorAddonMsg()
+    : prefixFlags()
 {
-    for (bool & prefixFlag : prefixFlags)
-        prefixFlag = false;
-
     player    = "";
     target    = "";
     isAlive   = false;

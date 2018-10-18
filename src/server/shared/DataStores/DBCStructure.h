@@ -938,7 +938,8 @@ struct SpellEntry
 
     private:
         // prevent creating custom entries (copy data from original in fact)
-        SpellEntry(SpellEntry const&);                      // DON'T must have implementation
+        SpellEntry(SpellEntry const&) = delete; 
+        SpellEntry& operator=(const SpellEntry &e2) = delete;
 };
 
 typedef std::set<uint32> SpellCategorySet;

@@ -5,7 +5,8 @@
 TestThread::TestThread(std::unique_ptr<TestCase> test)
     : _testCase(std::move(test)), 
     _state(STATE_NOT_STARTED),
-    _waitTimer(0)
+    _waitTimer(0),
+    _thisUpdateStartTimeMS(0)
 {
 }
 

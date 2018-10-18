@@ -274,6 +274,7 @@ void ReputationMgr::Initialize()
             newFaction.Flags = GetDefaultStateFlags(factionEntry);
             newFaction.needSend = true;
             newFaction.needSave = true;
+            newFaction.needDelete = false;
 
             if (newFaction.Flags & FACTION_FLAG_VISIBLE)
                 ++_visibleFactionCount;

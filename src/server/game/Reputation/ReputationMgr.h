@@ -23,7 +23,7 @@ struct FactionState
     uint8 Flags;
     bool needSend;
     bool needSave;
-    bool needDelete = false; //sun custom
+    bool needDelete; //sun custom
 };
 
 enum FactionFlags

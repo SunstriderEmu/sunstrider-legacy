@@ -2224,7 +2224,7 @@ void Player::RegenerateHealth()
 
     // polymorphed case
     if ( IsPolymorphed() )
-        addValue = GetMaxHealth()/3;
+        addValue = GetMaxHealth() / 3.0f;
     // normal regen case (maybe partly in combat case)
     else if (!IsInCombat() || HasAuraType(SPELL_AURA_MOD_REGEN_DURING_COMBAT) )
     {
@@ -6156,9 +6156,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 else if (diff > 5)
                 {
                     int32 exploration_percent = (100-((diff-5)*5));
-                    if (exploration_percent > 100)
-                        exploration_percent = 100;
-                    else if (exploration_percent < 0)
+                    if (exploration_percent < 0)
                         exploration_percent = 0;
 
                     if (hasCustomXpRate())
@@ -9207,7 +9205,7 @@ bool Player::IsBagPos(uint16 pos)
     return false;
 }
 
-bool Player::IsValidPos( uint8 bag, uint8 slot ) const
+bool Player::IsValidPos(uint8 bag, uint8 slot) const
 {
     // post selected
     if(bag == NULL_BAG)
@@ -9240,7 +9238,7 @@ bool Player::IsValidPos( uint8 bag, uint8 slot ) const
             return true;
 
         // bank bag slots
-        if (slot >= BANK_SLOT_BAG_START && slot < BANK_SLOT_BAG_END)
+        if (slot < BANK_SLOT_BAG_END)
             return true;
 
         return false;
@@ -10506,13 +10504,13 @@ InventoryResult Player::CanUnequipItem( uint16 pos, bool swap ) const
 
 InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *pItem, bool swap, bool not_loading ) const
 {
-    if( !pItem )
+    if (!pItem)
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
 
     uint32 count = pItem->GetCount();
 
-    ItemTemplate const *pProto = pItem->GetTemplate();
-    if( !pProto )
+    ItemTemplate const* pProto = pItem->GetTemplate();
+    if (!pProto)
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
 
     if (pItem->IsBindedNotWith(this))
@@ -10520,30 +10518,27 @@ InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &des
 
     // check count of items (skip for auto move for same player from bank)
     InventoryResult res = CanTakeMoreSimilarItems(pItem);
-    if(res != EQUIP_ERR_OK)
+    if (res != EQUIP_ERR_OK)
         return res;
 
     // in specific slot
-    if( bag != NULL_BAG && slot != NULL_SLOT )
+    if (bag != NULL_BAG && slot != NULL_SLOT)
     {
-        if( pProto->InventoryType == INVTYPE_BAG )
+        if (pProto->InventoryType == INVTYPE_BAG)
         {
-            Bag *pBag = (Bag*)pItem;
-            if( pBag )
+            Bag* pBag = static_cast<Bag*>(pItem);
+            if (slot >= BANK_SLOT_BAG_START && slot < BANK_SLOT_BAG_END)
             {
-                if( slot >= BANK_SLOT_BAG_START && slot < BANK_SLOT_BAG_END )
-                {
-                    if( !HasBankBagSlot( slot ) )
-                        return EQUIP_ERR_MUST_PURCHASE_THAT_BAG_SLOT;
-                    InventoryResult canUse = CanUseItem(pItem, not_loading);
-                    if(canUse != EQUIP_ERR_OK)
-                        return canUse;
-                }
-                else
-                {
-                    if( !pBag->IsEmpty() )
-                        return EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG;
-                }
+                if (!HasBankBagSlot(slot))
+                    return EQUIP_ERR_MUST_PURCHASE_THAT_BAG_SLOT;
+                InventoryResult canUse = CanUseItem(pItem, not_loading);
+                if(canUse != EQUIP_ERR_OK)
+                    return canUse;
+            }
+            else
+            {
+                if (!pBag->IsEmpty())
+                    return EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG;
             }
         }
         else
@@ -10553,71 +10548,71 @@ InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &des
         }
 
         res = _CanStoreItem_InSpecificSlot(bag,slot,dest,pProto,count,swap,pItem);
-        if(res!=EQUIP_ERR_OK)
+        if (res != EQUIP_ERR_OK)
             return res;
 
-        if(count==0)
+        if (count == 0)
             return EQUIP_ERR_OK;
     }
 
     // not specific slot or have space for partly store only in specific slot
 
     // in specific bag
-    if( bag != NULL_BAG )
+    if (bag != NULL_BAG)
     {
-        if( pProto->InventoryType == INVTYPE_BAG )
+        if (pProto->InventoryType == INVTYPE_BAG)
         {
             Bag *pBag = (Bag*)pItem;
-            if( pBag && !pBag->IsEmpty() )
+            if (pBag && !pBag->IsEmpty())
                 return EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG;
         }
 
         // search stack in bag for merge to
-        if( pProto->Stackable > 1 )
+        if (pProto->Stackable > 1)
         {
-            if( bag == INVENTORY_SLOT_BAG_0 )
+            if (bag == INVENTORY_SLOT_BAG_0)
             {
-                res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START,BANK_SLOT_ITEM_END,dest,pProto,count,true,pItem,bag,slot);
-                if(res!=EQUIP_ERR_OK)
+                res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START, BANK_SLOT_ITEM_END, dest, pProto, count, true, pItem, bag, slot);
+                if (res != EQUIP_ERR_OK)
                     return res;
 
-                if(count==0)
+                if (count == 0)
                     return EQUIP_ERR_OK;
             }
             else
             {
-                res = _CanStoreItem_InBag(bag,dest,pProto,count,true,false,pItem,NULL_BAG,slot);
-                if(res!=EQUIP_ERR_OK)
-                    res = _CanStoreItem_InBag(bag,dest,pProto,count,true,true,pItem,NULL_BAG,slot);
+                res = _CanStoreItem_InBag(bag, dest, pProto, count, true, false, pItem, NULL_BAG, slot);
+                if (res != EQUIP_ERR_OK)
+                    res = _CanStoreItem_InBag(bag, dest, pProto, count, true, true, pItem, NULL_BAG, slot);
 
-                if(res!=EQUIP_ERR_OK)
+                if (res != EQUIP_ERR_OK)
                     return res;
 
-                if(count==0)
+                if (count == 0)
                     return EQUIP_ERR_OK;
             }
         }
 
         // search free slot in bag
-        if( bag == INVENTORY_SLOT_BAG_0 )
+        if (bag == INVENTORY_SLOT_BAG_0)
         {
-            res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START,BANK_SLOT_ITEM_END,dest,pProto,count,false,pItem,bag,slot);
-            if(res!=EQUIP_ERR_OK)
+            res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START, BANK_SLOT_ITEM_END, dest, pProto, count, false, pItem, bag, slot);
+            if (res != EQUIP_ERR_OK)
                 return res;
 
-            if(count==0)
+            if (count == 0)
                 return EQUIP_ERR_OK;
         }
         else
         {
-            res = _CanStoreItem_InBag(bag,dest,pProto,count,false,false,pItem,NULL_BAG,slot);
-            if(res!=EQUIP_ERR_OK)
-                res = _CanStoreItem_InBag(bag,dest,pProto,count,false,true,pItem,NULL_BAG,slot);
+            res = _CanStoreItem_InBag(bag, dest, pProto, count, false, false, pItem, NULL_BAG, slot);
+            if (res != EQUIP_ERR_OK)
+                res = _CanStoreItem_InBag(bag, dest, pProto, count, false, true, pItem, NULL_BAG, slot);
 
-            if(res!=EQUIP_ERR_OK)
+            if (res != EQUIP_ERR_OK)
                 return res;
 
-            if(count==0)
+            if (count == 0)
                 return EQUIP_ERR_OK;
         }
     }
@@ -10625,72 +10620,73 @@ InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &des
     // not specific bag or have space for partly store only in specific bag
 
     // search stack for merge to
-    if( pProto->Stackable > 1 )
+    if (pProto->Stackable > 1)
     {
         // in slots
-        res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START,BANK_SLOT_ITEM_END,dest,pProto,count,true,pItem,bag,slot);
-        if(res!=EQUIP_ERR_OK)
+        res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START, BANK_SLOT_ITEM_END, dest, pProto, count, true, pItem, bag, slot);
+        if (res != EQUIP_ERR_OK)
             return res;
 
-        if(count==0)
+        if (count == 0)
             return EQUIP_ERR_OK;
 
         // in special bags
-        if( pProto->BagFamily )
+        if (pProto->BagFamily)
         {
-            for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+            for (int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
             {
-                res = _CanStoreItem_InBag(i,dest,pProto,count,true,false,pItem,bag,slot);
-                if(res!=EQUIP_ERR_OK)
+                res = _CanStoreItem_InBag(i, dest, pProto, count, true, false, pItem, bag, slot);
+                if (res != EQUIP_ERR_OK)
                     continue;
 
-                if(count==0)
+                if (count == 0)
                     return EQUIP_ERR_OK;
             }
         }
 
-        for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        for (int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
         {
-            res = _CanStoreItem_InBag(i,dest,pProto,count,true,true,pItem,bag,slot);
-            if(res!=EQUIP_ERR_OK)
+            res = _CanStoreItem_InBag(i, dest, pProto, count, true, true, pItem, bag, slot);
+            if (res != EQUIP_ERR_OK)
                 continue;
 
-            if(count==0)
+            if (count == 0)
                 return EQUIP_ERR_OK;
         }
     }
 
     // search free place in special bag
-    if( pProto->BagFamily )
+    if (pProto->BagFamily)
     {
-        for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        for (int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
         {
-            res = _CanStoreItem_InBag(i,dest,pProto,count,false,false,pItem,bag,slot);
-            if(res!=EQUIP_ERR_OK)
+            res = _CanStoreItem_InBag(i, dest, pProto, count, false, false, pItem, bag, slot);
+            if (res != EQUIP_ERR_OK)
                 continue;
 
-            if(count==0)
+            if (count == 0)
                 return EQUIP_ERR_OK;
         }
     }
 
     // search free space
-    res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START,BANK_SLOT_ITEM_END,dest,pProto,count,false,pItem,bag,slot);
-    if(res!=EQUIP_ERR_OK)
+    res = _CanStoreItem_InInventorySlots(BANK_SLOT_ITEM_START, BANK_SLOT_ITEM_END, dest, pProto, count, false, pItem, bag, slot);
+    if (res != EQUIP_ERR_OK)
         return res;
 
-    if(count==0)
+    if (count == 0)
         return EQUIP_ERR_OK;
 
-    for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+    for (int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
     {
-        res = _CanStoreItem_InBag(i,dest,pProto,count,false,true,pItem,bag,slot);
-        if(res!=EQUIP_ERR_OK)
+        res = _CanStoreItem_InBag(i, dest, pProto, count, false, true, pItem, bag, slot);
+        if (res != EQUIP_ERR_OK)
             continue;
 
-        if(count==0)
+        if (count == 0)
             return EQUIP_ERR_OK;
     }
+
     return EQUIP_ERR_BANK_FULL;
 }
 
@@ -20016,9 +20012,9 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
     uint32 type;
     if(time > 3600)
         type = RAID_INSTANCE_WELCOME;
-    else if(time > 900 && time <= 3600)
+    else if(time > 900)
         type = RAID_INSTANCE_WARNING_HOURS;
-    else if(time > 300 && time <= 900)
+    else if(time > 300)
         type = RAID_INSTANCE_WARNING_MIN;
     else
         type = RAID_INSTANCE_WARNING_MIN_SOON;

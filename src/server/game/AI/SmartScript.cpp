@@ -450,7 +450,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                                 if(result != SPELL_CAST_OK)
                                     _allowMove = true;
 
-                                CAST_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
+                                ENSURE_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
                             }
 
                             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u with result %u",
@@ -740,7 +740,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!player)
                     continue;
 
-                if (player && GetBaseObject())
+                if (GetBaseObject())
                 {
                     player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
@@ -1999,12 +1999,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (Creature* unitTarget = target->ToCreature())
                 {
                     if (IsSmart(unitTarget))
-                        CAST_AI(SmartAI, unitTarget->AI())->SetTimedActionList(e, e.action.timedActionList.id, GetLastInvoker());
+                        ENSURE_AI(SmartAI, unitTarget->AI())->SetTimedActionList(e, e.action.timedActionList.id, GetLastInvoker());
                 }
                 else if (GameObject* goTarget = target->ToGameObject())
                 {
                     if (IsSmart(goTarget))
-                        CAST_AI(SmartGameObjectAI, goTarget->AI())->SetTimedActionList(e, e.action.timedActionList.id, GetLastInvoker());
+                        ENSURE_AI(SmartGameObjectAI, goTarget->AI())->SetTimedActionList(e, e.action.timedActionList.id, GetLastInvoker());
                 }
             }
 
@@ -2663,7 +2663,7 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
 {
     if (!GetBaseObject())
         return;
-    if (mTemplate)
+    if (mTemplate != SMARTAI_TEMPLATE_BASIC)
     {
         TC_LOG_ERROR("sql.sql","SmartScript::InstallTemplate: Entry %d SourceType %u AI Template can not be set more then once, skipped.", e.entryOrGuid, e.GetScriptType());
         return;
@@ -3594,9 +3594,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             //if range is ok and we are actually in LOS
             if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             {
-                //if friendly event&&who is not hostile OR hostile event&&who is hostile
-                if ((e.event.los.noHostile && !me->IsHostileTo(unit)) ||
-                    (!e.event.los.noHostile && me->IsHostileTo(unit)))
+                if (bool(e.event.los.noHostile) != me->IsHostileTo(unit))
                 {
                     if (e.event.los.playerOnly && unit->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -3616,9 +3614,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             //if range is ok and we are actually in LOS
             if (me->IsWithinDistInMap(unit, range) && me->IsWithinLOSInMap(unit, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
             {
-                //if friendly event&&who is not hostile OR hostile event&&who is hostile
-                if ((e.event.los.noHostile && !me->IsHostileTo(unit)) ||
-                    (!e.event.los.noHostile && me->IsHostileTo(unit)))
+                if (bool(e.event.los.noHostile) != me->IsHostileTo(unit))
                 {
                     if (e.event.los.playerOnly && unit->GetTypeId() != TYPEID_PLAYER)
                         return;
@@ -4440,7 +4436,7 @@ bool SmartScript::IsSmart(Creature* c, bool silent) const
         smart = false;
 
     if (!smart && !silent)
-        TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c ? c->GetSpawnId() : 0, c ? c->GetEntry() : 0, me ? me->GetSpawnId() : 0, me ? me->GetEntry() : 0);
+        TC_LOG_ERROR("sql.sql", "SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action called by Creature (GUID: %u Entry: %u) skipped to prevent crash.", c->GetSpawnId(), c->GetEntry(), me ? me->GetSpawnId() : 0, me ? me->GetEntry() : 0);
 
     return smart;
 }
@@ -4455,7 +4451,7 @@ bool SmartScript::IsSmart(GameObject* g, bool silent) const
         smart = false;
 
     if (!smart && !silent)
-        TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g ? g->GetSpawnId() : 0, g ? g->GetEntry() : 0, go ? go->GetSpawnId() : 0, go ? go->GetEntry() : 0);
+        TC_LOG_ERROR("sql.sql", "SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action called by GameObject (GUID: %u Entry: %u) skipped to prevent crash.", g->GetSpawnId(), g->GetEntry(), go ? go->GetSpawnId() : 0, go ? go->GetEntry() : 0);
 
     return smart;
 }

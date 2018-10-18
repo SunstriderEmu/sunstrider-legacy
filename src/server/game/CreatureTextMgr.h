@@ -198,7 +198,7 @@ void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder
             uint32 areaId = source->GetAreaId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if (player.GetSource()->GetAreaId() == areaId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if (player.GetSource()->GetAreaId() == areaId && (team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     localizer(player.GetSource());
             return;
         }
@@ -207,7 +207,7 @@ void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder
             uint32 zoneId = source->GetZoneId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if (player.GetSource()->GetZoneId() == zoneId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if (player.GetSource()->GetZoneId() == zoneId && (team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     localizer(player.GetSource());
             return;
         }
@@ -215,7 +215,7 @@ void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder
         {
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
             for (const auto & player : players)
-                if ((!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                if ((team == TEAM_OTHER || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
                     localizer(player.GetSource());
             return;
         }
@@ -224,7 +224,7 @@ void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder
             SessionMap const& smap = sWorld->GetAllSessions();
             for (const auto & iter : smap)
                 if (Player* player = iter.second->GetPlayer())
-                    if ((!team || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
+                    if ((team == TEAM_OTHER || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
                         localizer(player);
             return;
         }

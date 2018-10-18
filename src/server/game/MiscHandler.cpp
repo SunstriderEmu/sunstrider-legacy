@@ -700,7 +700,8 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     bool teleported = false;
     if (pl->GetMapId() != at->target_mapId)
     {
-        if (Map::EnterState denyReason = sMapMgr->PlayerCannotEnter(at->target_mapId, pl, false))
+        Map::EnterState denyReason = sMapMgr->PlayerCannotEnter(at->target_mapId, pl, false);
+        if (denyReason != Map::CAN_ENTER)
         {
             bool reviveAtTrigger = false; // should we revive the player if he is trying to enter the correct instance?
             switch (denyReason)
@@ -1318,10 +1319,10 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     }
 
     // cannot reset while in an instance
-    Map *map = _player->GetMap();
+    Map* map = _player->FindMap();
     if(map && map->IsDungeon())
     {
-        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUID().GetCounter());
+        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside a dungeon!", _player->GetGUID().GetCounter());
         return;
     }
 
@@ -1339,7 +1340,11 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
                 if (!groupGuy)
                     continue;
 
-                if (!groupGuy->IsInMap(groupGuy))
+                //sun: reworked condition
+                if (!groupGuy->GetMap()) 
+                    return;
+
+                if (groupGuy->GetMap()->IsNonRaidDungeon())
                 {
                     TC_LOG_DEBUG("network", "WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while group member (Name: %s, GUID: %u) is inside!",
                         _player->GetGUID().GetCounter(), groupGuy->GetName().c_str(), groupGuy->GetGUID().GetCounter());

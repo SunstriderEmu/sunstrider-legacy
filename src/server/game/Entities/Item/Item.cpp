@@ -296,20 +296,20 @@ void Item::SaveToDB(SQLTransaction& trans)
             int32 smallIntMax = 99999;
             int32 mediumIntMax = 99999999;
 
-            ASSERT(GetEntry() < mediumIntMax || std::cerr << GetEntry() && false);
-            ASSERT(GetCount() < smallIntMax || std::cerr << GetCount() && false);
+            ASSERT(GetEntry() < mediumIntMax, "too high %u", GetEntry());
+            ASSERT(GetCount() < smallIntMax, "too high %u", GetCount());
             for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
-                ASSERT(GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i) < smallIntMax/2 || std::cerr << GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i) && false);
+                ASSERT(GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i) < smallIntMax/2, "too high %u", GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i));
 
             for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; i++)
             {
-                ASSERT(GetEnchantmentId(EnchantmentSlot(i)) < mediumIntMax || std::cerr << GetEnchantmentId(EnchantmentSlot(i)) && false);
-                ASSERT(GetEnchantmentDuration(EnchantmentSlot(i)) < mediumIntMax || std::cerr << GetEnchantmentDuration(EnchantmentSlot(i)) && false);
-                ASSERT(GetEnchantmentCharges(EnchantmentSlot(i)) < smallIntMax || std::cerr << GetEnchantmentCharges(EnchantmentSlot(i)) && false);
+                ASSERT(GetEnchantmentId(EnchantmentSlot(i)) < mediumIntMax, "too high %u", GetEnchantmentId(EnchantmentSlot(i)));
+                ASSERT(GetEnchantmentDuration(EnchantmentSlot(i)) < mediumIntMax, "too high %u", GetEnchantmentDuration(EnchantmentSlot(i)));
+                ASSERT(GetEnchantmentCharges(EnchantmentSlot(i)) < smallIntMax, "too high %u", GetEnchantmentCharges(EnchantmentSlot(i)));
             }
-            ASSERT(GetItemSuffixFactor() < smallIntMax || std::cerr << GetItemSuffixFactor() && false);
-            ASSERT(std::abs(GetItemRandomPropertyId()) < smallIntMax || std::cerr << GetItemRandomPropertyId() && false);
-            ASSERT(GetUInt32Value(ITEM_FIELD_DURABILITY) < smallIntMax || std::cerr << GetUInt32Value(ITEM_FIELD_DURABILITY) && false);
+            ASSERT(GetItemSuffixFactor() < smallIntMax, "too high %u", GetItemSuffixFactor());
+            ASSERT(std::abs(GetItemRandomPropertyId()) < smallIntMax, "too high %u", GetItemRandomPropertyId());
+            ASSERT(GetUInt32Value(ITEM_FIELD_DURABILITY) < smallIntMax, "too high %u", GetUInt32Value(ITEM_FIELD_DURABILITY));
 #endif
             uint8 index = 0; 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(uState == ITEM_NEW ? CHAR_REP_ITEM_INSTANCE : CHAR_UPD_ITEM_INSTANCE);

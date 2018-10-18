@@ -509,15 +509,19 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
                 name << value;
                 if (type == "killTask")
                 {
-                    CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(value);
-                    string rank = proto->rank == CREATURE_ELITE_RARE ? "rare" : "elite";
-                    if (proto) name << " (" << proto->Name << "," << rank << ")";
+                    if (CreatureTemplate const* proto = sObjectMgr->GetCreatureTemplate(value))
+                    {
+                        string rank = proto->rank == CREATURE_ELITE_RARE ? "rare" : "elite";
+                        name << " (" << proto->Name << "," << rank << ")";
+                    }
                 }
                 else if (type == "itemTask")
                 {
-                    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(value);
-                    string rank = proto->Quality == ITEM_QUALITY_UNCOMMON ? "uncommon" : "rare";
-                    if (proto) name << " (" << proto->Name1 << "," << rank << ")";
+                    if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(value))
+                    {
+                        string rank = proto->Quality == ITEM_QUALITY_UNCOMMON ? "uncommon" : "rare";
+                        name << " (" << proto->Name1 << "," << rank << ")";
+                    }
                 }
 
                 sLog->outMessage("gtask", LOG_LEVEL_INFO, "Player '%s' Guild '%s' %s=%u (%u secs)",

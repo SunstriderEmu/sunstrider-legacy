@@ -23,7 +23,7 @@ LogsDatabaseAccessor::LogsDatabaseAccessor() : max_trade_id(0)
 bool LogsDatabaseAccessor::ShouldLog(WorldConfigs configIndex, WorldConfigs configIndexGM, bool gmInvolved)
 {
     uint32 duration = sWorld->getConfig(configIndex);
-    uint32 gmDuration = configIndexGM ? sWorld->getConfig(configIndexGM) : 0;
+    uint32 gmDuration = configIndexGM > WorldConfigs(0) ? sWorld->getConfig(configIndexGM) : 0;
 
     return (duration != 0 || (gmInvolved && (gmDuration != 0)));
 }

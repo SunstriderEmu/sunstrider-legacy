@@ -249,7 +249,7 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
     return me->SummonCreature(id,me->GetPositionX() + x,me->GetPositionY() + y,me->GetPositionZ() + z, angle, (TempSummonType)type, despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask school, Mechanics mechanic, SelectSpellTarget targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effects)
 {
     //No target so we can't cast
     if (!target)
@@ -281,26 +281,26 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask School, M
 
         // Targets and Effects checked first as most used restrictions
         //Check the spell targets if specified
-        if (Targets && !(SpellSummary[m_spell].Targets & (1 << (Targets - 1))))
+        if (!(SpellSummary[m_spell].Targets & (1 << (targets - 1))))
             continue;
 
         //Check the type of spell if we are looking for a specific spell type
-        if (Effects && !(SpellSummary[m_spell].Effects & (1 << (Effects - 1))))
+        if (!(SpellSummary[m_spell].Effects & (1 << (effects - 1))))
             continue;
 
         //Check for school if specified
-        if (School != SPELL_SCHOOL_MASK_NONE && !(TempSpell->SchoolMask & School))
+        if (school != SPELL_SCHOOL_MASK_NONE && !(TempSpell->SchoolMask & school))
             continue;
 
         //Check for spell mechanic if specified
-        if (Mechanic != MECHANIC_NONE && TempSpell->Mechanic != Mechanic)
+        if (mechanic != MECHANIC_NONE && TempSpell->Mechanic != mechanic)
             continue;
 
         //Make sure that the spell uses the requested amount of power
-        if (PowerCostMin &&  TempSpell->ManaCost < PowerCostMin)
+        if (powerCostMin &&  TempSpell->ManaCost < powerCostMin)
             continue;
 
-        if (PowerCostMax && TempSpell->ManaCost > PowerCostMax)
+        if (powerCostMax && TempSpell->ManaCost > powerCostMax)
             continue;
 
         //Continue if we don't have the mana to actually cast this spell
@@ -308,9 +308,9 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask School, M
             continue;
 
         //Check if the spell meets our range requirements
-        if (RangeMin && RangeMin < me->GetSpellMinRangeForTarget(target, TempSpell))
+        if (rangeMin && rangeMin < me->GetSpellMinRangeForTarget(target, TempSpell))
             continue;
-        if (RangeMax && RangeMax > me->GetSpellMaxRangeForTarget(target, TempSpell))
+        if (rangeMax && rangeMax > me->GetSpellMaxRangeForTarget(target, TempSpell))
             continue;
 
         //Check if our target is in range

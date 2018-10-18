@@ -946,7 +946,7 @@ void Player::UpdateManaRegen()
         {
             power_regen_mp5 += mDummyAura->GetAmount() * Intellect / 500.0f;
             // Add regen bonus from level in this dummy
-            power_regen_mp5 += GetLevel() * 35 / 100;
+            power_regen_mp5 += GetLevel() * 35 / 100.0f;
         }
 
     // Set regen rate in cast state apply only on spirit based regen

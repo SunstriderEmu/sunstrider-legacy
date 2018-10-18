@@ -498,10 +498,11 @@ m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(createInfo.
 m_timeCla(0), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGUID() : ObjectGuid::Empty),
 m_isAreaAura(false), m_owner(createInfo._owner),
 m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
-m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE), m_spellInfo(createInfo._spellInfo),
+m_PeriodicEventId(0), m_spellInfo(createInfo._spellInfo),
 m_active(false), m_channelData(nullptr), m_isSingleTarget(false),
 m_procCooldown(std::chrono::steady_clock::time_point::min()), m_castFlags(createInfo.castFlags),
-m_forceHitResult(createInfo.forceSpellHit)
+m_forceHitResult(createInfo.forceSpellHit), m_effIndex(0), m_applyTime(0), m_positive(false), 
+m_isPeriodic(false), m_updated(false), m_amplitude(0)
 {
     //sun: m_timeCla logic currently broken, disable for health funnel (is the only spell important with it and it is handled in funnel logic)
     if ((m_spellInfo->ManaPerSecond || m_spellInfo->ManaPerSecondPerLevel) && !m_spellInfo->HasAttribute(SPELL_ATTR2_HEALTH_FUNNEL))

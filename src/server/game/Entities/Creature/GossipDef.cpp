@@ -237,7 +237,7 @@ void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, ObjectGuid senderGUID)
             std::string title = quest->GetTitle();
 
             int32 locale = _session->GetSessionDbLocaleIndex();
-            if (locale >= 0)
+            if (locale != DEFAULT_LOCALE)
                 if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(questID))
                     ObjectMgr::GetLocaleString(localeData->Title, locale, title);
 
@@ -285,7 +285,7 @@ void PlayerMenu::SendPointOfInterest(uint32 poiId) const
 
     std::string iconText = poi->icon_name;
     int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale >= 0)
+    if (locale != DEFAULT_LOCALE)
         if (PointOfInterestLocale const* localeData = sObjectMgr->GetPointOfInterestLocale(poiId))
             ObjectMgr::GetLocaleString(localeData->IconName, locale, iconText);
 
@@ -387,7 +387,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote const& eEmote, const std::string
             std::string title = quest->GetTitle();
 
             int32 locale = _session->GetSessionDbLocaleIndex();
-            if (locale >= 0)
+            if (locale != DEFAULT_LOCALE)
                 if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(questID))
                     ObjectMgr::GetLocaleString(localeData->Title, locale, title);
 
@@ -428,7 +428,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
     std::string questAreaDescription = quest->GetAreaDescription();
 
     int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale >= 0)
+    if (locale != DEFAULT_LOCALE)
     {
         if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
@@ -576,7 +576,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
     std::string questOfferRewardText = quest->GetOfferRewardText();
 
     int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale >= 0)
+    if (locale != DEFAULT_LOCALE)
     {
         if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
@@ -693,7 +693,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGU
     std::string requestItemsText = quest->GetRequestItemsText();
 
     int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale >= 0)
+    if (locale != DEFAULT_LOCALE)
     {
         if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {

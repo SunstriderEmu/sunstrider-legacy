@@ -191,7 +191,7 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
         GroupQueueInfo* ginfo = nullptr;
         uint32 avgTime = 0;
 
-        if (err > 0)
+        if (err > 0) //err is BattlegroundTypeId if positive... ugly code!
         {
             TC_LOG_DEBUG("bg.battleground", "Battleground: the following players are joining as group:");
             ginfo = bgQueue.AddGroup(_player, grp, bgTypeId, bracketEntry, 0, false, isPremade, 0, 0);
@@ -206,7 +206,7 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
 
             WorldPacket data;
 
-            if (err <= 0)
+            if (err <= 0) //err is BattlegroundTypeId if positive... ugly code!
             {
                 sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, err);
                 member->SendDirectMessage(&data);
@@ -1072,7 +1072,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     {
         uint32 avgTime = 0;
 
-        if (err > 0)
+        if (err > 0) //err is BattlegroundTypeId if positive... ugly code!
         {
             TC_LOG_DEBUG("bg.battleground", "Battleground: arena join as group start");
             if (isRated)
@@ -1095,7 +1095,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 
             WorldPacket data;
 
-            if (err <= 0)
+            if (err <= 0) //err is BattlegroundTypeId if positive... ugly code!
             {
                 sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, err);
                 member->SendDirectMessage(&data);

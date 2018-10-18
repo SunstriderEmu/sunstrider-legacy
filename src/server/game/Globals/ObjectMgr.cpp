@@ -2511,14 +2511,14 @@ void ObjectMgr::LoadPetLevelInfo()
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
-                    TC_LOG_ERROR("FIXME","Wrong (> %u) level %u in `pet_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
+                    TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `pet_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    TC_LOG_DEBUG("FIXME","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `pet_levelstats` table, ignoring.",current_level);
+                    TC_LOG_DEBUG("misc","Unused (> MaxPlayerLevel in worldserver.conf) level %u in `pet_levelstats` table, ignoring.",current_level);
                 continue;
             }
             else if(current_level < 1)
             {
-                TC_LOG_ERROR("FIXME","Wrong (<1) level %u in `pet_levelstats` table, ignoring.",current_level);
+                TC_LOG_ERROR("sql.sql","Wrong (<1) level %u in `pet_levelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -2920,7 +2920,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.", STRONG_MAX_LEVEL,current_level);
                 else
-                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
+                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in worldserver.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
                 continue;
             }
             else if (current_level == 0) {
@@ -3013,7 +3013,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_levelstats` table, ignoring.",current_level);
+                    TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in worldserver.conf) level %u in `player_levelstats` table, ignoring.",current_level);
                 continue;
             }
 

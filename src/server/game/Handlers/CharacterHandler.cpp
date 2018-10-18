@@ -986,8 +986,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 {
     ObjectGuid playerGuid = holder->GetGuid();
 
-    Player* pCurrChar = nullptr;
-    pCurrChar = new Player(this);
+    Player* pCurrChar = new Player(this);
 
     // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
     if (!pCurrChar->LoadFromDB(playerGuid.GetCounter(), holder))

@@ -1026,10 +1026,10 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || (unitTarget->ToCreature())->IsPet()) return;
 
                     Creature* creatureTarget = unitTarget->ToCreature();
-                    auto  pGameObj = new GameObject;
+                    if (!creatureTarget)
+                        return;
 
-                    if (!creatureTarget || !pGameObj) return;
-
+                    GameObject* pGameObj = new GameObject;
                     if (!pGameObj->Create(creatureTarget->GetMap()->GenerateLowGuid<HighGuid::GameObject>(), 181574, creatureTarget->GetMap(), unitTarget->GetPhaseMask(),
                         creatureTarget->GetPosition(), G3D::Quat(), 255, GO_STATE_READY))
                     {
@@ -1855,7 +1855,7 @@ void Spell::EffectDummy(uint32 i)
                 // Berserking (troll racial traits)
                 case 1661:
                 {
-                    if (!_unitCaster || !_unitCaster)
+                    if (!_unitCaster)
                         break;
                     uint32 healthPerc = uint32((float(_unitCaster->GetHealth())/ _unitCaster->GetMaxHealth())*100);
                     int32 melee_mod = 10;
@@ -2465,7 +2465,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
             // Vanish
             case 18461:
             {
-                if (!_unitCaster || !_unitCaster)
+                if (!_unitCaster)
                     break;
 
                 _unitCaster->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
@@ -3343,7 +3343,7 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     // the maximum number of created additional items
     uint8 additionalMaxNum=0;
     // get the chance and maximum number for creating extra items
-    if ( canCreateExtraItems(player, m_spellInfo->Id, additionalCreateChance, additionalMaxNum) )
+    if (CanCreateExtraItems(player, m_spellInfo->Id, additionalCreateChance, additionalMaxNum))
     {
         // roll with this chance till we roll not to create or we create the max num
         while ( roll_chance_f(additionalCreateChance) && items_count<=additionalMaxNum )
@@ -6964,7 +6964,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
     int32 mana = 0;
     for (uint8 slot = SUMMON_SLOT_TOTEM; slot < MAX_TOTEM_SLOT; ++slot)
     {
-        if(!slot)
+        if (!_unitCaster->m_SummonSlot[slot])
             continue;
 
         Creature* totem = _unitCaster->GetMap()->GetCreature(_unitCaster->m_SummonSlot[slot]);

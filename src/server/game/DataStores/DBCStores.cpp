@@ -509,7 +509,7 @@ void LoadDBCStores(const std::string& dataPath)
     // error checks
     if(bad_dbc_files.size() >= DBCFilesCount )
     {
-        TC_LOG_ERROR("server.loading","\nIncorrect DataDir value in Trinityd.conf or ALL required *.dbc files (%d) not found by path: %sdbc",DBCFilesCount,dataPath.c_str());
+        TC_LOG_ERROR("server.loading","\nIncorrect DataDir value in worldserver.conf or ALL required *.dbc files (%d) not found by path: %sdbc",DBCFilesCount,dataPath.c_str());
         exit(1);
     }
     else if(!bad_dbc_files.empty() )

@@ -46,8 +46,10 @@ Position TestCase::GetDefaultPositionForMap(uint32 mapId)
     {
     case 0:  //Eastern Kingdoms
         pos = Position(-4674.0f, -1640.0f, 504.0f);
+        break;
     case 1:  //Kalimdor
         pos = Position(2946.0f, -4791.0f, 236.0f);
+        break;
     case 13: //Test
         pos = Position(-223.97f, 0.23f, -423.2f);
         break;
@@ -56,6 +58,7 @@ Position TestCase::GetDefaultPositionForMap(uint32 mapId)
         break;
     case 530: //Outland
         pos = Position(-1520.0f, 8256.0f, -15.0f);
+        break;
     default:
         auto areaTrigger = sObjectMgr->GetMapEntranceTrigger(mapId);
         if(areaTrigger)
@@ -1284,8 +1287,8 @@ std::pair<uint32 /*min*/, uint32 /*max*/> TestCase::CalcMeleeDamage(Player const
     Item* item = attacker->GetWeaponForAttack(attackType);
     INTERNAL_ASSERT_INFO("Failed to get weapon for attack type %u", uint32(attackType));
     INTERNAL_TEST_ASSERT(item != nullptr);
-    uint32 const weaponMinDmg = item->GetTemplate()->Damage->DamageMin;
-    uint32 const weaponMaxDmg = item->GetTemplate()->Damage->DamageMax;
+    uint32 const weaponMinDmg = item->GetTemplate()->Damage[0].DamageMin;
+    uint32 const weaponMaxDmg = item->GetTemplate()->Damage[0].DamageMax;
     float const weaponSpeed = spellNormalizedWeaponSpeed ? spellNormalizedWeaponSpeed : item->GetTemplate()->Delay / 1000.0f;
     float const AP = attacker->GetTotalAttackPowerValue(attackType);
     float const armorFactor = GetArmorFactor(attacker, target);

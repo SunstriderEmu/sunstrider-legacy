@@ -1116,7 +1116,7 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
     for(auto itr : mGameEventCreatureGuids[internal_event_id])
         SpawnCreature(itr);
 
-    if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
+    if(internal_event_id >= mGameEventGameobjectGuids.size())
     {
         TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
@@ -1185,7 +1185,7 @@ void GameEventMgr::GameEventUnspawn(int16 event_id)
         DespawnCreature(itr,event_id);
     }
 
-    if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
+    if(internal_event_id >= mGameEventGameobjectGuids.size())
     {
         TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
@@ -1676,6 +1676,7 @@ bool GameEventMgr::CreateGameEvent(const char* name,int16& event_id)
         return false;
     }
 
+    ASSERT(mGameEvent.size() < MAXINT16);
     event_id = mGameEvent.size();
     /*
     // crash crash crash. Remember events may not be continguous, probably the problem here

@@ -1,41 +1,45 @@
 #include "SimpleCooldown.h"
 #include <stdlib.h>
 
+//TODO: Delete this class. Only used in Dragons of Nightmare scripts
 
 SimpleCooldown::SimpleCooldown()
 {
-        this->setMaxCD(0);
-        this->setActualCD(0);
-        this->setBeginingCooldown(0);
-        this->isSetCD=false;
-        this->ramdomActivated=false;
+    this->setMaxCD(0);
+    this->setActualCD(0);
+    this->setBeginingCooldown(0);
+    this->isSetCD=false;
+    this->ramdomActivated=false;
+    rangeRandomValue = 0;
     return;
 }
 
 SimpleCooldown::SimpleCooldown(int cd)
 {
-        this->setMaxCD(cd);
-        this->setActualCD(cd);
-        this->setBeginingCooldown(cd);
-        this->ramdomActivated=false;
+    this->setMaxCD(cd);
+    this->setActualCD(cd);
+    this->setBeginingCooldown(cd);
+    this->ramdomActivated=false;
+    rangeRandomValue = 0;
 }
 
 SimpleCooldown::SimpleCooldown(int maxCD, int beginingCD)
 {       
-        this->setMaxCD(maxCD);
-        this->setActualCD(beginingCD);
-        this->setBeginingCooldown(beginingCD);
-        this->ramdomActivated=false;
+    this->setMaxCD(maxCD);
+    this->setActualCD(beginingCD);
+    this->setBeginingCooldown(beginingCD);
+    this->ramdomActivated=false;
+    rangeRandomValue = 0;
 }
 
 SimpleCooldown::SimpleCooldown(int maxCD, int beginingCD, bool randomOnReset, int rangeRandomValue, bool scaled, bool isCentered)
 {
-        this->setMaxCD(maxCD);
-        this->setActualCD(beginingCD);
-        this->setBeginingCooldown(beginingCD);
-        this->ramdomActivated=randomOnReset;
-        this->rangeRandomValue= scaled ? rangeRandomValue*maxCD : rangeRandomValue;
-        this->rangeRandomValue= isCentered ? this->rangeRandomValue : (this->rangeRandomValue)*2;
+    this->setMaxCD(maxCD);
+    this->setActualCD(beginingCD);
+    this->setBeginingCooldown(beginingCD);
+    this->ramdomActivated=randomOnReset;
+    this->rangeRandomValue= scaled ? rangeRandomValue*maxCD : rangeRandomValue;
+    this->rangeRandomValue= isCentered ? this->rangeRandomValue : (this->rangeRandomValue)*2;
 }
 
 void SimpleCooldown::setBeginingCooldown(int begCD)
@@ -99,10 +103,10 @@ void SimpleCooldown::resetAtStart()
 // Si on peut lancer le sort, on dit oui et on réinit. Sinon, on décrémente.
 bool SimpleCooldown::CheckAndUpdate(int diff)
 {
-        if(!isMaxCDSet())
-        {
-            return false;
-        }
+    if(!isMaxCDSet())
+    {
+        return false;
+    }
         
     if(this->isReady(diff))
     {

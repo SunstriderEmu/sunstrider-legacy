@@ -44,17 +44,24 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
             uint32 itemsetId = atoi(v[1].c_str());
             bool error = false;
 
-            if (itemsetId == 0) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+            if (itemsetId == 0) 
+            {
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
             QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
 
             if (!result) {
-                if(chatHandler) chatHandler->PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
@@ -86,8 +93,11 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
 
             ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemId);
             if (!pProto) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
@@ -98,9 +108,13 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
             if (msg != EQUIP_ERR_OK)
                 count -= noSpaceForCount;
 
-            if (count == 0 || dest.empty()) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+            if (count == 0 || dest.empty()) 
+            {
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
@@ -116,22 +130,28 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
                     player->SendNewItem(item, count, true, true);
             }
 
-            if (noSpaceForCount > 0) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
+            if (noSpaceForCount > 0) 
+            {
+                if (chatHandler) 
+                    chatHandler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
                 return false;
             }
         } else if (v[0] == "learn") {
             /* learn, v[1] == spell ID */
             if(v.size() < 2) 
             {
-                if (chatHandler) chatHandler->SendSysMessage("Command error.");
+                if (chatHandler) 
+                    chatHandler->SendSysMessage("Command error.");
                 continue;
             }
             uint32 spell = atol(v[1].c_str());
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, player)) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
@@ -155,8 +175,11 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
             }
             int32 skill = atoi(v[1].c_str());
             if (skill <= 0) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
@@ -166,14 +189,20 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
 
             SkillLineEntry const* sl = sSkillLineStore.LookupEntry(skill);
             if (!sl) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 
             if (!player->GetSkillValue(skill)) {
-                if (chatHandler) chatHandler->PSendSysMessage(LANG_SET_SKILL_ERROR, player->GetName().c_str(), skill, sl->name[0]);
-                if (chatHandler) chatHandler->SetSentErrorMessage(true);
+                if (chatHandler)
+                {
+                    chatHandler->PSendSysMessage(LANG_SET_SKILL_ERROR, player->GetName().c_str(), skill, sl->name[0]);
+                    chatHandler->SetSentErrorMessage(true);
+                }
                 return false;
             }
 

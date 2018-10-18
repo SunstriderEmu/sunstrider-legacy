@@ -220,7 +220,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             float x, y, z;
             bool shortenPath;
             // if we want to move toward the target and there's no fixed angle...
-            if (moveToward && !angle)
+            if (moveToward && !angle.is_initialized())
             {
                 // ...we'll pathfind to the center, then shorten the path
                 target->GetPosition(x, y, z);

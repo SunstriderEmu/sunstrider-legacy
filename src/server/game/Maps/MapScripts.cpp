@@ -27,7 +27,7 @@ void Map::ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo>> const
     // prepare static data
     ObjectGuid sourceGUID = source ? source->GetGUID() : ObjectGuid::Empty; //some script commands doesn't have source
     ObjectGuid targetGUID = target ? target->GetGUID() : ObjectGuid::Empty;
-    ObjectGuid ownerGUID  = (source->GetTypeId()==TYPEID_ITEM) ? ((Item*)source)->GetOwnerGUID() : ObjectGuid::Empty;
+    ObjectGuid ownerGUID  = (source && source->GetTypeId() == TYPEID_ITEM) ? ((Item*)source)->GetOwnerGUID() : ObjectGuid::Empty;
 
     ///- Schedule script execution for all scripts in the script map
     ScriptMap const *s2 = &(s->second);
@@ -558,11 +558,11 @@ void Map::ScriptsProcess()
                 switch (step.script->CastSpell.Flags)
                 {
                 case SF_CASTSPELL_SOURCE_TO_TARGET: // source -> target
-                    uSource = source ? source->ToUnit() : nullptr;
+                    uSource = source->ToUnit();
                     uTarget = target ? target->ToUnit() : nullptr;
                     break;
                 case SF_CASTSPELL_SOURCE_TO_SOURCE: // source -> source
-                    uSource = source ? source->ToUnit() : nullptr;
+                    uSource = source->ToUnit();
                     uTarget = uSource;
                     break;
                 case SF_CASTSPELL_TARGET_TO_TARGET: // target -> target
@@ -571,10 +571,10 @@ void Map::ScriptsProcess()
                     break;
                 case SF_CASTSPELL_TARGET_TO_SOURCE: // target -> source
                     uSource = target ? target->ToUnit() : nullptr;
-                    uTarget = source ? source->ToUnit() : nullptr;
+                    uTarget = source->ToUnit();
                     break;
                 case SF_CASTSPELL_SEARCH_CREATURE: // source -> creature with entry
-                    uSource = source ? source->ToUnit() : nullptr;
+                    uSource = source->ToUnit();
                     uTarget = uSource ? uSource->FindNearestCreature(abs(step.script->CastSpell.CreatureEntry), step.script->CastSpell.SearchRadius) : nullptr;
                     break;
                 }

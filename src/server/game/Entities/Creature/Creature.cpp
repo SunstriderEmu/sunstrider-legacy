@@ -305,17 +305,18 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_combatPulseTime(0), 
     m_combatPulseDelay(0),
     m_lastDamagedTime(0),
-    m_movementFlagsUpdateTimer(MOVEMENT_FLAGS_UPDATE_TIMER)
+    m_movementFlagsUpdateTimer(MOVEMENT_FLAGS_UPDATE_TIMER),
+    m_originalEntry(0),
+    m_questPoolId(0),
+    m_chosenTemplate(0),
+    m_spells(),
+    disableReputationGain(false)
 {
     m_valuesCount = UNIT_END;
-
-    for(uint32 & m_spell : m_spells)
-        m_spell = 0;
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
 
     ResetLootMode(); // restore default loot mode
-    DisableReputationGain = false;
 }
 
 Creature::~Creature()
@@ -800,7 +801,7 @@ void Creature::Update(uint32 diff)
 
             if(IsInCombat() && 
                 (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
-                GetMap() && GetMap()->IsDungeon())
+                GetMap()->IsDungeon())
             {
                 if(m_areaCombatTimer < diff)
                 {
@@ -991,7 +992,7 @@ void Creature::Regenerate(Powers power)
                 }
             }
             else
-                addvalue = maxValue / 3;
+                addvalue = maxValue / 3.0f;
 
             break;
         }
@@ -1002,7 +1003,7 @@ void Creature::Regenerate(Powers power)
     // Apply modifiers (if any).
     addvalue *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
 
-    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (IsHunterPet() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
+    addvalue += float(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power)) * (IsHunterPet() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
 
     ModifyPower(power, addvalue);
 }
@@ -1798,12 +1799,13 @@ void Creature::SetSpawnHealth()
     if (m_creatureData && !m_regenHealth)
     {
         curhealth = m_creatureData->curhealth;
+        /*
         if (curhealth)
         {
-            //curhealth = uint32(curhealth * _GetHealthMod(GetCreatureTemplate()->rank));
+            curhealth = uint32(curhealth * _GetHealthMod(GetCreatureTemplate()->rank));
             if (curhealth < 1)
                 curhealth = 1;
-        }
+        }*/
         SetPower(POWER_MANA, m_creatureData->curmana);
     }
     else
