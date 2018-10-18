@@ -13,7 +13,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-	  - sourceline: 'ppa:kzemek/boost'
+      - sourceline: 'ppa:kzemek/boost'
     packages:
       - g++-6
       - libssl-dev
