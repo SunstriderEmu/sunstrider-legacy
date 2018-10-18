@@ -19,7 +19,18 @@ public:
             { "go",             SEC_GAMEMASTER3,  false, &HandleDebugSnapshotGo,              "" },
             { "",               SEC_GAMEMASTER3,  false, &HandleDebugSnapshot,                "" },
         };
-
+        static std::vector<ChatCommand> debugMoveflagCommandTable =
+        {
+            { "root",           SEC_GAMEMASTER2,  false, &HandleRootCheatCommand, "" },
+            { "waterwalk",      SEC_GAMEMASTER2,  false, &HandleWaterWalkCheatCommand, "" },
+            { "hover",          SEC_GAMEMASTER2,  false, &HandleHoverCheatCommand, "" },
+            { "canfly",         SEC_GAMEMASTER2,  false, &HandleCanFlyCheatCommand, "" },
+#ifdef LICH_KING
+            { "cantranswimfly", SEC_GAMEMASTER2,  false, &HandleCanTransitionBetweenSwimAndFlyCheatCommand, "" },
+#endif
+            { "featherfall",    SEC_GAMEMASTER2,  false, &HandleFeatherFallCheatCommand, "" },
+            { "disablegravity", SEC_GAMEMASTER2,  false, &HandleDisableGravityCheatCommand, "" },
+        };
         static std::vector<ChatCommand> debugCommandTable =
         {
             { "batchattack",    SEC_GAMEMASTER3,  false, &HandleDebugBatchAttack,             "" },
@@ -59,6 +70,7 @@ public:
             { "attackers",      SEC_GAMEMASTER2,  false, &HandleDebugShowAttackers,           "" },
             { "zoneattack",     SEC_GAMEMASTER3,  false, &HandleDebugSendZoneUnderAttack,     "" },
             { "los",            SEC_GAMEMASTER1,  false, &HandleDebugLoSCommand,              "" },
+            { "moveflag",       SEC_GAMEMASTER2,  false, nullptr,                             "", debugMoveflagCommandTable },
             { "playerflags",    SEC_GAMEMASTER3,  false, &HandleDebugPlayerFlags,             "" },
             { "opcodetest",     SEC_GAMEMASTER3,  false, &HandleDebugOpcodeTestCommand,       "" },
             { "playemote",      SEC_GAMEMASTER2,  false, &HandleDebugPlayEmoteCommand,        "" },
@@ -79,6 +91,183 @@ public:
             { "debug",          SEC_GAMEMASTER1,  false, nullptr,                                        "", debugCommandTable },
         };
         return commandTable;
+    }
+
+    static bool HandleWaterWalkCheatCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->IsWaterWalking() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetWaterWalking(false);
+            handler->SendSysMessage("Waterwalking is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetWaterWalking(true);
+            handler->SendSysMessage("Waterwalking is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+
+    static bool HandleDisableGravityCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->IsLevitating() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetDisableGravity(false);
+            handler->SendSysMessage("DisableGravity is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetDisableGravity(true);
+            handler->SendSysMessage("DisableGravity is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+
+    static bool HandleRootCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->IsRooted() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetRooted(false);
+            handler->SendSysMessage("Root is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetRooted(true);
+            handler->SendSysMessage("Root is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+
+    static bool HandleHoverCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->IsHovering() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetHover(false);
+            handler->SendSysMessage("Hover is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetHover(true);
+            handler->SendSysMessage("Hover is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+
+#ifdef LICH_KING
+    static bool HandleCanTransitionBetweenSwimAndFlyCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->CanTransitionBetweenSwimAndFly() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetCanTransitionBetweenSwimAndFly(false);
+            handler->SendSysMessage("CanTransitionBetweenSwimAndFly is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetCanTransitionBetweenSwimAndFly(true);
+            handler->SendSysMessage("CanTransitionBetweenSwimAndFly is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+#endif
+
+    static bool HandleCanFlyCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->HasCanFly() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetFlying(false);
+            handler->SendSysMessage("SetFlying is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetFlying(true);
+            handler->SendSysMessage("SetFlying is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
+    }
+
+    static bool HandleFeatherFallCheatCommand(ChatHandler* handler, const char* args)
+    {
+        Unit* unit = handler->GetSelectedUnit();
+        if (unit == nullptr)
+            unit = handler->GetSession()->GetPlayer();
+        if (unit == nullptr)
+            return false;
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = unit->IsFallingSlow() ? "off" : "on";
+        if (argstr == "off")
+        {
+            unit->SetFeatherFall(false);
+            handler->SendSysMessage("FeatherFall is OFF on the selected unit (or self if no target).");
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            unit->SetFeatherFall(true);
+            handler->SendSysMessage("FeatherFall is ON on the selected unit (or self if no target).");
+            return true;
+        }
+        return false;
     }
 
     /** Syntax: .debug batchattack <count> [type]
@@ -1439,7 +1628,7 @@ public:
                     i += (fieldSize - 1); //this will skip next field for UPDATE_FIELD_TYPE_LONG
 
                 handler->PSendSysMessage("%s", stream.str().c_str());
-                TC_LOG_DEBUG("snapshot", "%", stream.str().c_str());
+                TC_LOG_DEBUG("snapshot", "%s", stream.str().c_str());
             }
         }
         else {

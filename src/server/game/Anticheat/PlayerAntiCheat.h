@@ -41,6 +41,7 @@ public:
     void OnPlayerSetFlying(Unit const* moved, bool set);
     void OnPlayerKnockBack(Unit const* moved);
     void OnPlayerTeleport(Unit const* moved);
+    //oldMover, newMover may be nullptr
     void OnPlayerMoverChanged(Unit const* oldMover, Unit const* newMover);
     void OnPlayerSpeedChanged(Unit const* moved, float oldSpeed, float newSpeed);
     void OnPlayerWaterWalk(Unit const* moved);

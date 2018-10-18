@@ -4684,33 +4684,35 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
     if (!(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_SEND_FOR_CLIENT_MASK))
         return;
 
+    Unit* target = aurApp->GetTarget();
+    if (mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK)
+        target->UpdateSpeed(MOVE_FLIGHT);
+
     Unit* m_target = aurApp->GetTarget();
     // Enable Fly mode for flying mounts
     if (GetAuraType() == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
     {
-        WorldPacket data;
-        if (apply)
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK && (apply || (!target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !target->HasAuraType(SPELL_AURA_FLY))))
         {
-            ((Player*)m_target)->SetFlying(true);
-            data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-        }
-        else
-        {
-            data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-            ((Player*)m_target)->SetFlying(false);
+            bool previousState = target->HasCanFly();
+            target->SetFlying(apply);
+            if (previousState != apply)
+                if (!apply && !target->IsLevitating())
+                    target->GetMotionMaster()->MoveFall();
         }
 
-        data << m_target->GetPackGUID();
-        data << uint32(0);                                      // unknown
-        m_target->SendMessageToSet(&data, true);
+        //! Someone should clean up these hacks and remove it from this function. It doesn't even belong here.
+        if (mode & AURA_EFFECT_HANDLE_REAL)
+        {
+            //Players on flying mounts must be immune to polymorph
+            if (m_target->GetTypeId() == TYPEID_PLAYER)
+                m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
 
-        //Players on flying mounts must be immune to polymorph
-        if (m_target->GetTypeId() == TYPEID_PLAYER)
-            m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
-
-        // Dragonmaw Illusion (overwrite mount model, mounted aura already applied)
-        if (apply && m_target->HasAura(42016) && m_target->GetMountID())
-            m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
+            // Dragonmaw Illusion (overwrite mount model, mounted aura already applied)
+            if (apply && m_target->HasAura(42016) && m_target->GetMountID())
+                m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
+        }
     }
 
     m_target->UpdateSpeed(MOVE_FLIGHT);
@@ -5981,6 +5983,8 @@ void AuraEffect::HandleAuraGhost(AuraApplication const* aurApp, uint8 mode, bool
         m_target->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
         m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
         m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
+        m_target->SetWaterWalking(true);
+        m_target->SetRooted(false);
     }
     else
     {
@@ -5990,6 +5994,7 @@ void AuraEffect::HandleAuraGhost(AuraApplication const* aurApp, uint8 mode, bool
         m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
         m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
         m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+        m_target->SetWaterWalking(false);
     }
 }
 
@@ -6006,7 +6011,9 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
             return;
     }
 
-    if (target->SetFlying(apply))
+    bool previousState = target->HasCanFly();
+    target->SetFlying(apply);
+    if (previousState != apply)
     {
         if (!apply && !target->IsLevitating())
             target->GetMotionMaster()->MoveFall();

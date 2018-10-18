@@ -43,7 +43,7 @@ bool WorldSession::_HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_
     Player* pUser = _player;
 
     // ignore for remote control state
-    if (pUser->m_unitMovedByMe != pUser)
+    if (_activeMover != pUser)
         return false;
 
     Item* pItem = pUser->GetUseableItemByPos(bagIndex, slot);
@@ -144,7 +144,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     uint8 bagIndex, slot;
 
     // ignore for remote control state
-    if (pUser->m_unitMovedByMe != pUser)
+    if (_activeMover != pUser)
         return;
 
     recvPacket >> bagIndex >> slot;
@@ -286,7 +286,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     }
 
     // ignore for remote control state
-    if (GetPlayer()->m_unitMovedByMe != GetPlayer())
+    if (_activeMover != GetPlayer())
         return;
 
     gameObjTarget->Use(_player);
@@ -295,8 +295,8 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_unitMovedByMe;
-    if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+    Unit* mover = _activeMover;
+    if (!mover || (mover != _player && mover->GetTypeId() == TYPEID_PLAYER))
     {
         recvPacket.rfinish(); // prevent spam at ignore packet
         return;
@@ -393,11 +393,11 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    if(_player->IsNonMeleeSpellCast(false))
-        _player->InterruptNonMeleeSpells(false,spellId,false);
+    if (_player->IsNonMeleeSpellCast(false))
+        _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 
-void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
+void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
 {
     uint32 spellId;
     recvPacket >> spellId;
@@ -430,7 +430,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     _player->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 }
 
-void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
+void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
     uint32 spellId;
@@ -468,22 +468,21 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     pet->RemoveOwnedAura(spellId, ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 }
 
-void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
+void WorldSession::HandleCancelGrowthAuraOpcode(WorldPacket& /*recvPacket*/)
 {
     // nothing do
 }
 
-void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
+void WorldSession::HandleCancelAutoRepeatSpellOpcode(WorldPacket& recvPacket)
 {
     // cancel and prepare for deleting
     _player->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
-void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
+void WorldSession::HandleCancelChanneling(WorldPacket & recvData)
 {
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_unitMovedByMe;
-    if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
+    if (!_activeMover || (_activeMover != _player && _activeMover->GetTypeId() == TYPEID_PLAYER))
         return;
 
     uint32 spellId;
@@ -495,7 +494,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
     // ignore for remote control state
-    if (_player->m_unitMovedByMe != _player)
+    if (_activeMover != _player)
         return;
 
     uint8 slotId;
@@ -615,7 +614,9 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     SendPacket(&data);
 }
 
+#ifdef LICH_KING
 void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& recvData)
 {
     SendAccountDataTimes(GLOBAL_CACHE_MASK);
 }
+#endif

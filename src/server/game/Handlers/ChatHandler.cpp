@@ -586,7 +586,8 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 {
-    if(!_player->m_unitMovedByMe->IsAlive())
+    Unit* source = GetAllowedActiveMover();
+    if(!source || !source->IsAlive())
         return;
 
     GetPlayer()->UpdateSpeakTime();
@@ -626,14 +627,14 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             case EMOTE_ONESHOT_NONE:
                 break;
             default:
-                _player->m_unitMovedByMe->HandleEmoteCommand(emote_anim);
+                source->HandleEmoteCommand(emote_anim);
                 break;
         }
 
-        if(_player->m_unitMovedByMe->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
+        if(source && source->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
         {
-            data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-            data << _player->m_unitMovedByMe->GetGUID();
+            data.Initialize(SMSG_TEXT_EMOTE, (20+namlen)); //LK ok
+            data << source->GetGUID();
             data << uint32(text_emote);
             data << uint32(emoteNum);
             data << uint32(namlen);
@@ -642,14 +643,13 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             else
                 data << (uint8)0x00;
 
-            _player->m_unitMovedByMe->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
+            source->SendMessageToSetInRange(&data, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true);
         }
 
         //Send scripted event call
         if(_target)
-            if (Creature *pCreature = _target->ToCreature()) {
+            if (Creature *pCreature = _target->ToCreature())
                 pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
-            }
     }
 }
 

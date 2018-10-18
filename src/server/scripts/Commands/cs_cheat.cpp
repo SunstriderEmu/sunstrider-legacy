@@ -17,7 +17,6 @@ public:
             { "power",          SEC_GAMEMASTER3,  false, &HandlePowerCheatCommand,              "" },
             { "taxi",           SEC_GAMEMASTER3,  false, &HandleTaxiCheatCommand,               "" },
             { "explore",        SEC_GAMEMASTER3,  false, &HandleExploreCheatCommand,            "" },
-            { "waterwalk",      SEC_GAMEMASTER3,  false, &HandleWaterwalkCheatCommand,          "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -161,33 +160,6 @@ public:
         }
 
         return false;
-    }
-
-    static bool HandleWaterwalkCheatCommand(ChatHandler* handler, char const* args)
-    {
-        Player *player = handler->GetSelectedPlayerOrSelf();
-        if (!player)
-        {
-            handler->PSendSysMessage(LANG_NO_CHAR_SELECTED);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-
-        if (strncmp(args, "on", 3) == 0)
-            player->SetMovement(MOVE_WATER_WALK);               // ON
-        else if (strncmp(args, "off", 4) == 0)
-            player->SetMovement(MOVE_LAND_WALK);                // OFF
-        else
-        {
-            handler->SendSysMessage(LANG_USE_BOL);
-            return false;
-        }
-
-        handler->PSendSysMessage(LANG_YOU_SET_WATERWALK, args, player->GetName().c_str());
-        if (handler->needReportToTarget(player))
-            handler->PSendSysMessage(LANG_YOUR_WATERWALK_SET, args, handler->GetName().c_str());
-        return true;
-
     }
 
     static bool HandleExploreCheatCommand(ChatHandler* handler, char const* args)

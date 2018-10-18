@@ -51,7 +51,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     //this is spirit release confirm?
     GetPlayer()->RemovePet(nullptr,PET_SAVE_NOT_IN_SLOT, true);
     GetPlayer()->BuildPlayerRepop();
-    GetPlayer()->RepopAtGraveyard();
+    GetPlayer()->SetIsRepopPending(true);
 }
 
 void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
@@ -381,10 +381,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         if (GetPlayer()->GetStandState() == UNIT_STAND_STATE_STAND)
            GetPlayer()->SetStandState(PLAYER_STATE_SIT);
 
-        WorldPacket _data(SMSG_FORCE_MOVE_ROOT, 8 + 4);
-        _data << GetPlayer()->GetPackGUID();
-        _data << uint32(2);
-        SendPacket(&_data);
+        GetPlayer()->SetRooted(true);
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
@@ -413,10 +410,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
     if(GetPlayer()->CanFreeMove())
     {
         //!we can move again
-        data.Initialize( SMSG_FORCE_MOVE_UNROOT, 8 );       // guess size
-        data << GetPlayer()->GetPackGUID();
-        data << uint32(0);
-        SendPacket( &data );
+        GetPlayer()->SetRooted(false);
 
         //! Stand Up
         GetPlayer()->SetStandState(PLAYER_STATE_NONE);
@@ -501,16 +495,18 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
     }
 }
 
-void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
+void WorldSession::HandleStandStateChangeOpcode(WorldPacket & recvData)
 {
-    if(!_player->m_unitMovedByMe->IsAlive())
+    //sun: affect moved unit and not player
+    Unit* moved = GetAllowedActiveMover();
+    if(!moved || !moved->IsAlive())
         return;
 
     uint8 animstate;
     recvData >> animstate;
 
-    if (_player->m_unitMovedByMe->GetStandState() != animstate)
-        _player->m_unitMovedByMe->SetStandState(animstate);
+    if (moved->GetStandState() != animstate)
+        moved->SetStandState(animstate);
 }
 
 void WorldSession::HandleBugOpcode( WorldPacket & recvData )
@@ -940,105 +936,6 @@ void WorldSession::HandleNextCinematicCamera( WorldPacket & /*recvData*/ )
     GetPlayer()->GetCinematicMgr()->BeginCinematic();
 }
 
-void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
-{
-    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
-
-    ObjectGuid guid;
-    uint32 time_skipped;
-#ifdef LICH_KING
-    recvData.readPackGUID(guid);
-#else
-    recvData >> guid;
-#endif
-
-    recvData >> time_skipped;
-
-    // ignore updates for not us
-    if (_player == nullptr || guid != _player->GetGUID())
-        return;
-
-    WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
-#ifdef LICH_KING
-    data << _player->GetPackGUID();
-#else
-    data << guid;
-#endif
-
-    data << time_skipped;
-
-    _player->SendMessageToSet(&data, false);
-}
-
-void WorldSession::HandleFeatherFallAck(WorldPacket & recvData)
-{
-    //TC_LOG_DEBUG("network", "WORLD: CMSG_MOVE_FEATHER_FALL_ACK");
-
-    // not used
-    recvData.rfinish();
-}
-
-void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
-{
-    recvData.rfinish();                       // prevent warnings spam
-
-    //TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
-    /*
-        TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
-        recvData.hexlike();
-        ObjectGuid guid;
-        uint64 unknown1;
-        uint32 unknown2;
-        float PositionX;
-        float PositionY;
-        float PositionZ;
-        float Orientation;
-
-        recvData >> guid;
-        MovementInfo movementInfo;
-        recvData >> movementInfo;
-
-        // TODO for later may be we can use for anticheat
-        TC_LOG_DEBUG("network","Guid " UI64FMTD,guid);
-        TC_LOG_DEBUG("network","unknown1 " UI64FMTD,unknown1);
-        TC_LOG_DEBUG("network","unknown2 %u",unknown2);
-        TC_LOG_DEBUG("network","X %f",PositionX);
-        TC_LOG_DEBUG("network","Y %f",PositionY);
-        TC_LOG_DEBUG("network","Z %f",PositionZ);
-        TC_LOG_DEBUG("network","O %f",Orientation);
-    */
-}
-
-void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
-{
-    // no used
-    recvData.rfinish();                       // prevent warnings spam
-    /*
-        TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
-        recvData.hexlike();
-        ObjectGuid guid;
-        uint64 unknown1;
-        uint32 unknown2;
-        float PositionX;
-        float PositionY;
-        float PositionZ;
-        float Orientation;
-
-        recvData >> guid;
-        MovementInfo movementInfo;
-        recvData >> movementInfo;
-
-        // for later may be we can use for anticheat
-        TC_LOG_DEBUG("network","Guid " UI64FMTD,guid);
-        TC_LOG_DEBUG("network","unknown1 " UI64FMTD,unknown1);
-        TC_LOG_DEBUG("network","unknown1 %u",unknown2);
-        TC_LOG_DEBUG("network","X %f",PositionX);
-        TC_LOG_DEBUG("network","Y %f",PositionY);
-        TC_LOG_DEBUG("network","Z %f",PositionZ);
-        TC_LOG_DEBUG("network","O %f",Orientation);
-    */
-}
-
 void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
 {
     uint8 actionBar;
@@ -1193,44 +1090,6 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     data << uint32(player->GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION));
     data << uint32(player->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
     SendPacket(&data);
-}
-
-void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
-{
-    // write in client console: worldport 469 452 6454 2536 180 or /console worldport 469 452 6454 2536 180
-    // Received opcode CMSG_WORLD_TELEPORT
-    // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
-
-    //TC_LOG_DEBUG("network","Received opcode CMSG_WORLD_TELEPORT");
-
-    if (GetPlayer()->IsInFlight())
-    {
-        TC_LOG_DEBUG("network", "Player '%s' (GUID: %u) in flight, ignore worldport command.",
-            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUID().GetCounter());
-        return;
-    }
-
-    uint32 time;
-    uint32 mapid;
-    float PositionX;
-    float PositionY;
-    float PositionZ;
-    float Orientation;
-
-    recvData >> time;                                      // time in m.sec.
-    recvData >> mapid;
-    recvData >> PositionX;
-    recvData >> PositionY;
-    recvData >> PositionZ;
-    recvData >> Orientation;                               // o (3.141593 = 180 degrees)
-
-    /* TC_LOG_DEBUG("network", "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f",
-        GetPlayer()->GetName().c_str(), time, mapid, PositionX, PositionY, PositionZ, Orientation); */
-
-    if (GetSecurity() >= SEC_GAMEMASTER3)
-        GetPlayer()->TeleportTo(mapid,PositionX,PositionY,PositionZ,Orientation);
-    else
-        SendNotification(LANG_YOU_NOT_HAVE_PERMISSION);
 }
 
 void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
@@ -1397,7 +1256,8 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
     GetPlayer()->SetUInt32Value(PLAYER_CHOSEN_TITLE, title);
 }
 
-void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
+// CMSG_TIME_SYNC_RESP
+void WorldSession::HandleTimeSyncResp(WorldPacket & recvData)
 {
     uint32 counter, clientTimestamp;
     recvData >> counter >> clientTimestamp;
@@ -1418,7 +1278,6 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
 
     // We want to estimate delay between our request and the client response. The client timestamp is the time he actually received it
     uint32 lagDelay = roundTripDuration / 2; // we assume that the request processing time is 0
-
     /*
     clockDelta = serverTime - clientTime
     where
@@ -1517,30 +1376,6 @@ void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recvData*/ )
 
     _player->Dismount();
     _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
-}
-
-void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
-{
-    ObjectGuid guid;                                       // guid - unused
-    recvData >> guid;
-
-    recvData.read_skip<uint32>();                          // unk
-
-#ifdef LICH_KING
-    MovementInfo movementInfo;
-    movementInfo.guid = guid;
-    ReadMovementInfo(recvData, &movementInfo);
-
-    recvData.read_skip<float>();                           // unk2
-
-    _player->m_unitMovedByMe->m_movementInfo.flags = movementInfo.GetMovementFlags();
-#else
-    uint32 flags;
-    recvData >> flags;
-
-    _player->m_unitMovedByMe->m_movementInfo.flags = flags;
-#endif
-
 }
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)

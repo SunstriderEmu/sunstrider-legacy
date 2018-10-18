@@ -188,15 +188,37 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 {
     //TC_LOG_TRACE("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
 
+    TC_LOG_TRACE("movement", "CMSG_MOVE_SPLINE_DONE: From player %s",
+        _player->GetName().c_str());
+
+    MovementInfo movementInfo; // used only for proper packet read
+    uint32 splineId;
 #ifdef LICH_KING
-    ObjectGuid guid; // used only for proper packet read
-    recvData.readPackGUID(guid);
+    movementInfo.FillContentFromPacket(&recvData, true);
+#else
+    movementInfo.FillContentFromPacket(&recvData, false);
 #endif
 
-    MovementInfo movementInfo;                              // used only for proper packet read
-    ReadMovementInfo(recvData, &movementInfo);
+    recvData >> splineId;
 
-    recvData.read_skip<uint32>();                          // spline id
+#ifdef TODOMOV
+    if (_pendingActiveMoverSplineId == splineId)
+    {
+        if (IsAuthorizedToTakeControl(_activeMover->GetGUID()))
+        {
+            AllowMover(_activeMover);
+            TC_LOG_TRACE("movement", "CMSG_MOVE_SPLINE_DONE: Enabling move of unit %s (%s) to player %s (%s)",
+                _activeMover->GetName().c_str(), _activeMover->GetGUID().ToString().c_str(), _player->GetName().c_str(), _player->GetName().c_str());
+        }
+        else
+        {
+            TC_LOG_ERROR("movement", "CMSG_MOVE_SPLINE_DONE: Failed enabling move of unit %s (%s) to player %s (%s), pending spline id is correct but player is not allowed to take control anymore",
+                _activeMover->GetName().c_str(), _activeMover->GetGUID().ToString().c_str(), _player->GetName().c_str(), _player->GetName().c_str());
+        }
+
+        return;
+    }
+#endif
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

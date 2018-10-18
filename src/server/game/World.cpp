@@ -591,6 +591,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_KILL] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Kill", false);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_WARN_GM] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn", true);
     m_configs[CONFIG_ANTICHEAT_MOVEMENT_WARN_GM_COOLDOWN] = sConfigMgr->GetBoolDefault("Anticheat.Movement.Warn.Cooldown", 120);
+    m_configs[CONFIG_PENDING_MOVE_CHANGES_TIMEOUT] = sConfigMgr->GetIntDefault("Anticheat.Movement.PendingMoveChangesTimeoutTime", 5000);
 
     m_wardenBanTime                         = sConfigMgr->GetStringDefault("Warden.BanTime","180d");
 

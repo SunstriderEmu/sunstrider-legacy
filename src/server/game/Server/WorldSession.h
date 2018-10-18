@@ -226,9 +226,6 @@ class TC_GAME_API WorldSession
         WorldSession(uint32 id, ClientBuild clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
         ~WorldSession();
 
-        void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
-        void WriteMovementInfo(WorldPacket* data, MovementInfo* mi);
-
         bool PlayerLoading() const { return m_playerLoading; }
         bool PlayerLogout() const { return m_playerLogout; }
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
@@ -429,6 +426,7 @@ class TC_GAME_API WorldSession
         LocaleConstant GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
         char const* GetTrinityString(int32 entry) const;
 
+        // Latency from ping-pong
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
 
@@ -439,6 +437,7 @@ class TC_GAME_API WorldSession
         uint32 m_timeSyncCounter;
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncServer;
+
         // Data from movement packet, may be used for anticheat?
         void SetLastMoveClientTimestamp(uint32 timestamp) { lastMoveClientTimestamp = timestamp; }
         void SetLastMoveServerTimestamp(uint32 timestamp) { lastMoveServerTimestamp = timestamp; }
@@ -464,6 +463,27 @@ class TC_GAME_API WorldSession
 
         PlayerAntiCheat* anticheat;
 
+        typedef std::pair<uint32, PlayerMovementPendingChange> PendingChangePair;
+        PendingChangePair PopPendingMovementChange();
+        // Returns counter
+        uint32 PushPendingMovementChange(PlayerMovementPendingChange newChange);
+        bool HasPendingMovementChange() const { return !m_pendingMovementChanges.empty(); }
+        bool HasPendingMovementChange(uint32 counter, uint16 opcode, ObjectGuid guid, bool apply = false) const;
+        bool HasPendingMovementChange(MovementChangeType changeType) const;
+        void CheckPendingMovementAcks();
+        //Force resolving all pending changes right now, instead of waiting for client acks
+        void ResolveAllPendingChanges();
+        void SetClientControl(Unit* target, bool allowMove);
+        bool IsAuthorizedToMove(ObjectGuid guid, bool log = true);
+        bool IsAuthorizedToTakeControl(ObjectGuid guid);
+        // The unit this client is currently trying to move (may be nullptr). /!\ He may not be able to, use GetAllowedActiveMover in most cases.
+        Unit* GetActiveMover() const { return _activeMover; }
+        // The unit this client is currently trying to move, and is allowed to!
+        Unit* GetAllowedActiveMover() const;
+        void ResetActiveMover(bool onDelete = false);
+        //Use only when joining a new map
+        void InitActiveMover(Unit* activeMover);
+
     public:                                                 // opcodes handlers
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
@@ -487,8 +507,8 @@ class TC_GAME_API WorldSession
         void HandlePlayedTime(WorldPacket& recvPacket);
 
         // new
-        void HandleMoveUnRootAck(WorldPacket& recvPacket);
-        void HandleMoveRootAck(WorldPacket& recvPacket);
+        void HandleMovementFlagChangeAck(WorldPacket& recvPacket);
+        void HandleMovementFlagChangeToggleAck(WorldPacket& recvPacket);
         void HandleLookingForGroup(WorldPacket& recvPacket);
 
         // new inspect
@@ -496,11 +516,6 @@ class TC_GAME_API WorldSession
 
         // new party stats
         void HandleInspectHonorStatsOpcode(WorldPacket& recvPacket);
-
-        void HandleMoveWaterWalkAck(WorldPacket& recvPacket);
-        void HandleFeatherFallAck(WorldPacket &recvData);
-
-        void HandleMoveHoverAck( WorldPacket & recvData );
 
         void HandleMountSpecialAnimOpcode(WorldPacket &recvdata);
 
@@ -515,7 +530,10 @@ class TC_GAME_API WorldSession
         void HandleMoveKnockBackAck(WorldPacket& recvPacket);
 
         void HandleMoveTeleportAck(WorldPacket& recvPacket);
-        void HandleForceSpeedChangeAck( WorldPacket & recvData );
+        void HandleForceSpeedChangeAck(WorldPacket & recvData);
+#ifdef LICH_KING
+        void HandleCollisionHeightChangeAck(WorldPacket& recvData);
+#endif
 
         void HandleRepopRequestOpcode(WorldPacket& recvPacket);
         void HandleAutostoreLootItemOpcode(WorldPacket& recvPacket);
@@ -848,7 +866,6 @@ class TC_GAME_API WorldSession
         void HandleFarSightOpcode(WorldPacket& recvData);
         void HandleSetLfgOpcode(WorldPacket& recvData);
         void HandleSetDungeonDifficultyOpcode(WorldPacket& recvData);
-        void HandleMoveSetCanFlyAckOpcode(WorldPacket& recvData);
         void HandleLfgAutoJoinOpcode(WorldPacket& recvData);
         void HandleLfgCancelAutoJoinOpcode(WorldPacket& recvData);
         void HandleLfmAutoAddMembersOpcode(WorldPacket& recvData);
@@ -908,11 +925,9 @@ class TC_GAME_API WorldSession
 
         void HandleMirrorImageDataRequest(WorldPacket& recvData);
 
-        /* LK ONLY */
-
+#ifdef LICH_KING
         void HandleReadyForAccountDataTimes(WorldPacket& recvData);
-
-        /* */
+#endif
 
         //for HandleDebugValuesSnapshot command
         typedef std::vector<uint32> SnapshotType;
@@ -1023,11 +1038,30 @@ class TC_GAME_API WorldSession
         std::shared_ptr<ReplayRecorder> m_replayRecorder;
         std::shared_ptr<ReplayPlayer> m_replayPlayer;
 
-         /* Player Movement fields START*/
+        /* Player Movement fields START*/
         // Timestamp on client clock of the moment the most recently processed movement packet was SENT by the client
         uint32 lastMoveClientTimestamp;
         // Timestamp on server clock of the moment the most recently processed movement packet was RECEIVED from the client
         uint32 lastMoveServerTimestamp;
+        // when a player controls a unit, and when change is made to this unit which requires an ack from the client to be acted (change of speed for example), the movementCounter is incremented
+        // Is this a per session counter or a per session and per unit counter? This implementation is for per session only
+        std::deque<PendingChangePair> m_pendingMovementChanges;
+        uint32 _movementCounter;
+
+        // describe all units this player can activate as movers. Example, a player on a vehicle has client control over himself and the vehicle at the same time.
+        // Or if player is MC someone, control over himself + target player
+        GuidSet _allowedClientControl;
+        // Describe all units this player can directly control with move and acks packets. A client may have just activated a mover but not be allowed to control it yet.
+        GuidSet _allowedClientMove;
+        // Match the unit the client has designed as active Mover. /!\ Doesn't mean he actually can move it right now! Use GetAllowedActiveMover for that.
+        Unit* _activeMover;
+        // Spline id for mover activation process
+        uint32 _pendingActiveMoverSplineId;
+        // This is not instant and will begin mover transfer process
+        void SetActiveMover(Unit* activeMover);
+        void DisallowMover(Unit* mover);
+        void AllowMover(Unit* mover);
+        uint32 _releaseMoverTimeout; //if reached, kick player.
         /* Player Movement fields END*/
 };
 #endif

@@ -835,10 +835,6 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     // Place character in world (and load zone) before some object loading
     pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
 
-    // setting Ghost+speed if dead
-    if (pCurrChar->m_deathState == DEAD)
-        pCurrChar->SetMovement(MOVE_WATER_WALK);
-
     pCurrChar->ContinueTaxiFlight();
 
     // Load pet if any and player is alive and not in taxi flight

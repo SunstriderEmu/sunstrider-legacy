@@ -18,6 +18,7 @@
 #include "SpellDefines.h"
 #include "SpellInfo.h"
 #include "ItemTemplate.h"
+#include "UnitDefines.h"
 struct AbstractFollower;
 class UnitAI;
 class SpellCastTargets;
@@ -46,12 +47,9 @@ class Unit;
 class SpellHistory;
 enum MovementGeneratorType : uint8;
 struct ChaseRange;
+class WorldSession;
 
 #define WORLD_TRIGGER   12999
-
-#define BASE_MINDAMAGE 1.0f
-#define BASE_MAXDAMAGE 2.0f
-#define BASE_ATTACK_TIME 2000
 
 #define MAX_SPELL_CHARM         4
 #define MAX_SPELL_VEHICLE       6
@@ -60,130 +58,6 @@ struct ChaseRange;
 
 #define MAX_AGGRO_RESET_TIME 10 // in seconds
 #define MAX_AGGRO_RADIUS 45.0f  // yards
-
-#define DEFAULT_HOVER_HEIGHT 1.0f
-
-// byte flag value (UNIT_FIELD_BYTES_1,0) // UNIT_BYTES_1_OFFSET_STAND_STATE
-enum UnitStandStateType : uint8
-{
-    UNIT_STAND_STATE_STAND             = 0,
-    UNIT_STAND_STATE_SIT               = 1,
-    UNIT_STAND_STATE_SIT_CHAIR         = 2,
-    UNIT_STAND_STATE_SLEEP             = 3,
-    UNIT_STAND_STATE_SIT_LOW_CHAIR     = 4,
-    UNIT_STAND_STATE_SIT_MEDIUM_CHAIR  = 5,
-    UNIT_STAND_STATE_SIT_HIGH_CHAIR    = 6,
-    UNIT_STAND_STATE_DEAD              = 7,
-    UNIT_STAND_STATE_KNEEL             = 8,
-    UNIT_STAND_STATE_SUBMERGED         = 9
-};
-
-// byte flag value (UNIT_FIELD_BYTES_1, 2) // UNIT_BYTES_1_OFFSET_VIS_FLAG
-enum UnitStandFlags : uint8
-{
-    UNIT_STAND_FLAGS_UNK1         = 0x01,
-    UNIT_STAND_FLAGS_CREEP        = 0x02,
-    UNIT_STAND_FLAGS_UNTRACKABLE  = 0x04,
-    UNIT_STAND_FLAGS_UNK4         = 0x08,
-    UNIT_STAND_FLAGS_UNK5         = 0x10,
-    UNIT_STAND_FLAGS_ALL          = 0xFF
-};
-
-// byte flag value (UNIT_FIELD_BYTES_1, 2) // UNIT_BYTES_1_OFFSET_ANIM_TIER
-enum UnitAnimationTier : uint8
-{                  // Name from client executable
-    Ground    = 0, // Normal/Ground                   - Plays ground tier animations
-    Swim      = 1, // Swim (NOT YET IMPLEMENTED)      - Falls back to ground tier animations, not handled by the client, should never appear in sniffs, will prevent tier change animations from playing correctly if used
-    Hover     = 2, // Hover                           - Plays flying tier animations or falls back to ground tier animations, automatically enables hover clientside when entering visibility with this value
-    Fly       = 3, // Fly                             - Plays flying tier animations
-    Submerged = 4, // Submerged (NOT YET IMPLEMENTED)
-};
-
-enum UnitBytes0Offsets : uint8
-{
-    UNIT_BYTES_0_OFFSET_RACE        = 0,
-    UNIT_BYTES_0_OFFSET_CLASS       = 1,
-    UNIT_BYTES_0_OFFSET_GENDER      = 2,
-    UNIT_BYTES_0_OFFSET_POWER_TYPE  = 3,
-};
-
-enum UnitBytes1Offsets : uint8
-{
-    UNIT_BYTES_1_OFFSET_STAND_STATE = 0,
-    UNIT_BYTES_1_OFFSET_PET_LOYALTY = 1,
-    UNIT_BYTES_1_OFFSET_VIS_FLAG    = 2,
-    UNIT_BYTES_1_OFFSET_ANIM_TIER   = 3,
-};
-
-enum UnitBytes2Offsets : uint8
-{
-    UNIT_BYTES_2_OFFSET_SHEATH_STATE    = 0,
-    UNIT_BYTES_2_OFFSET_BUFF_LIMIT      = 1, //According to cmangos. (TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1, but it makes sense this flag changed with LK since debuff limit disappeared and PvP handling changed a lot)
-    UNIT_BYTES_2_OFFSET_PET_FLAGS       = 2,
-    UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3,
-};
-
-// byte flags value (UNIT_FIELD_BYTES_1, 3)
-enum UnitBytes1_Flags : uint8
-{
-    UNIT_BYTE1_FLAG_ALWAYS_STAND    = 0x01,
-    UNIT_BYTE1_FLAG_HOVER           = 0x02,
-    UNIT_BYTE1_FLAG_UNK_3           = 0x04,
-    UNIT_BYTE1_FLAG_ALL             = 0xFF
-};
-
-// byte flags value (UNIT_FIELD_BYTES_2,1) (according to cmangos)
-enum UnitBytes2_Flags : uint8
-{
-    UNIT_BYTE2_CREATURE_BUFF_LIMIT          = 16,
-    UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT = 40,
-};
-
-// high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
-enum ShapeshiftForm : uint8
-{
-    FORM_NONE               = 0x00,
-    FORM_CAT                = 0x01,
-    FORM_TREE               = 0x02,
-    FORM_TRAVEL             = 0x03,
-    FORM_AQUA               = 0x04,
-    FORM_BEAR               = 0x05,
-    FORM_AMBIENT            = 0x06,
-    FORM_GHOUL              = 0x07,
-    FORM_DIREBEAR           = 0x08,
-    FORM_CREATUREBEAR       = 0x0E,
-    FORM_CREATURECAT        = 0x0F,
-    FORM_GHOSTWOLF          = 0x10,
-    FORM_BATTLESTANCE       = 0x11,
-    FORM_DEFENSIVESTANCE    = 0x12,
-    FORM_BERSERKERSTANCE    = 0x13,
-    FORM_TEST               = 0x14,
-    FORM_ZOMBIE             = 0x15,
-    FORM_FLIGHT_EPIC        = 0x1B,
-    FORM_SHADOW             = 0x1C,
-    FORM_FLIGHT             = 0x1D,
-    FORM_STEALTH            = 0x1E,
-    FORM_MOONKIN            = 0x1F,
-    FORM_SPIRITOFREDEMPTION = 0x20,
-};
-
-// low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_SHEATH_STATE
-enum SheathState : uint8
-{
-    SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
-    SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
-    SHEATH_STATE_RANGED   = 2                               // prepared ranged weapon
-};
-
-#define MAX_SHEATH_STATE    3
-
-// byte (2 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_PET_FLAGS
-// Those has changed with LK
-enum UnitRename : uint8
-{
-    UNIT_RENAME_NOT_ALLOWED = 0x02,
-    UNIT_RENAME_ALLOWED     = 0x03
-};
 
 static const uint32 MAX_CREATURE_SPELLS = 8;
 static const uint32 MAX_CREATURE_MODELS = 4;
@@ -199,51 +73,6 @@ enum VictimState : uint8
     VICTIMSTATE_EVADES         = 6,
     VICTIMSTATE_IS_IMMUNE      = 7,
     VICTIMSTATE_DEFLECTS       = 8
-};
-
-//this is sent to client in SMSG_ATTACKERSTATEUPDATE or other packets
-enum HitInfo : uint32
-{
-    HITINFO_NORMALSWING         = 0x00000000,
-    HITINFO_UNK1                = 0x00000001,               // req correct packet structure
-#ifdef LICH_KING
-    HITINFO_AFFECTS_VICTIM      = 0x00000002,
-    HITINFO_OFFHAND             = 0x00000004,
-    HITINFO_UNK2                = 0x00000008,
-    HITINFO_MISS                = 0x00000010,
-    HITINFO_FULL_ABSORB         = 0x00000020,
-    HITINFO_PARTIAL_ABSORB      = 0x00000040,
-    HITINFO_FULL_RESIST         = 0x00000080,
-    HITINFO_PARTIAL_RESIST      = 0x00000100,
-    HITINFO_CRITICALHIT         = 0x00000200,               // critical hit
-    // 0x00000400
-    // 0x00000800
-    // 0x00001000
-    HITINFO_BLOCK               = 0x00002000,               // blocked damage
-    // 0x00004000                                           // Hides worldtext for 0 damage
-    // 0x00008000                                           // Related to blood visual
-    HITINFO_GLANCING            = 0x00010000,
-    HITINFO_CRUSHING            = 0x00020000,
-    HITINFO_NO_ANIMATION        = 0x00040000,
-    // 0x00080000
-    // 0x00100000
-    HITINFO_SWINGNOHITSOUND     = 0x00200000,               // unused?
-    // 0x00400000
-    HITINFO_RAGE_GAIN           = 0x00800000,
-#else
-    HITINFO_NORMALSWING2        = 0x00000002,
-    HITINFO_OFFHAND             = 0x00000004,
-    HITINFO_MISS                = 0x00000010,
-    HITINFO_ABSORB              = 0x00000020,               // plays absorb sound
-    HITINFO_RESIST              = 0x00000040,               // resisted at least some damage
-    HITINFO_CRITICALHIT         = 0x00000080,
-    HITINFO_UNK2                = 0x00000100,               // 
-    HITINFO_UNK3                = 0x00002000,               // 
-    HITINFO_GLANCING            = 0x00004000,
-    HITINFO_CRUSHING            = 0x00008000,
-    HITINFO_NOACTION            = 0x00010000,
-    HITINFO_SWINGNOHITSOUND     = 0x00080000,
-#endif
 };
 
 //i would like to remove this: (it is defined in item.h
@@ -479,172 +308,6 @@ enum DamageEffectType : unsigned int
 
     TOTAL_DAMAGE_EFFECT_TYPE,
 };
-
-// Value masks for UNIT_FIELD_FLAGS
-enum UnitFlags : unsigned int
-{
-    UNIT_FLAG_SERVER_CONTROLLED     = 0x00000001,                // set only when unit movement is controlled by server - by SPLINE/MONSTER_MOVE packets, together with UNIT_FLAG_STUNNED; only set to units controlled by client; client function CGUnit_C::IsClientControlled returns false when set for owner        
-    UNIT_FLAG_NON_ATTACKABLE        = 0x00000002,                // not attackable
-    UNIT_FLAG_REMOVE_CLIENT_CONTROL = 0x00000004,
-    UNIT_FLAG_PLAYER_CONTROLLED     = 0x00000008,                // allow apply pvp rules to attackable state in addition to faction dependent state
-    UNIT_FLAG_RENAME                = 0x00000010,
-    UNIT_FLAG_PREPARATION           = 0x00000020,                // don't take reagents for spells with SPELL_ATTR5_NO_REAGENT_WHILE_PREP
-    UNIT_FLAG_UNK_6                 = 0x00000040,
-    UNIT_FLAG_NOT_ATTACKABLE_1      = 0x00000080,                // ?? (UNIT_FLAG_PLAYER_CONTROLLED | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
-    UNIT_FLAG_IMMUNE_TO_PC          = 0x00000100,                // disables combat/assistance with PlayerCharacters (PC) - see Unit::IsValidAttackTarget, Unit::IsValidAssistTarget
-    UNIT_FLAG_IMMUNE_TO_NPC         = 0x00000200,                // disables combat/assistance with NonPlayerCharacters (NPC) - see Unit::IsValidAttackTarget, Unit::IsValidAssistTarget
-    UNIT_FLAG_LOOTING               = 0x00000400,                // loot animation
-    UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,                // on player pets: whether the pet is chasing a target to attack || on other units: whether any of the unit's minions is in combat
-    UNIT_FLAG_PVP                   = 0x00001000,                // changed in 3.0.3
-    UNIT_FLAG_SILENCED              = 0x00002000,                // silenced, 2.1.1
-    UNIT_FLAG_CANNOT_SWIM           = 0x00004000,                // 2.0.8
-    UNIT_FLAG_UNK_15                = 0x00008000,
-    UNIT_FLAG_NON_ATTACKABLE_2      = 0x00010000,
-    UNIT_FLAG_PACIFIED              = 0x00020000,
-    UNIT_FLAG_STUNNED               = 0x00040000,                // stunned, 2.1.1 old DISABLE_ROTATE
-    UNIT_FLAG_IN_COMBAT             = 0x00080000,
-    UNIT_FLAG_TAXI_FLIGHT           = 0x00100000,                // disable casting at client side spell not allowed by taxi flight (mounted?), probably used with 0x4 flag
-    UNIT_FLAG_DISARMED              = 0x00200000,                // disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
-    UNIT_FLAG_CONFUSED              = 0x00400000,
-    UNIT_FLAG_FLEEING               = 0x00800000,
-    UNIT_FLAG_POSSESSED             = 0x01000000,                // used in spell Eyes of the Beast for pet... Let attack by controlled creature
-    UNIT_FLAG_NOT_SELECTABLE        = 0x02000000,
-    UNIT_FLAG_SKINNABLE             = 0x04000000,
-    UNIT_FLAG_MOUNT                 = 0x08000000,
-    UNIT_FLAG_UNK_28                = 0x10000000,
-    UNIT_FLAG_UNK_29                = 0x20000000,                // used in Feing Death spell
-    UNIT_FLAG_SHEATHE               = 0x40000000,
-    UNIT_FLAG_UNK_31                = 0x80000000,
-};
-
-#define MAX_UNIT_FLAGS 33
-
-// Value masks for UNIT_FIELD_FLAGS_2
-enum UnitFlags2 : unsigned int
-{
-    UNIT_FLAG2_FEIGN_DEATH       = 0x00000001,
-    UNIT_FLAG2_UNK1              = 0x00000002,   // Hide unit model (show only player equip)
-    UNIT_FLAG2_IGNORE_REPUTATION = 0x00000004,
-    UNIT_FLAG2_COMPREHEND_LANG   = 0x00000008,
-    UNIT_FLAG2_MIRROR_IMAGE      = 0x00000010,
-    UNIT_FLAG2_FORCE_MOVE        = 0x00000040,
-    //not sure where do the BC ones stop here
-#ifdef LICH_KING
-    UNIT_FLAG2_DISARM_OFFHAND               = 0x00000080,
-    UNIT_FLAG2_DISABLE_PRED_STATS           = 0x00000100,   // Player has disabled predicted stats (Used by raid frames)
-    UNIT_FLAG2_DISARM_RANGED                = 0x00000400,   // this does not disable ranged weapon display (maybe additional flag needed?)
-    UNIT_FLAG2_REGENERATE_POWER             = 0x00000800,
-    UNIT_FLAG2_RESTRICT_PARTY_INTERACTION   = 0x00001000,   // Restrict interaction to party or raid
-    UNIT_FLAG2_PREVENT_SPELL_CLICK          = 0x00002000,   // Prevent spellclick
-    UNIT_FLAG2_ALLOW_ENEMY_INTERACT         = 0x00004000,
-    UNIT_FLAG2_DISABLE_TURN                 = 0x00008000,
-    UNIT_FLAG2_UNK2                         = 0x00010000,
-    UNIT_FLAG2_PLAY_DEATH_ANIM              = 0x00020000,   // Plays special death animation upon death
-    UNIT_FLAG2_ALLOW_CHEAT_SPELLS           = 0x00040000    // Allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
-#endif
-};
-
-/// Non Player Character flags
-enum NPCFlags : int
-{
-    UNIT_NPC_FLAG_NONE                  = 0x00000000,
-    UNIT_NPC_FLAG_GOSSIP                = 0x00000001,       // 100%
-    UNIT_NPC_FLAG_QUESTGIVER            = 0x00000002,       // guessed, probably ok
-    UNIT_NPC_FLAG_UNK1                  = 0x00000004,
-    UNIT_NPC_FLAG_UNK2                  = 0x00000008,
-    UNIT_NPC_FLAG_TRAINER               = 0x00000010,       // 100%
-    UNIT_NPC_FLAG_TRAINER_CLASS         = 0x00000020,       // 100%
-    UNIT_NPC_FLAG_TRAINER_PROFESSION    = 0x00000040,       // 100%
-    UNIT_NPC_FLAG_VENDOR                = 0x00000080,       // 100%
-    UNIT_NPC_FLAG_VENDOR_AMMO           = 0x00000100,       // 100%, general goods vendor
-    UNIT_NPC_FLAG_VENDOR_FOOD           = 0x00000200,       // 100%
-    UNIT_NPC_FLAG_VENDOR_POISON         = 0x00000400,       // guessed
-    UNIT_NPC_FLAG_VENDOR_REAGENT        = 0x00000800,       // 100%
-    UNIT_NPC_FLAG_REPAIR                = 0x00001000,       // 100%
-    UNIT_NPC_FLAG_FLIGHTMASTER          = 0x00002000,       // 100%
-    UNIT_NPC_FLAG_SPIRITHEALER          = 0x00004000,       // guessed
-    UNIT_NPC_FLAG_SPIRITGUIDE           = 0x00008000,       // guessed
-    UNIT_NPC_FLAG_INNKEEPER             = 0x00010000,       // 100%
-    UNIT_NPC_FLAG_BANKER                = 0x00020000,       // 100%
-    UNIT_NPC_FLAG_PETITIONER            = 0x00040000,       // 100% 0xC0000 = guild petitions, 0x40000 = arena team petitions
-    UNIT_NPC_FLAG_TABARDDESIGNER        = 0x00080000,       // 100%
-    UNIT_NPC_FLAG_BATTLEMASTER          = 0x00100000,       // 100%
-    UNIT_NPC_FLAG_AUCTIONEER            = 0x00200000,       // 100%
-    UNIT_NPC_FLAG_STABLEMASTER          = 0x00400000,       // 100%
-    UNIT_NPC_FLAG_GUILD_BANKER          = 0x00800000,       // cause client to send 997 opcode
-    UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click)
-};
-
-enum MoveFlags : int
-{
-    MOVEFLAG_NONE               = 0x00000000,
-    MOVEFLAG_SLIDE              = 0x00000002,
-    MOVEFLAG_MARCH_ON_SPOT      = 0x00000004,
-    MOVEFLAG_JUMP               = 0x00000008,
-    MOVEFLAG_WALK               = 0x00000100,
-    MOVEFLAG_FLY                = 0x00000200,   //For dragon (+walk = glide)
-    MOVEFLAG_ORIENTATION        = 0x00000400,   //Fix orientation
-};
-
-enum MovementFlags : int
-{
-    MOVEMENTFLAG_NONE                  = 0x00000000,
-    MOVEMENTFLAG_FORWARD               = 0x00000001,
-    MOVEMENTFLAG_BACKWARD              = 0x00000002,
-    MOVEMENTFLAG_STRAFE_LEFT           = 0x00000004,
-    MOVEMENTFLAG_STRAFE_RIGHT          = 0x00000008,
-    MOVEMENTFLAG_LEFT                  = 0x00000010,        // Turning left
-    MOVEMENTFLAG_RIGHT                 = 0x00000020,        // Turning right
-    MOVEMENTFLAG_PITCH_UP              = 0x00000040,        
-    MOVEMENTFLAG_PITCH_DOWN            = 0x00000080,        
-    MOVEMENTFLAG_WALKING               = 0x00000100,        // Walking
-    MOVEMENTFLAG_ONTRANSPORT           = 0x00000200,        // Used for flying on some creatures
-    /** Unit appears suspended (swimming in the air) instead of falling */
-    MOVEMENTFLAG_DISABLE_GRAVITY       = 0x00000400,
-    MOVEMENTFLAG_ROOT                  = 0x00000800,        // Must not be set along with MOVEMENTFLAG_MASK_MOVING
-    MOVEMENTFLAG_JUMPING_OR_FALLING    = 0x00001000,        // TC: MOVEMENTFLAG_FALLING // damage dealt on that type of falling
-    MOVEMENTFLAG_FALLING_FAR           = 0x00002000,        // Falling under the map boundaries (clientside the camera will remain at the boundaries and let see the character fall below)
-    MOVEMENTFLAG_PENDING_STOP          = 0x00004000,
-    MOVEMENTFLAG_PENDING_STRAFE_STOP   = 0x00008000,
-    MOVEMENTFLAG_PENDING_FORWARD       = 0x00010000,
-    MOVEMENTFLAG_PENDING_BACKWARD      = 0x00020000,
-    MOVEMENTFLAG_PENDING_STRAFE_LEFT   = 0x00040000,
-    MOVEMENTFLAG_PENDING_STRAFE_RIGHT  = 0x00080000,
-    MOVEMENTFLAG_PENDING_ROOT          = 0x00100000,
-    MOVEMENTFLAG_SWIMMING              = 0x00200000,               // appears with fly flag also
-    MOVEMENTFLAG_ASCENDING             = 0x00400000,               // press "space" when flying
-    MOVEMENTFLAG_DESCENDING            = 0x00800000,
-    /** Player can fly. Seems to work on some degree on creatures. */
-    MOVEMENTFLAG_CAN_FLY               = 0x01000000,               
-    /** unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity. This will crash the client in various and horrible ways if set on creatures. */
-    MOVEMENTFLAG_PLAYER_FLYING         = 0x02000000,               // TC MOVEMENTFLAG_FLYING
-    MOVEMENTFLAG_SPLINE_ELEVATION      = 0x04000000,               // used for flight paths
-    MOVEMENTFLAG_SPLINE_ENABLED        = 0x08000000,               // used for flight paths
-    MOVEMENTFLAG_WATERWALKING          = 0x10000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_FALLING_SLOW          = 0x20000000,            // active rogue safe fall spell (passive)
-    MOVEMENTFLAG_HOVER                 = 0x40000000,               // hover, cannot jump
-    
-    MOVEMENTFLAG_MASK_MOVING =
-        MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
-        MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
-        MOVEMENTFLAG_SPLINE_ELEVATION,
-
-    MOVEMENTFLAG_MASK_TURNING =
-        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT | MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN,
-
-    MOVEMENTFLAG_MASK_MOVING_FLY =
-        MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
-
-    /// @todo if needed: add more flags to this masks that are exclusive to players
-    MOVEMENTFLAG_MASK_PLAYER_ONLY =
-        MOVEMENTFLAG_PLAYER_FLYING,
-
-    /// Movement flags that have change status opcodes associated for players
-    MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
-        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
-};
-
-#define UNIT_DEFAULT_HOVERHEIGHT 2.5f
 
 enum UnitTypeMask : int
 {
@@ -911,31 +574,6 @@ struct SpellPeriodicAuraLogInfo
 #define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFF000000) >> 24)
 #define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 24))
 
-enum ActiveStates
-{
-    ACT_PASSIVE  = 0x01,                                    // 0x01 - passive
-    ACT_DISABLED = 0x81,                                    // 0x80 - castable
-    ACT_ENABLED  = 0xC1,                                    // 0x40 | 0x80 - auto cast + castable
-    ACT_COMMAND  = 0x07,                                    // 0x01 | 0x02 | 0x04
-    ACT_REACTION = 0x06,                                    // 0x02 | 0x04
-    ACT_DECIDE   = 0x00                                     // custom
-};
-
-enum ReactStates
-{
-    REACT_PASSIVE = 0,
-    REACT_DEFENSIVE = 1,
-    REACT_AGGRESSIVE = 2
-};
-
-enum CommandStates
-{
-    COMMAND_STAY = 0,
-    COMMAND_FOLLOW = 1,
-    COMMAND_ATTACK = 2,
-    COMMAND_ABANDON = 3
-};
-
 struct UnitActionBarEntry
 {
     UnitActionBarEntry();
@@ -952,13 +590,6 @@ struct UnitActionBarEntry
     void SetType(ActiveStates type);
 
     void SetAction(uint32 action);
-};
-
-#define MAX_DECLINED_NAME_CASES 5
-
-struct DeclinedName
-{
-    std::string name[MAX_DECLINED_NAME_CASES];
 };
 
 uint32 createProcHitMask(SpellNonMeleeDamage* damageInfo, SpellMissInfo missCondition);
@@ -1163,6 +794,9 @@ struct SpellProcEntry;                                 // used only privately
 
 class TC_GAME_API Unit : public WorldObject
 {
+    friend class WorldSession;
+    friend class PlayerMovementPendingChange;
+
     public:
         typedef std::set<Unit*> AttackerSet;
         typedef std::vector<Unit*> UnitVector;
@@ -1662,15 +1296,13 @@ class TC_GAME_API Unit : public WorldObject
         CharmInfo* GetCharmInfo() { return m_charmInfo; }
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
-        // returns the unit that this player IS CONTROLLING
-        Unit* GetUnitBeingMoved() const;
-        // returns the player that this player IS CONTROLLING
-        Player* GetPlayerBeingMoved() const;
+
         // returns the player that this unit is BEING CONTROLLED BY
-        Player* GetPlayerMovingMe() const { return m_playerMovingMe; }
-        bool IsMovedByPlayer() const { return m_playerMovingMe != nullptr; }
+        WorldSession* GetPlayerMovingMe() const { return m_playerMovingMe; }
         // only set for direct client control (possess effects, vehicles and similar)
-        Player* m_playerMovingMe;
+        WorldSession* m_playerMovingMe;
+        // reflects direct client control (examples: a player MC another player or a creature (possess effects). a player takes control of a vehicle. etc...)
+        bool IsMovedByPlayer() const { return m_playerMovingMe != nullptr; }
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
         void RemovePlayerFromVision(Player* plr);
@@ -1916,15 +1548,46 @@ class TC_GAME_API Unit : public WorldObject
 
         virtual bool HasMainWeapon() const { return true; }
 
-        bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
         virtual bool SetWalk(bool enable);
-        virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
         virtual bool SetSwim(bool enable);
-        virtual bool SetFlying(bool enable, bool packetOnly = false);
-        virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
-        virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
-        virtual bool SetHover(bool enable, bool packetOnly = false);
+    private:
+        void SetRootedReal(bool apply);
+        void SetWaterWalkingReal(bool apply);
+        void SetHoverReal(bool apply);
+        void SetFlyingReal(bool apply);
+        void SetCanTransitionBetweenSwimAndFlyReal(bool apply);
+        void SetFeatherFallReal(bool apply);
+        void SetDisableGravityReal(bool apply);
+        void SetCollisionHeightReal(float newValue) { collisionHeight = newValue; }
+
+     public:
+         void SetRooted(bool apply);
+         bool IsRooted() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ROOT); }
+
+         void SetWaterWalking(bool apply);
+         bool IsWaterWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WATERWALKING); }
+
+         virtual void SetHover(bool apply);
+         bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
+
+         virtual void SetFlying(bool apply);
+         bool HasCanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); } // name conflict with method CanFly() but not exactly the same purpose?
+
+#ifdef LICH_KING
+         void SetCanTransitionBetweenSwimAndFly(bool apply);
+         bool CanTransitionBetweenSwimAndFly() const { return m_movementInfo.HasExtraMovementFlag(MOVEMENTFLAG2_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY); }
+#endif
+
+         void SetFeatherFall(bool apply);
+         bool IsFallingSlow() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING_SLOW); }
+
+         void SetDisableGravity(bool apply);
+         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
+
+         bool SetCollisionHeight(float newValue);
+         float GetCollisionHeight() const override { return collisionHeight; }
+         float ComputeCollisionHeight() const override;
 
         void SetInFront(WorldObject const* target);
         void SetInFront(float x, float y);
@@ -1965,9 +1628,7 @@ class TC_GAME_API Unit : public WorldObject
 
         // should only be used by packet handlers to validate and apply incoming MovementInfos from clients. Do not use internally to modify m_movementInfo
         void UpdateMovementInfo(MovementInfo movementInfo);
-
-        void BuildMovementPacket(ByteBuffer *data) const;
-        static void BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data);
+        void ValidateMovementInfo(MovementInfo* mi);
 
         bool isMoving() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
@@ -1975,7 +1636,6 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool CanWalk() const = 0;
         virtual bool CanSwim() const;
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
-        bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
         bool IsFalling() const;
 
         float GetHoverOffset() const
@@ -2127,7 +1787,10 @@ class TC_GAME_API Unit : public WorldObject
         float GetSpeed( UnitMoveType mtype ) const;
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate = true);
+    private:
+        void SetSpeedRateReal(UnitMoveType mtype, float rate);
 
+    public:
         float CalculateSpellpowerCoefficientLevelPenalty(SpellInfo const* spellProto) const;
         int32 CalculateAOEAvoidance(int32 damage, uint32 schoolMask, ObjectGuid const& casterGuid) const;
 
@@ -2145,25 +1808,16 @@ class TC_GAME_API Unit : public WorldObject
         //returns wheter unit his currently stopped (= has any move related UNIT_STATE)
         bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
         void StopMoving();
-        void StopMovingOnCurrentPos();
+        //returns spline id
+        uint32 StopMovingOnCurrentPos();
         void PauseMovement(uint32 timer = 0, uint8 slot = 0, bool forced = true); // timer in ms
         void ResumeMovement(uint32 timer = 0, uint8 slot = 0); // timer in ms
-
-        void AddUnitMovementFlag(uint32 f) { m_movementInfo.flags |= f; }
-        void RemoveUnitMovementFlag(uint32 f) { m_movementInfo.flags &= ~f; }
-        bool HasUnitMovementFlag(uint32 f) const { return (m_movementInfo.flags & f) == f; }
-        uint32 GetUnitMovementFlags() const { return m_movementInfo.flags; }
-        void SetUnitMovementFlags(uint32 f) { m_movementInfo.flags = f; }
 
         void SetControlled(bool apply, UnitState state);
         void ApplyControlStatesIfNeeded();
         void SetFeared(bool apply);
         void SetConfused(bool apply);
         void SetStunned(bool apply);
-        /** Set as rooted, updates unit flags, stop spline movement and send update to players around */
-        void SetRooted(bool apply);
-
-        uint32 m_rootTimes;
 
         void AddComboPointHolder(uint32 lowguid) { m_ComboPointHolders.insert(lowguid); }
         void RemoveComboPointHolder(uint32 lowguid) { m_ComboPointHolders.erase(lowguid); }
@@ -2243,8 +1897,6 @@ class TC_GAME_API Unit : public WorldObject
         void old_TextEmote(int32 textId, ObjectGuid TargetGuid, bool IsBossEmote = false);
         void old_Whisper(int32 textId, ObjectGuid receiver, bool IsBossWhisper = false);
 
-        float GetCollisionHeight() const override;
-
         void FeignDeathDetected(Unit const* by);
         bool IsFeighDeathDetected(Unit const* by) const;
         void ResetFeignDeathDetected();
@@ -2304,6 +1956,7 @@ class TC_GAME_API Unit : public WorldObject
         VisibleAuraMap m_visibleAuras;
 
         float m_speed_rate[MAX_MOVE_TYPE];
+        float collisionHeight; // @todo: initialize this value using dbc data at unit creation
 
         Unit* m_charmer; // Unit that is charming ME
         Unit* m_charmed; // Unit that is being charmed BY ME

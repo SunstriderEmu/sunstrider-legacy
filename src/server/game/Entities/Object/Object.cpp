@@ -2283,7 +2283,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     if (flags & UPDATEFLAG_LIVING)
     {
         ASSERT(unit);
-        unit->BuildMovementPacket(data);
+        unit->GetMovementInfo().WriteContentIntoPacket(data);
 
         *data << unit->GetSpeed(MOVE_WALK)
               << unit->GetSpeed(MOVE_RUN)
@@ -2298,7 +2298,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 #endif
 
         // 0x08000000
-        if (unit->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_SPLINE_ENABLED)
+        if (unit->GetMovementInfo().GetMovementFlags() & MOVEMENTFLAG_SPLINE_ENABLED)
             Movement::PacketBuilder::WriteCreate(*unit->movespline, *data);
     }
     else
@@ -2462,6 +2462,133 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     if (flags & UPDATEFLAG_ROTATION)
         *data << int64(0 /*ToGameObject()->GetPackedWorldRotation()*/); //TODO
 #endif
+}
+
+void MovementInfo::OutDebug() const
+{
+    TC_LOG_DEBUG("misc", "MOVEMENT INFO");
+#ifdef LICH_KING
+    TC_LOG_DEBUG("misc", "%s", guid.ToString().c_str());
+#endif
+    TC_LOG_DEBUG("misc", "flags %u", flags);
+    TC_LOG_DEBUG("misc", "flags2 %u", flags2);
+    TC_LOG_DEBUG("misc", "time %u current time " UI64FMTD "", flags2, uint64(::time(nullptr)));
+    TC_LOG_DEBUG("misc", "position: `%s`", pos.ToString().c_str());
+    if (flags & MOVEMENTFLAG_ONTRANSPORT)
+    {
+        TC_LOG_DEBUG("misc", "TRANSPORT:");
+        TC_LOG_DEBUG("misc", "%s", transport.guid.ToString().c_str());
+        TC_LOG_DEBUG("misc", "position: `%s`", transport.pos.ToString().c_str());
+        TC_LOG_DEBUG("misc", "time: %u", transport.time);
+#ifdef LICH_KING
+        TC_LOG_DEBUG("misc", "seat: %i", transport.seat);
+        if (flags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+            TC_LOG_DEBUG("misc", "time2: %u", transport.time2);
+#endif
+    }
+
+    if ((flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)) 
+#ifdef LICH_KING
+        || (flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
+#endif
+        )
+        TC_LOG_DEBUG("misc", "pitch: %f", pitch);
+
+    TC_LOG_DEBUG("misc", "fallTime: %u", fallTime);
+    if (flags & MOVEMENTFLAG_JUMPING_OR_FALLING)
+        TC_LOG_DEBUG("misc", "j_zspeed: %f j_sinAngle: %f j_cosAngle: %f j_xyspeed: %f", jump.zspeed, jump.sinAngle, jump.cosAngle, jump.xyspeed);
+
+    if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
+        TC_LOG_DEBUG("misc", "splineElevation: %f", splineElevation);
+}
+
+void MovementInfo::WriteContentIntoPacket(ByteBuffer * data, bool includeGuid /* = false*/) const
+{
+    if (includeGuid)
+        *data << guid.WriteAsPacked();
+
+    *data << flags;
+    *data << flags2;
+    *data << time;
+    *data << TaggedPosition<Position::XYZO>(pos);
+    if (HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    {
+#ifdef LICH_KING
+        *data << transport.guid.WriteAsPacked();
+        *data << TaggedPosition<Position::XYZO>(transport.pos);
+        *data << transport.time;
+        *data << transport.seat;
+        if (HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_MOVEMENT))
+            *data << transport.time2;
+#else
+        *data << transport.guid;
+        *data << transport.pos.PositionXYZOStream();
+        *data << transport.time;
+#endif
+    }
+    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)) 
+#ifdef LICH_KING
+        || HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
+#endif
+        )
+        *data << pitch;
+
+    *data << fallTime;
+    if (HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
+    {
+        *data << jump.zspeed;
+        *data << jump.cosAngle;
+        *data << jump.sinAngle;
+        *data << jump.xyspeed;
+    }
+    if (HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+        *data << splineElevation;
+}
+
+void MovementInfo::FillContentFromPacket(ByteBuffer * data, bool includeGuid /* = false*/)
+{
+    if (includeGuid)
+#ifdef LICH_KING
+        *data >> guid.ReadAsPacked();
+#else
+        *data >> guid;
+#endif
+
+    *data >> flags;
+    *data >> flags2;
+    *data >> time;
+    *data >> pos.PositionXYZOStream();
+    if (HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+    {
+#ifdef LICH_KING
+        *data >> transport.guid.ReadAsPacked();
+        *data >> transport.pos.PositionXYZOStream();
+        *data >> transport.time;
+        *data >> transport.seat;
+        if (HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_MOVEMENT))
+            *data >> transport.time2;
+#else
+        *data >> transport.guid;
+        *data >> transport.pos.PositionXYZOStream();
+        *data >> transport.time;
+#endif
+    }
+    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)) 
+#ifdef LICH_KING
+        || (HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
+#endif
+        )
+        *data >> pitch;
+    *data >> fallTime;
+    if (HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
+    {
+        *data >> jump.zspeed;
+        *data >> jump.cosAngle;
+        *data >> jump.sinAngle;
+        *data >> jump.xyspeed;
+    }
+    if (HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+        *data >> splineElevation;
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
@@ -2697,6 +2824,52 @@ void WorldObject::SetTransport(Transport* transport)
         RemoveUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
     }
     m_transport = transport;
+}
+
+MovementInfo WorldObject::GetMovementInfo() const
+{
+    MovementInfo mInfo;
+    mInfo.guid = GetGUID();
+    mInfo.SetMovementFlags(GetUnitMovementFlags());
+    mInfo.SetExtraMovementFlags(GetExtraUnitMovementFlags());
+    mInfo.time = m_movementInfo.time;
+    mInfo.pos.Relocate(
+        GetPositionX(),
+        GetPositionY(),
+        GetPositionZ(),
+        GetOrientation()
+    );
+
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_ONTRANSPORT)
+    {
+        mInfo.transport.guid = GetTransGUID();
+        mInfo.transport.pos.Relocate(GetTransOffsetX(), GetTransOffsetY(), GetTransOffsetZ(), GetTransOffsetO());
+        mInfo.transport.time = GetTransTime();
+#ifdef LICH_KING
+        mInfo.transport.seat = GetTransSeat();
+        if (GetExtraUnitMovementFlags() & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+            mInfo.transport.time2 = m_movementInfo.transport.time2;
+#endif
+    }
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_JUMPING_OR_FALLING))
+#ifdef LICH_KING
+        || (m_movementInfo.flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
+#endif
+        )
+        mInfo.pitch = m_movementInfo.pitch;
+
+    mInfo.SetFallTime(m_movementInfo.fallTime);
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING)
+    {
+        mInfo.jump.zspeed = m_movementInfo.jump.zspeed;
+        mInfo.jump.sinAngle = m_movementInfo.jump.sinAngle;
+        mInfo.jump.cosAngle = m_movementInfo.jump.cosAngle;
+        mInfo.jump.xyspeed = m_movementInfo.jump.xyspeed;
+    }
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_SPLINE_ELEVATION)
+        mInfo.splineElevation = m_movementInfo.splineElevation;
+
+    return mInfo;
 }
 
 ObjectGuid WorldObject::GetCharmerOrOwnerOrOwnGUID() const

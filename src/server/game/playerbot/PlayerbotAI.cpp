@@ -310,7 +310,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             p >> guid.ReadAsPacked();
             if (guid != bot->GetGUID())
                 return;
-            bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
+            bot->GetMovementInfo().RemoveMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
             return;
         }
     case SMSG_CAST_FAILED:
@@ -453,7 +453,7 @@ void PlayerbotAI::DoNextAction()
         //WorldPacket packet(CMSG_MOVE_SET_FLY);
         //packet.appendPackGUID(bot->GetGUID());
         //packet << bot->m_movementInfo;
-        bot->SetMovedUnit(bot);
+        //bot->SetMovedUnit(bot);
         //bot->GetSession()->HandleMovementOpcodes(packet);
     }
 
@@ -461,7 +461,6 @@ void PlayerbotAI::DoNextAction()
     if (bot->IsMounted() && bot->IsFlying())
     {
         bot->SetUnitMovementFlags((MovementFlags)(MOVEMENTFLAG_PLAYER_FLYING|MOVEMENTFLAG_CAN_FLY));
-
         bot->SetSpeedRate(MOVE_FLIGHT, 1.0f, true);
         bot->SetSpeedRate(MOVE_RUN, 1.0f, true);
 

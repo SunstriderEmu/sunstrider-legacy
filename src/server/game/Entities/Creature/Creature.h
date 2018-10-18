@@ -895,15 +895,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover; }
 
         bool SetWalk(bool enable) override;
-        bool SetDisableGravity(bool disable, bool packetOnly = false) override;
         bool SetSwim(bool enable) override;
         // /!\ Not TC SetCanFly. This marks creature as able to fly, rather than making it fly. You can then call UpdateMovementFlags() if you want to update fly mode immediately.
         void _SetCanFly(bool enable, bool updateMovementFlags = true);
         // /!\ This is TC SetCanFly equivalent
-        bool SetFlying(bool enable, bool packetOnly = false) override;
-        bool SetWaterWalking(bool enable, bool packetOnly = false) override;
-        bool SetFeatherFall(bool enable, bool packetOnly = false) override;
-        bool SetHover(bool enable, bool packetOnly = false) override;
+        void SetFlying(bool enable) override;
 
         float m_SightDistance;
 

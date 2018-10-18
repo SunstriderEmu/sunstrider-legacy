@@ -389,7 +389,7 @@ Creature* MotionTransport::CreateNPCPassenger(ObjectGuid::LowType guid, Creature
     CalculatePassengerPosition(x, y, z, &o);
     creature->Relocate(x, y, z, o);
     creature->SetHomePosition(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
-    creature->SetTransportHomePosition(creature->m_movementInfo.transport.pos);
+    creature->SetTransportHomePosition(creature->GetMovementInfo().transport.pos);
 
 #ifndef LICH_KING
     //keep these mobs as purely aesthetic for BC as the ship crews should not even be there on BC
@@ -586,7 +586,7 @@ bool MotionTransport::TeleportTransport(uint32 newMapid, float x, float y, float
             if ((*itr)->GetTypeId() == TYPEID_PLAYER)
             {
                 float destX, destY, destZ, destO;
-                (*itr)->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
+                (*itr)->GetMovementInfo().transport.pos.GetPosition(destX, destY, destZ, destO);
                 TransportBase::CalculatePassengerPosition(destX, destY, destZ, &destO, x, y, z, o);
 
                 (*itr)->ToUnit()->NearTeleportTo(destX, destY, destZ, destO);
@@ -653,7 +653,7 @@ void MotionTransport::DelayedTeleportTransport()
         case TYPEID_PLAYER:
         {
             float destX, destY, destZ, destO;
-            obj->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
+            obj->GetMovementInfo().transport.pos.GetPosition(destX, destY, destZ, destO);
             TransportBase::CalculatePassengerPosition(destX, destY, destZ, &destO, x, y, z, o);
             if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_UNSUMMON_PET | TELE_TO_TRANSPORT_TELEPORT))
                 _passengers.erase(obj);
@@ -687,7 +687,7 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
 
         // Do not use Unit::UpdatePosition here, we don't want to remove auras as if regular movement occurred
         float x, y, z, o;
-        passenger->m_movementInfo.transport.pos.GetPosition(x, y, z, o);
+        passenger->GetMovementInfo().transport.pos.GetPosition(x, y, z, o);
         CalculatePassengerPosition(x, y, z, &o);
 
         // check if position is valid
@@ -1031,7 +1031,7 @@ void StaticTransport::UpdatePassengerPositions()
 
         // Do not use Unit::UpdatePosition here, we don't want to remove auras as if regular movement occurred
         float x, y, z, o;
-        passenger->m_movementInfo.transport.pos.GetPosition(x, y, z, o);
+        passenger->GetMovementInfo().transport.pos.GetPosition(x, y, z, o);
         CalculatePassengerPosition(x, y, z, &o);
 
         // check if position is valid
@@ -1072,7 +1072,7 @@ void StaticTransport::AddPassenger(WorldObject* passenger, bool calcPassengerPos
             float x, y, z, o;
             passenger->GetPosition(x, y, z, o);
             CalculatePassengerOffset(x, y, z, &o);
-            passenger->m_movementInfo.transport.pos.Relocate(x, y, z, o);
+            passenger->SetTransOffset(x, y, z, o);
         }
 
         if (Player* plr = passenger->ToPlayer())

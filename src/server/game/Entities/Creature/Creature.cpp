@@ -3363,24 +3363,6 @@ bool Creature::IsFocusing(Spell const* focusSpell, bool withDelay)
     return true;
 }
 
-bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
-{
-    //! It's possible only a packet is sent but moveflags are not updated
-    //! Need more research on this
-    if (!packetOnly && !Unit::SetDisableGravity(disable))
-        return false;
-
-#ifdef LICH_KING
-     if (!movespline->Initialized())
-        return true;
-
-    WorldPacket data(disable ? SMSG_SPLINE_MOVE_GRAVITY_DISABLE : SMSG_SPLINE_MOVE_GRAVITY_ENABLE, 9);
-    data << GetPackGUID();
-    SendMessageToSet(&data, false);
-#endif
-    return true;
-}
-
 uint32 Creature::GetPetAutoSpellOnPos(uint8 pos) const
 {
     if (pos >= MAX_SPELL_CHARM || m_charmInfo->GetCharmSpell(pos)->GetType() != ACT_ENABLED)
@@ -3437,31 +3419,13 @@ bool Creature::SetSwim(bool enable)
     return true;
 }
 
-bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
+void Creature::SetFlying(bool enable)
 {
-    if (!Unit::SetFlying(enable))
-        return false;
-
-    if (!movespline->Initialized())
-        return true;
+    Unit::SetFlying(enable);
 
     //also mark creature as able to fly to avoid getting fly mode removed
     if(enable)
         _SetCanFly(enable, false);
-
-    WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
-    data << GetPackGUID();
-    SendMessageToSet(&data, false);
-
-    // Testing this from https://github.com/TrinityCore/TrinityCore/issues/22421
-    if (IsLevitating())
-        SetAnimationTier(UnitAnimationTier::Fly);
-    else if (IsHovering())
-        SetAnimationTier(UnitAnimationTier::Hover);
-    else
-        SetAnimationTier(UnitAnimationTier::Ground);
-
-    return true;
 }
 
 void Creature::_SetCanFly(bool enable, bool updateMovementFlags /* = true */) 
@@ -3469,58 +3433,6 @@ void Creature::_SetCanFly(bool enable, bool updateMovementFlags /* = true */)
     m_canFly = enable; 
     if (updateMovementFlags)
         UpdateMovementFlags();
-}
-
-bool Creature::SetWaterWalking(bool enable, bool packetOnly /* = false */)
-{
-    if (!packetOnly && !Unit::SetWaterWalking(enable))
-        return false;
-
-    if (!movespline->Initialized())
-        return true;
-
-    WorldPacket data(enable ? SMSG_SPLINE_MOVE_WATER_WALK : SMSG_SPLINE_MOVE_LAND_WALK);
-    data << GetPackGUID();
-    SendMessageToSet(&data, true);
-    return true;
-}
-
-bool Creature::SetFeatherFall(bool enable, bool packetOnly /* = false */)
-{
-    if (!packetOnly && !Unit::SetFeatherFall(enable))
-        return false;
-
-    if (!movespline->Initialized())
-        return true;
-
-    WorldPacket data(enable ? SMSG_SPLINE_MOVE_FEATHER_FALL : SMSG_SPLINE_MOVE_NORMAL_FALL);
-    data << GetPackGUID();
-    SendMessageToSet(&data, true);
-    return true;
-}
-
-bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
-{
-    if (!packetOnly && !Unit::SetHover(enable))
-        return false;
-
-    if (!movespline->Initialized())
-        return true;
-
-    //! Not always a packet is sent
-    WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_HOVER : SMSG_SPLINE_MOVE_UNSET_HOVER, 9);
-    data << GetPackGUID();
-    SendMessageToSet(&data, false);
-
-    // Testing this from https://github.com/TrinityCore/TrinityCore/issues/22421
-    if (IsLevitating())
-        SetAnimationTier(UnitAnimationTier::Fly);
-    else if (IsHovering())
-        SetAnimationTier(UnitAnimationTier::Hover);
-    else
-        SetAnimationTier(UnitAnimationTier::Ground);
-
-    return true;
 }
 
 void Creature::UpdateMovementFlags(bool force /* = false */)

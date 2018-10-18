@@ -220,8 +220,7 @@ Player::Player(WorldSession *session) :
     mSemaphoreTeleport_Near = false;
     mSemaphoreTeleport_Far = false;
 
-    m_unitMovedByMe = this;
-    m_playerMovingMe = this;
+    m_playerMovingMe = session;
 
     m_cinematic = 0;
     if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
@@ -245,6 +244,7 @@ Player::Player(WorldSession *session) :
     m_restTime = 0;
     m_deathTimer = 0;
     m_deathExpireTime = 0;
+    m_isRepopPending = false;
     m_deathTime = 0;
 
     m_swingErrorMsg = 0;
@@ -377,6 +377,9 @@ Player::~Player()
 {
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     //m_social = nullptr;
+
+    if (m_playerMovingMe)
+        m_playerMovingMe->ResetActiveMover(true);
 
     // Note: buy back item already deleted from DB when player was saved
     for(auto & m_item : m_items)
@@ -1840,7 +1843,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 #ifdef LICH_KING
                 z += GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
 #else
-                z += UNIT_DEFAULT_HOVERHEIGHT;
+                z += DEFAULT_HOVER_HEIGHT;
 #endif
             SendTeleportPacket(m_teleport_dest, (options & TELE_TO_TRANSPORT_TELEPORT) != 0);
             if (!IsWithinDist3d(x, y, z, GetMap()->GetVisibilityRange()))
@@ -1849,6 +1852,16 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
     else
     {
+        if (GetSession()->HasPendingMovementChange())
+        {
+            SetDelayedTeleportFlag(true);
+            SetSemaphoreTeleportFar(true);
+            //lets save teleport destination for player
+            m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+            m_teleport_options = options;
+            return true;
+        }
+
         // far teleport to another map
         Map* oldmap = IsInWorld() ? GetMap() : nullptr;
         // check if we can enter before stopping combat / removing pet / totems / interrupting spells
@@ -1922,6 +1935,19 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             //remove auras before removing from map...
             RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP | AURA_INTERRUPT_FLAG_MOVE | AURA_INTERRUPT_FLAG_TURNING);
+
+            // removing some auras (example spell id 26656) can trigger movement changes. Using this block to ensure that
+            // teleports are delayed as long as there are still pending movement changes.
+            if (GetSession()->HasPendingMovementChange())
+            {
+                SetDelayedTeleportFlag(true);
+                SetSemaphoreTeleportFar(true);
+                //lets save teleport destination for player
+                m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+                m_teleport_options = options;
+                return true;
+            }
+            ASSERT(!GetSession()->HasPendingMovementChange());
 
             if (!GetSession()->PlayerLogout())
             {
@@ -4245,34 +4271,6 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
     sCharacterCache->DeleteCharacterCacheEntry(playerguid, name);
 }
 
-void Player::SetMovement(PlayerMovementType pType)
-{
-    WorldPacket data;
-    switch(pType)
-    {
-        case MOVE_ROOT:       data.Initialize(SMSG_FORCE_MOVE_ROOT,   GetPackGUID().size()+4); break;
-        case MOVE_UNROOT:     data.Initialize(SMSG_FORCE_MOVE_UNROOT, GetPackGUID().size()+4); break;
-        case MOVE_WATER_WALK: data.Initialize(SMSG_MOVE_WATER_WALK,   GetPackGUID().size()+4); break;
-        case MOVE_LAND_WALK:  data.Initialize(SMSG_MOVE_LAND_WALK,    GetPackGUID().size()+4); break;
-        default:
-            TC_LOG_ERROR("entities.player","Player::SetMovement: Unsupported move type (%d), data not sent to client.",pType);
-            return;
-    }
-    data << GetPackGUID();
-    data << uint32(0);
-
-    /* Should we also send it to mover? Or does the target session broadcast the change itself later?
-    if (GetUnitBeingMoved() && GetUnitBeingMoved()->GetTypeId() == TYPEID_PLAYER)
-    {
-         Player* pMover = (Player*)GetUnitBeingMoved();
-         if (pMover != this)
-             pMover->GetSession()->SendPacket(data);
-    }
-    */
-
-    SendDirectMessage( &data );
-}
-
 /* Preconditions:
   - a resurrectable corpse must not be loaded for the player (only bones)
   - the player must be in world
@@ -4282,14 +4280,13 @@ void Player::BuildPlayerRepop()
 #ifdef LICH_KING
     WorldPacket data(SMSG_PRE_RESURRECT, GetPackGUID().size());
     data << GetPackGUID();
-    GetSession()->SendPacket(&data);
+    SendMessageToSet(&data, true);
 #endif
 
     if(GetRace() == RACE_NIGHTELF)
         CastSpell(this, 20584, true);                       // auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
     CastSpell(this, 8326, true);                            // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
-    // there must be SMSG.FORCE_RUN_SPEED_CHANGE, SMSG.FORCE_SWIM_SPEED_CHANGE, SMSG.MOVE_WATER_WALK
     // there must be SMSG.STOP_MIRROR_TIMER
     // there we must send 888 opcode
 
@@ -4314,10 +4311,6 @@ void Player::BuildPlayerRepop()
     SetDeathState(DEAD);
     SetHealth(1);
 
-    SetMovement(MOVE_WATER_WALK);
-    if(!GetSession()->isLogingOut())
-        SetMovement(MOVE_UNROOT);
-
     // BG - remove insignia related
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
@@ -4333,7 +4326,7 @@ void Player::BuildPlayerRepop()
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, (float)1.0);   //see radius of death player?
 
-    SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, UNIT_BYTE1_FLAG_ALWAYS_STAND);
+    SetAnimationTier(UnitAnimationTier::Ground);
 
     // OnPlayerRepop hook
     //sScriptMgr->OnPlayerRepop(this);
@@ -4341,12 +4334,15 @@ void Player::BuildPlayerRepop()
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 {
-    WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);          // remove spirit healer position
+    WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);          // remove spirit healer position, LK ok
     data << uint32(-1);
     data << float(0);
     data << float(0);
     data << float(0);
     SendDirectMessage(&data);
+
+    if (!HasUnitState(UNIT_STATE_ROOT))
+        SetRooted(false);
 
     // send spectate addon message
     if (HaveSpectators())
@@ -4367,9 +4363,6 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     RemoveAurasDueToSpell(8326);                            // SPELL_AURA_GHOST
 
     SetDeathState(ALIVE);
-
-    SetMovement(MOVE_LAND_WALK);
-    SetMovement(MOVE_UNROOT);
 
     m_deathTimer = 0;
 
@@ -4425,7 +4418,7 @@ void Player::KillPlayer()
     if (IsFlying() && !GetTransport())
         GetMotionMaster()->MoveFall();
 
-    SetMovement(MOVE_ROOT);
+    SetRooted(true);
 
     StopMirrorTimers();                                     //disable timers(bars)
 
@@ -4740,6 +4733,7 @@ uint32 Player::DurabilityRepair(uint16 pos, bool cost, float discountMod, bool g
 
 void Player::RepopAtGraveyard()
 {
+    SetIsRepopPending(false);
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
@@ -10843,8 +10837,8 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
         pItem = StoreItem( dest, pItem, update );
     }
 
-    if (item == 31088)  // Tainted Core
-        SetMovement(MOVE_ROOT);
+    if (item == 31088)  // HACK: Tainted Core
+        SetRooted(true);
 
     // If purple equipable item, save inventory immediately
     if (pItem && pItem->GetTemplate()->Quality >= ITEM_QUALITY_EPIC &&
@@ -11365,8 +11359,8 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         }
 
 
-        if (pItem->GetEntry() == 31088)      // Vashj Tainted Core
-            SetMovement(MOVE_UNROOT);
+        if (pItem->GetEntry() == 31088)      // HACK: Vashj Tainted Core
+            SetRooted(false);
 
         if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FIELD_FLAG_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUID().GetCounter());
@@ -19477,7 +19471,7 @@ bool Player::CanNeverSee(WorldObject const* obj) const
 bool Player::CanAlwaysSee(WorldObject const* obj) const
 {
     // Always can see self
-    if (m_unitMovedByMe == obj)
+    if (GetSession()->GetActiveMover() == obj)
         return true;
 
     if (ObjectGuid guid = GetGuidValue(PLAYER_FARSIGHT))
@@ -19813,7 +19807,7 @@ void Player::SendComboPoints()
     if (combotarget)
     {
         WorldPacket data;
-        if (m_unitMovedByMe != this)
+        if (GetSession()->GetActiveMover() != this)
             return; //no combo point from pet/charmed creatures
 
         data.Initialize(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size() + 1);
@@ -19872,7 +19866,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || IsInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
 
-    SetMovedUnit(this);
+    GetSession()->InitActiveMover(this);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -20727,13 +20721,13 @@ void Player::SendAuraDurationsForTarget(Unit* target)
     These movement packets are usually found in SMSG_COMPRESSED_MOVES
     */
     if (target->HasAuraType(SPELL_AURA_FEATHER_FALL))
-        target->SetFeatherFall(true, true);
+        target->SetFeatherFall(true);
 
     if (target->HasAuraType(SPELL_AURA_WATER_WALK))
-        target->SetWaterWalking(true, true);
+        target->SetWaterWalking(true);
 
     if (target->HasAuraType(SPELL_AURA_HOVER))
-        target->SetHover(true, true);
+        target->SetHover(true);
 
 #ifdef LICH_KING
     WorldPacket data(SMSG_AURA_UPDATE_ALL);
@@ -21477,24 +21471,6 @@ void Player::RessurectUsingRequestData()
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
     SpawnCorpseBones();
-}
-
-void Player::SetClientControl(Unit* target, uint8 allowMove)
-{
-    // still affected by some aura that shouldn't allow control, only allow on last such aura to be removed
-    if (allowMove && target->HasUnitState(UNIT_STATE_CANT_CLIENT_CONTROL))
-        return;
-
-    WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size()+1);
-    data << target->GetPackGUID();
-    data << uint8(allowMove);
-    SendDirectMessage(&data);
-
-    if (this != target)
-        SetViewpoint(target, allowMove);
-
-    if (allowMove)
-        SetMovedUnit(target);
 }
 
 void Player::UpdateZoneDependentAuras( uint32 newZone )
@@ -22670,81 +22646,11 @@ void Player::UpdateArenaTitles()
     */
 }
 
-bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
+void Player::SetFlying(bool apply)
 {
-    if (!apply)
-        SetFallInformation(0, GetPositionZ());
-
-    WorldPacket data(apply ? SMSG_MOVE_SET_CAN_FLY : SMSG_MOVE_UNSET_CAN_FLY, 12);
-    data << GetPackGUID();
-    data << uint32(0);          //! movement counter
-    SendDirectMessage(&data);
-
     GetSession()->anticheat->OnPlayerSetFlying(this, apply);
 
-    if (packetOnly || Unit::SetFlying(apply))
-    {
-        data.Initialize(MSG_MOVE_UPDATE_CAN_FLY, 64);
-        data << GetPackGUID();
-        BuildMovementPacket(&data);
-        SendMessageToSet(&data, false);
-    }
-    else
-        return false;
-
-    return true;
-}
-
-
-bool Player::SetHover(bool apply, bool packetOnly /*= false*/)
-{
-    if (!packetOnly && !Unit::SetHover(apply))
-        return false;
-
-    WorldPacket data(apply ? SMSG_MOVE_SET_HOVER : SMSG_MOVE_UNSET_HOVER, 12);
-    data << GetPackGUID();
-    data << uint32(0);          //! movement counter
-    SendDirectMessage(&data);
-
-    data.Initialize(MSG_MOVE_HOVER, 64);
-    data << GetPackGUID();
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-    return true;
-}
-
-bool Player::SetWaterWalking(bool apply, bool packetOnly /*= false*/)
-{
-    if (!packetOnly && !Unit::SetWaterWalking(apply))
-        return false;
-
-    WorldPacket data(apply ? SMSG_MOVE_WATER_WALK : SMSG_MOVE_LAND_WALK, 12);
-    data << GetPackGUID();
-    data << uint32(0);          //! movement counter
-    SendDirectMessage(&data);
-
-    data.Initialize(MSG_MOVE_WATER_WALK, 64);
-    data << GetPackGUID();
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-    return true;
-}
-
-bool Player::SetFeatherFall(bool apply, bool packetOnly /*= false*/)
-{
-    if (!packetOnly && !Unit::SetFeatherFall(apply))
-        return false;
-
-    WorldPacket data(apply ? SMSG_MOVE_FEATHER_FALL : SMSG_MOVE_NORMAL_FALL, 12);
-    data << GetPackGUID();
-    data << uint32(0);          //! movement counter
-    SendDirectMessage(&data);
-
-    data.Initialize(MSG_MOVE_FEATHER_FALL, 64);
-    data << GetPackGUID();
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
-    return true;
+    Unit::SetFlying(apply);
 }
 
 void Player::ProcessDelayedOperations()
@@ -22814,30 +22720,16 @@ void Player::SetFallInformation(uint32 time, float z)
     m_lastFallZ = z;
 }
 
-void Player::SetMovedUnit(Unit* target)
-{
-    //if target is a player, notify anticheat
-    if (Player* targetPlayer = target->ToPlayer())
-        targetPlayer->GetSession()->anticheat->OnPlayerMoverChanged(targetPlayer->m_unitMovedByMe->m_playerMovingMe, this);
-    //also notify for ourselves
-    GetSession()->anticheat->OnPlayerMoverChanged(m_unitMovedByMe, target);
-
-    m_unitMovedByMe->m_playerMovingMe = nullptr;
-
-    m_unitMovedByMe = target;
-    m_unitMovedByMe->m_playerMovingMe = this;
-}
-
 void Player::SetViewpoint(WorldObject* target, bool apply)
 {
     if (apply)
     {
-        TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player '%s' (%s) creates seer (Entry: %u, TypeId: %u).",
+        TC_LOG_TRACE("entities.player", "Player::SetViewpoint: Player '%s' (%s) creates seer (Entry: %u, TypeId: %u).",
             GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), target->GetEntry(), target->GetTypeId());
 
         if (!AddGuidValue(PLAYER_FARSIGHT, target->GetGUID()))
         {
-            TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player '%s' (%s) cannot add new viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
+            TC_LOG_FATAL("entities.player", "Player::SetViewpoint: Player '%s' (%s) cannot add new viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
             return;
         }
 
@@ -22855,11 +22747,11 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
     }
     else
     {
-        TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player %s removed seer", GetName().c_str());
+        TC_LOG_TRACE("entities.player", "Player::SetViewpoint: Player %s removed seer", GetName().c_str());
 
         if (!RemoveGuidValue(PLAYER_FARSIGHT, target->GetGUID()))
         {
-            TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player '%s' (%s) cannot remove current viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
+            TC_LOG_FATAL("entities.player", "Player::SetViewpoint: Player '%s' (%s) cannot remove current viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
             return;
         }
 
@@ -22911,23 +22803,6 @@ WorldObject* Player::GetViewpoint() const
     if (ObjectGuid guid = GetGuidValue(PLAYER_FARSIGHT))
         return static_cast<WorldObject*>(ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_SEER));
     return nullptr;
-}
-
-void Player::SendTeleportAckPacket()
-{
-    WorldPacket data(MSG_MOVE_TELEPORT_ACK, 41);
-    data << GetPackGUID();
-    data << uint32(0);                                     // this value increments every time
-    BuildMovementPacket(&data);
-    SendDirectMessage(&data);
-}
-
-bool Player::SetDisableGravity(bool disable, bool packetOnly /*= false*/)
-{
-    if (!packetOnly && !Unit::SetDisableGravity(disable))
-        return false;
-
-    return true;
 }
 
 void Player::ResummonPetTemporaryUnSummonedIfAny()

@@ -122,12 +122,16 @@ _warden(nullptr),
 forceExit(false),
 expireTime(60000), // 1 min after socket loss, session is deleted
 anticheat(new PlayerAntiCheat(this)),
+_movementCounter(0),
 m_timeSyncClockDelta(0),
 lastMoveClientTimestamp(0),
 lastMoveServerTimestamp(0),
 m_timeSyncCounter(0),
 m_timeSyncTimer(0),
-m_timeSyncServer(0)
+m_timeSyncServer(0),
+_pendingActiveMoverSplineId(0),
+_activeMover(nullptr),
+_releaseMoverTimeout(0)
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -142,9 +146,12 @@ m_timeSyncServer(0)
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
+    ResetActiveMover(true); //must be before player logout
+    ResolveAllPendingChanges();
+
     ///- unload player if not unloaded
     if (_player)
-        LogoutPlayer (true);
+        LogoutPlayer(true);
 
     /// - If have unclosed socket, close it
     if (m_Socket)
@@ -313,7 +320,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     uint32 processedPackets = 0;
     time_t currentTime = time(NULL);
 
-
     //reset hasMoved info
     if(_player)
         _player->SetHasMovedInUpdate(false);
@@ -447,12 +453,20 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             break;
     }
 
+    CheckPendingMovementAcks();
+
     #ifdef PLAYERBOT
     if (GetPlayer() && GetPlayer()->GetPlayerbotMgr())
         GetPlayer()->GetPlayerbotMgr()->UpdateSessions(0);
     #endif
 
     _recvQueue.readd(requeuePackets.begin(), requeuePackets.end());
+
+    if (_player && _player->IsRepopPending() && !HasPendingMovementChange())
+        _player->RepopAtGraveyard();
+
+    if (_player && _player->IsHasDelayedTeleport() && _player->IsAlive())
+        _player->TeleportTo(_player->m_teleport_dest, _player->m_teleport_options);
 
     if (m_Socket && m_Socket->IsOpen() && _warden)
         _warden->Update();
@@ -499,6 +513,19 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             SendTimeSync();
         else
             m_timeSyncTimer -= diff;
+    }
+
+    if (_releaseMoverTimeout > 0)
+    { 
+        if (diff >= _releaseMoverTimeout)
+        {
+            TC_LOG_DEBUG("movement", "Player %s (%u) did not ack the mover change fast enough and was kicked",
+                _player->GetName().c_str(), _player->GetGUID().GetCounter());
+
+            KickPlayer();
+        }
+        else
+            _releaseMoverTimeout -= diff;
     }
 
     return true;
@@ -1621,186 +1648,6 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
     unit->HandleSpellClick(_player);
 }
 
-void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
-{
-    data >> mi->flags;
-    data >> mi->flags2;
-    data >> mi->time;
-    data >> mi->pos.PositionXYZOStream();
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
-    {
-#ifdef LICH_KING
-        data.readPackGUID(mi->transport.guid);
-
-        data >> mi->transport.pos.PositionXYZOStream();
-        data >> mi->transport.time;
-        data >> mi->transport.seat;
-
-        if (mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_MOVEMENT))
-            data >> mi->transport.time2;
-#else
-        data >> mi->transport.guid;
-        data >> mi->transport.pos.PositionXYZOStream();
-        data >> mi->transport.time;
-#endif
-    }
-
-    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
-#ifdef LICH_KING
-        || (mi->HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING))
-#endif
-        )
-        data >> mi->pitch;
-
-    data >> mi->fallTime;
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
-    {
-        data >> mi->jump.zspeed;
-        data >> mi->jump.sinAngle;
-        data >> mi->jump.cosAngle;
-        data >> mi->jump.xyspeed;
-    }
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
-        data >> mi->splineElevation;
-
-    //! Anti-cheat checks. Please keep them in seperate if() blocks to maintain a clear overview.
-    //! Might be subject to latency, so just remove improper flags.
-#ifdef TRINITY_DEBUG
-#define REMOVE_VIOLATING_FLAGS(check, maskToRemove) \
-    { \
-        if (check) \
-        { \
-            TC_LOG_DEBUG("entities.unit", "WorldSession::ReadMovementInfo: Violation of MovementFlags found (%s). " \
-                "MovementFlags: %u, MovementFlags2: %u for player GUID: %u. Mask %u will be removed.", \
-                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetPlayer()->GetGUID().GetCounter(), maskToRemove); \
-            mi->RemoveMovementFlag((maskToRemove)); \
-        } \
-    }
-#else
-#define REMOVE_VIOLATING_FLAGS(check, maskToRemove) \
-        if (check) \
-            mi->RemoveMovementFlag((maskToRemove));
-#endif
-
-
-    /*! This must be a packet spoofing attempt. MOVEMENTFLAG_ROOT sent from the client is not valid
-    in conjunction with any of the moving movement flags such as MOVEMENTFLAG_FORWARD.
-    It will freeze clients that receive this player's movement info.
-    */
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_ROOT),
-        MOVEMENTFLAG_ROOT);
-
-    //! Cannot hover without SPELL_AURA_HOVER
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && !GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_HOVER), // sunwell: added m_unitMovedByMe
-        MOVEMENTFLAG_HOVER);
-
-    //! Cannot ascend and descend at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_ASCENDING) && mi->HasMovementFlag(MOVEMENTFLAG_DESCENDING),
-        MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING);
-
-    //! Cannot move left and right at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_RIGHT),
-        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT);
-
-    //! Cannot strafe left and right at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT),
-        MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT);
-
-    //! Cannot pitch up and down at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_PITCH_UP) && mi->HasMovementFlag(MOVEMENTFLAG_PITCH_DOWN),
-        MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN);
-
-    //! Cannot move forwards and backwards at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FORWARD) && mi->HasMovementFlag(MOVEMENTFLAG_BACKWARD),
-        MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
-
-    //! Cannot walk on water without SPELL_AURA_WATER_WALK
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_WATER_WALK) && !GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_GHOST), // sunwell: added m_unitMovedByMe
-        MOVEMENTFLAG_WATERWALKING);
-
-    //! Cannot feather fall without SPELL_AURA_FEATHER_FALL
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING_SLOW) && !GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_FEATHER_FALL), // sunwell: added m_unitMovedByMe
-        MOVEMENTFLAG_FALLING_SLOW);
-
-    /*! Cannot fly if no fly auras present. Exception is being a GM.
-    Note that we check for account level instead of Player::IsGameMaster() because in some
-    situations it may be feasable to use .gm fly on as a GM without having .gm on,
-    e.g. aerial combat.
-    */
-
-    // sunwell: remade this condition
-    bool canFly = GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_FLY) || GetPlayer()->m_unitMovedByMe->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ||
-        (GetPlayer()->m_unitMovedByMe->GetTypeId() == TYPEID_UNIT && GetPlayer()->m_unitMovedByMe->ToCreature()->CanFly()) || GetSecurity() > SEC_PLAYER;
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_CAN_FLY) && !canFly,
-        MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_CAN_FLY);
-
-    // sunwell: added condition for disable gravity
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) && (GetPlayer()->m_unitMovedByMe->GetTypeId() == TYPEID_PLAYER || !canFly),
-        MOVEMENTFLAG_DISABLE_GRAVITY);
-
-    //! Cannot fly and fall at the same time
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY) && mi->HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING),
-        MOVEMENTFLAG_JUMPING_OR_FALLING);
-
-    // sunwell: Spline enabled flag should be never sent by client, its internal movementflag
-    REMOVE_VIOLATING_FLAGS(!GetPlayer()->m_unitMovedByMe->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ENABLED),
-        MOVEMENTFLAG_SPLINE_ENABLED);
-
-#undef REMOVE_VIOLATING_FLAGS
-}
-
-void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
-{
-#ifdef LICH_KING
-    data->appendPackGUID(mi->guid);
-#endif
-    *data << mi->flags;
-    *data << mi->flags2;
-    *data << mi->time;
-    *data << mi->pos.PositionXYZOStream();
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
-    {
-#ifdef LICH_KING
-        data->appendPackGUID(mi->transport.guid);
-
-        *data << mi->transport.pos.PositionXYZOStream();
-        *data << mi->transport.time;
-        *data << mi->transport.seat;
-
-        if (mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_MOVEMENT))
-            *data << mi->transport.time2;
-#else
-        *data << mi->transport.guid;
-        *data << mi->transport.pos.PositionXYZOStream();
-        *data << mi->transport.time;
-#endif
-    }
-
-    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
-#ifdef LICH_KING
-        || mi->HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
-#endif
-        )
-        *data << mi->pitch;
-
-    *data << mi->fallTime;
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
-    {
-        *data << mi->jump.zspeed;
-        *data << mi->jump.sinAngle;
-        *data << mi->jump.cosAngle;
-        *data << mi->jump.xyspeed;
-    }
-
-    if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
-        *data << mi->splineElevation;
-}
-
 #ifdef PLAYERBOT
 void WorldSession::HandleBotPackets()
 {
@@ -1891,6 +1738,112 @@ void CharacterCreateInfo::RandomizeAppearance()
     Gender = urand(GENDER_MALE, GENDER_FEMALE);
 }
 
+WorldSession::PendingChangePair WorldSession::PopPendingMovementChange()
+{
+    auto result = m_pendingMovementChanges.front();
+    m_pendingMovementChanges.pop_front();
+    return result;
+}
+
+uint32 WorldSession::PushPendingMovementChange(PlayerMovementPendingChange newChange)
+{
+    //Apparently retail has the counter on unit rather than per session. I don't think this makes a difference.
+    m_pendingMovementChanges.emplace_back(std::make_pair(++_movementCounter, std::move(newChange)));
+    return _movementCounter;
+}
+
+bool WorldSession::HasPendingMovementChange(uint32 counter, uint16 opcode, ObjectGuid guid, bool apply) const
+{
+    if (m_pendingMovementChanges.empty())
+        return false;
+
+    MovementChangeType type = INVALID;
+    switch (opcode)
+    {
+    case MSG_MOVE_TELEPORT_ACK:                        type = TELEPORT;                         break;
+    case CMSG_MOVE_KNOCK_BACK_ACK:                     type = KNOCK_BACK;                       break;
+    case CMSG_FORCE_MOVE_ROOT_ACK:                     type = ROOT;                             break;
+    case CMSG_FORCE_MOVE_UNROOT_ACK:                   type = ROOT;                             break;
+    case CMSG_MOVE_WATER_WALK_ACK:                     type = WATER_WALK;                       break;
+    case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:             type = SPEED_CHANGE_WALK;                break;
+    case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:              type = SPEED_CHANGE_RUN;                 break;
+    case CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK:         type = SPEED_CHANGE_RUN_BACK;            break;
+    case CMSG_FORCE_SWIM_SPEED_CHANGE_ACK:             type = SPEED_CHANGE_SWIM;                break;
+    case CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK:        type = SPEED_CHANGE_SWIM_BACK;           break;
+    case CMSG_FORCE_TURN_RATE_CHANGE_ACK:              type = RATE_CHANGE_TURN;                 break;
+    case CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK:           type = SPEED_CHANGE_FLIGHT_SPEED;        break;
+    case CMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK:      type = SPEED_CHANGE_FLIGHT_BACK_SPEED;   break;
+    case CMSG_MOVE_HOVER_ACK:                          type = SET_HOVER;                        break;
+    case CMSG_MOVE_SET_CAN_FLY_ACK:                    type = SET_CAN_FLY;                      break;
+    case CMSG_MOVE_FEATHER_FALL_ACK:                   type = FEATHER_FALL;                     break;
+#ifdef LICH_KING
+    case LK_CMSG_FORCE_PITCH_RATE_CHANGE_ACK:          type = RATE_CHANGE_PITCH;                break;
+    case LK_CMSG_MOVE_GRAVITY_DISABLE_ACK:             type = GRAVITY;                          break;
+    case LK_CMSG_MOVE_GRAVITY_ENABLE_ACK:              type = GRAVITY;                          break;
+    case LK_CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK: type = SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY; break;
+    case LK_CMSG_MOVE_SET_COLLISION_HGT_ACK:           type = SET_COLLISION_HGT;                break;
+#endif
+    default:
+        return false;
+    }
+
+    if (m_pendingMovementChanges.front().first != counter)
+        return false;
+
+    PlayerMovementPendingChange const& change = m_pendingMovementChanges.front().second;
+    bool found = change.movementChangeType == type 
+              && change.guid == guid
+              && change.apply == apply;
+
+    if (!found)
+    {
+        TC_LOG_ERROR("network", "Received ack with existing counter %u but incorrect type %u or guid %s or apply %u (expected type %u and guid %s and apply %u)",
+            counter, type, guid.ToString().c_str(), change.movementChangeType, change.guid.ToString().c_str(), uint8(change.apply), uint8(apply));
+    }
+    return found;
+}
+
+bool WorldSession::HasPendingMovementChange(MovementChangeType changeType) const
+{
+    return std::find_if(m_pendingMovementChanges.begin(), m_pendingMovementChanges.end(),
+        [changeType](WorldSession::PendingChangePair const& pendingChange)
+    {
+        return pendingChange.second.movementChangeType == changeType;
+    }) != m_pendingMovementChanges.end();
+}
+
+void WorldSession::CheckPendingMovementAcks()
+{
+    if (!HasPendingMovementChange())
+        return;
+
+    if (!_player)
+        return;
+    Map* map = _player->FindMap();
+    if (!map)
+        return;
+
+    PlayerMovementPendingChange const& oldestChangeToAck = m_pendingMovementChanges.front().second;
+    if (map->GetGameTimeMS() > oldestChangeToAck.time + sWorld->getIntConfig(CONFIG_PENDING_MOVE_CHANGES_TIMEOUT))
+    {
+        /*
+        when players are teleported from one corner of a map to an other (example: from Dragonblight to the entrance of Naxxramas, both in the same map: Northend),
+        is it done through what is called a 'near' teleport. A near teleport always involve teleporting a player from one point to an other in the same map, even if
+        the distance is huge. When that distance is big enough, a loading screen appears on the client side. During that time, the client loads the surrounding zone
+        of the new location (and everything it contains). The problem is that, as long as the client hasn't finished loading the new zone, it will NOT ack the near
+        teleport. So if the server sends a near teleport order at a certain time and the client takes 20s to load the new zone (let's imagine a very slow computer),
+        even with zero latency, the server will receive an ack from the client only after 20s.
+        For this reason and because the current implementation is simple (you dear reader, feel free to improve it if you can), we will just ignore checking for
+        near teleport acks (for now. @todo).
+        */
+        if (oldestChangeToAck.movementChangeType == TELEPORT)
+            return;
+
+        TC_LOG_INFO("cheat", "Unit::CheckPendingMovementAcks: Player GUID: %u took too long to acknowledge a movement change. He was therefore kicked.", _player->GetGUID().GetCounter());
+        KickPlayer();
+    }
+}
+
 void WorldSession::ResetTimeSync()
 {
     m_timeSyncCounter = 0;
@@ -1904,7 +1857,4 @@ void WorldSession::SendTimeSync()
     WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
     data << uint32(m_timeSyncCounter++);
     SendPacket(&data);
-    // Schedule next sync in 10 sec
-    m_timeSyncTimer = 10000;
-    m_timeSyncServer = GetMSTime();
-} 
+}

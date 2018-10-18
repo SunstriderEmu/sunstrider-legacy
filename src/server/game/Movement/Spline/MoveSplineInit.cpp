@@ -69,15 +69,15 @@ namespace Movement
             real_position = move_spline.ComputePosition();
         else
         {
-            Position const* pos;
+            Position pos;
             if (!transport)
-                pos = unit;
+                pos = unit->GetPosition();
             else
-                pos = &unit->m_movementInfo.transport.pos;
+                pos = unit->GetMovementInfo().transport.pos;
 
-            real_position.x = pos->GetPositionX();
-            real_position.y = pos->GetPositionY();
-            real_position.z = pos->GetPositionZ();
+            real_position.x = pos.GetPositionX();
+            real_position.y = pos.GetPositionY();
+            real_position.z = pos.GetPositionZ();
             real_position.orientation = unit->GetOrientation();
         }
 
@@ -91,7 +91,7 @@ namespace Movement
         args.flags.enter_cycle = args.flags.cyclic;
         move_spline.onTransport = transport;
 
-        uint32 moveFlags = unit->m_movementInfo.GetMovementFlags();
+        uint32 moveFlags = unit->GetMovementInfo().GetMovementFlags();
         moveFlags |= MOVEMENTFLAG_SPLINE_ENABLED;
         
 #ifdef LICH_KING
@@ -157,15 +157,15 @@ namespace Movement
             loc = move_spline.ComputePosition();
         else
         {
-            Position const* pos;
+            Position pos;
             if (!transport)
-                pos = unit;
+                pos = unit->GetPosition();
             else
-                pos = &unit->m_movementInfo.transport.pos;
+                pos = unit->GetMovementInfo().transport.pos;
 
-            loc.x = pos->GetPositionX();
-            loc.y = pos->GetPositionY();
-            loc.z = pos->GetPositionZ();
+            loc.x = pos.GetPositionX();
+            loc.y = pos.GetPositionY();
+            loc.z = pos.GetPositionZ();
             loc.orientation = unit->GetOrientation();
         }
 

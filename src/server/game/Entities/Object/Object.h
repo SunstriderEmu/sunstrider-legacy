@@ -49,9 +49,7 @@ float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
 struct MovementInfo
 {
     // common
-#ifdef LICH_KING
     ObjectGuid guid;
-#endif
     uint32 flags;
 #ifdef LICH_KING
     uint16 flags2;
@@ -115,12 +113,17 @@ struct MovementInfo
     bool HasMovementFlag(uint32 flag) const { return flags & flag; }
 
     uint16 GetExtraMovementFlags() const { return flags2; }
-    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
-#ifdef LICH_KING
+    void SetExtraMovementFlags(uint16 flag) { flags2 = flag; }
     void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
-#endif
+    void RemoveExtraMovementFlag(uint16 flag) { flags2 &= ~flag; }
+    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
 
     void SetFallTime(uint32 _time) { fallTime = _time; }
+
+    void OutDebug() const;
+
+    void WriteContentIntoPacket(ByteBuffer* data, bool includeGuid = false) const;
+    void FillContentFromPacket(ByteBuffer* data, bool includeGuid = false);
 };
 
 #define POSITION_GET_X_Y_Z(a)   (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ()
@@ -641,8 +644,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		virtual void UpdateObjectVisibility(bool forced = true);
         virtual void UpdateObjectVisibilityOnCreate() { UpdateObjectVisibility(true); }
         
-        MovementInfo m_movementInfo;
-        
         uint32  LastUsedScriptID;
 
         void SetFallTime(uint32 time) { m_movementInfo.SetFallTime(time); }
@@ -665,7 +666,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float GetTransOffsetZ() const { return m_movementInfo.transport.pos.GetPositionZ(); }
         float GetTransOffsetO() const { return m_movementInfo.transport.pos.GetOrientation(); }
         uint32 GetTransTime()   const { return m_movementInfo.transport.time; }
-        virtual ObjectGuid GetTransGUID() const;
+        virtual ObjectGuid GetTransGUID() const; 
         void SetTransport(Transport* t);
         void SetTransOffset(float x, float y, float z, float o = 0.0f) { m_movementInfo.transport.pos.Relocate(x, y, z, o); }
         void SetTransTime(uint32 time) { m_movementInfo.transport.time = time; }
@@ -681,6 +682,10 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void UpdatePositionData(bool updateCreatureLiquid = false);
         float GetFloorZ() const;
+
+        // Return the current positional/physical state of the object
+        MovementInfo GetMovementInfo() const;
+        virtual float ComputeCollisionHeight() const { return 0.0f; }
         virtual float GetCollisionHeight() const { return 0.0f; }
         float GetMapWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr) const;
         float GetMapHeight(float x, float y, float z, bool vmap = true, float distanceToSearch = 50.0f) const; // DEFAULT_HEIGHT_SEARCH in map.h
@@ -706,6 +711,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         std::string m_name;
 		bool const m_isWorldObject;
 		ZoneScript* m_zoneScript;
+
+        MovementInfo m_movementInfo;
+
         bool m_isActive;
         bool m_isFarVisible;
 

@@ -249,6 +249,8 @@ private:
 
 class TC_GAME_API SpellEffectInfo
 {
+    friend class SpellMgr;
+
     SpellInfo const* _spellInfo;
     uint8 _effIndex;
 public:
