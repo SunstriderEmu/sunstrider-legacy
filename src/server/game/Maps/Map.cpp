@@ -2314,7 +2314,7 @@ const char* Map::GetMapName() const
     return i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0";
 }
 
-void Map::SendInitSelf( Player * player)
+void Map::SendInitSelf(Player * player)
 {
     TC_LOG_DEBUG("maps","Creating player data for himself %u", player->GetGUID().GetCounter());
 

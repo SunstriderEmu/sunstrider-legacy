@@ -3889,7 +3889,7 @@ Mail* Player::GetMail(uint32 id)
     return nullptr;
 }
 
-void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const
+void Player::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const
 {
     for(uint8 i = 0; i < EQUIPMENT_SLOT_END; i++)
     {
@@ -3918,7 +3918,7 @@ void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target )
         }
     }
 
-    Unit::BuildCreateUpdateBlockForPlayer( data, target );
+    Unit::BuildCreateUpdateBlockForPlayer(data, target);
 }
 
 void Player::DestroyForPlayer(Player *target, bool onDeath) const
@@ -4359,6 +4359,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     }
 
     // speed change, land walk
+    SetRooted(false);
 
     // remove death flag + set aura
     SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, 0x00);

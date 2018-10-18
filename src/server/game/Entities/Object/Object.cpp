@@ -160,8 +160,8 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     if(!target)
         return;
 
-    uint8  updateType = UPDATETYPE_CREATE_OBJECT;
-    uint8  flags = m_updateFlag;
+    uint8 updateType = UPDATETYPE_CREATE_OBJECT;
+    uint8 flags = m_updateFlag;
 
     // lower flag1
     if(target == this)                                      // building packet for oneself
@@ -2827,14 +2827,56 @@ void WorldObject::SetTransport(Transport* transport)
     m_transport = transport;
 }
 
-MovementInfo const& WorldObject::_GetMovementInfo()
+MovementInfo const& WorldObject::_GetMovementInfo() const
 {
     return m_movementInfo;
 }
 
 MovementInfo WorldObject::GetMovementInfo() const
 {
-    return m_movementInfo;
+    //almost a copy... except for the positions
+    MovementInfo mInfo;
+    mInfo.guid = GetGUID();
+    mInfo.SetMovementFlags(GetUnitMovementFlags());
+    mInfo.SetExtraMovementFlags(GetExtraUnitMovementFlags());
+    mInfo.time = m_movementInfo.time;
+    mInfo.pos.Relocate(
+        GetPositionX(),
+        GetPositionY(),
+        GetPositionZ(),
+        GetOrientation()
+    );
+
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_ONTRANSPORT)
+    {
+        mInfo.transport.guid = GetTransGUID();
+        mInfo.transport.pos.Relocate(GetTransOffsetX(), GetTransOffsetY(), GetTransOffsetZ(), GetTransOffsetO());
+        mInfo.transport.time = GetTransTime();
+#ifdef LICH_KING
+        mInfo.transport.seat = GetTransSeat();
+        if (GetExtraUnitMovementFlags() & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+            mInfo.transport.time2 = m_movementInfo.transport.time2;
+#endif
+    }
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_JUMPING_OR_FALLING))
+#ifdef LICH_KING
+        || (m_movementInfo.flags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
+#endif
+        )
+        mInfo.pitch = m_movementInfo.pitch;
+
+    mInfo.SetFallTime(m_movementInfo.fallTime);
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING)
+    {
+        mInfo.jump.zspeed = m_movementInfo.jump.zspeed;
+        mInfo.jump.sinAngle = m_movementInfo.jump.sinAngle;
+        mInfo.jump.cosAngle = m_movementInfo.jump.cosAngle;
+        mInfo.jump.xyspeed = m_movementInfo.jump.xyspeed;
+    }
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_SPLINE_ELEVATION)
+        mInfo.splineElevation = m_movementInfo.splineElevation;
+
+    return mInfo;
 }
 
 ObjectGuid WorldObject::GetCharmerOrOwnerOrOwnGUID() const

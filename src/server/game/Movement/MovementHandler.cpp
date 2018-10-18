@@ -83,7 +83,7 @@ void WorldSession::HandleMoveWorldportAck()
     player->ResetMap();
     player->SetMap(newMap);
 
-    // check this before Map::Add(player), because that will create the instance save!
+    // check this before Map::AddPlayerToMap(player), because that will create the instance save!
     bool reset_notify = (player->GetBoundInstance(player->GetMapId(), player->GetDifficulty()) == NULL);
 
     player->SendInitialPacketsBeforeAddToMap();
