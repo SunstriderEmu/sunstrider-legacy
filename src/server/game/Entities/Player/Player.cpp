@@ -23302,7 +23302,7 @@ bool Player::IsTestingBot() const
 #ifdef TESTS
     return GetTestingPlayerbotAI();
 #else
-    return nullptr;
+    return false;
 #endif
 }
 

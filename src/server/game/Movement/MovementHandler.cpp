@@ -250,7 +250,8 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     }
 
     PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
-    pendingChange.Resolve(pendingChange, this, mover, mover->_GetMovementInfo()); //GetMovementInfo wont be used here
+    MovementInfo info = mover->GetMovementInfo();
+    pendingChange.Resolve(pendingChange, this, mover, &info); //GetMovementInfo wont be used here
 }
 
 /*
@@ -1128,7 +1129,7 @@ void WorldSession::ResolveAllPendingChanges()
     while (HasPendingMovementChange())
     {
         PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
-        pendingChange.Resolve(pendingChange, this, nullptr);
+        pendingChange.Resolve(pendingChange, this, nullptr, nullptr);
     }
 }
 
@@ -1193,6 +1194,7 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
 {
     //if we're doing a serverside resolve, we're using the current movement info from the server, so no need to validate it
     bool serverSideResolve = mover == nullptr;
+    MovementInfo serverMovementInfo = mover->GetMovementInfo();
     if (serverSideResolve)
     {
         ASSERT(movementInfo == nullptr); //else, wrong usage of this function
@@ -1203,7 +1205,7 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
                 guid.ToString().c_str(), session->GetPlayer()->GetName().c_str(), session->GetPlayer()->GetGUID().ToString().c_str());
             return;
         }
-        movementInfo = mover->_GetMovementInfo();
+        movementInfo = &serverMovementInfo;
     }
     else 
     {
