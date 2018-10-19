@@ -42,10 +42,10 @@ LogsDir = ""
 #        Default: hostname;port;username;password;database
 #
 
-LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;_auth"
-WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;_world"
-CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;_chars"
-LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;_logs"
+LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;auth"
+WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
+CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;logs"
 
 #
 #    MaxPingTime
