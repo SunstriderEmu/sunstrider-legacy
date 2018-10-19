@@ -57,9 +57,6 @@ public:
         for (const auto & it : its)
         {
             ItemTemplate const *pProto = &(it.second);
-            if (!pProto)
-                continue;
-
             if (pProto->StartQuest == entry)
             {
                 handler->PSendSysMessage(LANG_COMMAND_QUEST_STARTFROMITEM, entry, pProto->ItemId);

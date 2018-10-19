@@ -1,4 +1,3 @@
-﻿
 #include "Common.h"
 #include "SharedDefines.h"
 #include "WorldPacket.h"
@@ -825,7 +824,7 @@ bool WorldObject::IsWorldObject() const
     return false;
 }
 
-void WorldObject::SetKeepActive( bool on )
+void WorldObject::SetKeepActive(bool on)
 {
     if(m_isActive == on)
         return;
@@ -3197,7 +3196,7 @@ SpellMissInfo WorldObject::MeleeSpellHitResult(Unit* /*victim*/, SpellInfo const
 SpellMissInfo WorldObject::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem) const
 {
     // Can`t miss on dead target (on skinning for example)
-    if ((!pVictim->IsAlive() && pVictim->GetTypeId() != TYPEID_PLAYER))
+    if (!pVictim->IsAlive() && pVictim->GetTypeId() != TYPEID_PLAYER)
         return SPELL_MISS_NONE;
         
     // Always 1% resist chance. Send this as SPELL_MISS_MISS (note that this is not BC blizzlike, this was changed in WotLK).

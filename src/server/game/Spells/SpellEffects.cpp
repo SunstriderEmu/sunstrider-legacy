@@ -5563,26 +5563,23 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if(!unitTarget)
                     return;
 
-                if(unitTarget)
+                switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
                 {
-                    switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
-                    {
-                    case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
-                    case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
-                    case 225: 
-                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
-                            unitTarget->CastSpell(unitTarget, 51617, true);
-                        else
-                            unitTarget->CastSpell(unitTarget, 48024, true);
-                        break;
-                    case 300: 
-                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
-                            unitTarget->CastSpell(unitTarget, 48023, true);
-                        else
-                            unitTarget->CastSpell(unitTarget, 48024, true);
-                        break;
-                    default: break;
-                    }
+                case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
+                case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
+                case 225: 
+                    if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
+                        unitTarget->CastSpell(unitTarget, 51617, true);
+                    else
+                        unitTarget->CastSpell(unitTarget, 48024, true);
+                    break;
+                case 300: 
+                    if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
+                        unitTarget->CastSpell(unitTarget, 48023, true);
+                    else
+                        unitTarget->CastSpell(unitTarget, 48024, true);
+                    break;
+                default: break;
                 }
                 break;
         }
@@ -5591,14 +5588,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!unitTarget)
                 return;
 
-            if(unitTarget)
+            switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
             {
-                switch((unitTarget->ToPlayer())->GetBaseSkillValue(762))
-                {
-                case 75: unitTarget->CastSpell(unitTarget, 42680, true); break;;
-                case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
-                default: break;
-                }
+            case 75: unitTarget->CastSpell(unitTarget, 42680, true); break;;
+            case 150: case 225: case 300: unitTarget->CastSpell(unitTarget, 42683, true); break;
+            default: break;
             }
             break;
         }
@@ -5829,7 +5823,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         //5,000 Gold
         case 46642:
         {
-            if(unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+            if(unitTarget->GetTypeId() == TYPEID_PLAYER)
                 (unitTarget->ToPlayer())->ModifyMoney(50000000);
             break;
         }

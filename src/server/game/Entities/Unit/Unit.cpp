@@ -11922,7 +11922,7 @@ void Unit::ServerEmote(std::string const& text, bool isBossEmote)
 //todo: localize this
 void Unit::YellToMap(std::string const& text, Language language)
 {
-    Map const* map = GetMap();
+    Map const* map = FindMap();
     if(!map)
         return;
 

@@ -294,7 +294,8 @@ public:
     static bool HandleHerodayCommand(ChatHandler* handler, char const* args)
     {
         LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-        if (loc_idx >= 0) {
+        if (loc_idx != DEFAULT_LOCALE)
+        {
             QuestLocale const* pQuest = sObjectMgr->GetQuestLocale(sWorld->GetCurrentQuestForPool(1));
             if (pQuest) {
                 if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
@@ -494,7 +495,7 @@ public:
         if (target)
         {
             uint32 options = TELE_TO_GM_MODE;
-            Map* cMap = target->GetMap();
+            Map* cMap = target->FindMap();
             if (!cMap)
             {
                 handler->SendSysMessage("Target is not in any map");
@@ -549,7 +550,7 @@ public:
                     }
                 }
 
-                Map* pMap = _player->GetMap();
+                Map* pMap = _player->FindMap();
                 if (pMap && cMap->Instanceable() && pMap->GetId() == cMap->GetId() && cMap->GetInstanceId() != pMap->GetInstanceId())
                     options |= TELE_TO_FORCE_RELOAD; //always force reload if same dungeon, this fixes teleporting to the wrong instance.
 

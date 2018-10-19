@@ -1546,8 +1546,7 @@ public:
             int32 expectedCastTime = baseCastTime - masterSummonerReduc;
             if (useFelDomination)
                 expectedCastTime -= felDominationReduc;
-            if (expectedCastTime < 0)
-                expectedCastTime = 0;
+            TEST_ASSERT(expectedCastTime > 0);
             TEST_CAST_TIME(warlock, summonSpellId, uint32(expectedCastTime));
 
             TEST_POWER_COST(warlock, summonSpellId, POWER_MANA, expectedManaCost);

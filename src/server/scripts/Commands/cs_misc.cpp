@@ -617,9 +617,6 @@ public:
         for (const auto & it : its)
         {
             ItemTemplate const *pProto = &(it.second);
-            if (!pProto)
-                continue;
-
             if (pProto->ItemSet == itemsetId)
             {
                 found = true;
@@ -723,15 +720,6 @@ public:
             return true;
 
         char* schoolStr = strtok((char*)nullptr, " ");
-
-        // flat melee damage without resistence/etc reduction
-        if(!schoolStr)
-        {
-            Unit::DealDamage(handler->GetSession()->GetPlayer(), target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
-            handler->GetSession()->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_NORMAL, 0);
-            return true;
-        }
-
         uint32 school = schoolStr ? atoi((char*)schoolStr) : SPELL_SCHOOL_NORMAL;
         if(school >= MAX_SPELL_SCHOOL)
             return false;
@@ -1482,7 +1470,7 @@ public:
         }
 
         //effect
-        if ((player) && (!(player==handler->GetSession()->GetPlayer())))
+        if (player && (!(player == handler->GetSession()->GetPlayer())))
         {
             handler->PSendSysMessage(LANG_COMMAND_FREEZE,name.c_str());
 

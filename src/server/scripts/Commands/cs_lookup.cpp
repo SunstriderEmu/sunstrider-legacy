@@ -170,11 +170,8 @@ public:
         {
             uint32 id = itr.second.Entry;
             CreatureTemplate const* cInfo = &(itr.second);
-            if (!cInfo)
-                continue;
-
             LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-            if (loc_idx >= 0)
+            if (loc_idx != DEFAULT_LOCALE)
             {
                 CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(id);
                 if (cl)
@@ -220,7 +217,7 @@ public:
     {
         ARGS_CHECK
 
-            std::string namepart = args;
+        std::string namepart = args;
         std::wstring wnamepart;
 
         // converting string that we try to find to lower case
@@ -237,11 +234,8 @@ public:
         {
             uint32 id = itr.first;
             GameObjectTemplate const* gInfo = &(itr.second);
-            if (!gInfo)
-                continue;
-
             LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-            if (loc_idx >= 0)
+            if (loc_idx != DEFAULT_LOCALE)
             {
                 GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(id);
                 if (gl)
@@ -399,7 +393,7 @@ public:
                 continue;
 
             LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-            if (loc_idx >= 0)
+            if (loc_idx != DEFAULT_LOCALE)
             {
                 ItemLocale const *il = sObjectMgr->GetItemLocale(pProto->ItemId);
                 if (il)
@@ -591,7 +585,7 @@ public:
             auto qinfo = &qTemplate.second;
 
             LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-            if (loc_idx >= 0)
+            if (loc_idx != DEFAULT_LOCALE)
             {
                 auto il = sObjectMgr->GetQuestLocale(qinfo->GetQuestId());
                 if (il)

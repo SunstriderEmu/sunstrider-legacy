@@ -113,8 +113,6 @@ RandomItemList RandomItemMgr::Query(RandomItemType type)
     {
         uint32 itemId = i->first;
         ItemTemplate const* proto = &i->second;
-        if (!proto)
-            continue;
 
         if (proto->Duration & 0x80000000)
             continue;

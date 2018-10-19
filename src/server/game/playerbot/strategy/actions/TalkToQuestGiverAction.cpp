@@ -24,6 +24,9 @@ void TalkToQuestGiverAction::ProcessQuest(Quest const* quest, WorldObject* quest
     case QUEST_STATUS_FAILED:
         out << "|cffff0000Failed|r";
         break;
+    case QUEST_STATUS_REWARDED:
+        out << "|cffff0000Rewarded|r";
+        break;
     }
 
     out << ": " << chat->formatQuest(quest);

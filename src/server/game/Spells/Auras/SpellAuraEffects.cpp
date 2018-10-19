@@ -1274,8 +1274,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
     SpellPeriodicAuraLogInfo pInfo(this, heal, 0, 0, 0.0f);
     target->SendPeriodicAuraLog(&pInfo);
 
-    if (caster)
-        target->GetThreatManager().ForwardThreatForAssistingMe(caster, healInfo.GetEffectiveHeal() * 0.5f, GetSpellInfo());
+    target->GetThreatManager().ForwardThreatForAssistingMe(caster, healInfo.GetEffectiveHeal() * 0.5f, GetSpellInfo());
 
     bool haveCastItem = GetBase()->GetCastItemGUID() != 0;
 
@@ -1291,8 +1290,7 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster, uint32 
         uint32 funnelAbsorb = 0;
         Unit::DealDamageMods(caster, funnelDamage, &funnelAbsorb);
 
-        if (caster)
-            caster->SendSpellNonMeleeDamageLog(caster, GetId(), funnelDamage, GetSpellInfo()->GetSchoolMask(), funnelAbsorb, 0, true, 0, false);
+        caster->SendSpellNonMeleeDamageLog(caster, GetId(), funnelDamage, GetSpellInfo()->GetSchoolMask(), funnelAbsorb, 0, true, 0, false);
 
         CleanDamage cleanDamage = CleanDamage(0, 0, BASE_ATTACK, MELEE_HIT_NORMAL);
         Unit::DealDamage(caster, caster, funnelDamage, &cleanDamage, SELF_DAMAGE, GetSpellInfo()->GetSchoolMask(), GetSpellInfo(), true);

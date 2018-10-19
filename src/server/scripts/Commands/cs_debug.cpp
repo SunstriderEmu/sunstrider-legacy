@@ -432,6 +432,8 @@ public:
         {
             std::string type;
             ifs >> type;
+            if (ifs.eof())
+                break;
 
             if(type == "")
                 break;
@@ -1207,9 +1209,6 @@ public:
             return false;
 
         Map* map = p->GetMap();
-        if (!map)
-            return false;
-
         map->SetZoneMusic(p->GetZoneId(), musicId);
         handler->PSendSysMessage("Changed zone music to %u", musicId);
         return true;
@@ -1232,9 +1231,6 @@ public:
             return false;
 
         Map* map = p->GetMap();
-        if (!map)
-            return false;
-
         map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS); //fade over 10 seconds
         handler->PSendSysMessage("Changed zone light to %u", lightId);
         return true;
@@ -1264,9 +1260,6 @@ public:
             return false;
 
         Map* map = p->GetMap();
-        if (!map)
-            return false;
-
         map->SetZoneWeather(p->GetZoneId(), WeatherState(weatherId), intensity);
         handler->PSendSysMessage("Changed zone weather to %u", weatherId);
         return true;
@@ -1651,12 +1644,6 @@ public:
         std::string arg = tokens[1];
 
         Map* map = handler->GetSession()->GetPlayer()->GetMap();
-        if (!map)
-        {
-            handler->SendSysMessage("Map not found");
-            return true;
-        }
-
         GameObject* target = map->GetGameObjectBySpawnId(spawnID);
         if (!target)
         {

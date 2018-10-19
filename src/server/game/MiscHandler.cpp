@@ -1341,10 +1341,10 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
                     continue;
 
                 //sun: reworked condition
-                if (!groupGuy->GetMap()) 
+                if (!groupGuy->FindMap()) 
                     return;
 
-                if (groupGuy->GetMap()->IsNonRaidDungeon())
+                if (groupGuy->FindMap()->IsNonRaidDungeon())
                 {
                     TC_LOG_DEBUG("network", "WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while group member (Name: %s, GUID: %u) is inside!",
                         _player->GetGUID().GetCounter(), groupGuy->GetName().c_str(), groupGuy->GetGUID().GetCounter());

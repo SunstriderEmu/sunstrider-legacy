@@ -1003,7 +1003,7 @@ void StaticTransport::RelocateToProgress(uint32 progress)
     }
 }
 
-void StaticTransport::UpdatePosition(float x, float y, float z, float o)
+void StaticTransport::UpdatePosition(float x, float y, float /*z*/, float o)
 {
     if (!GetMap()->IsGridLoaded(x, y)) // sunwell: should not happen, but just in case
         GetMap()->LoadGrid(x, y);

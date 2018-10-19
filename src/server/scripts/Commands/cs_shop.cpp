@@ -298,7 +298,8 @@ public:
                     if (msg != EQUIP_ERR_OK)
                         count -= noSpaceForCount;
 
-                    if (count == 0 || dest.empty()) {
+                    if (count == 0 || dest.empty())
+                    {
                         handler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
                         handler->SetSentErrorMessage(true);
                         continue;
@@ -312,7 +313,7 @@ public:
                     {
                         Item *item = player->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
 
-                        if (count > 0 && item) {
+                        if (item) {
                             player->SendNewItem(item, count, true, true);
                             can_take_credits = true;
                         }

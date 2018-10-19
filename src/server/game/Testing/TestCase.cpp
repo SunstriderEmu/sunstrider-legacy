@@ -323,13 +323,6 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
    
     uint32 testAccountId = TestCase::GetTestBotAccountId();
     WorldSession* session = new WorldSession(testAccountId, BUILD_243, TEST_ACCOUNT_NAME, NULL, SEC_PLAYER, 1, 0, LOCALE_enUS, 0, false);
-    if (!session)
-    {
-        TC_LOG_ERROR("test.unit_test", "Failed to create session for test bot");
-        delete session;
-        return nullptr;
-    }
-
     TestPlayer* player = new TestPlayer(session);
 
     CharacterCreateInfo cci;

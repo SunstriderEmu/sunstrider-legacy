@@ -17228,7 +17228,6 @@ void Player::_SaveInventory(SQLTransaction trans)
 
     // do not save if the update queue is corrupt
     bool error = false;
-    bool dup = false;
     for(auto item : m_itemUpdateQueue)
     {
         if(!item || item->GetState() == ITEM_REMOVED) continue;
@@ -17238,7 +17237,6 @@ void Player::_SaveInventory(SQLTransaction trans)
         {
             TC_LOG_ERROR("entities.player","POSSIBLE ITEM DUPLICATION ATTEMPT: Player(GUID: %u Name: %s)::_SaveInventory - the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", GetGUID().GetCounter(), GetName().c_str(), item->GetBagSlot(), item->GetSlot(), item->GetGUID().GetCounter());
             error = true;
-            //dup = true;
         }
         else if (test != item)
         {
@@ -17252,16 +17250,6 @@ void Player::_SaveInventory(SQLTransaction trans)
         TC_LOG_ERROR("entities.player","Player::_SaveInventory - one or more errors occurred save aborted!");
         ChatHandler(this).SendSysMessage(LANG_ITEM_SAVE_FAILED);
         m_itemUpdateQueue.clear();
-        if (dup) {
-            std::string banuname;
-            QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = '%u'", m_session->GetAccountId());
-            if (result) {
-                Field* fields = result->Fetch();
-                banuname = fields[0].GetString();
-                sWorld->BanAccount(SANCTION_BAN_ACCOUNT, banuname, "0", "auto ban on dupe", "Internal check", nullptr);
-            }
-        }
-
         return;
     }
 

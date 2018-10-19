@@ -146,14 +146,14 @@ public:
     {
         ARGS_CHECK
 
-            uint64 tguid = atoi(args);
+        uint64 tguid = atoi(args);
         GM_Ticket *ticket = sObjectMgr->GetGMTicket(tguid);
         if (!ticket || ticket->closed != 0)
         {
             handler->SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
             return true;
         }
-        if (ticket && ticket->assignedToGM != 0 && (!handler->GetSession() || ticket->assignedToGM != handler->GetSession()->GetPlayer()->GetGUID()))
+        if (ticket->assignedToGM != 0 && (!handler->GetSession() || ticket->assignedToGM != handler->GetSession()->GetPlayer()->GetGUID()))
         {
             handler->PSendSysMessage(LANG_COMMAND_TICKETCANNOTCLOSE, ticket->guid);
             return true;

@@ -4686,9 +4686,6 @@ void ObjectMgr::LoadInstanceTemplate()
     for(auto i : _instanceTemplateStore)
     {
         InstanceTemplate* temp = &(i.second);
-        if(!temp) 
-            continue;
-
         const MapEntry* entry = sMapStore.LookupEntry(i.first);
         if(!entry)
             continue;  //should never happen if sMapStore isn't altered elswhere

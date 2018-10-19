@@ -883,7 +883,7 @@ public:
 
         int32 amount = 0;
         char *rankTxt = strtok(nullptr, " ");
-        if (!factionTxt || !rankTxt)
+        if (!rankTxt)
             return false;
 
         amount = atoi(rankTxt);

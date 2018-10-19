@@ -210,7 +210,7 @@ void SocialMgr::GetFriendInfo(Player *player, ObjectGuid::LowType friendGUID, Fr
 
     // PLAYER see his team only and PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
     // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-    if      (pFriend && !pFriend->GetName().empty() 
+    if      (!pFriend->GetName().empty() 
         &&  (security > SEC_PLAYER ||
             ((pFriend->GetTeam() == team || allowTwoSideWhoList) && (pFriend->GetSession()->GetSecurity() <= gmLevelInWhoList))) 
         &&  pFriend->IsVisibleGloballyFor(player))

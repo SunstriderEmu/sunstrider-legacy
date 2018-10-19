@@ -466,9 +466,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 
                     field = result->Fetch();
                     accRace = field[1].GetUInt8();
-
-                    if (!haveSameRace)
-                        haveSameRace = createInfo->Race == accRace;
+                    haveSameRace = createInfo->Race == accRace;
                 }
             }
 

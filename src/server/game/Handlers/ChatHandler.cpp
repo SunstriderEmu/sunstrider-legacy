@@ -631,7 +631,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
                 break;
         }
 
-        if(source && source->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
+        if(source->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
         {
             data.Initialize(SMSG_TEXT_EMOTE, (20+namlen)); //LK ok
             data << source->GetGUID();

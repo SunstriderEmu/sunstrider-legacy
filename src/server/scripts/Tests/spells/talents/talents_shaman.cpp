@@ -160,40 +160,43 @@ public:
 	class ToughnessTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
-			TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
+            //Fixme: 
+            // - What to do with returns? Fail test?
+            // - Comparison of floats with GetMaxDuration result
+            SECTION("main", STATUS_WIP, [&] {
+                TestPlayer* player = SpawnRandomPlayer(CLASS_SHAMAN);
 
-			// Armor effect
-			uint32 const startArmor = player->GetArmor();
-			uint32 const expectedArmor = startArmor * 1.1f;
+                // Armor effect
+                uint32 const startArmor = player->GetArmor();
+                uint32 const expectedArmor = startArmor * 1.1f;
 
-			LearnTalent(player, Talents::Shaman::TOUGHNESS_RNK_5);
-			TEST_ASSERT(Between<float>(player->GetArmor(), expectedArmor - 1, expectedArmor + 1));
+                LearnTalent(player, Talents::Shaman::TOUGHNESS_RNK_5);
+                TEST_ASSERT(Between<float>(player->GetArmor(), expectedArmor - 1, expectedArmor + 1));
 
-			// Slowing effects
-			player->AddAura(ClassSpells::Warrior::HAMSTRING_RNK_4, player);
-			Aura* hamstring = player->GetAura(ClassSpells::Warrior::HAMSTRING_RNK_4);
-			if (!hamstring)
-				return;
-			TEST_ASSERT(hamstring->GetMaxDuration() < 7.6f);
-			player->RemoveAurasDueToSpell(ClassSpells::Warrior::HAMSTRING_RNK_4);
+                // Slowing effects
+                player->AddAura(ClassSpells::Warrior::HAMSTRING_RNK_4, player);
+                Aura* hamstring = player->GetAura(ClassSpells::Warrior::HAMSTRING_RNK_4);
+                if (!hamstring)
+                    return;
+                TEST_ASSERT(hamstring->GetMaxDuration() < 7.6f);
+                player->RemoveAurasDueToSpell(ClassSpells::Warrior::HAMSTRING_RNK_4);
 
-			player->AddAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2, player);
-			Aura* poison = player->GetAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
-			if (!poison)
-				return;
-			TEST_ASSERT(poison->GetMaxDuration() < 6.1f);
-			player->RemoveAurasDueToSpell(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
+                player->AddAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2, player);
+                Aura* poison = player->GetAura(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
+                if (!poison)
+                    return;
+                TEST_ASSERT(poison->GetMaxDuration() < 6.1f);
+                player->RemoveAurasDueToSpell(ClassSpells::Rogue::CRIPPLING_POISON_II_RNK_2);
 
-			player->AddAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5, player);
-			Aura* shock = player->GetAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5);
-			if (!shock)
-				return;
-			TEST_ASSERT(shock->GetMaxDuration() < 4.1f);
-			player->RemoveAurasDueToSpell(ClassSpells::Shaman::FROST_SHOCK_RNK_5);
+                player->AddAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5, player);
+                Aura* shock = player->GetAura(ClassSpells::Shaman::FROST_SHOCK_RNK_5);
+                if (!shock)
+                    return;
+                TEST_ASSERT(shock->GetMaxDuration() < 4.1f);
+                player->RemoveAurasDueToSpell(ClassSpells::Shaman::FROST_SHOCK_RNK_5);
+            });
 		}
 	};
 

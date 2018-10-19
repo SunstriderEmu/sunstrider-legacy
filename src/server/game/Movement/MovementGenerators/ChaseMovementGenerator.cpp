@@ -231,7 +231,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
                 // otherwise, we fall back to nearpoint finding
                 //sun: note that LoS in checked in GetNearPoint, it'll try to get a closer position if target is not in los
                 //sun: cancel combat reach added in GetNearPoint
-                target->GetNearPoint(owner, x, y, z, (moveToward ? maxTarget : minTarget) - target->GetCombatReach(), angle ? target->ToAbsoluteAngle(angle->RelativeAngle) : target->GetAbsoluteAngle(owner));
+                target->GetNearPoint(owner, x, y, z, (moveToward ? maxTarget : minTarget) - target->GetCombatReach(), angle.is_initialized() ? target->ToAbsoluteAngle(angle->RelativeAngle) : target->GetAbsoluteAngle(owner));
                 shortenPath = false;
             }
 

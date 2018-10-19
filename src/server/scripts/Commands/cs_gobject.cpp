@@ -703,6 +703,7 @@ public:
         case 1: //uint64
             uValue = target->GetUInt64Value(index);
             handler->PSendSysMessage(LANG_GET_UINT_FIELD, guid, index, uValue);
+            break;
         case 2: //float
             fValue = target->GetFloatValue(index);
             handler->PSendSysMessage(LANG_GET_FLOAT_FIELD, guid, index, fValue);
@@ -771,6 +772,7 @@ public:
             uValue = (uint64)atoi(cValue);
             target->SetUInt64Value(index, uValue);
             handler->PSendSysMessage(LANG_SET_UINT_FIELD, guid, index, uValue);
+            break;
         case 2: //float
             fValue = (float)atof(cValue);
             target->SetFloatValue(index, fValue);

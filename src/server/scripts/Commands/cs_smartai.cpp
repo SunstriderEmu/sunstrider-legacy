@@ -100,7 +100,7 @@ public:
         {
             if (target->GetAIName() == SMARTAI_AI_NAME)
             {
-                if (SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript())
+                if (SmartScript* smartScript = static_cast<SmartAI*>(target->AI())->GetScript())
                 {
                     uint32 phase = smartScript->GetPhase();
                     handler->PSendSysMessage("Current phase: %u", phase);

@@ -126,7 +126,7 @@ bool RecupMgr::HandleRecupParseCommand(Player* player, std::string const command
             {
                 Item *item = player->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
 
-                if (count > 0 && item)
+                if (item)
                     player->SendNewItem(item, count, true, true);
             }
 

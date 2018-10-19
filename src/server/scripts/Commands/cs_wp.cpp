@@ -743,7 +743,7 @@ public:
             return false;
         }
 
-        if(show == "del" && target)
+        if(show == "del")
         {
             handler->PSendSysMessage("|cff00ff00DEBUG: wp modify del, PathID: |r|cff00ffff%u|r", pathid);
 
@@ -788,7 +788,7 @@ public:
                     wpCreature->DeleteFromDB();
                     wpCreature->AddObjectToRemoveList();
                     // re-create
-                    auto wpCreature2 = new Creature;
+                    Creature* wpCreature2 = new Creature;
                     if (!wpCreature2->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), VISUAL_WAYPOINT, { chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation() }))
                     {
                         handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
