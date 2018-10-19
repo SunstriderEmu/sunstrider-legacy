@@ -11,8 +11,6 @@ public:
 	class BarkskinTestImpt : public TestCase
 	{
 	public:
-
-
 		void TestState(TestPlayer* druid, uint32 spellId, bool shapeshifted = false)
 		{
 			druid->AddAura(spellId, druid);
@@ -86,8 +84,6 @@ public:
 	class CycloneTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			// Init druid
@@ -180,14 +176,11 @@ public:
 class FaerieFireTest : public TestCaseScript
 {
 public:
-
 	FaerieFireTest() : TestCaseScript("spells druid faerie_fire") { }
 
 	class FaerieFireTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -229,14 +222,11 @@ public:
 class HibernateTest : public TestCaseScript
 {
 public:
-
 	HibernateTest() : TestCaseScript("spells druid hibernate") { }
 
 	class HibernateTestImpt : public TestCase
 	{
 	public:
-
-
 		void HibernateDuration(TestPlayer* druid, Unit* enemy, Milliseconds durationMS = Milliseconds(40000))
 		{
             FORCE_CAST(druid, enemy, ClassSpells::Druid::HIBERNATE_RNK_3, SPELL_MISS_NONE, TRIGGERED_CAST_DIRECTLY);
@@ -291,8 +281,6 @@ public:
 	class HurricaneTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -342,8 +330,6 @@ public:
 	class InnervateTestImpt : public TestCase
 	{
 	public:
-
-
 		float getSpiritRatioBasedRegen(TestPlayer* player, float spiritFactor = 1.0f)
 		{
 			uint32 level = player->GetLevel();
@@ -396,8 +382,6 @@ public:
 	class MoonfireTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -453,8 +437,6 @@ public:
 	class StarfireTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -499,8 +481,6 @@ public:
 	class ThornsTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
             TestPlayer* rogue = SpawnPlayer(CLASS_ROGUE, RACE_HUMAN);
@@ -545,8 +525,6 @@ public:
 	class WrathTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -627,8 +605,6 @@ public:
     class GrowlTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -763,8 +739,6 @@ public:
 	class ClawTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -855,8 +829,6 @@ public:
 	class DemoralizingRoarTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -916,8 +888,6 @@ public:
 	class EnrageTestImpt : public TestCase
 	{
 	public:
-
-
         /* WoWWiki: IMPORTANT: this only reduces your base armor, not your total armor. 
         So if you normally have 1000 armour from your leathers, it becomes 840, 
         however you still get the additional 4500 armor from dire bear form, 
@@ -1054,8 +1024,6 @@ public:
 	class FrenziedRegenerationTestImpt : public TestCase
 	{
 	public:
-
-
         void TestValue(TestPlayer* druid, uint32 expected, bool crit)
         {
             auto AI = druid->GetTestingPlayerbotAI();
@@ -1126,7 +1094,6 @@ public:
 class LacerateTest : public TestCaseScript
 {
 public:
-
 	LacerateTest() : TestCaseScript("spells druid lacerate") { }
 
 	class LacerateTestImpt : public TestCase
@@ -1197,14 +1164,11 @@ public:
 class MaulTest : public TestCaseScript
 {
 public:
-
 	MaulTest() : TestCaseScript("spells druid maul") { }
 
 	class MaulTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1249,14 +1213,11 @@ public:
 class PounceTest : public TestCaseScript
 {
 public:
-
 	PounceTest() : TestCaseScript("spells druid pounce") { }
 
 	class PounceTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1304,14 +1265,11 @@ public:
 class ProwlTest : public TestCaseScript
 {
 public:
-
 	ProwlTest() : TestCaseScript("spells druid prowl") { }
 
 	class ProwlTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			// INFO: stealth to be tested with Stealth Mechanic
@@ -1345,14 +1303,11 @@ public:
 class RakeTest : public TestCaseScript
 {
 public:
-
 	RakeTest() : TestCaseScript("spells druid rake") { }
 
 	class RakeTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1404,8 +1359,6 @@ public:
 	class RavageTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1471,8 +1424,6 @@ public:
     class ShredTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1527,8 +1478,6 @@ public:
     class SwipeTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             /* DrDamage AP factor: 0.07
@@ -1589,8 +1538,6 @@ public:
     class TigersFuryTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1655,8 +1602,6 @@ public:
     class AbolishPoisonTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnPlayer(CLASS_DRUID, RACE_TAUREN);
@@ -1703,8 +1648,6 @@ public:
     class CurePoisonTestImpt : public TestCase
     {
     public:
-
-
         uint32 getPoisonCount(TestPlayer* victim, uint32 poison1, uint32 poison2, uint32 poison3, bool cast = false)
         {
             uint32 count = 0;
@@ -1764,8 +1707,6 @@ public:
     class GiftOfTheWildTestImpt : public TestCase
     {
     public:
-
-
         void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus, uint32 reagentId)
         {
             uint32 const startArmor = victim->GetArmor();
@@ -1846,8 +1787,6 @@ public:
     class HealingTouchTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -1890,8 +1829,6 @@ public:
     class LifebloomTestImpt : public TestCase
     {
     public:
-
-
         void TestLifebloom(TestPlayer* druid, uint32 expectedBloom, bool crit)
         {
             druid->RemoveAurasDueToSpell(ClassSpells::Druid::LIFEBLOOM_RNK_1);
@@ -1977,8 +1914,6 @@ public:
     class MarkOfTheWildTestImpt : public TestCase
     {
     public:
-
-
         void TestOfTheWild(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint8 statBonus, uint8 resistanceBonus, uint16 armorBonus)
         {
             uint32 const expectedArmor = victim->GetArmor() + armorBonus + statBonus * 2; //also add armor related to agility increase
@@ -2047,8 +1982,6 @@ public:
     class RebirthTestImpt : public TestCase
     {
     public:
-
-
         void TestRebirth(TestPlayer* caster, TestPlayer* victim, uint32 spellId, uint32 manaCost, uint32 reagentId, uint32 expectedHealth, uint32 expectedMana, bool fail = false)
         {
             victim->KillSelf(true);
@@ -2124,8 +2057,6 @@ public:
 	class RejuvenationTestImpt : public TestCase
 	{
 	public:
-
-
 		void Test() override
 		{
 			TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
@@ -2219,8 +2150,6 @@ public:
     class RemoveCurseTestImpt : public TestCase
     {
     public:
-
-
         uint32 getCurseCount(TestPlayer* victim, uint32 curse1, uint32 curse2, uint32 curse3)
         {
             uint32 count = 0;
@@ -2297,8 +2226,6 @@ public:
     class TranquilityTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* druid = SpawnRandomPlayer(CLASS_DRUID);
