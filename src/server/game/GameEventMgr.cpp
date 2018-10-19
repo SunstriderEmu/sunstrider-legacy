@@ -1676,7 +1676,7 @@ bool GameEventMgr::CreateGameEvent(const char* name,int16& event_id)
         return false;
     }
 
-    ASSERT(mGameEvent.size() < MAXINT16);
+    //ASSERT(mGameEvent.size() < MAXINT16);
     event_id = mGameEvent.size();
     /*
     // crash crash crash. Remember events may not be continguous, probably the problem here
