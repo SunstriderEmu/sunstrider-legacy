@@ -82,12 +82,6 @@ class ChatCommandHolder
 {
 public:
     ChatCommandHolder(std::string command, Player* owner = nullptr, uint32 type = CHAT_MSG_WHISPER) : command(std::move(command)), owner(owner), type(type) {}
-    ChatCommandHolder(ChatCommandHolder const& other)
-    {
-        this->command = other.command;
-        this->owner = other.owner;
-        this->type = other.type;
-    }
 
 public:
     std::string GetCommand() { return command; }
