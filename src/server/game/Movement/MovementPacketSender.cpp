@@ -78,17 +78,25 @@ void MovementPacketSender::SendTeleportPacket(Unit* unit, MovementInfo const& mo
     // MSG_MOVE_TELEPORT is used in 2 different cases: 
     // 1) to teleport NPCs controlled by the server.
     // 2) to inform of the (acknowledged) teleport of a player-controlled unit
+    // 3) teleport from an NPC casting blink?
     // that's why here, unit->GetPlayerMovingMe() CAN be NULL. In that case, we are in scenario 1.
     WorldSession* session = unit->GetPlayerMovingMe();
-    ASSERT(session);
 
     WorldPacket data(MSG_MOVE_TELEPORT, 38);
     data << unit->GetPackGUID();
     movementInfo.WriteContentIntoPacket(&data);
-    unit->SendMessageToSet(&data, session->GetPlayer());
+    unit->SendMessageToSet(&data, session ? session->GetPlayer() : nullptr);
 
-    TC_LOG_TRACE("movement", "Sent teleport to set to player %s for unit %s (%s)",
-        session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
+    if (session)
+    {
+        TC_LOG_TRACE("movement", "Sent teleport to set to player %s for unit %s (%s)",
+            session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
+    }
+    else 
+    {
+        TC_LOG_TRACE("movement", "Sent teleport for npc unit %s (%s)",
+            unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
+    }
 }
 
 // Spline packets are for units controlled by the server. "Force speed change" (wrongly named opcodes) and "move set speed" packets are for units controlled by a player.
