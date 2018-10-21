@@ -191,6 +191,11 @@ void TestCase::_Cleanup()
         sMapMgr->UnloadTestMap(_location.GetMapId(), _testMapInstanceId);
         mapMgrMutex.unlock();
     }
+    for (auto guid : _spawnedPlayers)
+    {
+        if (Player* joiner = ObjectAccessor::FindPlayer(guid))
+            joiner->m_kickatnextupdate = true;
+    }
 }
 
 bool TestCase::_InternalSetup()
@@ -297,7 +302,7 @@ void TestCase::RandomizePlayer(TestPlayer* player)
 void TestCase::_RemoveTestBot(Player* player)
 {
     WorldSession* botWorldSessionPtr = player->GetSession();
-    botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
+    botWorldSessionPtr->LogoutPlayer(false); // this will delete the bot Player object and PlayerbotAI object
     delete botWorldSessionPtr;  // finally delete the bot's WorldSession
 }
 
@@ -382,6 +387,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     if (player->GetClass() == CLASS_WARRIOR)
         player->CastSpell(player, SPELL_ID_PASSIVE_BATTLE_STANCE, true);
 
+    _spawnedPlayers.emplace(player->GetGUID());
     return player;
 }
 

@@ -160,10 +160,10 @@ WorldSession::~WorldSession()
         m_Socket = nullptr;
     }
 
-     delete _warden;
+    delete _warden;
 
     ///- empty incoming packet queue
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
 
@@ -723,9 +723,9 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Delete the player object
         _player->CleanupsBeforeDelete();                    // do some cleanup before deleting to prevent crash at crossreferences to already deleted data
 
-        sSocialMgr->RemovePlayerSocial (_player->GetGUID().GetCounter ());
+        sSocialMgr->RemovePlayerSocial(_player->GetGUID().GetCounter());
         delete _player;
-        _player = NULL;
+        _player = nullptr;
 
         ///- Send the 'logout complete' packet to the client
         WorldPacket data( SMSG_LOGOUT_COMPLETE, 0 );

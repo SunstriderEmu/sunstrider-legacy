@@ -1166,7 +1166,8 @@ void Player::Update( uint32 p_time )
     if(!IsInWorld())
         return;
 
-    if (m_kickatnextupdate && m_session) {
+    if (m_kickatnextupdate && m_session) 
+    {
         m_kickatnextupdate = false;
         m_session->LogoutPlayer(false);
         return;

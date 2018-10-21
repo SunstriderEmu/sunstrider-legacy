@@ -955,7 +955,7 @@ void Map::Update(const uint32& t_diff)
     sScriptMgr->OnMapUpdate(this, t_diff);
 }
 
-void Map::RemovePlayerFromMap(Player *player, bool remove)
+void Map::RemovePlayerFromMap(Player* player, bool remove)
 {
     // Before leaving map, update zone/area for stats
     player->UpdateZone(MAP_INVALID_ZONE, 0);

@@ -2243,8 +2243,6 @@ public:
     class MindVisionTestImpt : public TestCase
     {
     public:
-
-
         void Test() override
         {
             TestPlayer* priest = SpawnPlayer(CLASS_PRIEST, RACE_BLOODELF);
@@ -2324,8 +2322,6 @@ public:
     class PrayerOfShadowProtectionTestImpt : public TestCase
     {
     public:
-
-
         void TestPrayerOfShadowProtection(TestPlayer* priest, Unit* warrior, uint32 spellId, uint32 reagentId, uint32 manaCost, uint32 shadowResistanceBonus, uint32 priestStartShadowResistance, uint32 warriorStartShadowResistance)
         {
             uint32 expectedPriestSR = priestStartShadowResistance + shadowResistanceBonus;

@@ -500,6 +500,8 @@ private:
     std::string                  _internalAssertInfo;
     std::string                  _assertInfo;
 
+    GuidSet                      _spawnedPlayers;
+
     bool _InternalSetup();
     void _Cleanup();
     void _Test(); //main test to call by TestThread. Will call Test() implemented in tests.
