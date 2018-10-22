@@ -5601,6 +5601,12 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 return SPELL_FAILED_MOVING;
         }
     }
+    else if (GameObject* obj = m_caster->ToGameObject())
+    {
+        //sun: a gameobject should never cast a channeled spell (according to TC)
+        if (m_spellInfo->IsChanneled())
+            return SPELL_FAILED_ERROR;
+    }
 
     // check spell cast conditions from database
     {
