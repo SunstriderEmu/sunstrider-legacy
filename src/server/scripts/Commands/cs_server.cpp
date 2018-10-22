@@ -12,9 +12,13 @@
 #include "UpdateTime.h"
 
 #include <boost/filesystem.hpp>
-#include <mysql_version.h>
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
+
+#if __has_include("server/errmsg.h")
+    #include "server/errmsg.h"
+    #include "server/mysql_version.h"
+#endif
 
 class server_commandscript : public CommandScript
 {

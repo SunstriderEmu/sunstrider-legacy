@@ -36,6 +36,9 @@
 #endif
 #include <mysql.h>
 #include <mysqld_error.h>
+#if __has_include("server/mysql_version.h")
+    #include "server/mysql_version.h"
+#endif
 
 #define MIN_MYSQL_SERVER_VERSION 50100u
 #define MIN_MYSQL_CLIENT_VERSION 50100u

@@ -25,6 +25,10 @@
 #include "Transaction.h"
 #include "Util.h"
 #include <errmsg.h>
+#if __has_include("server/errmsg.h")
+    #include "server/errmsg.h"
+#endif
+
 #ifdef _WIN32 // hack for broken mysql.h not including the correct winsock header for SOCKET definition, fixed in 5.7
 #include <winsock2.h>
 #endif
