@@ -211,5 +211,5 @@ bool Corpse::IsExpired(time_t t) const
 
 void Corpse::ResetGhostTime() 
 { 
-    m_time = WorldGameTime::GetGameTime();
+    m_time = GetMap()->GetGameTime(); 
 }

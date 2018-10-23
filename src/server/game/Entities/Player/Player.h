@@ -2031,7 +2031,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         static DrunkenState GetDrunkenstateByValue(uint8 value);
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
-        uint32 GetDeathTime() const { return m_deathTime; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
 		int32 CalculateCorpseReclaimDelay(bool load = false) const;
@@ -2157,7 +2156,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***              ENVIROMENTAL SYSTEM                  ***/
         /*********************************************************/
 
-        void EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
+        bool IsImmuneToEnvironmentalDamage() const;
+        uint32 EnvironmentalDamage(EnviromentalDamage type, uint32 damage);
 
         /*********************************************************/
         /***               FLOOD FILTER SYSTEM                 ***/
@@ -2565,9 +2565,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 m_zoneUpdateTimer;
         uint32 m_areaUpdateId;
 
-        uint32 m_deathTimer; //time left before forced releasing
-        time_t m_deathExpireTime; //added delay expiration time
-        time_t m_deathTime; //time of death
+        uint32 m_deathTimer; // time left before forced releasing
+        time_t m_deathExpireTime; // added delay expiration time
 
         uint32 m_restTime;
 

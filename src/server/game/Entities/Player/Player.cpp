@@ -245,7 +245,6 @@ Player::Player(WorldSession *session) :
     m_deathTimer = 0;
     m_deathExpireTime = 0;
     m_isRepopPending = false;
-    m_deathTime = 0;
 
     m_swingErrorMsg = 0;
 
@@ -913,10 +912,16 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
     SendDirectMessage(&data);
 }
 
-void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
+bool Player::IsImmuneToEnvironmentalDamage() const
 {
-    if (!IsAlive() || IsGameMaster() || isSpectator())
-        return;
+    // check for GM and death state included in isAttackableByAOE
+    return !IsTargetableForAttack(false);
+}
+
+uint32 Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
+{
+    if (IsImmuneToEnvironmentalDamage())
+        return 0;
 
     // Absorb, resist some environmental damage type
     uint32 absorb = 0;
@@ -947,7 +952,7 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
     data << uint32(resist);
     SendMessageToSet(&data, true);
 
-    Unit::DealDamage(this, this, damage, nullptr, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+    uint32 final_damage = Unit::DealDamage(this, this, damage, nullptr, SELF_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
     if (type==DAMAGE_FALL && !IsAlive())                     // DealDamage not apply item durability loss at self damage
     {
@@ -957,6 +962,8 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
         WorldPacket data2(SMSG_DURABILITY_DAMAGE_DEATH, 0);
         SendDirectMessage(&data2);
     }
+
+    return final_damage;
 }
 
 int32 Player::getMaxTimer(MirrorTimerType timer)
@@ -4429,15 +4436,14 @@ void Player::KillPlayer()
 
     StopMirrorTimers();                                     //disable timers(bars)
 
+    SetHealth(0); //sun: added this: else we can be in corpse but still have health... this should not be a possible state.
     SetDeathState(CORPSE);
 
     SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
     ApplyModFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTE_RELEASE_TIMER, !sMapStore.LookupEntry(GetMapId())->Instanceable());
 
     // 6 minutes until repop at graveyard
-    m_deathTimer = 6*MINUTE*1000;
-
-    m_deathTime = GetMap()->GetGameTime();
+    m_deathTimer = 6 * MINUTE*IN_MILLISECONDS;
 
     UpdateCorpseReclaimDelay();                             // dependent at use SetDeathPvP() call before kill
 
@@ -4447,7 +4453,7 @@ void Player::KillPlayer()
         SendCorpseReclaimDelay(corpseReclaimDelay);
 
     /* Sunwell/Kalecgos: death in spectral realm */
-    if (GetMapId() == 580 && GetPositionZ() < -65)
+    if (GetMapId() == 580 && GetPositionZ() < -65.f)
         TeleportTo(GetMapId(), GetPositionX(), GetPositionY(), 53.079, GetOrientation());
 
     // don't create corpse at this moment, player might be falling
@@ -21599,8 +21605,7 @@ int32 Player::CalculateCorpseReclaimDelay(bool load) const
                 count = MAX_DEATH_COUNT - 1;
         }
 
-        //time_t expected_time = corpse->GetGhostTime()+copseReclaimDelay[count];
-        time_t expected_time = m_deathTime + copseReclaimDelay[count];
+        time_t expected_time = corpse->GetGhostTime() + copseReclaimDelay[count];
         time_t now = GetMap()->GetGameTime();
 
         if (now >= expected_time)
