@@ -2060,7 +2060,7 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
     {
         GetNearPoint2D(searcher, x, y, distance2d, absAngle + angle);
         z = GetPositionZ();
-        (searcher ? searcher : this)->UpdateAllowedPositionZ(x, y, z);
+        (searcher ? searcher : this)->UpdateAllowedPositionZ(x, y, z, distance2d * 2); //sun: added max dist
         if (IsWithinLOS(x, y, z))
             return;
     }
