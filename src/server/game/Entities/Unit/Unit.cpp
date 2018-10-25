@@ -6397,7 +6397,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
 
     // Single spell immunity.
     SpellImmuneContainer const& idList = m_spellImmune[IMMUNITY_ID];
-    if (idList.count(spellInfo->Id) > 0)
+    if(idList.find(spellInfo->Id) != idList.end())
         return true;
 
     if(spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
@@ -6406,7 +6406,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
     if (uint32 dispel = spellInfo->Dispel)
     {
         SpellImmuneContainer const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
-        if (dispelList.count(dispel) > 0)
+        if (dispelList.find(dispel) != dispelList.end())
             return true;
     }
 
@@ -6414,7 +6414,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caste
     if (uint32 mechanic = spellInfo->Mechanic)
     {
         SpellImmuneContainer const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
-        if (mechanicList.count(mechanic) > 0)
+        if (mechanicList.find(mechanic) != mechanicList.end())
             return true;
     }
 
@@ -6477,13 +6477,13 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Worl
     //If m_immuneToEffect type contain this effect type, IMMUNE effect.
     uint32 effect = spellInfo->Effects[index].Effect;
     SpellImmuneContainer const& effectList = m_spellImmune[IMMUNITY_EFFECT];
-    if (effectList.count(effect) > 0)
+    if (effectList.find(effect) != effectList.end())
         return true;
 
     if (uint32 mechanic = spellInfo->Effects[index].Mechanic)
     {
         SpellImmuneContainer const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
-        if (mechanicList.count(mechanic) > 0)
+        if (mechanicList.find(mechanic) != mechanicList.end())
             return true;
     }
 
@@ -6492,7 +6492,7 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, Worl
         if (uint32 aura = spellInfo->Effects[index].ApplyAuraName)
         {
             SpellImmuneContainer const& list = m_spellImmune[IMMUNITY_STATE];
-            if (list.count(aura) > 0)
+            if (list.find(aura) != list.end())
                 return true;
 
 #ifdef LICH_KING
@@ -12256,7 +12256,7 @@ void Unit::ResetCombatRange()
     }
 }
 
-void Unit::SetCombatRange(ChaseRange range)
+void Unit::SetCombatRange(ChaseRange const& range)
 {
     bool changed = m_ChaseRange != range;
     m_ChaseRange = range;
@@ -14305,7 +14305,7 @@ void Unit::TriggerAurasProcOnEvent(Unit* actionTarget, uint32 typeMaskActor, uin
                 AuraApplicationList modAuras;
                 for (auto itr = modOwner->GetAppliedAuras().begin(); itr != modOwner->GetAppliedAuras().end(); ++itr)
                 {
-                    if (spell->m_appliedMods.count(itr->second->GetBase()) != 0)
+                    if (spell->m_appliedMods.find(itr->second->GetBase()) != spell->m_appliedMods.end())
                         modAuras.push_back(itr->second);
                 }
                 modOwner->GetProcAurasTriggeredOnEvent(myAurasTriggeringProc, &modAuras, myProcEventInfo);

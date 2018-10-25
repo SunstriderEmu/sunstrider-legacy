@@ -3599,7 +3599,7 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
     //unlearn spells dependent from recently removed spells
     SpellsRequiringSpellMap const& reqMap = sSpellMgr->GetSpellsRequiringSpell();
     auto itr2 = reqMap.find(spell_id);
-    for (uint32 i=reqMap.count(spell_id);i>0;i--,itr2++)
+    for (uint32 i = reqMap.count(spell_id); i > 0; i--, itr2++)
         RemoveSpell(itr2->second,disabled);
 
     // re-search, it can be corrupted in prev loop
@@ -18320,7 +18320,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod
         return false;
 
     // First time this aura applies a mod to us and is out of charges
-    if (spell && mod->ownerAura->IsUsingCharges() && !mod->ownerAura->GetCharges() && !spell->m_appliedMods.count(mod->ownerAura))
+    if (spell && mod->ownerAura->IsUsingCharges() && !mod->ownerAura->GetCharges() && spell->m_appliedMods.find(mod->ownerAura) == spell->m_appliedMods.end())
         return false;
 
     // +duration to infinite duration spells making them limited

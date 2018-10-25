@@ -3819,7 +3819,7 @@ bool SpellMgr::AddSameEffectStackRuleSpellGroups(SpellInfo const* spellInfo, uin
         if (found != mSpellSameEffectStack.end())
         {
             // check auraTypes
-            if (!found->second.count(auraType))
+            if (found->second.find(auraType) == found->second.end())
                 continue;
 
             // Put the highest amount in the map

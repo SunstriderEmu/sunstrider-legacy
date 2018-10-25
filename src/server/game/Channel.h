@@ -178,15 +178,15 @@ class TC_GAME_API Channel
         void MakeThrottled(WorldPacket *data);                                  //? 0x1F
         void MakeNotInArea(WorldPacket *data);                                  //? 0x20
         void MakeNotInLfg(WorldPacket *data);                                   //? 0x21
-        void MakeVoiceOn(WorldPacket *data, ObjectGuid guid);                       //+ 0x22
-        void MakeVoiceOff(WorldPacket *data, ObjectGuid guid);                      //+ 0x23
+        void MakeVoiceOn(WorldPacket *data, ObjectGuid guid);                   //+ 0x22
+        void MakeVoiceOff(WorldPacket *data, ObjectGuid guid);                  //+ 0x23
 
         void SendToAllButOne(WorldPacket *data, ObjectGuid who);
         void SendToOne(WorldPacket *data, ObjectGuid who);
 
-        bool IsOn(ObjectGuid who) const { return players.count(who) != 0; }
+        bool IsOn(ObjectGuid who) const { return players.find(who) != players.end(); }
 
-        bool IsBanned(const ObjectGuid guid) const {return banned.count(guid) != 0; }
+        bool IsBanned(const ObjectGuid guid) const { return banned.find(guid) != banned.end(); }
         
         bool IsBannedByGM(const ObjectGuid guid);
         void InsertInGMBannedList(ObjectGuid guid, uint64 expire) { gmbanned[guid] = expire; }

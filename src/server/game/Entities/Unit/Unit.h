@@ -1474,7 +1474,7 @@ class TC_GAME_API Unit : public WorldObject
 
         Optional<ChaseRange> GetCombatRange() const;
         void ResetCombatRange();
-        void SetCombatRange(ChaseRange range);
+        void SetCombatRange(ChaseRange const& range);
 
         bool IsCCed() const;
 

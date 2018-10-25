@@ -3062,7 +3062,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
                     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     {
                         // already seen this
-                        if (visited.count({ spellTriggeredProto->Id, i }) > 0)
+                        if(visited.find({ spellTriggeredProto->Id, i }) != visited.end())
                             continue;
 
                         if (!spellTriggeredProto->Effects[i].Effect)
@@ -3200,7 +3200,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
                 // already seen this
-                if (visited.count({ spellTriggeredProto->Id, i }) > 0)
+                if (visited.find({ spellTriggeredProto->Id, i }) != visited.end())
                     continue;
 
                 if (!spellTriggeredProto->Effects[i].IsEffect())

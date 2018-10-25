@@ -609,7 +609,7 @@ void WorldSession::HandleCollisionHeightChangeAck(WorldPacket &recvData)
 
 Unit* WorldSession::GetAllowedActiveMover() const
 {
-    if (_activeMover && _allowedClientMove.count(_activeMover->GetGUID()) > 0)
+    if (_activeMover && _allowedClientMove.find(_activeMover->GetGUID()) != _allowedClientMove.end())
         return _activeMover;
     else
         return nullptr;
@@ -1298,12 +1298,12 @@ void PlayerMovementPendingChange::_HandleMoveKnockBackAck(WorldSession* session,
 
 bool WorldSession::IsAuthorizedToTakeControl(ObjectGuid guid)
 {
-    return _allowedClientControl.count(guid) > 0;
+    return _allowedClientControl.find(guid) != _allowedClientControl.end();
 }
 
 bool WorldSession::IsAuthorizedToMove(ObjectGuid guid, bool log /*= true*/)
 {
-    bool authorized = _allowedClientMove.count(guid) > 0;
+    bool authorized = _allowedClientMove.find(guid) != _allowedClientMove.end();
     if(!authorized && log)
         TC_LOG_DEBUG("movement", "player %s (%u) tried to move with non allowed unit %s",
             _player->GetName().c_str(), _player->GetGUID().GetCounter(), guid.ToString().c_str());

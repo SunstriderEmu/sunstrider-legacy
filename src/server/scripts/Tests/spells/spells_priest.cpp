@@ -2266,7 +2266,7 @@ public:
             FORCE_CAST(priest, warriorClose, ClassSpells::Priest::MIND_VISION_RNK_2);
             WaitNextUpdate();
             WaitNextUpdate();
-            WorldPacket fakeClientResponse;
+            WorldPacket fakeClientResponse(CMSG_FAR_SIGHT);
             fakeClientResponse << bool(true);
             priest->GetSession()->HandleFarSightOpcode(fakeClientResponse);
 
@@ -2297,6 +2297,7 @@ public:
             Wait(1000);
             TEST_HAS_NOT_AURA(rogueFar, ClassSpells::Priest::MIND_VISION_RNK_2);
             TEST_HAS_NOT_AURA(priest, ClassSpells::Priest::MIND_VISION_RNK_2);
+            rogueFar->GetSession()->KickPlayer();
 
             // Mana cost
             priest->InterruptNonMeleeSpells(true);
