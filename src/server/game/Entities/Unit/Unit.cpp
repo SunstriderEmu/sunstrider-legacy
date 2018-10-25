@@ -341,8 +341,6 @@ Unit::Unit(bool isWorldObject)
     for (float & i : m_speed_rate)
         i = 1.0f;
 
-    collisionHeight = 0.0f;
-
     _targetLocked = false;
     m_ChaseRange = 0;//MELEE_RANGE;
 
