@@ -1876,7 +1876,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
-        if (sMapMgr->PlayerCannotEnter(mapid, this, false))
+        if (sMapMgr->PlayerCannotEnter(mapid, this, false) != Map::CAN_ENTER)
             return false;
 
         //I think this always returns true. Correct me if I am wrong.
@@ -10569,8 +10569,7 @@ InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &des
     {
         if (pProto->InventoryType == INVTYPE_BAG)
         {
-            Bag *pBag = (Bag*)pItem;
-            if (pBag && !pBag->IsEmpty())
+            if (!pItem->ToBag()->IsEmpty())
                 return EQUIP_ERR_NONEMPTY_BAG_OVER_OTHER_BAG;
         }
 
@@ -12419,7 +12418,7 @@ void Player::AddEnchantmentDuration(Item *item,EnchantmentSlot slot,uint32 durat
             break;
         }
     }
-    if(item && duration > 0 )
+    if(duration > 0 )
     {
         GetSession()->SendItemEnchantTimeUpdate(GetGUID(), item->GetGUID(),slot,uint32(duration/1000));
         m_enchantDuration.push_back(EnchantDuration(item,slot,duration));
@@ -15007,7 +15006,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     }
 
     // Player was saved in Arena or Bg
-    else if (mapEntry && mapEntry->IsBattlegroundOrArena())
+    else if (mapEntry->IsBattlegroundOrArena())
     {
         Battleground* currentBg = nullptr;
         if (m_bgData.bgInstanceID)                                                //saved in Battleground

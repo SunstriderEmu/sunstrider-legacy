@@ -2027,7 +2027,7 @@ Player* WorldObject::SelectNearestPlayer(float distance, bool alive) const
     return target;
 }
 
-void WorldObject::GetNearPoint2D(WorldObject const* searcher, float &x, float &y, float distance2d, float absAngle ) const
+void WorldObject::GetNearPoint2D(WorldObject const* searcher, float &x, float &y, float distance2d, float absAngle) const
 {
     x = GetPositionX() + (GetCombatReach() + distance2d) * cos(absAngle);
     y = GetPositionY() + (GetCombatReach() + distance2d) * sin(absAngle);
