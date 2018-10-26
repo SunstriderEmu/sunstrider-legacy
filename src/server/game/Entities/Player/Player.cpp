@@ -220,7 +220,7 @@ Player::Player(WorldSession *session) :
     mSemaphoreTeleport_Near = false;
     mSemaphoreTeleport_Far = false;
 
-    m_playerMovingMe = session;
+    m_playerMovingMe = nullptr;
 
     m_cinematic = 0;
     if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
@@ -1860,7 +1860,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     }
     else
     {
-        if (GetSession()->HasPendingMovementChange())
+        if (GetSession()->GetClientControl().HasPendingMovementChange())
         {
             SetDelayedTeleportFlag(true);
             SetSemaphoreTeleportFar(true);
@@ -1946,7 +1946,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             // removing some auras (example spell id 26656) can trigger movement changes. Using this block to ensure that
             // teleports are delayed as long as there are still pending movement changes.
-            if (GetSession()->HasPendingMovementChange())
+            if (GetSession()->GetClientControl().HasPendingMovementChange())
             {
                 SetDelayedTeleportFlag(true);
                 SetSemaphoreTeleportFar(true);
@@ -1955,7 +1955,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 m_teleport_options = options;
                 return true;
             }
-            ASSERT(!GetSession()->HasPendingMovementChange());
+            ASSERT(!GetSession()->GetClientControl().HasPendingMovementChange());
 
             if (!GetSession()->PlayerLogout())
             {
@@ -2001,7 +2001,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //else
         //    return false;
     }
-    GetSession()->anticheat->OnPlayerTeleport(this);
+    GetSession()->anticheat.OnPlayerTeleport(this);
     return true;
 }
 
@@ -19462,7 +19462,7 @@ bool Player::CanNeverSee(WorldObject const* obj) const
 bool Player::CanAlwaysSee(WorldObject const* obj) const
 {
     // Always can see self
-    if (GetSession()->GetActiveMover() == obj)
+    if (GetSession()->GetClientControl().GetAllowedActiveMover() == obj)
         return true;
 
     if (ObjectGuid guid = GetGuidValue(PLAYER_FARSIGHT))
@@ -19798,7 +19798,7 @@ void Player::SendComboPoints()
     if (combotarget)
     {
         WorldPacket data;
-        if (GetSession()->GetActiveMover() != this)
+        if (GetSession()->GetClientControl().GetActiveMover() != this)
             return; //no combo point from pet/charmed creatures
 
         data.Initialize(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size() + 1);
@@ -19857,7 +19857,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || IsInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
 
-    GetSession()->InitActiveMover(this);
+    GetSession()->GetClientControl().InitActiveMover(this);
 }
 
 void Player::SendInitialPacketsAfterAddToMap()
@@ -22359,7 +22359,7 @@ void Player::addSpamReport(ObjectGuid reporterGUID, std::string message)
     SpamReport spr;
     spr.time = now;
     spr.reporterGUID = reporterGUID;
-    spr.message = message;
+    spr.message = std::move(message);
 
     _spamReports[reporterGUID.GetCounter()] = spr;
 
@@ -22638,7 +22638,7 @@ void Player::UpdateArenaTitles()
 
 void Player::SetFlying(bool apply)
 {
-    GetSession()->anticheat->OnPlayerSetFlying(this, apply);
+    GetSession()->anticheat.OnPlayerSetFlying(this, apply);
 
     Unit::SetFlying(apply);
 }

@@ -48,6 +48,7 @@ class SpellHistory;
 enum MovementGeneratorType : uint8;
 struct ChaseRange;
 class WorldSession;
+class ClientControl;
 
 #define WORLD_TRIGGER   12999
 
@@ -1298,9 +1299,9 @@ class TC_GAME_API Unit : public WorldObject
         void       DeleteCharmInfo();
 
         // returns the player that this unit is BEING CONTROLLED BY
-        WorldSession* GetPlayerMovingMe() const { return m_playerMovingMe; }
+        ClientControl* GetPlayerMovingMe() const { return m_playerMovingMe; }
         // only set for direct client control (possess effects, vehicles and similar)
-        WorldSession* m_playerMovingMe;
+        ClientControl* m_playerMovingMe;
         // reflects direct client control (examples: a player MC another player or a creature (possess effects). a player takes control of a vehicle. etc...)
         bool IsMovedByPlayer() const { return m_playerMovingMe != nullptr; }
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }

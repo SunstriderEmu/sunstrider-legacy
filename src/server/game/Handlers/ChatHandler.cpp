@@ -586,7 +586,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 {
-    Unit* source = GetAllowedActiveMover();
+    Unit* source = GetClientControl().GetAllowedActiveMover();
     if(!source || !source->IsAlive())
         return;
 

@@ -5940,7 +5940,7 @@ void Spell::EffectAddComboPoints(uint32 /*i*/)
     if (!player)
         return;
 
-    WorldSession* session = player->m_playerMovingMe;
+    WorldSession* session = player->m_playerMovingMe ? player->m_playerMovingMe->GetSession() : nullptr;
     if (!session)
         return;
 

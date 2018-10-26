@@ -43,7 +43,7 @@ bool WorldSession::_HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_
     Player* pUser = _player;
 
     // ignore for remote control state
-    if (_activeMover != pUser)
+    if (GetClientControl().GetActiveMover() != pUser)
         return false;
 
     Item* pItem = pUser->GetUseableItemByPos(bagIndex, slot);
@@ -144,7 +144,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     uint8 bagIndex, slot;
 
     // ignore for remote control state
-    if (_activeMover != pUser)
+    if (GetClientControl().GetActiveMover() != pUser)
         return;
 
     recvPacket >> bagIndex >> slot;
@@ -286,7 +286,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     }
 
     // ignore for remote control state
-    if (_activeMover != GetPlayer())
+    if (GetClientControl().GetActiveMover() != GetPlayer())
         return;
 
     gameObjTarget->Use(_player);
@@ -295,7 +295,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     // ignore for remote control state (for player case)
-    Unit* mover = _activeMover;
+    Unit* mover = GetClientControl().GetActiveMover();
     if (!mover || (mover != _player && mover->GetTypeId() == TYPEID_PLAYER))
     {
         recvPacket.rfinish(); // prevent spam at ignore packet
@@ -482,7 +482,8 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode(WorldPacket& recvPacket)
 void WorldSession::HandleCancelChanneling(WorldPacket & recvData)
 {
     // ignore for remote control state (for player case)
-    if (!_activeMover || (_activeMover != _player && _activeMover->GetTypeId() == TYPEID_PLAYER))
+    Unit* mover = GetClientControl().GetActiveMover();
+    if (!mover || (mover != _player && mover->GetTypeId() == TYPEID_PLAYER))
         return;
 
     uint32 spellId;
@@ -494,7 +495,7 @@ void WorldSession::HandleCancelChanneling(WorldPacket & recvData)
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
     // ignore for remote control state
-    if (_activeMover != _player)
+    if (GetClientControl().GetActiveMover() != _player)
         return;
 
     uint8 slotId;

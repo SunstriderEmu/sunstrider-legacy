@@ -216,7 +216,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     recvData >> movementCounter >> time;
 
     // verify that indeed the client is replying with the changes that were send to him
-    if (!HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
+    if (!_clientControl.HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
     {
         TC_LOG_INFO("cheat", "WorldSession::HandleMoveTeleportAck: Player %s from account id %u kicked because no movement change ack was expected from this player",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId());
@@ -224,7 +224,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
         return;
     }
     
-    if (!IsAuthorizedToMove(guid, true))
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
     Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
@@ -235,7 +235,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
         return;
     }
 
-    PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
+    PlayerMovementPendingChange pendingChange = _clientControl.PopPendingMovementChange().second;
     MovementInfo info = mover->GetMovementInfo();
     pendingChange.Resolve(pendingChange, this, mover, &info); //GetMovementInfo wont be used here
 }
@@ -286,24 +286,24 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     movementInfo.FillContentFromPacket(&recvData, true);
     recvData.rfinish();                         // prevent warnings spam
 
-    if (!IsAuthorizedToMove(guid, true))
+    if (!IsAllowedToMove(guid, true))
         return;
 
     Unit* mover = ObjectAccessor::GetUnit(*_player, movementInfo.guid);
 #else
     movementInfo.FillContentFromPacket(&recvData, false);
     recvData.rfinish();                         // prevent warnings spam
-    if (!_activeMover)
+
+    Unit* mover = _clientControl.GetAllowedActiveMover();
+    if (!mover)
     {
         TC_LOG_DEBUG("movement", "Player sent a move packet (%u) but is not currently moving any unit", recvData.GetOpcode());
+        //or he might be not allowed at this time, this is not an error
         return;
     }
-    if (!IsAuthorizedToMove(_activeMover->GetGUID(), true))
-        return;
 
-    ASSERT(_activeMover->m_playerMovingMe == this);
+    ASSERT(mover->m_playerMovingMe && mover->m_playerMovingMe->GetSession() == this);
 
-    Unit* mover = _activeMover;
 #endif
 
     Player* plrMover = mover->ToPlayer();
@@ -422,7 +422,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
             return;
     }
 
-    anticheat->OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
+    anticheat.OnPlayerMoved(mover, movementInfo, OpcodeClient(opcode));
 
     /* process position-change */
     mover->UpdateMovementInfo(movementInfo);
@@ -510,7 +510,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
     recvData >> guid;
 #endif
 
-    if (!IsAuthorizedToMove(guid, true))
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
     Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
@@ -532,7 +532,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
     recvData >> speedReceived;
 
     // verify that indeed the client is replying with the changes that were send to him
-    if (!HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
+    if (!_clientControl.HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
     {
         TC_LOG_INFO("cheat", "WorldSession::HandleForceSpeedChangeAck: Player %s from account id %u kicked because no movement change ack was expected from this player",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId());
@@ -541,7 +541,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
         return;
     }
 
-    PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
+    PlayerMovementPendingChange pendingChange = _clientControl.PopPendingMovementChange().second;
     float speedSent = pendingChange.newValue;
     
     if (std::fabs(speedSent - speedReceived) > 0.01f)
@@ -569,7 +569,7 @@ void WorldSession::HandleCollisionHeightChangeAck(WorldPacket &recvData)
     float heightReceived;
 
     recvData >> guid;
-    if (!IsAuthorizedToMove(guid, true))
+    if (!IsAllowedToMove(guid, true))
         return;
 
     movementInfo.guid = guid;
@@ -607,101 +607,6 @@ void WorldSession::HandleCollisionHeightChangeAck(WorldPacket &recvData)
 }
 #endif
 
-Unit* WorldSession::GetAllowedActiveMover() const
-{
-    if (_activeMover && _allowedClientMove.find(_activeMover->GetGUID()) != _allowedClientMove.end())
-        return _activeMover;
-    else
-        return nullptr;
-}
-
-void WorldSession::ResetActiveMover(bool onDelete /*= false*/)
-{
-    Unit* previousMover = _activeMover;
-    if (_activeMover)
-        if (_activeMover->m_playerMovingMe == this)
-        {
-            _activeMover->m_playerMovingMe = nullptr;
-            _activeMover->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING); // + send heartbeat?
-        }
-
-    _activeMover = nullptr;
-
-    if (onDelete)
-        return;
-    
-    //Only code not on deletion here
-    anticheat->OnPlayerMoverChanged(previousMover, nullptr);
-}
-
-void WorldSession::InitActiveMover(Unit* activeMover)
-{
-    _activeMover = nullptr; //May have one from a previous session
-    _allowedClientControl.insert(activeMover->GetGUID());
-    //Client will send CMSG_SET_ACTIVE_MOVER when joining a map
-}
-
-void WorldSession::AllowMover(Unit* mover)
-{
-    _allowedClientMove.insert(mover->GetGUID());
-    _pendingActiveMoverSplineId = 0;
-    mover->m_playerMovingMe = this;
-}
-
-void WorldSession::DisallowMover(Unit* mover)
-{
-    _allowedClientMove.erase(mover->GetGUID());
-    if (mover->m_playerMovingMe == this)
-        mover->m_playerMovingMe = nullptr;
-    ResolveAllPendingChanges();
-}
-
-//Here is the active mover sequence:
-// - Server tell the unit of his new active mover with SMSG_CLIENT_CONTROL_UPDATE 
-// - Client respond with CMSG_SET_ACTIVE_MOVER to enable this mover
-// - We send a spline on current unit position to transfer correct movement info
-// - Client respond CMSG_MOVE_SPLINE_DONE, transfer is complete
-// The spline step is necessary because when mover changed, it's possible that the client controlling it has not yet received 
-// the move flags of the mover that were set just before he took control. This is not possible when we keep the same mover since
-// those changes must be acked by client. Also, same problem is present with speed changes.
-void WorldSession::SetActiveMover(Unit* activeMover)
-{
-    //Resolve all pending changes for this unit before taking control
-    if (WorldSession* session = activeMover->GetPlayerMovingMe())
-        session->DisallowMover(activeMover);
-
-    DisallowMover(activeMover);
-
-    _activeMover = activeMover;
-
-#ifdef TODOMOV
-    _pendingActiveMoverSplineId = activeMover->StopMovingOnCurrentPos(); //Send spline movement before allowing move
-    if (_pendingActiveMoverSplineId == 0)
-    {
-        TC_LOG_FATAL("movement", "WorldSession::SetActiveMover: player %s with pending mover %s, FAILED to start spline movement",
-            _player->GetName().c_str(), _activeMover->GetGUID().ToString().c_str());
-
-        //Unit will get stuck. Shouldn't ever happen in current impl.
-        DEBUG_ASSERT(false);
-    }
-
-    TC_LOG_TRACE("movement", "Received CMSG_SET_ACTIVE_MOVER for player %s with pending mover %s (%s), now sending the spline movement (id %u)",
-        _player->GetName().c_str(), _activeMover->GetName().c_str(), _activeMover->GetGUID().ToString().c_str(), _pendingActiveMoverSplineId);
-#else
-    if (IsAuthorizedToTakeControl(_activeMover->GetGUID()))
-    {
-        AllowMover(_activeMover);
-        TC_LOG_TRACE("movement", "WorldSession::SetActiveMover: Enabling move of unit %s (%s) to player %s (%s)",
-            _activeMover->GetName().c_str(), _activeMover->GetGUID().ToString().c_str(), _player->GetName().c_str(), _player->GetName().c_str());
-    }
-    else
-    {
-        TC_LOG_ERROR("movement", "WorldSession::SetActiveMover: Failed enabling move of unit %s (%s) to player %s (%s), pending spline id is correct but player is not allowed to take control anymore",
-            _activeMover->GetName().c_str(), _activeMover->GetGUID().ToString().c_str(), _player->GetName().c_str(), _player->GetName().c_str());
-    }
-#endif
-}
-
 //CMSG_SET_ACTIVE_MOVER
 // sent by client when gaining control of a unit
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
@@ -712,32 +617,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     ObjectGuid guid;
     recvData >> guid; //Client started controlling this unit
 
-    if (_activeMover && _activeMover->GetGUID() == guid)
-        return; //we already control this unit, ignore
-
-    if (!IsAuthorizedToTakeControl(guid))
-    {
-        TC_LOG_ERROR("movement", "WorldSession::HandleSetActiveMoverOpcode: The client of player %s doesn't have the permission to control this unit (GUID: %s)!", _player->GetName().c_str(), guid.ToString().c_str());
-        return;
-    }
-
-    _releaseMoverTimeout = 0;
-
-    Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
-    if (!mover)
-    {
-        TC_LOG_ERROR("movement", "WorldSession::HandleSetActiveMoverOpcode: The client provided an invalid %s (unit may also have just been removed for world)", guid.ToString().c_str());
-        return;
-    }
-
-    TC_LOG_TRACE("movement", "%s: Player %s, setting unit %s as active mover",
-        GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvData.GetOpcode())).c_str(), _player->GetName().c_str(), mover->GetName().c_str());
-
-#ifndef LICH_KING
-    //On LK, client may have multiple active movers
-    ResetActiveMover();
-#endif
-    SetActiveMover(mover);
+    _clientControl.ClientSetActiveMover(guid);
  }
 
 //CMSG_MOVE_NOT_ACTIVE_MOVER
@@ -750,81 +630,7 @@ void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
     MovementInfo movementInfo;
     movementInfo.FillContentFromPacket(&recvData, true);
 
-    _releaseMoverTimeout = 0;
-    if (!_activeMover)
-    {
-        TC_LOG_ERROR("movement", "WorldSession::HandleMoveNotActiveMover: The client doesn't control any unit right now");
-        return;
-    }
-
-    if (_activeMover->GetGUID() != movementInfo.guid)
-    {
-        TC_LOG_ERROR("movement", "WorldSession::HandleMoveNotActiveMover: The client is trying to desactive an unit which is not the active mover?");
-        return;
-    }
-
-    TC_LOG_TRACE("movement", "%s: Player %s, removing unit %s from active mover",
-        GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvData.GetOpcode())).c_str(), _player->GetName().c_str(), _activeMover->GetName().c_str());
-
-    //It may be that another player already took control, we don't want to update mover movement info in that case
-    if (IsAuthorizedToMove(movementInfo.guid, false))
-    {
-        if (Unit* mover = ObjectAccessor::GetUnit(*_player, movementInfo.guid))
-        {
-            mover->ValidateMovementInfo(&movementInfo);
-            movementInfo.flags &= ~MOVEMENTFLAG_MASK_MOVING; //remove any moving flag, else we'll have unit rubber banding until someone else takes control of it
-            mover->UpdateMovementInfo(movementInfo);
-        }
-        else
-            TC_LOG_ERROR("entities.unit", "WorldSession::HandleMoveNotActiveMover: Did not find active mover %s",
-                movementInfo.guid.ToString().c_str());
-    }
-
-    ResetActiveMover();
-}
-
-void WorldSession::SetClientControl(Unit* target, bool allowMove)
-{
-    // still affected by some aura that shouldn't allow control, only allow on last such aura to be removed
-    if (allowMove && target->HasUnitState(UNIT_STATE_CANT_CLIENT_CONTROL))
-        return;
-
-    WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size() + 1);
-    data << target->GetPackGUID();
-    data << uint8(allowMove);
-    SendPacket(&data);
-
-    //sun: We told the client to change active mover but there will be some time before he respond
-    //We delay setting active mover until the client actually tells us he takes control with CMSG_SET_ACTIVE_MOVER
-
-    std::string action = allowMove ? "Sending" : "Removing";
-    std::string to = allowMove ? "to" : "from";
-    TC_LOG_TRACE("movement", "SMSG_CLIENT_CONTROL_UPDATE: %s control of unit %s %s client of %s",
-        action.c_str(), target->GetName().c_str(), to.c_str(), _player->GetName().c_str());
-
-    if (allowMove)
-    {
-        if (target == _player)
-            _player->SetGuidValue(PLAYER_FARSIGHT, ObjectGuid::Empty);
-        else
-            _player->SetViewpoint(target, true); //Setting PLAYER_FARSIGHT will trigger CMSG_FAR_SIGHT from client, which will have no effect here since we already set vision at this point
-    }
-    else if (_player->GetGuidValue(PLAYER_FARSIGHT))
-        _player->SetViewpoint(target, false);
-
-    // Allow this session to take control of the unit with CMSG_SET_ACTIVE_MOVER
-    if (allowMove)
-    {
-        _allowedClientControl.insert(target->GetGUID());
-        //from this point, client is allowed to take control of the unit using CMSG_SET_ACTIVE_MOVER, but is not yet allowed to move it
-    }
-    else
-    {
-        _allowedClientControl.erase(target->GetGUID());
-        if(target == _activeMover)
-            _releaseMoverTimeout = sWorld->getIntConfig(CONFIG_PENDING_MOVE_CHANGES_TIMEOUT);
-        //from this point, client not allowed to take the unit anymore using CMSG_SET_ACTIVE_MOVER, but may still be able to move/ack it until another player actives the unit as mover
-    }
+    _clientControl.ClientSetNotActiveMover(movementInfo);
 }
 
 void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
@@ -847,7 +653,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 #else
     recvData >> guid;
 #endif
-    if (!IsAuthorizedToMove(guid, true))
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
     movementInfo.guid = guid;
@@ -857,7 +663,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
 
     // verify that indeed the client is replying with the changes that were send to him
-    if (!HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
+    if (!_clientControl.HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid))
     {
         TC_LOG_INFO("cheat", "WorldSession::HandleMoveKnockBackAck: Player %s from account id %u kicked because no movement change ack was expected from this player",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId());
@@ -865,7 +671,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
         return;
     }
 
-    PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
+    PlayerMovementPendingChange pendingChange = _clientControl.PopPendingMovementChange().second;
     if (   std::fabs(pendingChange.knockbackInfo.speedXY - movementInfo.jump.xyspeed) > 0.01f
         || std::fabs(pendingChange.knockbackInfo.speedZ - movementInfo.jump.zspeed) > 0.01f
         || std::fabs(pendingChange.knockbackInfo.vcos - movementInfo.jump.cosAngle) > 0.01f
@@ -909,7 +715,7 @@ void WorldSession::HandleMovementFlagChangeAck(WorldPacket& recvData)
 #else
     recvData >> guid;
 #endif
-    if (!IsAuthorizedToMove(guid, true))
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
     movementInfo.guid = guid;
@@ -934,7 +740,7 @@ void WorldSession::HandleMovementFlagChangeAck(WorldPacket& recvData)
     }
 
     // verify that indeed the client is replying with the changes that were send to him
-    if (!HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid, applyReceived))
+    if (!_clientControl.HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid, applyReceived))
     {
         TC_LOG_INFO("cheat", "WorldSession::HandleMovementFlagChangeAck: Player %s from account id %u kicked because no movement change ack was expected from this player",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId());
@@ -945,7 +751,7 @@ void WorldSession::HandleMovementFlagChangeAck(WorldPacket& recvData)
     TC_LOG_TRACE("movement", "Received %s from player %s for unit %s (%s), counter %u",
         GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvData.GetOpcode())).c_str(), _player->GetName().c_str(), mover->GetName().c_str(), mover->GetGUID().ToString().c_str(), movementCounter);
 
-    PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
+    PlayerMovementPendingChange pendingChange = _clientControl.PopPendingMovementChange().second;
     pendingChange.Resolve(pendingChange, this, mover, &movementInfo);
 }
 
@@ -974,7 +780,7 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPacket& recvData)
 #endif
     movementInfo.guid = guid;
 
-    if (!IsAuthorizedToMove(guid, true))
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return; 
 
     recvData >> movementCounter;
@@ -985,7 +791,7 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPacket& recvData)
     Unit* mover = ObjectAccessor::GetUnit(*_player, guid);
 
     // verify that indeed the client is replying with the changes that were send to him
-    if (!HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid, applyReceived))
+    if (!_clientControl.HasPendingMovementChange(movementCounter, recvData.GetOpcode(), guid, applyReceived))
     {
         TC_LOG_INFO("cheat", "WorldSession::HandleMovementFlagChangeToggleAck: Player %s from account id %u kicked because no movement change ack was expected from this player",
             _player->GetName().c_str(), _player->GetSession()->GetAccountId());
@@ -996,7 +802,7 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPacket& recvData)
     TC_LOG_TRACE("movement", "Received %s from player %s for unit %s (%s), counter %u",
         GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvData.GetOpcode())).c_str(), _player->GetName().c_str(), mover->GetName().c_str(), mover->GetGUID().ToString().c_str(), movementCounter);
 
-    PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
+    PlayerMovementPendingChange pendingChange = _clientControl.PopPendingMovementChange().second;
     pendingChange.Resolve(pendingChange, this, mover, &movementInfo);
 }
 
@@ -1016,11 +822,12 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
 #endif
     recvData >> timeSkipped;
 
-    if (!IsAuthorizedToMove(guid, true))
+    Unit* mover = _clientControl.GetAllowedActiveMover();
+    if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
-    TC_LOG_TRACE("movement", "%s: Player %s, receiving time skip %u for active mover %s", 
-        GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvData.GetOpcode())).c_str(), _player->GetName().c_str(), timeSkipped, _activeMover->GetName().c_str());
+    TC_LOG_TRACE("movement", "CMSG_MOVE_TIME_SKIPPED: Player %s, receiving time skip %u for %s", 
+        _player->GetName().c_str(), timeSkipped, guid.ToString().c_str());
 
     WorldPacket data(MSG_MOVE_TIME_SKIPPED, 16);
     data << guid.WriteAsPacked();
@@ -1083,21 +890,6 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket& recvData)
     recvData >> agree;
 
     _player->SummonIfPossible(agree);
-}
-
-void WorldSession::ResolveAllPendingChanges()
-{
-    if (!_activeMover)
-        return;
-
-    TC_LOG_TRACE("movement", "Resolve all pending change for player %s (%u) (for all controlled units)",
-       _player->GetName().c_str(), _player->GetGUID().GetCounter());
-
-    while (HasPendingMovementChange())
-    {
-        PlayerMovementPendingChange pendingChange = PopPendingMovementChange().second;
-        pendingChange.Resolve(pendingChange, this, nullptr, nullptr);
-    }
 }
 
 void PlayerMovementPendingChange::_HandleMoveTeleportAck(WorldSession* session, Unit* mover, MovementInfo& /*movementInfo*/)
@@ -1174,53 +966,53 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
         }
         movementInfo = &serverMovementInfo;
     }
-    else 
+    else
     {
         ASSERT(mover->GetGUID() == change.guid);
     }
 
     switch (movementChangeType)
     {
-        case ROOT: // CMSG_FORCE_MOVE_ROOT_ACK && CMSG_FORCE_MOVE_UNROOT_ACK
-        case WATER_WALK: // CMSG_MOVE_WATER_WALK_ACK
-        case SET_HOVER:  // CMSG_MOVE_HOVER_ACK
-        case SET_CAN_FLY: // CMSG_MOVE_SET_CAN_FLY_ACK
-        case FEATHER_FALL: // CMSG_MOVE_FEATHER_FALL_ACK
-    #ifdef LICH_KING
-        case GRAVITY: // CMSG_MOVE_GRAVITY_DISABLE_ACK && CMSG_MOVE_GRAVITY_ENABLE_ACK?
-        case SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY: // CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK
-    #endif
-            _HandleMovementFlagChangeToggleAck(session, mover, *movementInfo, !serverSideResolve);
-            break;
-    #ifdef LICH_KING
-        case RATE_CHANGE_PITCH:
-        case SET_COLLISION_HGT:
-            TODO; //split the opcode handlers so that we can use them here
-            break;
-    #endif
-        case KNOCK_BACK:
-            _HandleMoveKnockBackAck(session, mover, *movementInfo, !serverSideResolve);
-            break;
-        case SPEED_CHANGE_WALK:
-        case SPEED_CHANGE_RUN:
-        case SPEED_CHANGE_RUN_BACK:
-        case SPEED_CHANGE_SWIM:
-        case SPEED_CHANGE_SWIM_BACK:
-        case RATE_CHANGE_TURN:
-        case SPEED_CHANGE_FLIGHT_SPEED:
-        case SPEED_CHANGE_FLIGHT_BACK_SPEED:
-            _HandleForceSpeedChangeAck(session, mover, *movementInfo);
-            break;
-        case TELEPORT:
-            _HandleMoveTeleportAck(session, mover, *movementInfo);
-            break;
-        case INVALID:
-        default:
-            ASSERT(false);
+    case ROOT: // CMSG_FORCE_MOVE_ROOT_ACK && CMSG_FORCE_MOVE_UNROOT_ACK
+    case WATER_WALK: // CMSG_MOVE_WATER_WALK_ACK
+    case SET_HOVER:  // CMSG_MOVE_HOVER_ACK
+    case SET_CAN_FLY: // CMSG_MOVE_SET_CAN_FLY_ACK
+    case FEATHER_FALL: // CMSG_MOVE_FEATHER_FALL_ACK
+#ifdef LICH_KING
+    case GRAVITY: // CMSG_MOVE_GRAVITY_DISABLE_ACK && CMSG_MOVE_GRAVITY_ENABLE_ACK?
+    case SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY: // CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK
+#endif
+        _HandleMovementFlagChangeToggleAck(session, mover, *movementInfo, !serverSideResolve);
+        break;
+#ifdef LICH_KING
+    case RATE_CHANGE_PITCH:
+    case SET_COLLISION_HGT:
+        TODO; //split the opcode handlers so that we can use them here
+        break;
+#endif
+    case KNOCK_BACK:
+        _HandleMoveKnockBackAck(session, mover, *movementInfo, !serverSideResolve);
+        break;
+    case SPEED_CHANGE_WALK:
+    case SPEED_CHANGE_RUN:
+    case SPEED_CHANGE_RUN_BACK:
+    case SPEED_CHANGE_SWIM:
+    case SPEED_CHANGE_SWIM_BACK:
+    case RATE_CHANGE_TURN:
+    case SPEED_CHANGE_FLIGHT_SPEED:
+    case SPEED_CHANGE_FLIGHT_BACK_SPEED:
+        _HandleForceSpeedChangeAck(session, mover, *movementInfo);
+        break;
+    case TELEPORT:
+        _HandleMoveTeleportAck(session, mover, *movementInfo);
+        break;
+    case INVALID:
+    default:
+        ASSERT(false);
     }
 }
 
-void PlayerMovementPendingChange::_HandleMovementFlagChangeToggleAck(WorldSession* session, Unit* mover, MovementInfo& movementInfo, bool validate)
+void PlayerMovementPendingChange::_HandleMovementFlagChangeToggleAck(WorldSession* /*session*/, Unit* mover, MovementInfo& movementInfo, bool validate)
 {
     MovementFlags  mFlag = MOVEMENTFLAG_NONE;
     MovementFlags2 mFlag2 = MOVEMENTFLAG2_NONE;
@@ -1244,9 +1036,9 @@ void PlayerMovementPendingChange::_HandleMovementFlagChangeToggleAck(WorldSessio
             movementChangeType, mover->GetName().c_str(), mover->GetGUID().ToString().c_str());
         DEBUG_ASSERT(false);
         return;
-}
+    }
 
-    if(validate)
+    if (validate)
         mover->ValidateMovementInfo(&movementInfo);
     mover->UpdateMovementInfo(movementInfo);
     if (mFlag != MOVEMENTFLAG_NONE)
@@ -1286,27 +1078,11 @@ void PlayerMovementPendingChange::_HandleMoveKnockBackAck(WorldSession* session,
     // knocking a player removes the CanFly flag (the client reacts the same way).
     mover->SetFlyingReal(false);
 
-    if(validate)
+    if (validate)
         mover->ValidateMovementInfo(&movementInfo);
     /* the client data has been verified. let's do the actual change now */
     mover->UpdateMovementInfo(movementInfo);
     MovementPacketSender::SendKnockBackToObservers(mover, movementInfo.jump.cosAngle, movementInfo.jump.sinAngle, movementInfo.jump.xyspeed, movementInfo.jump.zspeed);
 
-    session->anticheat->OnPlayerKnockBack(mover);
-}
-
-
-bool WorldSession::IsAuthorizedToTakeControl(ObjectGuid guid)
-{
-    return _allowedClientControl.find(guid) != _allowedClientControl.end();
-}
-
-bool WorldSession::IsAuthorizedToMove(ObjectGuid guid, bool log /*= true*/)
-{
-    bool authorized = _allowedClientMove.find(guid) != _allowedClientMove.end();
-    if(!authorized && log)
-        TC_LOG_DEBUG("movement", "player %s (%u) tried to move with non allowed unit %s",
-            _player->GetName().c_str(), _player->GetGUID().GetCounter(), guid.ToString().c_str());
-    
-    return authorized;
+    session->anticheat.OnPlayerKnockBack(mover);
 }

@@ -4,9 +4,11 @@
 
 #include "Common.h"
 #include "WorldPacket.h"
+#include "ClientControl.h"
 #include "SharedDefines.h"
 #include "QueryHolder.h"
 #include "QueryCallback.h"
+#include "PlayerAntiCheat.h"
 #include "World.h"
 
 #include <string>
@@ -438,11 +440,8 @@ class TC_GAME_API WorldSession
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncServer;
 
-        // Data from movement packet, may be used for anticheat?
-        void SetLastMoveClientTimestamp(uint32 timestamp) { lastMoveClientTimestamp = timestamp; }
-        void SetLastMoveServerTimestamp(uint32 timestamp) { lastMoveServerTimestamp = timestamp; }
-        uint32 GetLastMoveClientTimestamp() const { return lastMoveClientTimestamp; }
-        uint32 GetLastMoveServerTimestamp() const { return lastMoveServerTimestamp; }
+        ClientControl& GetClientControl() { return _clientControl; }
+        ClientControl const& GetClientControl() const { return _clientControl; }
 
         bool IsReplaying() const { return m_replayPlayer != nullptr; }
         bool IsRecording() const { return m_replayRecorder != nullptr; }
@@ -461,28 +460,7 @@ class TC_GAME_API WorldSession
 
         bool IsConnectionIdle() const;
 
-        PlayerAntiCheat* anticheat;
-
-        typedef std::pair<uint32, PlayerMovementPendingChange> PendingChangePair;
-        PendingChangePair PopPendingMovementChange();
-        // Returns counter
-        uint32 PushPendingMovementChange(PlayerMovementPendingChange newChange);
-        bool HasPendingMovementChange() const { return !m_pendingMovementChanges.empty(); }
-        bool HasPendingMovementChange(uint32 counter, uint16 opcode, ObjectGuid guid, bool apply = false) const;
-        bool HasPendingMovementChange(MovementChangeType changeType) const;
-        void CheckPendingMovementAcks();
-        //Force resolving all pending changes right now, instead of waiting for client acks
-        void ResolveAllPendingChanges();
-        void SetClientControl(Unit* target, bool allowMove);
-        bool IsAuthorizedToMove(ObjectGuid guid, bool log = true);
-        bool IsAuthorizedToTakeControl(ObjectGuid guid);
-        // The unit this client is currently trying to move (may be nullptr). /!\ He may not be able to, use GetAllowedActiveMover in most cases.
-        Unit* GetActiveMover() const { return _activeMover; }
-        // The unit this client is currently trying to move, and is allowed to!
-        Unit* GetAllowedActiveMover() const;
-        void ResetActiveMover(bool onDelete = false);
-        //Use only when joining a new map
-        void InitActiveMover(Unit* activeMover);
+        PlayerAntiCheat anticheat;
 
     public:                                                 // opcodes handlers
 
@@ -1038,32 +1016,6 @@ class TC_GAME_API WorldSession
         std::shared_ptr<ReplayRecorder> m_replayRecorder;
         std::shared_ptr<ReplayPlayer> m_replayPlayer;
 
-        /* Player Movement fields START*/
-        // Timestamp on client clock of the moment the most recently processed movement packet was SENT by the client
-        uint32 lastMoveClientTimestamp;
-        // Timestamp on server clock of the moment the most recently processed movement packet was RECEIVED from the client
-        uint32 lastMoveServerTimestamp;
-        // when a player controls a unit, and when change is made to this unit which requires an ack from the client to be acted (change of speed for example), the movementCounter is incremented
-        // Is this a per session counter or a per session and per unit counter? This implementation is for per session only
-        std::deque<PendingChangePair> m_pendingMovementChanges;
-        uint32 _movementCounter;
-
-        // describe all units this player can activate as movers. Example, a player on a vehicle has client control over himself and the vehicle at the same time.
-        // Or if player is MC someone, control over himself + target player
-        GuidSet _allowedClientControl;
-        // Describe all units this player can directly control with move and acks packets. A client may have just activated a mover but not be allowed to control it yet.
-        GuidSet _allowedClientMove;
-        // Match the unit the client has designed as active Mover. /!\ Doesn't mean he actually can move it right now! Use GetAllowedActiveMover for that.
-        Unit* _activeMover;
-        // Spline id for mover activation process
-        uint32 _pendingActiveMoverSplineId;
-        // This is not instant and will begin mover transfer process
-        void SetActiveMover(Unit* activeMover);
-        void DisallowMover(Unit* mover);
-        void AllowMover(Unit* mover);
-        uint32 _releaseMoverTimeout; //if reached, kick player.
-        /* Player Movement fields END*/
+        ClientControl _clientControl;
 };
 #endif
-/// @}
-

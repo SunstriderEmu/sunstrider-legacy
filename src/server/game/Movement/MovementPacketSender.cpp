@@ -50,14 +50,14 @@ void MovementPacketSender::SendHeightChangeToObservers(Unit* unit, float newHeig
 
 void MovementPacketSender::SendTeleportAckPacket(Unit* unit, MovementInfo const& movementInfo)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("movement", "MovementPacketSender::SendTeleportAckPacket: Incorrect use of the function. It was called on a unit controlled by the server!");
         return;
     }
 
-    PlayerMovementPendingChange pendingChange(session->GetPlayer()->GetMap()->GetGameTimeMS());
+    PlayerMovementPendingChange pendingChange(session->GetSession()->GetPlayer()->GetMap()->GetGameTimeMS());
     pendingChange.guid = unit->GetGUID();
     pendingChange.movementChangeType = TELEPORT;
 
@@ -67,10 +67,10 @@ void MovementPacketSender::SendTeleportAckPacket(Unit* unit, MovementInfo const&
     data << unit->GetPackGUID();
     data << mCounter;
     movementInfo.WriteContentIntoPacket(&data);
-    session->SendPacket(&data);
+    session->GetSession()->SendPacket(&data);
 
     TC_LOG_TRACE("movement", "Sent teleport ack to player %s for unit %s (%s)",
-        session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
+        session->GetSession()->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
 }
 
 void MovementPacketSender::SendTeleportPacket(Unit* unit, MovementInfo const& movementInfo)
@@ -78,19 +78,18 @@ void MovementPacketSender::SendTeleportPacket(Unit* unit, MovementInfo const& mo
     // MSG_MOVE_TELEPORT is used in 2 different cases: 
     // 1) to teleport NPCs controlled by the server.
     // 2) to inform of the (acknowledged) teleport of a player-controlled unit
-    // 3) teleport from an NPC casting blink?
     // that's why here, unit->GetPlayerMovingMe() CAN be NULL. In that case, we are in scenario 1.
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
 
     WorldPacket data(MSG_MOVE_TELEPORT, 38);
     data << unit->GetPackGUID();
     movementInfo.WriteContentIntoPacket(&data);
-    unit->SendMessageToSet(&data, session ? session->GetPlayer() : nullptr);
+    unit->SendMessageToSet(&data, session ? session->GetSession()->GetPlayer() : nullptr);
 
     if (session)
     {
         TC_LOG_TRACE("movement", "Sent teleport to set to player %s for unit %s (%s)",
-            session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
+            session->GetSession()->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str());
     }
     else 
     {
@@ -117,7 +116,7 @@ Opcodes const MovementPacketSender::moveTypeToOpcode[MAX_MOVE_TYPE][3] =
 
 void MovementPacketSender::SendSpeedChangeToMover(Unit* unit, UnitMoveType mtype, float newRate)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("movement", "MovementPacketSender::SendSpeedChangeToMover: Incorrect use of the function. It was called on a unit controlled by the server!");
@@ -138,10 +137,10 @@ void MovementPacketSender::SendSpeedChangeToMover(Unit* unit, UnitMoveType mtype
     if (mtype == MOVE_RUN)
         data << uint8(1);                               // unknown byte added in 2.1.0
     data << newSpeedFlat;
-    session->SendPacket(&data);
+    session->GetSession()->SendPacket(&data);
 
     TC_LOG_TRACE("movement", "Sent new speed %f to player %s for unit %s (%s), counter %u",
-        newSpeedFlat, session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
+        newSpeedFlat, session->GetSession()->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
 }
 
 MovementChangeType MovementPacketSender::GetChangeTypeByMoveType(UnitMoveType moveType)
@@ -166,7 +165,7 @@ MovementChangeType MovementPacketSender::GetChangeTypeByMoveType(UnitMoveType mo
 
 void MovementPacketSender::SendSpeedChangeToObservers(Unit* unit, UnitMoveType mtype, float newRate)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("movement", "MovementPacketSender::SendSpeedChangeToObservers: Incorrect use of the function. It was called on a unit controlled by the server!");
@@ -177,7 +176,7 @@ void MovementPacketSender::SendSpeedChangeToObservers(Unit* unit, UnitMoveType m
     data.Initialize(moveTypeToOpcode[mtype][2], 8 + 30 + 4);
     unit->GetMovementInfo().WriteContentIntoPacket(&data, true);
     data << newRate;
-    unit->SendMessageToSet(&data, session->GetPlayer());
+    unit->SendMessageToSet(&data, session->GetSession()->GetPlayer());
 }
 
 void MovementPacketSender::SendSpeedChangeToAll(Unit* unit, UnitMoveType mtype, float newRate)
@@ -191,7 +190,7 @@ void MovementPacketSender::SendSpeedChangeToAll(Unit* unit, UnitMoveType mtype, 
 
 void MovementPacketSender::SendKnockBackToMover(Unit* unit, float vcos, float vsin, float speedXY, float speedZ)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("movement", "MovementPacketSender::SendKnockBackToMover: Incorrect use of the function. It was called on a unit controlled by the server!");
@@ -215,15 +214,15 @@ void MovementPacketSender::SendKnockBackToMover(Unit* unit, float vcos, float vs
     data << float(vsin);                                    // y direction
     data << float(speedXY);                                 // Horizontal speed
     data << float(speedZ);                                 // Z Movement speed (vertical)
-    session->SendPacket(&data);
+    session->GetSession()->SendPacket(&data);
 
     TC_LOG_TRACE("movement", "Sent knockback to player %s for unit %s (%s), counter %u",
-        session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
+        session->GetSession()->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
 }
 
 void MovementPacketSender::SendKnockBackToObservers(Unit* unit, float vcos, float vsin, float speedXY, float speedZ)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("movement", "MovementPacketSender::SendSpeedChangeToObservers: Incorrect use of the function. It was called on a unit controlled by the server!");
@@ -236,12 +235,12 @@ void MovementPacketSender::SendKnockBackToObservers(Unit* unit, float vcos, floa
     data << vsin;
     data << speedXY;
     data << speedZ;
-    unit->SendMessageToSet(&data, session->GetPlayer());
+    unit->SendMessageToSet(&data, session->GetSession()->GetPlayer());
 }
 
 void MovementPacketSender::SendMovementFlagChangeToMover(Unit* unit, MovementFlags mFlag, bool apply)
 {
-    WorldSession* session = unit->GetPlayerMovingMe();
+    ClientControl* session = unit->GetPlayerMovingMe();
     if (!session)
     {
         TC_LOG_ERROR("entities.unit", "MovementPacketSender::SendMovementFlagChangeToMover: Incorrect use of the function. It was called on a unit controlled by the server!");
@@ -277,10 +276,10 @@ void MovementPacketSender::SendMovementFlagChangeToMover(Unit* unit, MovementFla
     WorldPacket data(opcode, 12 + 4); // is the upper bound of unit->GetPackGUID().size() indeed equal to 12?
     data << unit->GetPackGUID();
     data << mCounter;
-    session->SendPacket(&data);
+    session->GetSession()->SendPacket(&data);
 
     TC_LOG_TRACE("movement", "Sent %s to player %s for unit %s (%s), counter %u",
-        GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), session->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
+        GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), session->GetSession()->GetPlayer()->GetName().c_str(), unit->GetName().c_str(), unit->GetGUID().ToString().c_str(), mCounter);
 }
 
 #ifdef LICH_KING

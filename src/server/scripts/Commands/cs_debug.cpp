@@ -95,7 +95,7 @@ public:
 
     static bool HandleWaterWalkCheatCommand(ChatHandler* handler, char const* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -120,7 +120,7 @@ public:
 
     static bool HandleDisableGravityCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -145,7 +145,7 @@ public:
 
     static bool HandleRootCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -170,7 +170,7 @@ public:
 
     static bool HandleHoverCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -196,7 +196,7 @@ public:
 #ifdef LICH_KING
     static bool HandleCanTransitionBetweenSwimAndFlyCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -222,7 +222,7 @@ public:
 
     static bool HandleCanFlyCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)
@@ -247,7 +247,7 @@ public:
 
     static bool HandleFeatherFallCheatCommand(ChatHandler* handler, const char* args)
     {
-        Unit* unit = handler->GetSelectedUnit();
+        Unit* unit = handler->GetSelectedPlayerOrSelf();
         if (unit == nullptr)
             unit = handler->GetSession()->GetPlayer();
         if (unit == nullptr)

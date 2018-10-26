@@ -989,7 +989,7 @@ void Battleground::RewardQuest(Player *plr)
 
 void Battleground::BlockMovement(Player *plr)
 {
-    plr->GetSession()->SetClientControl(plr, false);                          // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave()
+    plr->GetSession()->GetClientControl().DisallowTakeControl(plr); // movement disabled NOTE: the effect will be automatically removed by client when the player is teleported from the battleground, so no need to send with uint8(1) in RemovePlayerAtLeave() (what does that even mean?)
 }
 
 void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool SendPacket)

@@ -7496,7 +7496,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype)
     float oldSpeed = GetSpeedRate(mtype);
     SetSpeedRate(mtype, speed);
     if (Player* p = ToPlayer())
-        p->GetSession()->anticheat->OnPlayerSpeedChanged(p, oldSpeed, speed);
+        p->GetSession()->anticheat.OnPlayerSpeedChanged(p, oldSpeed, speed);
 }
 
 /* return true speed */
@@ -10017,11 +10017,8 @@ void Unit::SetFeared(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        if (m_playerMovingMe)
-            m_playerMovingMe->SetClientControl(this, !apply);
-    }
+    if (GetTypeId() == TYPEID_PLAYER && m_playerMovingMe)
+        m_playerMovingMe->SuppressMover(this, apply);
 }
 
 void Unit::SetConfused(bool apply)
@@ -10044,11 +10041,8 @@ void Unit::SetConfused(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        if (m_playerMovingMe)
-            m_playerMovingMe->SetClientControl(this, !apply);
-    }
+    if (GetTypeId() == TYPEID_PLAYER && m_playerMovingMe)
+        m_playerMovingMe->SuppressMover(this, apply);
 }
 
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp /*= nullptr*/)
@@ -10149,7 +10143,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
         if (player->IsAFK())
             player->ToggleAFK();
 
-        player->GetSession()->SetClientControl(this, false);
+        player->GetSession()->GetClientControl().DisallowTakeControl(this);
     }
 
     // charm is set by aura, and aura effect remove handler was called during apply handler execution
@@ -10181,7 +10175,7 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
             case CHARM_TYPE_POSSESS:
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED);
                 charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
-                playerCharmer->GetSession()->SetClientControl(this, true);
+                playerCharmer->GetSession()->GetClientControl().AllowTakeControl(this, true);
                 playerCharmer->PossessSpellInitialize();
                 AddUnitState(UNIT_STATE_POSSESSED);
                 break;
@@ -10298,8 +10292,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 #endif
         case CHARM_TYPE_POSSESS:
             ClearUnitState(UNIT_STATE_POSSESSED);
-            playerCharmer->GetSession()->SetClientControl(this, false);
-            playerCharmer->GetSession()->SetClientControl(charmer, true);
+            playerCharmer->GetSession()->GetClientControl().DisallowTakeControl(this);
             charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED);
             break;
@@ -10337,7 +10330,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     }
 
     if (Player* player = ToPlayer())
-        player->GetSession()->SetClientControl(this, true);
+        player->GetSession()->GetClientControl().AllowTakeControl(this, false);
 
     // reset confused movement for example
     ApplyControlStatesIfNeeded();
@@ -10901,7 +10894,7 @@ void Unit::SetWaterWalking(bool apply)
         MovementPacketSender::SendMovementFlagChangeToAll(this, MOVEMENTFLAG_WATERWALKING, apply);
     }
     if (Player* p = ToPlayer())
-        p->GetSession()->anticheat->OnPlayerWaterWalk(p);
+        p->GetSession()->anticheat.OnPlayerWaterWalk(p);
 }
 
 void Unit::SetWaterWalkingReal(bool apply)
@@ -10928,7 +10921,7 @@ void Unit::SetFeatherFall(bool apply)
         MovementPacketSender::SendMovementFlagChangeToAll(this, MOVEMENTFLAG_FALLING_SLOW, apply);
     }
     if (Player* p = ToPlayer())
-        p->GetSession()->anticheat->OnPlayerSlowfall(p);
+        p->GetSession()->anticheat.OnPlayerSlowfall(p);
 }
 
 void Unit::SetFeatherFallReal(bool apply)
@@ -10957,7 +10950,7 @@ void Unit::SetHover(bool apply)
     }
 
     if (Player* p = ToPlayer())
-        p->GetSession()->anticheat->OnPlayerSlowfall(p);
+        p->GetSession()->anticheat.OnPlayerSlowfall(p);
 }
 
 void Unit::SetHoverReal(bool apply)
@@ -11323,10 +11316,10 @@ void Unit::ValidateMovementInfo(MovementInfo* mi)
         { \
             TC_LOG_INFO("cheat", "Unit::ValidateMovementInfo: A violation has been detected (%s) for player %s (lowguid: %u) moving unit %s (GUID: %s). The player will be kicked." \
                 " Data from client: MovementFlags: %u, MovementFlags2: %u. Data in the server: MovementFlags: %u, MovementFlags2: %u.", \
-                STRINGIZE(check), GetPlayerMovingMe()->GetPlayer()->GetName().c_str(), GetPlayerMovingMe()->GetPlayer()->GetGUID().GetCounter(), \
+                STRINGIZE(check), GetPlayerMovingMe()->GetSession()->GetPlayer()->GetName().c_str(), GetPlayerMovingMe()->GetSession()->GetPlayer()->GetGUID().GetCounter(), \
                             GetName().c_str(), GetGUID().ToString().c_str(), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), \
                             GetMovementInfo().GetMovementFlags(), GetMovementInfo().GetExtraMovementFlags()); \
-            GetPlayerMovingMe()->KickPlayer(); \
+            GetPlayerMovingMe()->GetSession()->KickPlayer(); \
             return; \
         } \
     }
@@ -11421,12 +11414,12 @@ void Unit::UpdateMovementInfo(MovementInfo movementInfo)
     }
 
     //We received the client time but need to send the movement with server time to other players
-    WorldSession* playerSession = GetPlayerMovingMe();
+    ClientControl* playerSession = GetPlayerMovingMe();
     playerSession->SetLastMoveClientTimestamp(movementInfo.time); // Needed for speed cheat detection
     playerSession->SetLastMoveServerTimestamp(GetMap()->GetGameTimeMS());
      
     uint32 const STATIC_DELAY = 100;
-    int64 movementTime = (int64)movementInfo.time + playerSession->m_timeSyncClockDelta;
+    int64 movementTime = (int64)movementInfo.time + playerSession->GetSession()->m_timeSyncClockDelta;
     if (movementTime < 0 || movementTime > 0xFFFFFFFF)
     {
         TC_LOG_WARN("movement", "The computed movement time using clockDelta is erronous. Using fallback instead");

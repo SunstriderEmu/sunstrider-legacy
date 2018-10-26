@@ -121,17 +121,12 @@ m_TutorialsChanged(false),
 _warden(nullptr),
 forceExit(false),
 expireTime(60000), // 1 min after socket loss, session is deleted
-anticheat(new PlayerAntiCheat(this)),
-_movementCounter(0),
+anticheat(this),
 m_timeSyncClockDelta(0),
-lastMoveClientTimestamp(0),
-lastMoveServerTimestamp(0),
 m_timeSyncCounter(0),
 m_timeSyncTimer(0),
 m_timeSyncServer(0),
-_pendingActiveMoverSplineId(0),
-_activeMover(nullptr),
-_releaseMoverTimeout(0)
+_clientControl(this)
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -146,8 +141,8 @@ _releaseMoverTimeout(0)
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
-    ResetActiveMover(true); //must be before player logout
-    ResolveAllPendingChanges();
+    GetClientControl().ResetActiveMover(true); //must be before player logout
+    GetClientControl().ResolveAllPendingChanges();
 
     ///- unload player if not unloaded
     if (_player)
@@ -166,8 +161,6 @@ WorldSession::~WorldSession()
     WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
-
-    delete anticheat;
 
     LoginDatabase.AsyncPQuery("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.AsyncPQuery("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
@@ -257,7 +250,7 @@ void WorldSession::SendPacket(WorldPacket const* packet)
 /// Add an incoming packet to the queue
 void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
-    anticheat->OnClientPacketReceived(*new_packet);
+    anticheat.OnClientPacketReceived(*new_packet);
     _recvQueue.add(new_packet);
 }
 
@@ -453,7 +446,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             break;
     }
 
-    CheckPendingMovementAcks();
+    _clientControl.Update(diff);
 
     #ifdef PLAYERBOT
     if (GetPlayer() && GetPlayer()->GetPlayerbotMgr())
@@ -462,7 +455,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     _recvQueue.readd(requeuePackets.begin(), requeuePackets.end());
 
-    if (_player && _player->IsRepopPending() && !HasPendingMovementChange())
+    if (_player && _player->IsRepopPending() && !GetClientControl().HasPendingMovementChange())
         _player->RepopAtGraveyard();
 
     if (_player && _player->IsHasDelayedTeleport() && _player->IsAlive())
@@ -513,19 +506,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             SendTimeSync();
         else
             m_timeSyncTimer -= diff;
-    }
-
-    if (_releaseMoverTimeout > 0)
-    { 
-        if (diff >= _releaseMoverTimeout)
-        {
-            TC_LOG_DEBUG("movement", "Player %s (%u) did not ack the mover change fast enough and was kicked",
-                _player->GetName().c_str(), _player->GetGUID().GetCounter());
-
-            KickPlayer();
-        }
-        else
-            _releaseMoverTimeout -= diff;
     }
 
     return true;
@@ -1736,112 +1716,6 @@ void CharacterCreateInfo::RandomizeAppearance()
 
     OutfitId = 0;
     Gender = urand(GENDER_MALE, GENDER_FEMALE);
-}
-
-WorldSession::PendingChangePair WorldSession::PopPendingMovementChange()
-{
-    auto result = m_pendingMovementChanges.front();
-    m_pendingMovementChanges.pop_front();
-    return result;
-}
-
-uint32 WorldSession::PushPendingMovementChange(PlayerMovementPendingChange newChange)
-{
-    //Apparently retail has the counter on unit rather than per session. I don't think this makes a difference.
-    m_pendingMovementChanges.emplace_back(std::make_pair(++_movementCounter, std::move(newChange)));
-    return _movementCounter;
-}
-
-bool WorldSession::HasPendingMovementChange(uint32 counter, uint16 opcode, ObjectGuid guid, bool apply) const
-{
-    if (m_pendingMovementChanges.empty())
-        return false;
-
-    MovementChangeType type = INVALID;
-    switch (opcode)
-    {
-    case MSG_MOVE_TELEPORT_ACK:                        type = TELEPORT;                         break;
-    case CMSG_MOVE_KNOCK_BACK_ACK:                     type = KNOCK_BACK;                       break;
-    case CMSG_FORCE_MOVE_ROOT_ACK:                     type = ROOT;                             break;
-    case CMSG_FORCE_MOVE_UNROOT_ACK:                   type = ROOT;                             break;
-    case CMSG_MOVE_WATER_WALK_ACK:                     type = WATER_WALK;                       break;
-    case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:             type = SPEED_CHANGE_WALK;                break;
-    case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:              type = SPEED_CHANGE_RUN;                 break;
-    case CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK:         type = SPEED_CHANGE_RUN_BACK;            break;
-    case CMSG_FORCE_SWIM_SPEED_CHANGE_ACK:             type = SPEED_CHANGE_SWIM;                break;
-    case CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK:        type = SPEED_CHANGE_SWIM_BACK;           break;
-    case CMSG_FORCE_TURN_RATE_CHANGE_ACK:              type = RATE_CHANGE_TURN;                 break;
-    case CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK:           type = SPEED_CHANGE_FLIGHT_SPEED;        break;
-    case CMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK:      type = SPEED_CHANGE_FLIGHT_BACK_SPEED;   break;
-    case CMSG_MOVE_HOVER_ACK:                          type = SET_HOVER;                        break;
-    case CMSG_MOVE_SET_CAN_FLY_ACK:                    type = SET_CAN_FLY;                      break;
-    case CMSG_MOVE_FEATHER_FALL_ACK:                   type = FEATHER_FALL;                     break;
-#ifdef LICH_KING
-    case LK_CMSG_FORCE_PITCH_RATE_CHANGE_ACK:          type = RATE_CHANGE_PITCH;                break;
-    case LK_CMSG_MOVE_GRAVITY_DISABLE_ACK:             type = GRAVITY;                          break;
-    case LK_CMSG_MOVE_GRAVITY_ENABLE_ACK:              type = GRAVITY;                          break;
-    case LK_CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK: type = SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY; break;
-    case LK_CMSG_MOVE_SET_COLLISION_HGT_ACK:           type = SET_COLLISION_HGT;                break;
-#endif
-    default:
-        return false;
-    }
-
-    if (m_pendingMovementChanges.front().first != counter)
-        return false;
-
-    PlayerMovementPendingChange const& change = m_pendingMovementChanges.front().second;
-    bool found = change.movementChangeType == type 
-              && change.guid == guid
-              && change.apply == apply;
-
-    if (!found)
-    {
-        TC_LOG_ERROR("network", "Received ack with existing counter %u but incorrect type %u or guid %s or apply %u (expected type %u and guid %s and apply %u)",
-            counter, type, guid.ToString().c_str(), uint8(apply), change.movementChangeType, change.guid.ToString().c_str(), uint8(change.apply));
-    }
-    return found;
-}
-
-bool WorldSession::HasPendingMovementChange(MovementChangeType changeType) const
-{
-    return std::find_if(m_pendingMovementChanges.begin(), m_pendingMovementChanges.end(),
-        [changeType](WorldSession::PendingChangePair const& pendingChange)
-    {
-        return pendingChange.second.movementChangeType == changeType;
-    }) != m_pendingMovementChanges.end();
-}
-
-void WorldSession::CheckPendingMovementAcks()
-{
-    if (!HasPendingMovementChange())
-        return;
-
-    if (!_player)
-        return;
-    Map* map = _player->FindMap();
-    if (!map)
-        return;
-
-    PlayerMovementPendingChange const& oldestChangeToAck = m_pendingMovementChanges.front().second;
-    if (map->GetGameTimeMS() > oldestChangeToAck.time + sWorld->getIntConfig(CONFIG_PENDING_MOVE_CHANGES_TIMEOUT))
-    {
-        /*
-        when players are teleported from one corner of a map to an other (example: from Dragonblight to the entrance of Naxxramas, both in the same map: Northend),
-        is it done through what is called a 'near' teleport. A near teleport always involve teleporting a player from one point to an other in the same map, even if
-        the distance is huge. When that distance is big enough, a loading screen appears on the client side. During that time, the client loads the surrounding zone
-        of the new location (and everything it contains). The problem is that, as long as the client hasn't finished loading the new zone, it will NOT ack the near
-        teleport. So if the server sends a near teleport order at a certain time and the client takes 20s to load the new zone (let's imagine a very slow computer),
-        even with zero latency, the server will receive an ack from the client only after 20s.
-        For this reason and because the current implementation is simple (you dear reader, feel free to improve it if you can), we will just ignore checking for
-        near teleport acks (for now. @todo).
-        */
-        if (oldestChangeToAck.movementChangeType == TELEPORT)
-            return;
-
-        TC_LOG_INFO("cheat", "Unit::CheckPendingMovementAcks: Player GUID: %u took too long to acknowledge a movement change. He was therefore kicked.", _player->GetGUID().GetCounter());
-        KickPlayer();
-    }
 }
 
 void WorldSession::ResetTimeSync()

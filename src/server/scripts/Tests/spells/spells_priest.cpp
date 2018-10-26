@@ -2123,7 +2123,7 @@ public:
 
             SECTION("Statuses and flag", [&] {
                 TEST_ASSERT(enemy->IsPossessedByPlayer());
-                TEST_ASSERT(priest->GetSession()->GetActiveMover() == enemy);
+                TEST_ASSERT(priest->GetSession()->GetClientControl().GetActiveMover() == enemy);
                 TEST_ASSERT(priest->GetViewpoint() == enemy);
                 TEST_ASSERT(enemy->HasUnitState(UNIT_STATE_POSSESSED));
                 TEST_ASSERT(enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));
@@ -2135,7 +2135,7 @@ public:
              
             SECTION("Unapply", [&] {
                 TEST_ASSERT(!enemy->IsPossessed());
-                TEST_ASSERT(priest->GetSession()->GetActiveMover() == priest);
+                TEST_ASSERT(priest->GetSession()->GetClientControl().GetActiveMover() == priest);
                 TEST_ASSERT(priest->GetViewpoint() == nullptr);
                 TEST_ASSERT(!enemy->HasUnitState(UNIT_STATE_POSSESSED));
                 TEST_ASSERT(!enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_POSSESSED));

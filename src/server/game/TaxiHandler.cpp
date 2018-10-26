@@ -204,7 +204,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 #ifdef TODOMOV
     if (_pendingActiveMoverSplineId == splineId)
     {
-        if (IsAuthorizedToTakeControl(_activeMover->GetGUID()))
+        if (IsAllowedToTakeControl(_activeMover->GetGUID()))
         {
             AllowMover(_activeMover);
             TC_LOG_TRACE("movement", "CMSG_MOVE_SPLINE_DONE: Enabling move of unit %s (%s) to player %s (%s)",

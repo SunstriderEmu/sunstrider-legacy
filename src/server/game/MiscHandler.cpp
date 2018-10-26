@@ -498,7 +498,7 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 void WorldSession::HandleStandStateChangeOpcode(WorldPacket & recvData)
 {
     //sun: affect moved unit and not player
-    Unit* moved = GetAllowedActiveMover();
+    Unit* moved = GetClientControl().GetAllowedActiveMover();
     if(!moved || !moved->IsAlive())
         return;
 
