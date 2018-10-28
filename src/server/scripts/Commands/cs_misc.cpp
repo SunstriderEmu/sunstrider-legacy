@@ -215,16 +215,15 @@ public:
 
     static bool HandleGUIDCommand(ChatHandler* handler, char const* /*args*/)
     {
-        ObjectGuid guid = handler->GetSession()->GetPlayer()->GetTarget();
-
-        if (guid == 0)
+        Unit* selected = handler->GetSelectedUnit();
+        if (!selected)
         {
             handler->SendSysMessage(LANG_NO_SELECTION);
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        handler->PSendSysMessage(LANG_OBJECT_GUID, guid.ToString().c_str());
+        handler->PSendSysMessage(LANG_OBJECT_GUID, selected->GetGUID().ToString().c_str());
         return true;
     }
 
@@ -254,7 +253,7 @@ public:
             return false;
         }
 
-        Player *chr = ObjectAccessor::FindPlayer(guid);
+        Player* chr = ObjectAccessor::FindPlayer(guid);
 
         // check security
         uint32 account_id = 0;
@@ -387,10 +386,9 @@ public:
 
     static bool HandleMaxSkillCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* SelectedPlayer = handler->GetSelectedPlayerOrSelf();
-
+        Player* selectedPlayer = handler->GetSelectedPlayerOrSelf();
         // each skills that have max skill value dependent from level seted to current level max skill value
-        SelectedPlayer->UpdateSkillsToMaxSkillsForLevel();
+        selectedPlayer->UpdateSkillsToMaxSkillsForLevel();
         handler->SendSysMessage("Max skills set to target");
         return true;
     }

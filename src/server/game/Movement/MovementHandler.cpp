@@ -952,8 +952,8 @@ void PlayerMovementPendingChange::_HandleMoveTeleportAck(WorldSession* session, 
 void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& change, WorldSession* session, Unit* mover /*= nullptr*/, MovementInfo* movementInfo /*= nullptr*/)
 {
     //if we're doing a serverside resolve, we're using the current movement info from the server, so no need to validate it
+    MovementInfo serverMovementInfo;
     bool serverSideResolve = mover == nullptr;
-    MovementInfo serverMovementInfo = mover->GetMovementInfo();
     if (serverSideResolve)
     {
         ASSERT(movementInfo == nullptr); //else, wrong usage of this function
@@ -964,6 +964,7 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
                 guid.ToString().c_str(), session->GetPlayer()->GetName().c_str(), session->GetPlayer()->GetGUID().ToString().c_str());
             return;
         }
+        serverMovementInfo = std::move(mover->GetMovementInfo());
         movementInfo = &serverMovementInfo;
     }
     else
@@ -973,13 +974,13 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
 
     switch (movementChangeType)
     {
-    case ROOT: // CMSG_FORCE_MOVE_ROOT_ACK && CMSG_FORCE_MOVE_UNROOT_ACK
-    case WATER_WALK: // CMSG_MOVE_WATER_WALK_ACK
-    case SET_HOVER:  // CMSG_MOVE_HOVER_ACK
-    case SET_CAN_FLY: // CMSG_MOVE_SET_CAN_FLY_ACK
-    case FEATHER_FALL: // CMSG_MOVE_FEATHER_FALL_ACK
+    case ROOT:          // CMSG_FORCE_MOVE_ROOT_ACK && CMSG_FORCE_MOVE_UNROOT_ACK
+    case WATER_WALK:    // CMSG_MOVE_WATER_WALK_ACK
+    case SET_HOVER:     // CMSG_MOVE_HOVER_ACK
+    case SET_CAN_FLY:   // CMSG_MOVE_SET_CAN_FLY_ACK
+    case FEATHER_FALL:  // CMSG_MOVE_FEATHER_FALL_ACK
 #ifdef LICH_KING
-    case GRAVITY: // CMSG_MOVE_GRAVITY_DISABLE_ACK && CMSG_MOVE_GRAVITY_ENABLE_ACK?
+    case GRAVITY:       // CMSG_MOVE_GRAVITY_DISABLE_ACK && CMSG_MOVE_GRAVITY_ENABLE_ACK?
     case SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY: // CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK
 #endif
         _HandleMovementFlagChangeToggleAck(session, mover, *movementInfo, !serverSideResolve);
@@ -1014,7 +1015,7 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
 
 void PlayerMovementPendingChange::_HandleMovementFlagChangeToggleAck(WorldSession* /*session*/, Unit* mover, MovementInfo& movementInfo, bool validate)
 {
-    MovementFlags  mFlag = MOVEMENTFLAG_NONE;
+    MovementFlags  mFlag  = MOVEMENTFLAG_NONE;
     MovementFlags2 mFlag2 = MOVEMENTFLAG2_NONE;
 
     switch (movementChangeType)

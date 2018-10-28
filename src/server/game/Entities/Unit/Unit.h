@@ -1309,11 +1309,18 @@ class TC_GAME_API Unit : public WorldObject
         void       DeleteCharmInfo();
 
         // returns the player that this unit is BEING CONTROLLED BY
-        ClientControl* GetPlayerMovingMe() const { return m_playerMovingMe; }
-        // only set for direct client control (possess effects, vehicles and similar)
+        ClientControl* GetPlayerMovingMe() const;
+        // Client currently moving me (client may or may not have completed mover activation process) / Always matches _serverActiveMover
         ClientControl* m_playerMovingMe;
+        // Client we must restore control to when suppress ends
+        ClientControl* m_suppressedPendingClient;
+        // This unit is currently mover suppressed. (m_suppressedPendingClient might not be set, we may be suppressed with no player controlling us)
+        bool m_moverSuppressed;
+        void SuppressMover(bool apply);
+        bool IsMoverSuppressed() const { return m_moverSuppressed; }
+
         // reflects direct client control (examples: a player MC another player or a creature (possess effects). a player takes control of a vehicle. etc...)
-        bool IsMovedByPlayer() const { return m_playerMovingMe != nullptr; }
+        bool IsMovedByPlayer() const;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
         void RemovePlayerFromVision(Player* plr);

@@ -240,12 +240,25 @@ bool DispelableAura::RollDispel() const
     return roll_chance_i(_chance);
 }
 
-Unit::Unit(bool isWorldObject)
-    : WorldObject(isWorldObject), LastCharmerGUID(), m_playerMovingMe(nullptr), i_motionMaster(new MotionMaster(this)), m_combatManager(this), m_threatManager(this),
-    movespline(new Movement::MoveSpline()), m_Diminishing(), m_lastSanctuaryTime(0),
-    m_removedAurasCount(0), m_unitTypeMask(UNIT_MASK_NONE),
-    m_charmer(nullptr), m_charmed(nullptr),
-    m_splineSyncTimer(0), m_ControlledByPlayer(false), m_procDeep(0),
+Unit::Unit(bool isWorldObject) : 
+    WorldObject(isWorldObject), 
+    LastCharmerGUID(), 
+    m_playerMovingMe(nullptr), 
+    m_suppressedPendingClient(nullptr),
+    m_moverSuppressed(false),
+    i_motionMaster(new MotionMaster(this)), 
+    m_combatManager(this),
+    m_threatManager(this),
+    movespline(new Movement::MoveSpline()), 
+    m_Diminishing(), 
+    m_lastSanctuaryTime(0),
+    m_removedAurasCount(0), 
+    m_unitTypeMask(UNIT_MASK_NONE),
+    m_charmer(nullptr), 
+    m_charmed(nullptr),
+    m_splineSyncTimer(0), 
+    m_ControlledByPlayer(false), 
+    m_procDeep(0),
     _last_in_water_status(false),
     _last_isunderwater_status(false),
     m_duringRemoveFromWorld(false),
@@ -259,7 +272,7 @@ Unit::Unit(bool isWorldObject)
     _isWalkingBeforeCharm(false),
     m_currentSpells(),
     m_AutoRepeatFirstCast(false),
-    m_reactiveTimer(), 
+    m_reactiveTimer(),
     m_charmInfo(nullptr),
     m_aiLocked(false),
     collisionHeight(DEFAULT_COLLISION_HEIGHT)
@@ -10215,6 +10228,34 @@ void Unit::SetRootedReal(bool apply)
     }
 }
 
+ClientControl* Unit::GetPlayerMovingMe() const 
+{ 
+    return m_playerMovingMe ? m_playerMovingMe : m_suppressedPendingClient; 
+}
+
+bool Unit::IsMovedByPlayer() const 
+{ 
+    return m_playerMovingMe != nullptr || m_suppressedPendingClient != nullptr; 
+}
+
+void Unit::SuppressMover(bool apply)
+{
+    m_moverSuppressed = apply;
+    if (apply)
+    {
+        m_suppressedPendingClient = m_playerMovingMe;
+        if (m_playerMovingMe)
+            m_playerMovingMe->OnMoverSuppressed(this, true);
+    }
+    else
+    {
+        if(m_suppressedPendingClient)
+            m_suppressedPendingClient->OnMoverSuppressed(this, false);
+
+        m_suppressedPendingClient = nullptr;
+    }
+}
+
 void Unit::SetFeared(bool apply)
 {
     if (apply)
@@ -10244,8 +10285,7 @@ void Unit::SetFeared(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER && m_playerMovingMe)
-        m_playerMovingMe->SuppressMover(this, apply);
+    SuppressMover(apply);
 }
 
 void Unit::SetConfused(bool apply)
@@ -10268,8 +10308,7 @@ void Unit::SetConfused(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    if (GetTypeId() == TYPEID_PLAYER && m_playerMovingMe)
-        m_playerMovingMe->SuppressMover(this, apply);
+    SuppressMover(apply);
 }
 
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp /*= nullptr*/)
@@ -10557,7 +10596,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     }
 
     if (Player* player = ToPlayer())
-        player->GetSession()->GetClientControl().AllowTakeControl(this, false);
+        player->GetSession()->GetClientControl().AllowTakeControl(this, true);
 
     // reset confused movement for example
     ApplyControlStatesIfNeeded();

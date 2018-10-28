@@ -141,7 +141,7 @@ _clientControl(this)
 /// WorldSession destructor
 WorldSession::~WorldSession()
 {
-    GetClientControl().ResetActiveMover(true); //must be before player logout
+    GetClientControl().PlayerDisconnect(); //must be before player logout
     GetClientControl().ResolveAllPendingChanges();
 
     ///- unload player if not unloaded

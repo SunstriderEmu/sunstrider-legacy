@@ -41,7 +41,7 @@ public:
     // if charm is set, it will tell client to switch mover to this unit
     void AllowTakeControl(Unit* target, bool charm);
     void DisallowTakeControl(Unit* target);
-    void SuppressMover(Unit* target, bool apply);
+    void OnMoverSuppressed(Unit* target, bool apply);
 
     bool IsAllowedToMove(ObjectGuid guid, bool log = true);
     bool IsAllowedToTakeControl(ObjectGuid guid);
@@ -49,7 +49,8 @@ public:
     Unit* GetActiveMover() const { return _activeMover; }
     // The unit this client is currently trying to move, and is allowed to!
     Unit* GetAllowedActiveMover() const;
-    void ResetActiveMover(bool onDelete = false);
+    void ResetActiveMover();
+    void PlayerDisconnect();
     //Use only when joining a new map
     void InitActiveMover(Player* activeMover);
     // --
@@ -76,13 +77,16 @@ private:
     GuidSet _allowedClientMove;
     // Match the unit the client has designed as active Mover. /!\ Doesn't mean he actually can move it right now! Use GetAllowedActiveMover for that.
     Unit* _activeMover;
+    // The unit the server wants the client to use as active mover. Will match _activeMover most of the time but might differ for a while when switching
+    Unit* _serverActiveMover;
     // Spline id for mover activation process
     uint32 _pendingActiveMoverSplineId;
     // Not instant and will begin mover transfer process
     void SetActiveMover(Unit* activeMover);
     void DisallowMover(Unit* mover);
     void AllowMover(Unit* mover);
-    uint32 _releaseMoverTimeout; //if reached, kick player.
+    //Timer before kicking player. If set but == 0, start timer at next update
+    Optional<uint32> _releaseMoverTimeout;
 
     WorldSession* _owner;
 };

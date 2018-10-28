@@ -220,8 +220,6 @@ Player::Player(WorldSession *session) :
     mSemaphoreTeleport_Near = false;
     mSemaphoreTeleport_Far = false;
 
-    m_playerMovingMe = nullptr;
-
     m_cinematic = 0;
     if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
         m_cinematic = true; //no cinematic on beta server, because we alter starting position
@@ -378,7 +376,7 @@ Player::~Player()
     //m_social = nullptr;
 
     if (m_playerMovingMe)
-        m_playerMovingMe->ResetActiveMover(true);
+        m_playerMovingMe->PlayerDisconnect();
 
     // Note: buy back item already deleted from DB when player was saved
     for(auto & m_item : m_items)

@@ -202,7 +202,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
     recvData >> splineId;
 
 #ifdef TODOMOV
-    if (_pendingActiveMoverSplineId == splineId)
+    if (_activeMover && _pendingActiveMoverSplineId == splineId)
     {
         if (IsAllowedToTakeControl(_activeMover->GetGUID()))
         {
@@ -254,7 +254,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
     GetPlayer()->CleanupAfterTaxiFlight();
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
     if (GetPlayer()->pvpInfo.IsHostile)
-        GetPlayer()->CastSpell(GetPlayer(), 2479, true);
+        GetPlayer()->CastSpell(GetPlayer(), 2479, true); // Honorless Target
 }
 
 void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recvData)
