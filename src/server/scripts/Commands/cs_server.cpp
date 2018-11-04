@@ -15,10 +15,11 @@
 #include <openssl/crypto.h>
 #include <openssl/opensslv.h>
 
-#include "mysql_version.h"
 #if __has_include("server/errmsg.h")
     #include "server/errmsg.h"
     #include "server/mysql_version.h"
+#else
+#include "mysql_version.h"
 #endif
 
 class server_commandscript : public CommandScript

@@ -691,7 +691,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     BaseLevel = spellEntry->BaseLevel;
     SpellLevel = spellEntry->SpellLevel;
     DurationEntry = spellEntry->DurationIndex ? sSpellDurationStore.LookupEntry(spellEntry->DurationIndex) : nullptr;
-    PowerType = static_cast<Powers>(spellEntry->powerType);
+    PowerType = static_cast<Powers>(spellEntry->PowerType);
     ManaCost = spellEntry->ManaCost;
     ManaCostPerlevel = spellEntry->ManaCostPerlevel;
     ManaPerSecond = spellEntry->manaPerSecond;
