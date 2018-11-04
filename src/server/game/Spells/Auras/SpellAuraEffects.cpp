@@ -959,20 +959,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
         if (GetBase()->GetType() == DYNOBJ_AURA_TYPE)
             damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, DOT, GetEffIndex(), {}, GetBase()->GetStackAmount());
 
-        // Curse of Agony damage-per-tick calculation
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellInfo()->SpellIconID == 544)
-        {
-            uint32 totalTick = GetTotalTicks();
-            // 1..4 ticks, 1/2 from normal tick damage
-            if (GetTickNumber() <= totalTick / 3)
-               damage = damage / 2;
-            // 9..12 ticks, 3/2 from normal tick damage
-            else if (GetTickNumber() > totalTick * 2 / 3)
-                damage += (damage + 1) / 2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
-                                                        // 5..8 ticks have normal tick damage
-        }
         // Illidan Agonizing Flames
-        else if (GetSpellInfo()->Id == 40932)
+        if (GetSpellInfo()->Id == 40932)
         {
             // 1200 - 1200 - 1200 - 2400 - 2400 - 2400 - 3600 - 3600 - 3600 - 4800 - 4800 - 4800
             uint32 totalTick = GetTotalTicks();

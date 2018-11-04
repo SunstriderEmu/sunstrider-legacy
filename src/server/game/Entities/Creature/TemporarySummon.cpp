@@ -275,7 +275,7 @@ void Minion::RemoveFromWorld()
 
 void Minion::SetDeathState(DeathState s)
 {
-    Creature::setDeathState(s);
+    Creature::SetDeathState(s);
     if (s != JUST_DIED || !IsGuardianPet())
         return;
     Unit* owner = GetOwner();
