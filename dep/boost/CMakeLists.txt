@@ -34,7 +34,7 @@ endif()
 
 include (CheckCXXSourceCompiles)
 
-set(BOOST_REQUIRED_VERSION 1.58)
+set(BOOST_REQUIRED_VERSION 1.62)
 
 find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system filesystem thread program_options iostreams regex)
 

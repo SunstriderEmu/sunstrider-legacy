@@ -401,6 +401,11 @@ TC_COMMON_API void HexStrToByteArray(std::string const& str, uint8* out, bool re
 TC_COMMON_API bool StringToBool(std::string const& str);
 
 TC_COMMON_API bool StringContainsStringI(std::string const& haystack, std::string const& needle);
+template <typename T>
+inline bool ValueContainsStringI(std::pair<T, std::string> const& haystack, std::string const& needle)
+{
+    return StringContainsStringI(haystack.second, needle);
+}
 
 class TC_COMMON_API Tokenizer
 {

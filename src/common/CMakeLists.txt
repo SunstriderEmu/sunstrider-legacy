@@ -61,6 +61,7 @@ target_link_libraries(common
     openssl
     threads
 	sfmt
+	smart_enum
 )
 
 add_dependencies(common revision_data.h)

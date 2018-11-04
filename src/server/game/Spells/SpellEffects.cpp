@@ -2753,7 +2753,7 @@ void Spell::EffectTeleportUnits(uint32 i)
     if(!unitTarget || unitTarget->IsInFlight())
         return;
         
-    // HackCrashFix
+    // HackCrashFix (still needed?)
     if (m_spellInfo->Id == 46020 && unitTarget->GetMapId() != 580)
         return;
 
@@ -2931,7 +2931,6 @@ void Spell::EffectApplyAura(uint32 effIndex)
             if(spellId && _unitCaster)
                 _unitCaster->AddAura(spellId, unitTarget);
         }
-
     }
 
     if (!_spellAura || !unitTarget)

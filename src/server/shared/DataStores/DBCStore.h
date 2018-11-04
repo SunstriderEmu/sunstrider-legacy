@@ -27,7 +27,6 @@ protected:
     uint32 _fieldCount;
     char const* _fileFormat;
     char* _dataTable;
-    char* _dataTableEx;
     std::vector<char*> _stringPool;
     uint32 _indexTableSize;
 };
