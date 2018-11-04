@@ -51,6 +51,7 @@ public:
 	Minion(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
 	void InitStats(uint32 duration) override;
 	void RemoveFromWorld() override;
+    void SetDeathState(DeathState s) override;
 	Unit* GetOwner() const { return m_owner; }
 	float GetFollowAngle() const override { return m_followAngle; }
 	void SetFollowAngle(float angle) { m_followAngle = angle; }
