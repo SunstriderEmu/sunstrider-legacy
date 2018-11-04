@@ -403,7 +403,7 @@ public:
     uint32 SpellLevel;
     //can be null
     SpellDurationEntry const* DurationEntry;
-    uint32 PowerType;
+    Powers PowerType;
     uint32 ManaCost;
     uint32 ManaCostPerlevel;
     uint32 ManaPerSecond;

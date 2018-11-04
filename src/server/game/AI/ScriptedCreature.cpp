@@ -304,7 +304,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask school, M
             continue;
 
         //Continue if we don't have the mana to actually cast this spell
-        if (TempSpell->ManaCost > me->GetPower((Powers)TempSpell->PowerType))
+        if (TempSpell->ManaCost > me->GetPower(TempSpell->PowerType))
             continue;
 
         //Check if the spell meets our range requirements

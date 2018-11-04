@@ -4599,7 +4599,7 @@ void Spell::SendSpellStart()
 
 #ifdef LICH_KING
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(static_cast<Powers>(m_spellInfo->PowerType));
+        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(m_spellInfo->PowerType);
 #endif
 
     if (castFlags & CAST_FLAG_AMMO)
@@ -4683,7 +4683,7 @@ void Spell::SendSpellGo()
 #ifdef LICH_KING
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(static_cast<Powers>(m_spellInfo->PowerType));
+        castData.RemainingPower = ASSERT_NOTNULL(m_caster->ToUnit())->GetPower(m_spellInfo->PowerType);
 
     if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
     {
@@ -7020,7 +7020,7 @@ SpellCastResult Spell::CheckPower()
         return SPELL_FAILED_UNKNOWN;
     }
     // Check power amount
-    Powers powerType = Powers(m_spellInfo->PowerType);
+    Powers powerType = m_spellInfo->PowerType;
     if(caster->GetPower(powerType) < m_powerCost)
         return SPELL_FAILED_NO_POWER;
     
