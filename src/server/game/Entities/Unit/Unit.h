@@ -835,7 +835,7 @@ class TC_GAME_API Unit : public WorldObject
         void CleanupsBeforeDelete(bool finalCleanup = true) override;  // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         bool IsAIEnabled() const { return (i_AI != nullptr); }
-        void AIUpdateTick(uint32 diff, bool force = false);
+        void AIUpdateTick(uint32 diff);
         UnitAI* GetAI() const { return i_AI.get(); }
         void SetAI(UnitAI* newAI);
         void ScheduleAIChange();
@@ -2009,6 +2009,7 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateCharmAI();
         void RestoreDisabledAI();
         std::unique_ptr<UnitAI> i_AI, i_disabledAI;
+        bool m_aiLocked;
 
         std::unordered_set<AbstractFollower*> m_followingMe;
 

@@ -982,7 +982,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool m_AlreadyCallAssistance;
         bool m_regenHealth;
-        bool m_AI_locked;
 
         SpellSchoolMask m_meleeDamageSchoolMask;
         uint32 m_originalEntry;

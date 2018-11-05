@@ -275,7 +275,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_relocateTimer(60000),
     m_AlreadyCallAssistance(false), 
     m_regenHealth(true), 
-    m_AI_locked(false),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
     m_creatureInfo(nullptr), 
     m_creatureData(nullptr),
@@ -875,9 +874,7 @@ void Creature::Update(uint32 diff)
                 }
             }
 
-            m_AI_locked = true;
             Unit::AIUpdateTick(diff);
-            m_AI_locked = false;
 
             HandleUnreachableTarget(diff);
 
@@ -1040,12 +1037,6 @@ void Creature::RegenerateHealth()
 
 bool Creature::AIM_Destroy()
 {
-    if (m_AI_locked)
-    {
-        TC_LOG_DEBUG("scripts", "AIM_Destroy: failed to destroy, locked.");
-        return false;
-    }
-
     SetAI(nullptr);
 
     return true;
@@ -1053,13 +1044,6 @@ bool Creature::AIM_Destroy()
 
 bool Creature::AIM_Create(CreatureAI* ai /*= nullptr*/)
 {
-    // make sure nothing can change the AI during AI update
-    if (m_AI_locked)
-    {
-        TC_LOG_ERROR("scripts", "AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetSpawnId());
-        return false;
-    }
-
     Motion_Initialize();
 
     SetAI(ai ? ai : FactorySelector::SelectAI(this));
