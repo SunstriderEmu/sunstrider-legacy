@@ -11335,11 +11335,11 @@ void Unit::ValidateMovementInfo(MovementInfo* mi)
     }
 #else
     #define CHECK_FOR_VIOLATING_FLAGS(check) \
-                        if (check) \
-                        { \
-                            GetPlayerMovingMe()->KickPlayer(); \
-                            return; \
-                        } \
+        if (check) \
+        { \
+            GetPlayerMovingMe()->GetSession()->KickPlayer(); \
+            return; \
+        } \
 
 #endif 
 
