@@ -509,10 +509,11 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     // no sense making a path cyclic if there is any point with delay or with random direction
     if (path_type == WP_PATH_TYPE_LOOP && canCyclic && direction != WP_PATH_DIRECTION_RANDOM)
     {
-        // still a lot of position desync with this, there's something wrong. 
-        // I think cyclic is okay but the smoothSpline option has a problem
-        // BUT creature will eventually get in sync thanks to SMSG_FLIGHT_SPLINE_SYNC, so I'm pretty sure there is not much to fix.
-        // init.SetCyclic();
+        // Cyclic system is partially based on work here: https://github.com/TrinityCore/TrinityCore/issues/22448
+
+        // add the owner's current position as starting point as it gets removed after entering the cycle
+        init.Path().insert(init.Path().begin(), G3D::Vector3(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ()));
+        init.SetCyclic();
     }
 
     if(finalOrientation)

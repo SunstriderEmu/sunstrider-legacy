@@ -11564,6 +11564,9 @@ void Unit::UpdateSplinePosition()
     //    loc.orientation = GetOrientation();
 
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+
+    //visually debug position:
+    //SummonCreature(VISUAL_WAYPOINT, loc, TEMPSUMMON_TIMED_DESPAWN, 6000);
 }
 
 void Unit::DisableSpline()
