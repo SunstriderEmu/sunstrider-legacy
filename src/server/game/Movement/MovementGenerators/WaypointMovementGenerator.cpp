@@ -443,7 +443,9 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
                     //stop if this is the last node in path
                     if (IsLastMemoryNode(nextMemoryNodeId))
                     {
-                        canCyclic = true; // no sense using cyclic if not a complete path
+                        // allow cyclic path only if this is a complete path (from 0 to last)
+                        if(path_type == WP_PATH_TYPE_LOOP && _currentNode == 0)  
+                            canCyclic = true;
                         break;
                     }
 
@@ -510,9 +512,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if (path_type == WP_PATH_TYPE_LOOP && canCyclic && direction != WP_PATH_DIRECTION_RANDOM)
     {
         // Cyclic system is partially based on work here: https://github.com/TrinityCore/TrinityCore/issues/22448
-
-        // add the owner's current position as starting point as it gets removed after entering the cycle
-        init.Path().insert(init.Path().begin(), G3D::Vector3(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ()));
+        // for cyclic path, the first point gets removed after the first loop (if splineflags.enter_cycle is set)
+        // A dummy point is already added previously in this function so the work is already done.
         init.SetCyclic();
     }
 

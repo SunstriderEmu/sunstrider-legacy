@@ -1,3 +1,5 @@
+#todo: minimal version?
+
 # Set build-directive (used in core to tell which buildtype we used)
 target_compile_definitions(trinity-compile-option-interface
    INTERFACE
