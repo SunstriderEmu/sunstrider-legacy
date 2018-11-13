@@ -803,7 +803,7 @@ enum PlayerTotemType
 
 struct SpellProcEntry;                                 // used only privately
 
-class TC_GAME_API Unit : public WorldObject
+class TC_GAME_API Unit : public WorldObject, std::enable_shared_from_this<Unit>
 {
     friend class WorldSession;
     friend class PlayerMovementPendingChange;
@@ -1311,12 +1311,11 @@ class TC_GAME_API Unit : public WorldObject
         // returns the player that this unit is BEING CONTROLLED BY
         ClientControl* GetPlayerMovingMe() const;
         // Client currently moving me (client may or may not have completed mover activation process) / Always matches _serverActiveMover
-        ClientControl* m_playerMovingMe;
-        // Client we must restore control to when suppress ends
-        ClientControl* m_suppressedPendingClient;
-        // This unit is currently mover suppressed. (m_suppressedPendingClient might not be set, we may be suppressed with no player controlling us)
+        std::weak_ptr<ClientControl> m_playerMovingMe;
+        std::shared_ptr<Unit> _this; //used to delete references to this class in other classes when Unit gets destroyed
+        // This unit is currently mover suppressed. (we may be suppressed with no player controlling us currently)
         bool m_moverSuppressed;
-        void SuppressMover(bool apply);
+        void UpdateSuppressedMover();
         bool IsMoverSuppressed() const { return m_moverSuppressed; }
 
         // reflects direct client control (examples: a player MC another player or a creature (possess effects). a player takes control of a vehicle. etc...)

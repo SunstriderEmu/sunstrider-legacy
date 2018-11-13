@@ -243,8 +243,7 @@ bool DispelableAura::RollDispel() const
 Unit::Unit(bool isWorldObject) : 
     WorldObject(isWorldObject), 
     LastCharmerGUID(), 
-    m_playerMovingMe(nullptr), 
-    m_suppressedPendingClient(nullptr),
+    m_playerMovingMe(), 
     m_moverSuppressed(false),
     i_motionMaster(new MotionMaster(this)), 
     m_combatManager(this),
@@ -362,6 +361,8 @@ Unit::Unit(bool isWorldObject) :
     _lastLiquid = nullptr;
 
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+
+    _this = std::shared_ptr<Unit>(this, [](Unit*) {});
 }
 
 Unit::~Unit()
@@ -7752,7 +7753,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
     // Update speed only on change
     MovementChangeType changeType = MovementPacketSender::GetChangeTypeByMoveType(mtype);
     if (m_speed_rate[mtype] == rate 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(changeType)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(changeType))))
         return;
 
     if (IsMovedByPlayer() && IsInWorld())
@@ -10195,7 +10196,7 @@ void Unit::SetRooted(bool apply)
 {
     // do nothing if the unit is already in the required state
     if ((HasUnitMovementFlag(MOVEMENTFLAG_ROOT) || HasUnitMovementFlag(MOVEMENTFLAG_PENDING_ROOT)) == apply 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(ROOT)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(ROOT))))
         return;
 
     if (apply)
@@ -10230,30 +10231,21 @@ void Unit::SetRootedReal(bool apply)
 
 ClientControl* Unit::GetPlayerMovingMe() const 
 { 
-    return m_playerMovingMe ? m_playerMovingMe : m_suppressedPendingClient; 
+    return m_playerMovingMe.lock().get();
 }
 
 bool Unit::IsMovedByPlayer() const 
 { 
-    return m_playerMovingMe != nullptr || m_suppressedPendingClient != nullptr; 
+    return m_playerMovingMe.lock().get() != nullptr; 
 }
 
-void Unit::SuppressMover(bool apply)
+void Unit::UpdateSuppressedMover()
 {
-    m_moverSuppressed = apply;
-    if (apply)
-    {
-        m_suppressedPendingClient = m_playerMovingMe;
-        if (m_playerMovingMe)
-            m_playerMovingMe->OnMoverSuppressed(this, true);
-    }
-    else
-    {
-        if(m_suppressedPendingClient)
-            m_suppressedPendingClient->OnMoverSuppressed(this, false);
-
-        m_suppressedPendingClient = nullptr;
-    }
+    bool const lastState = m_moverSuppressed;
+    m_moverSuppressed = HasUnitState(UNIT_STATE_CANT_CLIENT_CONTROL);
+    if (m_moverSuppressed != lastState)
+        if(ClientControl* control = m_playerMovingMe.lock().get())
+            control->UpdateSuppressedMover(this);
 }
 
 void Unit::SetFeared(bool apply)
@@ -10285,7 +10277,7 @@ void Unit::SetFeared(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    SuppressMover(apply);
+    UpdateSuppressedMover();
 }
 
 void Unit::SetConfused(bool apply)
@@ -10308,7 +10300,7 @@ void Unit::SetConfused(bool apply)
     }
 
     // block / allow control to real player in control (eg charmer)
-    SuppressMover(apply);
+    UpdateSuppressedMover();
 }
 
 bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp /*= nullptr*/)
@@ -11103,7 +11095,7 @@ bool Unit::SetSwim(bool enable)
 void Unit::SetFlying(bool apply)
 {
     if (apply == HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY) 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(SET_CAN_FLY)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(SET_CAN_FLY))))
         return;
 
     if (IsMovedByPlayer() && IsInWorld())
@@ -11147,7 +11139,7 @@ void Unit::SetFlyingReal(bool apply)
 void Unit::SetWaterWalking(bool apply)
 {
     if (apply == HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING) 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(WATER_WALK)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(WATER_WALK))))
         return;
 
     if (IsMovedByPlayer() && IsInWorld())
@@ -11174,7 +11166,7 @@ void Unit::SetWaterWalkingReal(bool apply)
 void Unit::SetFeatherFall(bool apply)
 {
     if (apply == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW) 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(FEATHER_FALL)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(FEATHER_FALL))))
         return;
 
     if (IsMovedByPlayer() && IsInWorld())
@@ -11202,7 +11194,7 @@ void Unit::SetFeatherFallReal(bool apply)
 void Unit::SetHover(bool apply)
 {
     if (apply == HasUnitMovementFlag(MOVEMENTFLAG_HOVER) 
-        && (!m_playerMovingMe || !m_playerMovingMe->HasPendingMovementChange(SET_HOVER)))
+        && (m_playerMovingMe.expired() || !(m_playerMovingMe.lock().get()->HasPendingMovementChange(SET_HOVER))))
         return;
 
     if (IsMovedByPlayer() && IsInWorld())

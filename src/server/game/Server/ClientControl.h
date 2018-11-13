@@ -1,7 +1,5 @@
-
 #ifndef __CLIENTCONTROL_H
 #define __CLIENTCONTROL_H
-
 
 class ClientControl
 {
@@ -41,24 +39,26 @@ public:
     // if charm is set, it will tell client to switch mover to this unit
     void AllowTakeControl(Unit* target, bool charm);
     void DisallowTakeControl(Unit* target);
-    void OnMoverSuppressed(Unit* target, bool apply);
+    void UpdateSuppressedMover(Unit* target);
 
     bool IsAllowedToMove(ObjectGuid guid, bool log = true);
     bool IsAllowedToTakeControl(ObjectGuid guid);
     // The unit this client is currently trying to move (may be nullptr). /!\ He may not be able to, use GetAllowedActiveMover in most cases.
-    Unit* GetActiveMover() const { return _activeMover; }
+    Unit* GetActiveMover() const { return _activeMover.lock().get(); }
     // The unit this client is currently trying to move, and is allowed to!
     Unit* GetAllowedActiveMover() const;
     void ResetActiveMover();
     void PlayerDisconnect();
     //Use only when joining a new map
-    void InitActiveMover(Player* activeMover);
+    void InitActiveMover(Unit* activeMover);
     // --
 
 private:
     ClientControl(WorldSession* session); //Only WorldSession can create us
     void Update(uint32 diff);
 
+    //Update SetClientControl. Might delay set client control on allow if target is suppressed
+    void UpdateTakeControl(Unit* target, bool allowMove);
     void SetClientControl(Unit* target, bool allowMove);
 
     // Timestamp on client clock of the moment the most recently processed movement packet was SENT by the client
@@ -76,9 +76,22 @@ private:
     // Describe all units this player can directly control with move and acks packets. A client may have just activated a mover but not be allowed to control it yet.
     GuidSet _allowedClientMove;
     // Match the unit the client has designed as active Mover. /!\ Doesn't mean he actually can move it right now! Use GetAllowedActiveMover for that.
-    Unit* _activeMover;
+    std::weak_ptr<Unit> _activeMover;
+    struct ServerActiveMover
+    {
+        ServerActiveMover() : unit(), suppressed(false) {}
+        ServerActiveMover(std::weak_ptr<Unit> u, bool suppressed) : unit(u), suppressed(suppressed) {}
+        void Reset() 
+        { 
+            unit.reset();
+            suppressed = false;
+        }
+
+        std::weak_ptr<Unit> unit;
+        bool suppressed;
+    };
     // The unit the server wants the client to use as active mover. Will match _activeMover most of the time but might differ for a while when switching
-    Unit* _serverActiveMover;
+    ServerActiveMover _serverActiveMover;
     // Spline id for mover activation process
     uint32 _pendingActiveMoverSplineId;
     // Not instant and will begin mover transfer process
@@ -89,6 +102,7 @@ private:
     Optional<uint32> _releaseMoverTimeout;
 
     WorldSession* _owner;
+    std::shared_ptr<ClientControl> _this; //used to delete references to this class in other classes when ClientControl gets destroyed
 };
 
 #endif // __CLIENTCONTROL_H

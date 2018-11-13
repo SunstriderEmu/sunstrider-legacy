@@ -302,8 +302,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         return;
     }
 
-    ASSERT(mover->m_playerMovingMe && mover->m_playerMovingMe->GetSession() == this);
-
+    ClientControl* control = mover->m_playerMovingMe.lock().get();
+    ASSERT(control && control->GetSession() == this);
 #endif
 
     Player* plrMover = mover->ToPlayer();

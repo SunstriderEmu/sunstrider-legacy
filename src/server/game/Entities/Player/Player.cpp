@@ -375,8 +375,8 @@ Player::~Player()
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     //m_social = nullptr;
 
-    if (m_playerMovingMe)
-        m_playerMovingMe->PlayerDisconnect();
+    if (ClientControl* clientControl = m_playerMovingMe.lock().get())
+        clientControl->PlayerDisconnect();
 
     // Note: buy back item already deleted from DB when player was saved
     for(auto & m_item : m_items)
