@@ -368,7 +368,7 @@ struct TC_GAME_API AuraCreateInfo
     AuraCreateInfo& SetCasterGUID(ObjectGuid const& guid) { CasterGUID = guid; return *this; }
     AuraCreateInfo& SetCaster(Unit* caster) { Caster = caster; return *this; }
     AuraCreateInfo& SetBaseAmount(int32 const* bp) { BaseAmount = bp; return *this; }
-    AuraCreateInfo& SetCastItem(Item* item) { CastItem = item; return *this; }
+    AuraCreateInfo& SetCastItemGUID(ObjectGuid const& guid) { CastItemGUID = guid; return *this; }
     AuraCreateInfo& SetPeriodicReset(bool reset) { ResetPeriodicTimer = reset; return *this; }
     AuraCreateInfo& SetOwnerEffectMask(uint8 effMask) { _targetEffectMask = effMask; return *this; }
     AuraCreateInfo& SetFake(bool fake) { Fake = fake; return *this; }
@@ -381,7 +381,7 @@ struct TC_GAME_API AuraCreateInfo
     ObjectGuid CasterGUID;
     Unit* Caster = nullptr;
     int32 const* BaseAmount = nullptr;
-    Item* CastItem = nullptr;
+    ObjectGuid CastItemGUID;
     bool* IsRefresh = nullptr;
     bool ResetPeriodicTimer = true;
     bool Fake = false; // fake = true won't add aura to owner

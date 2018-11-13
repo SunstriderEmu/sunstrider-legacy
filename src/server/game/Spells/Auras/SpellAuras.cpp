@@ -495,7 +495,7 @@ void AuraApplication::ClientUpdate(bool remove)
 
 Aura::Aura(AuraCreateInfo const& createInfo) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_casterGuid(createInfo.CasterGUID),
-m_timeCla(0), m_castItemGuid(createInfo.CastItem ? createInfo.CastItem->GetGUID() : ObjectGuid::Empty),
+m_timeCla(0), m_castItemGuid(createInfo.CastItemGUID),
 m_isAreaAura(false), m_owner(createInfo._owner),
 m_isPersistent(false), m_updateTargetMapInterval(0), m_dropEvent(nullptr), m_heartBeatTimer(0),
 m_PeriodicEventId(0), m_spellInfo(createInfo._spellInfo),

@@ -3196,7 +3196,7 @@ void Spell::DoSpellEffectHit(Unit* unit, uint8 effIndex, TargetInfo& hitInfo)
                 createInfo
                     .SetCasterGUID(caster->GetGUID())
                     .SetBaseAmount(bp)
-                    .SetCastItem(m_CastItem)
+                    .SetCastItemGUID(m_CastItem ? m_CastItem->GetGUID() : ObjectGuid::Empty)
                     .SetPeriodicReset(resetPeriodicTimer)
                     .SetOwnerEffectMask(aura_effmask)
                     .SetTriggerCastFlags(_triggeredCastFlags)
@@ -5439,7 +5439,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
             createInfo
                 .SetCaster(m_originalCaster)
                 .SetBaseAmount(&m_spellValue->EffectBasePoints[0])
-                .SetCastItem(m_CastItem)
+                .SetCastItemGUID(m_CastItem ? m_CastItem->GetGUID() : ObjectGuid::Empty)
                 .SetFake(true);
 
             Aura* newAura = Aura::TryCreate(createInfo);
