@@ -159,46 +159,23 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
     if(!target)
         return;
 
-    uint8 updateType = UPDATETYPE_CREATE_OBJECT;
+    uint8 updateType = m_isNewObject ? UPDATETYPE_CREATE_OBJECT2 : UPDATETYPE_CREATE_OBJECT;
     uint8 flags = m_updateFlag;
 
     // lower flag1
     if(target == this)                                      // building packet for oneself
         flags |=  UPDATEFLAG_SELF;
 
-
-    //sun: diff with tc, we send UPDATETYPE_CREATE_OBJECT2 for almost all new objects. Not 100% sure about this but this seems to make more sense
-    if (m_isNewObject)
-    {
-        switch (ObjectGuid(GetGUID()).GetHigh())
-        {
-        case HighGuid::Player:
-        case HighGuid::Pet:
-        case HighGuid::Corpse:
-        case HighGuid::DynamicObject:
-        case HighGuid::GameObject: 
-        case HighGuid::Unit:
-        case HighGuid::Vehicle:
-            updateType = UPDATETYPE_CREATE_OBJECT2;
-            break;
-        default:
-            break;
-        }
-    }
-
-    if(flags & UPDATEFLAG_STATIONARY_POSITION)
-    {
 #ifndef LICH_KING
-        //not sure this is still needed
-        if(isType(TYPEMASK_GAMEOBJECT) && ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_TRANSPORT)
-            updateType |= UPDATEFLAG_TRANSPORT;
+    //not sure this is still needed
+    if(flags & UPDATEFLAG_STATIONARY_POSITION && isType(TYPEMASK_GAMEOBJECT) && ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_TRANSPORT)
+        updateType |= UPDATEFLAG_TRANSPORT;
 #endif
-      
-        if (isType(TYPEMASK_UNIT))
-        {
-            if (ToUnit()->GetVictim())
-                flags |= UPDATEFLAG_HAS_TARGET;
-        }
+
+    if (isType(TYPEMASK_UNIT))
+    {
+        if (ToUnit()->GetVictim())
+            flags |= UPDATEFLAG_HAS_TARGET;
     }
 
     //TC_LOG_DEBUG("misc","BuildCreateUpdate: update-type: %u, object-type: %u got flags: %X, flags2: %X", updatetype, m_objectTypeId, flags, flags2);
