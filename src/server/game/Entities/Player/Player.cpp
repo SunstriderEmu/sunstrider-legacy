@@ -1192,7 +1192,7 @@ void Player::Update( uint32 p_time )
 
     // Update cinematic location, if 500ms have passed and we're doing a cinematic now.
     _cinematicMgr->m_cinematicDiff += p_time;
-    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematicCameraId && GetMSTimeDiffToNow(_cinematicMgr->m_lastCinematicCheck) > CINEMATIC_UPDATEDIFF)
+    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematicCameraId && GetMSTimeDiff(_cinematicMgr->m_lastCinematicCheck, GetMap()->GetGameTimeMS()) > CINEMATIC_UPDATEDIFF)
     {
         _cinematicMgr->m_lastCinematicCheck = GetMap()->GetGameTimeMS();
         _cinematicMgr->UpdateCinematicLocation(p_time);

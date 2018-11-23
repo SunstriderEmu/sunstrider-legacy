@@ -3183,6 +3183,7 @@ void Spell::DoSpellEffectHit(Unit* unit, uint8 effIndex, TargetInfo& hitInfo)
         {
             bool refresh = false;
 
+            //Sun: this is wrong, but waiting for TC to fix it!
             // delayed spells with multiple targets need to create a new aura object, otherwise we'll access a deleted aura
             if (!_spellAura || (m_spellInfo->Speed > 0.0f && !m_spellInfo->IsChanneled()))
             {

@@ -64,6 +64,7 @@ void CinematicMgr::BeginCinematic()
             m_CinematicObject = player->SummonCreature(VISUAL_WAYPOINT, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 5 * MINUTE * IN_MILLISECONDS);
             if (m_CinematicObject)
             {
+                m_CinematicObject->SetDisableGravity(true);
                 m_CinematicObject->SetKeepActive(true);
                 player->SetViewpoint(m_CinematicObject, true);
             }
@@ -163,7 +164,10 @@ void CinematicMgr::UpdateCinematicLocation(uint32 /*diff*/)
     // Advance (at speed) to this position. The remote sight object is used
     // to send update information to player in cinematic
     if (m_CinematicObject && interPosition.IsPositionValid())
-        m_CinematicObject->MonsterMoveWithSpeed(interPosition.m_positionX, interPosition.m_positionY, interPosition.m_positionZ, 500.0f, false, true);
+        //m_CinematicObject->MonsterMoveWithSpeed(interPosition.m_positionX, interPosition.m_positionY, interPosition.m_positionZ, 500.0f, false, true);
+        //sun: Moving velocity capped at about 50 in current impl, may cause problems with some cinematics. Teleport instead.
+        m_CinematicObject->NearTeleportTo(interPosition.m_positionX, interPosition.m_positionY, interPosition.m_positionZ, 0.0f); 
+
 
     // If we never received an end packet 10 seconds after the final timestamp then force an end
     if (m_cinematicDiff > m_cinematicLength + 10 * IN_MILLISECONDS)
