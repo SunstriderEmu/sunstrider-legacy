@@ -689,14 +689,13 @@ void WorldSession::HandlePetAbandon(WorldPacket & recvData)
 {
     ObjectGuid guid;
     recvData >> guid;                                      //pet guid
-    TC_LOG_DEBUG("network", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", guid.GetCounter() );
     TC_LOG_INFO("entities.player", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", guid.GetCounter());
 
     // pet/charmed
     Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
     if(pet)
     {
-        if(pet->IsPet())
+        if (pet->ToPet() && pet->ToPet()->getPetType() == HUNTER_PET)
         {
             if(pet->GetGUID() == _player->GetMinionGUID())
             {

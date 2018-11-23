@@ -477,7 +477,6 @@ public:
     bool IsTargetingArea() const;
     bool NeedsExplicitUnitTarget() const;
     bool NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint8 effIndex = MAX_SPELL_EFFECTS) const;
-    bool IsAreaAuraEffect() const;
     bool IsChanneled() const;
     bool IsMoveAllowedChannel() const;
     bool IsNextMeleeSwingSpell() const;
