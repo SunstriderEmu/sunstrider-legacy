@@ -39,7 +39,7 @@ WaypointMovementGenerator<Creature>::WaypointMovementGenerator(Movement::PointsA
     _useSmoothSpline = smoothSpline;
 }
 
-WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
+WaypointMovementGenerator<Creature>::WaypointMovementGenerator(uint32 _path_id /*= 0*/, Optional<bool> repeating /*= {}*/, bool smoothSpline) :
     WaypointMovementGenerator(0.0f)
 {
     _pathId = _path_id;
@@ -402,6 +402,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     _precomputedPath.clear();
     _precomputedPath.reserve(_path->nodes.size()+1);
     //MoveSplineInit::Launch() always replace the first point... so lets make a fake one for it to erase later
+    //Note that cyclic splines also needs a first point to be inserted so it can be discarded after the first loop
     _precomputedPath.push_back(G3D::Vector3(0.0f, 0.0f, 0.0f)); 
     static uint32 const firstRealPoint = 1;
 

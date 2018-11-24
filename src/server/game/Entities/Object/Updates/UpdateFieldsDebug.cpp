@@ -1302,7 +1302,7 @@ uint32 UpdateFieldsDebug::InsertFieldInStream(TypeID type, uint32 index, WorldSe
     }
     case UPDATE_FIELD_TYPE_BYTES:
         for (uint32 i = 0; i < 4; i++) //4 bytes in one field
-            stream << "0x" << std::hex << std::setw(2) << ((values[index] & (0xFF << i*8)) >> i*8) << " ";
+            stream << "0x" << std::hex << ((values[index] & (0xFF << i*8)) >> i*8) << " ";
         break;
     case UPDATE_FIELD_TYPE_FLOAT:
     {
