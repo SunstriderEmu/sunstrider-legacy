@@ -27,6 +27,10 @@ enum GameEventList
     GAME_EVENT_WICKERMAN_FESTIVAL = 50,
     GAME_EVENT_BETA = 62,
     GAME_EVENT_2_4  = 67,
+    GAME_EVENT_PIRATES_DAY = 80,
+#ifdef LICH_KING
+    GAME_EVENT_DAY_OF_THE_DEAD = 81,
+#endif
 };
 
 struct GameEventFinishCondition
