@@ -1437,6 +1437,16 @@ void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
         SendMessageToSet( &data, true ); // ToSelf ignored in this case
 }
 
+void WorldObject::PlayDirectMusic(uint32 music_id, Player* target /*= nullptr*/)
+{
+    WorldPacket data(SMSG_PLAY_MUSIC, 4);
+    data << uint32(music_id);
+    if (target)
+        target->SendDirectMessage(&data);
+    else
+        SendMessageToSet(&data, true);
+}
+
 void Object::ForceValuesUpdateAtIndex(uint32 i)
 {
     _changesMask.SetBit(i);

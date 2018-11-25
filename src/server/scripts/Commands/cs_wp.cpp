@@ -522,7 +522,6 @@ public:
 
             if( result )
             {
-
                WorldDatabase.PExecute("DELETE FROM waypoint_scripts WHERE guid = %u", id);
                handler->PSendSysMessage("%s%s%u|r","|cff00ff00","Wp Event: waypoint script removed: ", id);
             }
@@ -628,16 +627,16 @@ public:
                     return true;
                 } else if(arg_str_2 == "dataint")
                 {
-                        WorldDatabase.PExecute("UPDATE waypoint_scripts SET %s='%u' WHERE guid='%u'",
-                        arg_2, atoi(arg_3), id);
-                        handler->PSendSysMessage("|cff00ff00Waypoint script: |r|cff00ffff%u|r|cff00ff00 dataint updated.|r", id);
-                        return true;
+                    WorldDatabase.PExecute("UPDATE waypoint_scripts SET %s='%u' WHERE guid='%u'",
+                    arg_2, atoi(arg_3), id);
+                    handler->PSendSysMessage("|cff00ff00Waypoint script: |r|cff00ffff%u|r|cff00ff00 dataint updated.|r", id);
+                    return true;
                 }else
                 {
-                        std::string arg_str_3 = arg_3;
-                        WorldDatabase.EscapeString(arg_str_3);
-                        WorldDatabase.PExecute("UPDATE waypoint_scripts SET %s='%s' WHERE guid='%u'",
-                        arg_2, arg_str_3.c_str(), id);
+                    std::string arg_str_3 = arg_3;
+                    WorldDatabase.EscapeString(arg_str_3);
+                    WorldDatabase.PExecute("UPDATE waypoint_scripts SET %s='%s' WHERE guid='%u'",
+                    arg_2, arg_str_3.c_str(), id);
                 }
             }
             handler->PSendSysMessage("%s%s|r|cff00ffff%u:|r|cff00ff00 %s %s|r","|cff00ff00","Waypoint script:", id, arg_2,"updated.");

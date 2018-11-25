@@ -544,6 +544,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         // Low Level Packets
         void PlayDistanceSound(uint32 sound_id, Player* target = nullptr);
         void PlayDirectSound(uint32 Sound, Player* target = nullptr);
+        void PlayDirectMusic(uint32 music_id, Player* target = nullptr);
         
         template <typename Container>
         void GetGameObjectListWithEntryInGrid(Container& gameObjectContainer, uint32 entry, float maxSearchRange = 250.0f) const;
