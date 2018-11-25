@@ -1,6 +1,5 @@
 DELETE FROM spell_group WHERE spell_id IN (17797, 17798, 17799, 17800);
 
-
 UPDATE gameobject_template SET entry = 174797 WHERE name = "Gorishi Hive Hatchery";
 UPDATE gameobject_template SET entry = 174793 WHERE name = "Xavian Waterfall";
 UPDATE gameobject_template SET entry = 174794 WHERE name = "Mirror Lake Waterfall";
