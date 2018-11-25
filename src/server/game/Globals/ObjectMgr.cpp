@@ -220,7 +220,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
     uint32 oldMSTime = GetMSTime();
 
     //                                                 
-    QueryResult result = WorldDatabase.Query("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
                                              //   5
                                              "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed_walk, speed_run, "
                                              //
@@ -234,8 +234,9 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //           
                                              "HealthModifier, ManaModifier, ArmorModifier, DamageModifier, ExperienceModifier, RacialLeader, RegenHealth, "
                                              //   
-                                             "mechanic_immune_mask, spell_school_immune_mask, flags_extra, ScriptName, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted "
-                                             "FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId");
+                                             "mechanic_immune_mask, spell_school_immune_mask, flags_extra, ScriptName, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, patch "
+                                             //   
+                                             "FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId WHERE patch=(SELECT max(patch) FROM creature_template t2 WHERE ct.entry=t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -585,7 +586,8 @@ void ObjectMgr::LoadCreatureAddons()
     uint32 oldMSTime = GetMSTime();
 
     //                                                0       1        2      3       4       5      6          7
-    QueryResult result = WorldDatabase.Query("SELECT spawnID, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_addon");
+    QueryResult result = WorldDatabase.PQuery("SELECT spawnID, path_id, mount, bytes1, bytes2, emote, moveflags, auras "
+                                              "FROM creature_addon t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.spawnID = t2.spawnID && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -682,7 +684,8 @@ void ObjectMgr::LoadCreatureTemplateAddons()
     uint32 oldMSTime = GetMSTime();
 
     //                                                0       1       2      3       4       5        6         7
-    QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, bytes1, bytes2, emote, moveflags, auras FROM creature_template_addon");
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, path_id, mount, bytes1, bytes2, emote, moveflags, auras "
+                                              "FROM creature_template_addon t1 WHERE patch=(SELECT max(patch) FROM creature_template_addon t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -800,7 +803,8 @@ void ObjectMgr::LoadEquipmentTemplates()
     uint32 oldMSTime = GetMSTime();
 
     //                                                    0      1        2           3            4           5           6            7          8           9         10
-    QueryResult result = WorldDatabase.Query("SELECT creatureID, id, equipmodel1, equipmodel2, equipmodel3, equipinfo1, equipinfo2, equipinfo3, equipslot1, equipslot2, equipslot3 FROM creature_equip_template");
+    QueryResult result = WorldDatabase.PQuery("SELECT creatureID, id, equipmodel1, equipmodel2, equipmodel3, equipinfo1, equipinfo2, equipinfo3, equipslot1, equipslot2, equipslot3 "
+                                              "FROM creature_equip_template t1 WHERE patch=(SELECT max(patch) FROM creature_equip_template t2 WHERE t1.creatureID = t2.creatureID && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -1173,8 +1177,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.spawnID, map, spawnMask, modelid, "
     //   4           5           6           7            8              9         10
         "position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, "
-    //   11         12       13            14          15                   16     17       18 
-        "curhealth, curmana, MovementType, unit_flags, creature.ScriptName, event, pool_id, pool_entry "
+    //   11         12       13            14          15                   16     17       18          19         20
+        "curhealth, curmana, MovementType, unit_flags, creature.ScriptName, event, pool_id, pool_entry, patch_min, patch_max "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.SpawnID = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.SpawnID = pool_creature.guid "
@@ -1226,10 +1230,8 @@ void ObjectMgr::LoadCreatures()
                 equipmentId = -1;
             }
         }
-
         CreatureData::SpawnDataIds& data = spawnEntries[spawnId];
         data.emplace_back(templateId, equipmentId);
-
     } while (result2->NextRow());
 
     do
@@ -1278,6 +1280,21 @@ void ObjectMgr::LoadCreatures()
 
         uint32 poolId = fields[18].GetUInt32();
 
+        uint8 patch_min = fields[19].GetInt8();
+        uint8 patch_max = fields[20].GetInt8();
+
+        bool existsInPatch = true;
+
+        if ((patch_min > patch_max) || (patch_max > WOW_PATCH_MAX))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` spawnId %u has invalid values patch_min=%u, patch_max=%u.", spawnId, patch_min, patch_max);
+            patch_min = WOW_PATCH_MIN;
+            patch_max = WOW_PATCH_MAX;
+        }
+
+        if (!((sWorld->GetWowPatch() >= patch_min) && (sWorld->GetWowPatch() <= patch_max)))
+            existsInPatch = false;
+
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))
         {
@@ -1323,10 +1340,9 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        // Add to grid if not managed by the game event or pool system
-        if (gameEvent == 0 && poolId == 0)
+        // Add to grid if not managed by the game event, pool system or patch version
+        if (gameEvent == 0 && poolId == 0 && existsInPatch)
             AddCreatureToGrid(spawnId, &data);
-
         ++count;
 
     } while (result->NextRow());
@@ -1391,8 +1407,8 @@ void ObjectMgr::LoadGameObjects()
 
     //                                                0                1   2    3           4           5           6
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
-    //   7          8          9          10         11             12            13     14         15         16         17
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, ScriptName, pool_entry "
+    //   7          8          9          10         11             12            13     14         15         16         17       18         19
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, ScriptName, pool_entry, patch_min, patch_max "
         "FROM gameobject "
         "LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
         "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid "
@@ -1411,10 +1427,26 @@ void ObjectMgr::LoadGameObjects()
         ObjectGuid::LowType guid         = fields[0].GetUInt32();
         uint32 entry        = fields[1].GetUInt32();
 
+        uint8 patch_min = fields[18].GetInt8();
+        uint8 patch_max = fields[19].GetInt8();
+        bool existsInPatch = true;
+
+        if ((patch_min > patch_max) || (patch_max > WOW_PATCH_MAX))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` GUID %u (entry %u) has invalid values patch_min=%u, patch_max=%u.", guid, entry, patch_min, patch_max);
+            patch_min = WOW_PATCH_MIN;
+            patch_max = WOW_PATCH_MAX;
+        }
+
+        if (!((sWorld->GetWowPatch() >= patch_min) && (sWorld->GetWowPatch() <= patch_max)))
+            existsInPatch = false;
+
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
         if (!gInfo)
         {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+            if (existsInPatch) // don't print error when it is not loaded for the current patch
+                TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+
             continue;
         }
 
@@ -1512,9 +1544,8 @@ void ObjectMgr::LoadGameObjects()
         }
 #endif
 
-        if (gameEvent == 0 && PoolId == 0)                      // if not this is to be managed by GameEvent System or Pool system
+        if (gameEvent == 0 && PoolId == 0 && existsInPatch)                      // if not this is to be managed by GameEvent System, Pool system or Wow Patch
             AddGameobjectToGrid(guid, &data);
-
         ++count;
 
     } while (result->NextRow());
@@ -1893,7 +1924,7 @@ void ObjectMgr::LoadItemTemplates()
     uint32 oldMSTime = GetMSTime();
 
     //                                                 0      1       2               3              4        5        6       7       8            9        10        11
-    QueryResult result = WorldDatabase.Query("SELECT entry, class, subclass, SoundOverrideSubclass, name, displayid, Quality, Flags, BuyCount, BuyPrice, SellPrice, InventoryType, "
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, class, subclass, SoundOverrideSubclass, name, displayid, Quality, Flags, BuyCount, BuyPrice, SellPrice, InventoryType, "
     //                                              12                                                                                                        19
                                              "AllowableClass, AllowableRace, ItemLevel, RequiredLevel, RequiredSkill, RequiredSkillRank, requiredspell, requiredhonorrank, "
     //                                              20
@@ -1925,7 +1956,9 @@ void ObjectMgr::LoadItemTemplates()
     //                                            131                   132                 133                134        135
                                              "GemProperties, RequiredDisenchantSkill, ArmorDamageModifier, ScriptName, DisenchantID, "
     //                                           136         137         138         139 
-                                             "FoodType, minMoneyLoot, maxMoneyLoot, Duration FROM item_template");
+                                             "FoodType, minMoneyLoot, maxMoneyLoot, Duration "
+    //
+                                             "FROM item_template t1 WHERE patch=(SELECT max(patch) FROM item_template t2 WHERE t1.entry=t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -3210,7 +3243,7 @@ void ObjectMgr::LoadQuests()
     mExclusiveQuestGroups.clear();
 
     //                                               0                     1       2           3             4         5           6     7              8
-    QueryResult result = WorldDatabase.Query("SELECT quest_template.entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, Method, ZoneOrSort, SkillOrClass, MinLevel, QuestLevel, Type, RequiredRaces, RequiredSkillValue,"
     //   9                    10                 11                     12                   13                     14                   15                16
         "RepObjectiveFaction, RepObjectiveValue, RequiredMinRepFaction, RequiredMinRepValue, RequiredMaxRepFaction, RequiredMaxRepValue, SuggestedPlayers, LimitTime,"
     //   17          18            19           20           21           22              23                24         25            26
@@ -3226,9 +3259,8 @@ void ObjectMgr::LoadQuests()
         "RewItemId1, RewItemId2, RewItemId3, RewItemId4, RewItemCount1, RewItemCount2, RewItemCount3, RewItemCount4,"
         "RewRepFaction1, RewRepFaction2, RewRepFaction3, RewRepFaction4, RewRepFaction5, RewRepValue1, RewRepValue2, RewRepValue3, RewRepValue4, RewRepValue5,"
         "RewHonorableKills, RewOrReqMoney, RewMoneyMaxLevel, RewSpell, RewSpellCast, RewMailTemplateId, RewMailDelaySecs, PointMapId, PointX, PointY, PointOpt,"
-        "StartScript, CompleteScript"
-        " FROM quest_template "
-    );
+        "StartScript, CompleteScript "
+        " FROM quest_template t1 WHERE patch=(SELECT max(patch) FROM quest_template t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if(result == nullptr)
     {
@@ -4640,7 +4672,7 @@ void ObjectMgr::LoadInstanceTemplate()
 {
     uint32 oldMSTime = GetMSTime();
     //                                                0     1         2           4            5          6         7             8         9       10          11
-    QueryResult result = WorldDatabase.Query("SELECT map, parent, maxPlayers, reset_delay, access_id, startLocX, startLocY, startLocZ, startLocO, script, forceHeroicEnabled FROM instance_template");
+    QueryResult result = WorldDatabase.PQuery("SELECT map, parent, maxPlayers, reset_delay, access_id, startLocX, startLocY, startLocZ, startLocO, script, forceHeroicEnabled FROM instance_template t1 WHERE patch = (SELECT max(patch) FROM instance_template t2 WHERE t1.map = t2.map && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -5633,7 +5665,8 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     uint32 count = 0;
 
     //                                                0       1           2              3               4                   5                   6  
-    QueryResult result = WorldDatabase.Query("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation FROM areatrigger_teleport");
+    QueryResult result = WorldDatabase.PQuery("SELECT id, access_id, target_map, target_position_x, target_position_y, target_position_z, target_orientation "
+                                              "FROM areatrigger_teleport t1 WHERE patch=(SELECT max(patch) FROM areatrigger_teleport t2 WHERE t1.id = t2.id && patch <= %u)", sWorld->GetWowPatch());
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u area trigger teleport definitions", count );
@@ -6031,10 +6064,11 @@ void ObjectMgr::LoadGameObjectTemplate()
     uint32 oldMSTime = GetMSTime();
 
     //                                                 0      1      2        3          4            5       6      7      8    9      10     11     12            14             16            18              20 
-    QueryResult result = WorldDatabase.Query("SELECT entry, type, displayId, name, castBarCaption, faction, flags, size, data0, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, "
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, type, displayId, name, castBarCaption, faction, flags, size, data0, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, "
     //                                          21               23             25              27                      30              32        33
                                              "data13, data14, data15, data16, data17, data18, data19, data20, data21, data22, data23, AIName, ScriptName "
-                                             "FROM gameobject_template");
+    //
+                                             "FROM gameobject_template t1 WHERE patch = (SELECT max(patch) FROM gameobject_template t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -7324,7 +7358,9 @@ void ObjectMgr::LoadVendors()
 
     std::set<uint32> skip_vendors;
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, maxcount, incrtime, ExtendedCost "
+                                              "FROM npc_vendor t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
+
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `npc_vendor`, table is empty!");

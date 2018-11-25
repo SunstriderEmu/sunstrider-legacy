@@ -990,7 +990,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     // updated in DB
     std::ostringstream ss;
-    ss << "INSERT INTO gameobject (guid, id, map, spawnMask, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state) VALUES ( "
+    ss << "INSERT INTO gameobject (guid, id, map, spawnMask, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, patch_min, patch_max) VALUES ( "
         << m_spawnId << ", "
         << GetUInt32Value (OBJECT_FIELD_ENTRY) << ", "
         << mapid << ", "
@@ -1005,7 +1005,9 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetFloatValue(GAMEOBJECT_PARENTROTATION+3) << ", "
         << m_respawnDelayTime << ", "
         << GetGoAnimProgress() << ", "
-        << GetGoState() << ")";
+        << GetGoState() << ","
+        << WOW_PATCH_MIN << ","
+        << WOW_PATCH_MAX << ")";
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_spawnId);

@@ -1497,7 +1497,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend("REPLACE INTO creature_entry (`spawnID`,`entry`) VALUES (%u,%u)", m_spawnId, GetEntry());
 
     std::ostringstream ss;
-    ss << "INSERT INTO creature (spawnId,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
+    ss << "INSERT INTO creature (spawnId,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id, patch_min, patch_max) VALUES ("
         << m_spawnId << ","
         << mapid <<","
         << (uint32)spawnMask << ","
@@ -1513,7 +1513,9 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetHealth() << ","                               //curhealth
         << GetPower(POWER_MANA) << ","                      //curmana
         << GetDefaultMovementType() << ","                  //default movement generator type
-        << m_creaturePoolId << ")";                         //creature pool id
+        << m_creaturePoolId << ","                          //creature pool id
+        << WOW_PATCH_MIN << ","                             //patch min
+        << WOW_PATCH_MAX << ")";                            //patch max
 
     trans->Append( ss.str( ).c_str( ) );
 

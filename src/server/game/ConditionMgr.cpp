@@ -526,6 +526,19 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             if (Unit const* unit = object->ToUnit())
                 condMeets = unit->GetFaction() == ConditionValue1;
             break;
+        case CONDITION_WOW_PATCH:
+        {
+            switch (ConditionValue2)
+            {
+            case 0:
+                return sWorld->GetWowPatch() == ConditionValue1;
+            case 1:
+                return sWorld->GetWowPatch() >= ConditionValue1;
+            case 2:
+                return sWorld->GetWowPatch() <= ConditionValue1;
+            }
+            return false;
+        }
         default:
             condMeets = false;
             break;
@@ -2311,6 +2324,21 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                 TC_LOG_ERROR("sql.sql", "%s has non-existing faction %u, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;
             }
+        }
+
+        case CONDITION_WOW_PATCH:
+        {
+            if (cond->ConditionValue1 > WOW_PATCH_MAX)
+            {
+                TC_LOG_ERROR("sql.sql", "Patch condition %u has an invalid value in value1 (must be 0..10), skipping.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                return false;
+            }
+            if (cond->ConditionValue2 > WOW_PATCH_MIN)
+            {
+                TC_LOG_ERROR("sql.sql", "Patch condition %u has invalid argument %u (must be 0..10), skipped.", cond->ToString(true).c_str(), cond->ConditionValue2);
+                return false;
+            }
+            break;
         }
 
         case CONDITION_IN_WATER:

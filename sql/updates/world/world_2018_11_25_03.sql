@@ -1,0 +1,110 @@
+ALTER TABLE `areatrigger_teleport`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`id`, `patch`);
+
+ALTER TABLE `game_event`
+	ADD COLUMN `disabled` TINYINT(3) UNSIGNED NOT NULL AFTER `world_event`,
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `disabled`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `creature`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `ScriptName`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+	
+ALTER TABLE `creature_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `entry`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`entry`, `patch`);
+
+ALTER TABLE `creature_addon`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `spawnID`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`spawnID`, `patch`);
+
+ALTER TABLE `creature_template_addon`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `entry`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`entry`, `patch`);
+
+ALTER TABLE `creature_equip_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`creatureID`, `id`, `patch`);
+	
+ALTER TABLE `gameobject`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `ScriptName`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+	
+ALTER TABLE `gameobject_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `entry`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`entry`, `patch`);
+
+ALTER TABLE `item_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `entry`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`entry`, `patch`);
+
+ALTER TABLE `npc_vendor`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `ExtendedCost`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `quest_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `entry`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`entry`, `patch`);
+
+ALTER TABLE `item_enchantment_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `chance`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `battleground_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`id`, `patch`);
+
+ALTER TABLE `instance_template`
+	ADD COLUMN `patch` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `map`,
+	DROP PRIMARY KEY,
+	ADD PRIMARY KEY (`map`, `patch`);
+
+ALTER TABLE `creature_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `fishing_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `gameobject_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `item_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `pickpocketing_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `skinning_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `disenchant_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `prospecting_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `reference_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;
+
+ALTER TABLE `mail_loot_template`
+	ADD COLUMN `patch_min` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0' AFTER `Comment`,
+	ADD COLUMN `patch_max` TINYINT(3) UNSIGNED NOT NULL DEFAULT '10' AFTER `patch_min`;

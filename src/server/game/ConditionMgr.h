@@ -64,7 +64,9 @@ enum ConditionTypes
     CONDITION_QUESTSTATE            = 47,                   // quest_id         state_mask     0                  true if player is in any of the provided quest states for the quest (1 = not taken, 2 = completed, 8 = in progress, 32 = failed, 64 = rewarded)
     //sun conditions
     CONDITION_FACTION               = 60,                   // faction id       0              0                  true if unit's faction matches given faction
-    CONDITION_MAX                   = 61                    // MAX
+    CONDITION_WOW_PATCH             = 61,                   // value1: wow patch setting from config (0-10)
+                                                            // value2: 0, 1 or 2 (0: equal to, 1: equal or higher than, 2: equal or less than)
+    CONDITION_MAX                   = 62                    // MAX
 };
 
 /*! Documentation on implementing a new ConditionSourceType:
