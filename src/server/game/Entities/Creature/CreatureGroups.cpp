@@ -153,6 +153,8 @@ void FormationMgr::LoadCreatureFormations()
         uint32 index = 0;
         member.groupID                    = fields[index++].GetUInt32();
         ObjectGuid::LowType memberSpawnId = fields[index++].GetUInt32();
+        if (!member.groupID) //may have been NULL in DB. In this case, this is the leader. This has been done to avoid having two foreign keys to database creatures as this cause some issues when updating creatures.
+            member.groupID = memberSpawnId;
         member.followDist                 = fields[index++].GetFloat();
         member.followAngle                = fields[index++].GetFloat();
         member.groupAI                    = GroupAI(fields[index++].GetUInt32());
