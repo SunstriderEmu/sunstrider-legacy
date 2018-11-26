@@ -4851,7 +4851,7 @@ void ObjectMgr::LoadGossipText()
                 }
                 else
                 {
-                    TC_LOG_ERROR("sql.sql", "GossipText (Id: %u) in table `npc_text` has non-existing or incompatible BroadcastTextID%u %u.", id, i, gOption.BroadcastTextID);
+                    TC_LOG_ERROR("sql.sql", "GossipText (Id: %u) in table `gossip_text` has non-existing or incompatible BroadcastTextID%u %u.", id, i, gOption.BroadcastTextID);
                     gOption.BroadcastTextID = 0;
                 }
             }
@@ -7358,8 +7358,9 @@ void ObjectMgr::LoadVendors()
 
     std::set<uint32> skip_vendors;
 
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, item, maxcount, incrtime, ExtendedCost "
-                                              "FROM npc_vendor t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
+    QueryResult result = WorldDatabase.Query("SELECT entry, item, maxcount, incrtime, ExtendedCost FROM npc_vendor");
+    /*QueryResult result = WorldDatabase.PQuery("SELECT entry, item, maxcount, incrtime, ExtendedCost "
+                                              "FROM npc_vendor t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());*/
 
     if( !result )
     {

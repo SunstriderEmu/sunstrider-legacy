@@ -133,8 +133,7 @@ uint32 LootStore::LoadLootTable()
     TC_LOG_INFO("server.loading", "%s :", GetName());
 
     //                                                 0     1     2          3       4              5         6        7         8        
-    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount "
-                                              "FROM %s t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.Entry = t2.Entry && patch <= %u)", GetName(), sWorld->GetWowPatch());
+    QueryResult result = WorldDatabase.PQuery("SELECT Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount FROM %s", GetName());
 
     if(!result)
         return 0;

@@ -85,8 +85,8 @@ UPDATE `creature` SET `patch_min`=3 WHERE `spawnID`=93104;
 DELETE FROM `game_event_gameobject` WHERE  `guid`=49870 AND `event`=66;
 DELETE FROM `game_event_gameobject` WHERE  `guid`=49871 AND `event`=66;
 
-UPDATE `quest_template` SET `patch`=3 WHERE `guid`=49870 AND `patch`=0;
-UPDATE `quest_template` SET `patch`=3 WHERE `guid`=49871 AND `patch`=0;
+-- UPDATE `quest_template` SET `patch`=3 WHERE `guid`=49870 AND `patch`=0;
+-- UPDATE `quest_template` SET `patch`=3 WHERE `guid`=49871 AND `patch`=0;
 
 -- Zul'aman
 DELETE FROM `game_event_creature` WHERE  `guid`=2054 AND `event`=77;
@@ -114,7 +114,7 @@ UPDATE `creature` SET `patch_min`=3 WHERE `spawnID`=93085;
 UPDATE `creature` SET `patch_min`=3 WHERE `spawnID`=95176;
 
 DELETE FROM `game_event_gameobject` WHERE  `guid`=44246 AND `event`=77;
-UPDATE `quest_template` SET `patch`=3 WHERE `guid`=44246 AND `patch`=0;
+-- UPDATE `quest_template` SET `patch`=3 WHERE `guid`=44246 AND `patch`=0;
 
 DELETE FROM `game_event` WHERE `entry`=77;
 
