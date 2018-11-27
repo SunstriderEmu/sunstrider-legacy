@@ -7359,7 +7359,7 @@ void ObjectMgr::LoadVendors()
     std::set<uint32> skip_vendors;
 
     QueryResult result = WorldDatabase.PQuery("SELECT entry, item, maxcount, incrtime, ExtendedCost "
-                                              "FROM npc_vendor t1 WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch());
+                                              "FROM npc_vendor t1 WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     if( !result )
     {
