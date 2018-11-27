@@ -309,6 +309,17 @@ enum DamageEffectType : unsigned int
     TOTAL_DAMAGE_EFFECT_TYPE,
 };
 
+enum SpellPartialResist
+{ 
+    SPELL_PARTIAL_RESIST_NONE = 0,  // 0%, full hit
+    SPELL_PARTIAL_RESIST_PCT_25,    // 25%
+    SPELL_PARTIAL_RESIST_PCT_50,    // 50%
+    SPELL_PARTIAL_RESIST_PCT_75,    // 75%
+    SPELL_PARTIAL_RESIST_PCT_100,   // 100%, full resist
+
+    NUM_SPELL_PARTIAL_RESISTS,
+};
+
 enum UnitTypeMask : int
 {
     UNIT_MASK_NONE                  = 0x00000000,
@@ -1780,7 +1791,7 @@ class TC_GAME_API Unit : public WorldObject
 
         static bool IsDamageReducedByArmor(SpellSchoolMask damageSchoolMask, SpellInfo const* spellInfo = nullptr, int8 effIndex = -1);
         static uint32 CalcArmorReducedDamage(Unit const* attacker, Unit* pVictim, const uint32 damage, SpellInfo const* spellInfo, WeaponAttackType attackType);
-        static uint32 CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo);
+        static uint32 CalcSpellResistedDamage(DamageInfo const& info);
         static void CalcAbsorbResist(DamageInfo& damageInfo);
 
         void  UpdateSpeed(UnitMoveType mtype);

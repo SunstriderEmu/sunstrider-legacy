@@ -52,6 +52,7 @@
 #include "MoveSplineInit.h"
 
 #include <math.h>
+#include <array>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
@@ -1636,19 +1637,31 @@ float Unit::CalculateAverageResistReduction(WorldObject const* caster, SpellScho
 
     // TC: level-based resistance does not apply to binary spells, and cannot be overcome by spell penetration
     // "Empirical evidence shows that mobs that are higher level than yourself have an innate chance of partially resisting spell damage that is impossible to counter."
-    /* "See also Wowwiki's article on Magical Resistance: http://wowwiki.wikia.com/wiki/Formulas:Magical_resistance?oldid=1603715 Level-based resistance (not to be confused with level-based miss) can play a factor in total resists. For every level that a mob has over the player, there is 8 resist (believed; the exact number may be higher) added. For boss fights, this means there is 15-24 resistance added. This extra resistance means there will be partial resists on non-binary spells from the added resistance. However, this resistance has been shown to not apply to binary spells at all. This level based resistance cannot be reduced by any means, not even Spell Penetration."
-    But Is it 8 or 5 per level ?
-    "Frostbolt, however, is a binary spell, meaning it has special rules regarding magic resist. A binary spell can only ever hit or miss; it will not ever partially resist. Because of this, frostbolt is completely unaffected by level based magic resist. We're not exactly sure why this occurs, but frost mages almost always see a 99% hit rate on frostbolt (assuming they are hit capped like they should be)  Therefore the 6% damage reduction can be completely ignored. This does not mean that frostbolt does more damage than fireball; it is only another consideration that has been made when comparing specs and theorycrafting."
+    /* "See also Wowwiki's article on Magical Resistance: http://wowwiki.wikia.com/wiki/Formulas:Magical_resistance?oldid=1603715 
+    Level-based resistance (not to be confused with level-based miss) can play a factor in total resists. For every level that a mob
+    has over the player, there is 8 resist (believed; the exact number may be higher) added. For boss fights, this means there is 15-24 
+    resistance added. This extra resistance means there will be partial resists on non-binary spells from the added resistance. 
+    However, this resistance has been shown to not apply to binary spells at all. This level based resistance cannot be reduced by any means, 
+    not even Spell Penetration."
+    // Also from EJ: http://web.archive.org/web/20080811094101/http://elitistjerks.com/f31/t18441-mage_sweet_informational_thread/
+    // "Frostbolt, however, is a binary spell, meaning it has special rules regarding magic resist. A binary spell can only ever hit or miss; 
+    // it will not ever partially resist. Because of this, frostbolt is completely unaffected by level based magic resist. 
+    // We're not exactly sure why this occurs, but frost mages almost always see a 99% hit rate on frostbolt (assuming they are hit capped 
+    // like they should be)  Therefore the 6% damage reduction can be completely ignored. This does not mean that frostbolt does more damage 
+    // than fireball; it is only another consideration that has been made when comparing specs and theorycrafting."
+    // Sun:
+    //   - 5/8 resist per level... I guess this was calculated for a max level player, is it also true at lower levels?
+    //   - This implementation suppose this is incompressible, since there are no suggestion to use spell penetration to overcome this and you can see PvE players on video suffering those resists
     */
-    if (caster && caster->GetTypeId() != TYPEID_GAMEOBJECT && (!spellInfo || !spellInfo->IsBinarySpell()))
+    if (caster && caster->GetTypeId() != TYPEID_GAMEOBJECT && victim->GetTypeId() == TYPEID_UNIT && (!spellInfo || !spellInfo->IsBinarySpell()))
     {
         int32 levelDiff = victim->GetLevelForTarget(caster) - caster->GetLevelForTarget(victim);
         if (levelDiff > 0)
-            victimResistance += std::max(levelDiff * 5.0f, 0.0f);
+            victimResistance += levelDiff * 4; //from cmangos
     }
 
 #ifdef LICH_KING
-    uint32 level = victim->getLevel();
+    uint32 level = victim->GetLevel();
     float resistanceConstant = 0.0f;
 
     if (level == BOSS_LEVEL)
@@ -1659,6 +1672,9 @@ float Unit::CalculateAverageResistReduction(WorldObject const* caster, SpellScho
     return victimResistance / (victimResistance + resistanceConstant);
 #else
     uint32 resistLevel = caster->ToUnit() ? caster->ToUnit()->GetLevel() : victim->GetLevel();
+    //from cmangos: penalize when calculating for low levels (< 20) (could not find source about this)
+    if (resistLevel < 20)
+        resistLevel = 20;
     float fResistance = ((float)victimResistance / (float)(5.0f * resistLevel)) * 0.75f; //% from 0.0 to 1.0
 
     // Resistance can't be more than 75%
@@ -1669,9 +1685,162 @@ float Unit::CalculateAverageResistReduction(WorldObject const* caster, SpellScho
 #endif
 }
 
-uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 damage, SpellSchoolMask schoolMask, SpellInfo const* spellInfo)
+#ifndef LICH_KING
+typedef std::array<uint32, NUM_SPELL_PARTIAL_RESISTS> SpellPartialResistChanceEntry;
+typedef std::vector<SpellPartialResistChanceEntry> SpellPartialResistDistribution;
+
+static inline SpellPartialResistDistribution InitSpellPartialResistDistribution()
 {
-    // Magic damage, check for resists
+    // Precalculated chances for 0-100% mitigation
+    // We use integer random instead of floats, so each chance is premultiplied by 100 (100.00 becomes 10000)
+    const SpellPartialResistDistribution precalculated =
+    {
+        {{10000, 0, 0, 0, 0}},
+        {{9700, 200, 100, 0, 0}},
+        {{9400, 400, 200, 0, 0}},
+        {{9000, 800, 200, 0, 0}},
+        {{8700, 1000, 300, 0, 0}},
+        {{8400, 1200, 400, 0, 0}},
+        {{8200, 1300, 400, 100, 0}},
+        {{7900, 1500, 500, 100, 0}},
+        {{7600, 1700, 600, 100, 0}},
+        {{7300, 1900, 700, 100, 0}},
+        {{6900, 2300, 700, 100, 0}},
+        {{6600, 2500, 800, 100, 0}},
+        {{6300, 2700, 900, 100, 0}},
+        {{6000, 2900, 1000, 100, 0}},
+        {{5800, 3000, 1000, 200, 0}},
+        {{5400, 3300, 1100, 200, 0}},
+        {{5100, 3600, 1100, 200, 0}},
+        {{4800, 3800, 1200, 200, 0}},
+        {{4400, 4200, 1200, 200, 0}},
+        {{4100, 4400, 1300, 200, 0}},
+        {{3700, 4800, 1300, 200, 0}},
+        {{3400, 5000, 1400, 200, 0}},
+        {{3100, 5200, 1500, 200, 0}},
+        {{3000, 5200, 1500, 200, 100}},
+        {{2800, 5300, 1500, 300, 100}},
+        {{2500, 5500, 1600, 300, 100}},
+        {{2400, 5400, 1700, 400, 100}},
+        {{2300, 5300, 1800, 500, 100}},
+        {{2200, 5100, 2100, 500, 100}},
+        {{2100, 5000, 2200, 600, 100}},
+        {{2000, 4900, 2400, 600, 100}},
+        {{1900, 4700, 2600, 700, 100}},
+        {{1800, 4600, 2700, 800, 100}},
+        {{1700, 4400, 3000, 800, 100}},
+        {{1600, 4300, 3100, 900, 100}},
+        {{1500, 4200, 3200, 1000, 100}},
+        {{1400, 4100, 3300, 1100, 100}},
+        {{1300, 3900, 3600, 1100, 100}},
+        {{1300, 3600, 3800, 1200, 100}},
+        {{1200, 3500, 3900, 1300, 100}},
+        {{1100, 3400, 4000, 1400, 100}},
+        {{1000, 3300, 4100, 1500, 100}},
+        {{900, 3100, 4400, 1500, 100}},
+        {{800, 3000, 4500, 1600, 100}},
+        {{800, 2700, 4700, 1700, 100}},
+        {{700, 2600, 4800, 1800, 100}},
+        {{600, 2500, 4900, 1900, 100}},
+        {{600, 2300, 5000, 1900, 200}},
+        {{500, 2200, 5100, 2000, 200}},
+        {{300, 2200, 5300, 2000, 200}},
+        {{200, 2100, 5400, 2100, 200}},
+        {{200, 2000, 5300, 2200, 300}},
+        {{200, 2000, 5100, 2200, 500}},
+        {{200, 1900, 5000, 2300, 600}},
+        {{100, 1900, 4900, 2500, 600}},
+        {{100, 1800, 4800, 2600, 700}},
+        {{100, 1700, 4700, 2700, 800}},
+        {{100, 1600, 4500, 3000, 800}},
+        {{100, 1500, 4400, 3100, 900}},
+        {{100, 1500, 4100, 3300, 1000}},
+        {{100, 1400, 4000, 3400, 1100}},
+        {{100, 1300, 3900, 3500, 1200}},
+        {{100, 1200, 3800, 3600, 1300}},
+        {{100, 1100, 3600, 3900, 1300}},
+        {{100, 1100, 3300, 4100, 1400}},
+        {{100, 1000, 3200, 4200, 1500}},
+        {{100, 900, 3100, 4300, 1600}},
+        {{100, 800, 3000, 4400, 1700}},
+        {{100, 800, 2700, 4600, 1800}},
+        {{100, 700, 2600, 4700, 1900}},
+        {{100, 600, 2400, 4900, 2000}},
+        {{100, 600, 2200, 5000, 2100}},
+        {{100, 500, 2100, 5100, 2200}},
+        {{100, 500, 1800, 5300, 2300}},
+        {{100, 400, 1700, 5400, 2400}},
+        {{100, 300, 1600, 5500, 2500}},
+        {{100, 300, 1500, 5300, 2800}},
+        {{100, 200, 1500, 5200, 3000}},
+        {{0, 200, 1500, 5200, 3100}},
+        {{0, 200, 1400, 5000, 3400}},
+        {{0, 200, 1300, 4800, 3700}},
+        {{0, 200, 1300, 4400, 4100}},
+        {{0, 200, 1200, 4200, 4400}},
+        {{0, 200, 1200, 3800, 4800}},
+        {{0, 200, 1100, 3600, 5100}},
+        {{0, 200, 1100, 3300, 5400}},
+        {{0, 200, 1000, 3000, 5800}},
+        {{0, 100, 1000, 2900, 6000}},
+        {{0, 100, 900, 2700, 6300}},
+        {{0, 100, 800, 2500, 6600}},
+        {{0, 100, 700, 2300, 6900}},
+        {{0, 100, 700, 1900, 7300}},
+        {{0, 100, 600, 1700, 7600}},
+        {{0, 100, 500, 1500, 7900}},
+        {{0, 100, 400, 1300, 8200}},
+        {{0, 0, 400, 1200, 8400}},
+        {{0, 0, 300, 1000, 8700}},
+        {{0, 0, 200, 800, 9000}},
+        {{0, 0, 200, 400, 9400}},
+        {{0, 0, 100, 200, 9700}},
+        {{0, 0, 0, 0, 10000}},
+    };
+    // Inflate up to two decimal places of chance %: add all intermediate values and 100% value (100*100 + 1)
+    SpellPartialResistDistribution inflated(10001, { {} });
+    for (size_t row = 0; row < precalculated.size(); ++row)
+    {
+        const size_t next = (row + 1);
+        const size_t shift = (row * 100);
+        const auto& source = precalculated.at(row);
+        // Check if this is the last one first
+        if (next == precalculated.size())
+        {
+            for (uint8 column = SPELL_PARTIAL_RESIST_NONE; column < NUM_SPELL_PARTIAL_RESISTS; ++column)
+                inflated[shift][column] = source.at(column);
+            break;
+        }
+        const auto& ahead = precalculated.at(next);
+        for (size_t intermediate = 0; intermediate < 100; ++intermediate)
+        {
+            const size_t index = (shift + intermediate);
+            auto& values = inflated[index];
+            for (uint8 column = SPELL_PARTIAL_RESIST_NONE; column < NUM_SPELL_PARTIAL_RESISTS; ++column)
+            {
+                const uint32 base = source.at(column);
+                const uint32 upcoming = ahead.at(column);
+                const int64 diff = (int64(upcoming) - base);
+                // Use bigger types signed math to avoid potential erratic behavior on some compilers...
+                values[column] = uint32(std::max(0.0, (base + ::round(diff * (intermediate / double(100.0))))));
+            }
+        }
+    }
+    return inflated;
+}
+
+static const SpellPartialResistDistribution SPELL_PARTIAL_RESIST_DISTRIBUTION = InitSpellPartialResistDistribution();
+#endif
+
+/*static*/ uint32 Unit::CalcSpellResistedDamage(DamageInfo const& info)
+{
+    Unit const* attacker = info.GetAttacker();
+    Unit* victim = info.GetVictim();
+    uint32 damage = info.GetDamage();
+    SpellSchoolMask const schoolMask = info.GetSchoolMask();
+    SpellInfo const* spellInfo = info.GetSpellInfo();
+
+    // Magic damage, check for resists - sun: all spells with a physical component are ignored here
     if (!(schoolMask & SPELL_SCHOOL_MASK_MAGIC))
         return 0;
 
@@ -1691,25 +1860,50 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
     }
 
     float const averageResist = Unit::CalculateAverageResistReduction(attacker, schoolMask, victim, spellInfo);
-   
-    // Distribute reduction between 4 ranges of damage : 75%, 50%, 25% and 0%
-    // Probably wrong... Interesting discussion here : https://github.com/cmangos/issues/issues/1193
-    // Also note that we can't use LK since it has changed a lot after BC
-    std::array<float, 4> discreteResistProbability = {};
-    uint32 faq[4] = { 24,6,4,6 };
-    for (uint32 i = 0; i < discreteResistProbability.size(); ++i)
-        discreteResistProbability[i] = 2400 * (powf(averageResist, i) * powf((1 - averageResist), (4 - i))) / faq[i];
+#ifdef LICH_KING
+    float discreteResistProbability[11] = { };
+    if (averageResist <= 0.1f)
+    {
+        discreteResistProbability[0] = 1.0f - 7.5f * averageResist;
+        discreteResistProbability[1] = 5.0f * averageResist;
+        discreteResistProbability[2] = 2.5f * averageResist;
+    }
+    else
+    {
+        for (uint32 i = 0; i < 11; ++i)
+            discreteResistProbability[i] = std::max(0.5f - 2.5f * std::fabs(0.1f * i - averageResist), 0.0f);
+    }
 
-    float roll = float(rand_norm()) * 100.0f;
-    uint8 resistance = 0; //resistance range (from 1 to 4)
+    float roll = float(rand_norm());
     float probabilitySum = 0.0f;
-    for (; resistance < discreteResistProbability.size(); ++resistance)
+
+    uint32 resistance = 0;
+    for (; resistance < 11; ++resistance)
         if (roll < (probabilitySum += discreteResistProbability[resistance]))
             break;
 
-    resistance = std::min(resistance, uint8(3)); //why can this reach 4? slightly wrong discreteResistProbability values?
-    float damageResisted = uint32(damage * resistance / 4.0f);
-
+    float damageResisted = damage * resistance / 10.f;
+#else
+    //-- cmangos logic // Interesting discussion here : https://github.com/cmangos/issues/issues/1193
+    // Returns a ratio portion of resisted damage, range of returned values: 0.0f-1.0f
+    const uint32 index = uint32(averageResist * 10000);
+    if (!index)
+        return 0.0f;
+    const SpellPartialResistChanceEntry &chances = SPELL_PARTIAL_RESIST_DISTRIBUTION.at(index);
+    Die<SpellPartialResist, SPELL_PARTIAL_RESIST_NONE, NUM_SPELL_PARTIAL_RESISTS> die;
+    for (uint8 outcome = SPELL_PARTIAL_RESIST_NONE; outcome < NUM_SPELL_PARTIAL_RESISTS; ++outcome)
+        die.chance[outcome] = chances.at(outcome);
+    const uint32 random = urand(1, 10000);
+    // We must exclude full resist chance from it, we already rolled for it as miss type in attack table (so n-1)
+    uint8 portion = std::min(uint8(die.roll(random)), uint8(NUM_SPELL_PARTIAL_RESISTS - 1));
+    // Simulate old retail rouding error (full hit cut-off) for: NPC non-binary spells; environmental damage (e.g. lava); elemental attacks
+    if (portion == SPELL_PARTIAL_RESIST_NONE && !spellInfo->IsBinarySpell() && averageResist > 54.0f && (info.GetDamageType() == DIRECT_DAMAGE || !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)))
+        ++portion;
+    // To get resisted part ratio, we exclude zero outcome (it is n-1 anyway, so we reuse local var)
+    //return (float(portion) / float(NUM_SPELL_PARTIAL_RESISTS));
+    float damageResisted = damage * (float(portion) / float(NUM_SPELL_PARTIAL_RESISTS));
+    //--
+#endif
     DEBUG_ASSERT(damageResisted < damage);
 
 #ifdef LICH_KING
@@ -1740,6 +1934,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
     }
 #endif
 
+    damageResisted = std::max(damageResisted, 0.f);
     return damageResisted;
 }
 
@@ -1748,7 +1943,7 @@ uint32 Unit::CalcSpellResistedDamage(Unit const* attacker, Unit* victim, uint32 
     if (!damageInfo.GetVictim() || !damageInfo.GetVictim()->IsAlive() || !damageInfo.GetDamage())
         return;
 
-    uint32 resistedDamage = Unit::CalcSpellResistedDamage(damageInfo.GetAttacker(), damageInfo.GetVictim(), damageInfo.GetDamage(), damageInfo.GetSchoolMask(), damageInfo.GetSpellInfo());
+    uint32 resistedDamage = Unit::CalcSpellResistedDamage(damageInfo);
     damageInfo.ResistDamage(resistedDamage);
 
 #ifdef LICH_KING
@@ -2537,6 +2732,17 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
         missChance -= victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_RANGED_HIT_CHANCE);
     else
         missChance -= victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
+
+    // cmangos: For elemental melee auto-attacks: full resist outcome converted into miss chance (original research on combat logs)
+    if (attType != RANGED_ATTACK && !spellId)
+    {
+        const float resistance = Unit::CalculateAverageResistReduction(this, GetMeleeDamageSchoolMask(), victim) * 100;
+        if (const uint32 uindex = uint32(resistance * 100))
+        {
+            const SpellPartialResistChanceEntry &chances = SPELL_PARTIAL_RESIST_DISTRIBUTION.at(uindex);
+            missChance += float(chances.at(SPELL_PARTIAL_RESIST_PCT_100) / 100);
+        }
+    }
 
     return std::max(missChance, 0.f);
 }

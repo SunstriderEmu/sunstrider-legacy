@@ -466,5 +466,33 @@ typename std::underlying_type<E>::type AsUnderlyingType(E enumValue)
     return static_cast<typename std::underlying_type<E>::type>(enumValue);
 }
 
+
+/* An abstract die for combat rolls with premultiplied integer chances */
+template<class Side, Side Default, uint8 Sides>
+struct Die
+{
+    explicit Die() {}
+    Side roll(uint32 random)
+    {
+        uint32 rolling = 0;
+        for (uint8 side = 0; side < Sides; ++side)
+        {
+            if (chance[side])
+            {
+                rolling += chance[side];
+                if (random <= rolling)
+                    return Side(side);
+            }
+        }
+        return Default;
+    }
+    void set(uint8 side, float chancef)
+    {
+        if (side < Sides)
+            chance[side] = chance_u(chancef);
+    }
+    uint32 chance[Sides] = { };
+};
+
 #endif
 
