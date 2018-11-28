@@ -3278,11 +3278,22 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
             {
                 uint32 appendValue = m_uint32Values[UNIT_NPC_FLAGS];
 
-#ifdef LICH_KING
                 if (creature)
+                {
+#ifdef LICH_KING
                     if (!target->CanSeeSpellClickOn(creature))
                         appendValue &= ~UNIT_NPC_FLAG_SPELLCLICK;
 #endif
+                    if (appendValue & UNIT_NPC_FLAG_FLIGHTMASTER)
+                    {
+                        //sun: give quest marker precedence over flight master icon
+                        QuestGiverStatus questStatus = target->GetQuestDialogStatus(const_cast<Creature*>(creature));
+                        if (questStatus == DIALOG_STATUS_REWARD
+                            || questStatus == DIALOG_STATUS_AVAILABLE
+                            || questStatus == DIALOG_STATUS_REWARD) //any status missing?
+                            appendValue &= ~UNIT_NPC_FLAG_FLIGHTMASTER;
+                    }
+                }
 
                 fieldBuffer << uint32(appendValue);
             } break;
