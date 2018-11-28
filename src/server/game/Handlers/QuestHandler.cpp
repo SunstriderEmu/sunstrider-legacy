@@ -24,12 +24,13 @@
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
-    ObjectGuid guid;
+    ObjectGuid guid; //LK OK
     recvData >> guid;
     uint8 questStatus = DIALOG_STATUS_NONE;
 
     Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
-    if (!questgiver) {
+    if (!questgiver) 
+    {
         TC_LOG_ERROR("network.opcode","Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(guid.GetHigh()), guid.GetCounter());
         return;
     }
@@ -37,21 +38,14 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
     switch (questgiver->GetTypeId()) {
     case TYPEID_UNIT:
     {
-        /*
-        Creature* cr_questgiver = questgiver->ToCreature();
-        if (!cr_questgiver->IsHostileTo(_player)) // not show quest status to enemies
-        {
-            questStatus = sScriptMgr->GetDialogStatus(_player, cr_questgiver);
-            if (questStatus > 6)
-                questStatus = getquestdialogstatus(_player, cr_questgiver, defstatus);
-        }
-        */
+        //TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY for npc, guid = %u", questGiver->GetGUID().GetCounter());
         if (!questgiver->ToCreature()->IsHostileTo(_player)) // do not show quest status to enemies
             questStatus = _player->GetQuestDialogStatus(questgiver);
         break;
     }
     case TYPEID_GAMEOBJECT:
     {
+        //TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY for GameObject guid = %u", questGiver->GetGUID().GetCounter());
         _player->GetQuestDialogStatus(questgiver);
         break;
     }
@@ -681,48 +675,8 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
 
 void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket*/)
 {
-    uint32 count = 0;
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY");
 
-    WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
-    data << uint32(count);                                  // placeholder
-
-    for(auto m_clientGUID : _player->m_clientGUIDs)
-    {
-        uint8 questStatus = DIALOG_STATUS_NONE;
-
-        if (m_clientGUID.IsAnyTypeCreature())
-        {
-            Creature *questgiver = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, m_clientGUID);
-            if(!questgiver || questgiver->IsHostileTo(_player))
-                continue;
-            if(!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
-                continue;
-            questStatus = _player->GetQuestDialogStatus(questgiver);
-            if( questStatus > 6 )
-                questStatus = _player->GetQuestDialogStatus(questgiver);
-
-            data << uint64(questgiver->GetGUID());
-            data << uint8(questStatus);
-            ++count;
-        }
-        else if(m_clientGUID.IsGameObject())
-        {
-            GameObject *questgiver = ObjectAccessor::GetGameObject(*_player, m_clientGUID);
-            if(!questgiver)
-                continue;
-            if(questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
-                continue;
-            questStatus = _player->GetQuestDialogStatus(questgiver);
-            if( questStatus > 6 )
-                questStatus = _player->GetQuestDialogStatus(questgiver);
-
-            data << uint64(questgiver->GetGUID());
-            data << uint8(questStatus);
-            ++count;
-        }
-    }
-
-    data.put<uint32>(0, count);                             // write real count
-    SendPacket(&data);
+    _player->SendQuestGiverStatusMultiple();
 }
 

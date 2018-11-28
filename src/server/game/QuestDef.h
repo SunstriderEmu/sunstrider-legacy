@@ -86,9 +86,9 @@ enum QuestStatus
 {
     QUEST_STATUS_NONE           = 0,
     QUEST_STATUS_COMPLETE       = 1,
-   // QUEST_STATUS_UNAVAILABLE    = 2,
+ // QUEST_STATUS_UNAVAILABLE    = 2,
     QUEST_STATUS_INCOMPLETE     = 3,
-   // QUEST_STATUS_AVAILABLE      = 4,
+ // QUEST_STATUS_AVAILABLE      = 4,
     QUEST_STATUS_FAILED         = 5,
     QUEST_STATUS_REWARDED       = 6, // Not used in DB
     MAX_QUEST_STATUS
@@ -106,16 +106,16 @@ enum QuestGiverStatus
     DIALOG_STATUS_REWARD_REP               = 6,
     DIALOG_STATUS_AVAILABLE_REP            = 7,
     DIALOG_STATUS_AVAILABLE                = 8,
-    DIALOG_STATUS_REWARD2                  = 9,             // no yellow dot on minimap
-    DIALOG_STATUS_REWARD                   = 10,            // yellow dot on minimap
+    DIALOG_STATUS_REWARD2                  = 9,   // no yellow dot on minimap
+    DIALOG_STATUS_REWARD                   = 10,  // yellow dot on minimap
 #else
     DIALOG_STATUS_CHAT                     = 2,
     DIALOG_STATUS_INCOMPLETE               = 3,
     DIALOG_STATUS_REWARD_REP               = 4,
     DIALOG_STATUS_AVAILABLE_REP            = 5,
     DIALOG_STATUS_AVAILABLE                = 6,
-    DIALOG_STATUS_REWARD2                  = 7,             // not yellow dot on minimap
-    DIALOG_STATUS_REWARD                   = 8,              // yellow dot on minimap
+    DIALOG_STATUS_REWARD2                  = 7,   // not yellow dot on minimap
+    DIALOG_STATUS_REWARD                   = 8,   // yellow dot on minimap
 #endif
 };
 

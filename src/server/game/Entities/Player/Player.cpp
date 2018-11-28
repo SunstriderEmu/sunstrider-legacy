@@ -13462,12 +13462,20 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     q_status.Rewarded = true;
 
     if(announce)
-        SendQuestReward( pQuest, XP, questGiver );
+        SendQuestReward(pQuest, XP, questGiver);
 
-    if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+    if (q_status.uState != QUEST_NEW) 
+        q_status.uState = QUEST_CHANGED;
+
+    // make full db save
+    SaveToDB(false);
+
+    SendQuestGiverStatusMultiple();
 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
+
+    //sScriptMgr->OnQuestStatusChange(this, quest_id);
 }
 
 void Player::FailQuest( uint32 questId )
@@ -14669,6 +14677,47 @@ void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, ObjectGuid gui
     uint16 log_slot = FindQuestSlot( pQuest->GetQuestId() );
     if( log_slot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotCounter(log_slot,creatureOrGO_idx,GetQuestSlotCounter(log_slot,creatureOrGO_idx)+add_count);
+}
+
+void Player::SendQuestGiverStatusMultiple()
+{
+    uint32 count = 0;
+
+    WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
+    data << uint32(count);                                  // placeholder
+
+    for (auto m_clientGUID : m_clientGUIDs)
+    {
+        uint8 questStatus = DIALOG_STATUS_NONE;
+
+        if (m_clientGUID.IsAnyTypeCreature())
+        {
+            Creature *questgiver = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, m_clientGUID);
+            if (!questgiver || questgiver->IsHostileTo(this))
+                continue;
+            if (!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
+                continue;
+            questStatus = GetQuestDialogStatus(questgiver);
+
+            data << uint64(questgiver->GetGUID());
+            data << uint8(questStatus);
+            ++count;
+        }
+        else if (m_clientGUID.IsGameObject())
+        {
+            GameObject *questgiver = GetMap()->GetGameObject(m_clientGUID);
+            if (!questgiver || questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
+                continue;
+            questStatus = GetQuestDialogStatus(questgiver);
+
+            data << uint64(questgiver->GetGUID());
+            data << uint8(questStatus);
+            ++count;
+        }
+    }
+
+    data.put<uint32>(0, count);                             // write real count
+    SendDirectMessage(&data);
 }
 
 /*********************************************************/
@@ -19903,6 +19952,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     //SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
+    SendQuestGiverStatusMultiple();
 
 #ifdef LICH_KING
                                                             // raid downscaling - send difficulty to player
