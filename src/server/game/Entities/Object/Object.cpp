@@ -3824,8 +3824,8 @@ bool WorldObject::IsValidAssistTarget(WorldObject const* target, SpellInfo const
         }
     }
 
-    // can't assist non-friendly targets
-    if (GetReactionTo(target) < REP_NEUTRAL && target->GetReactionTo(this) < REP_NEUTRAL
+    // can't assist non-friendly targets //sun: exclude neutral targets
+    if (GetReactionTo(target) <= REP_NEUTRAL && target->GetReactionTo(this) <= REP_NEUTRAL
 #ifdef LICH_KING
         && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_TREAT_AS_RAID_UNIT))
 #endif
