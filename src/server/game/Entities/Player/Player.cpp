@@ -13353,26 +13353,24 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
 
     uint32 quest_id = pQuest->GetQuestId();
 
-    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++ )
-    {
-        if ( pQuest->RequiredItemId[i] )
+    for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
+        if (pQuest->RequiredItemId[i])
             DestroyItemCount( pQuest->RequiredItemId[i], pQuest->RequiredItemCount[i], true);
-    }
 
     //if( qInfo->HasSpecialFlag( QUEST_FLAGS_TIMED ) )
     //    SetTimedQuest( 0 );
     m_timedquests.erase(pQuest->GetQuestId());
 
-    if ( pQuest->GetRewardItemsCount() > 0 )
+    if (pQuest->GetRewardItemsCount() > 0)
     {
         for (uint32 i=0; i < pQuest->GetRewardItemsCount(); ++i)
         {
-            if( pQuest->RewardItemId[i] )
+            if (pQuest->RewardItemId[i])
             {
                 ItemPosCountVec dest;
-                if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardItemId[i], pQuest->RewardItemIdCount[i] ) == EQUIP_ERR_OK )
+                if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, pQuest->RewardItemId[i], pQuest->RewardItemIdCount[i]) == EQUIP_ERR_OK)
                 {
-                    Item* item = StoreNewItem( dest, pQuest->RewardItemId[i], true);
+                    Item* item = StoreNewItem(dest, pQuest->RewardItemId[i], true);
 #ifdef LICH_KING
                     SendNewItem(item, pQuest->RewardItemIdCount[i], true, false, false, false);
 #else
@@ -13400,14 +13398,14 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
         }
     }
 
-    if( pQuest->GetRewSpellCast() > 0 )
+    if (pQuest->GetRewSpellCast() > 0)
         CastSpell( this, pQuest->GetRewSpellCast(), true);
-    else if( pQuest->GetRewSpell() > 0)
+    else if (pQuest->GetRewSpell() > 0)
         CastSpell( this, pQuest->GetRewSpell(), true);
 
-    uint16 log_slot = FindQuestSlot( quest_id );
+    uint16 log_slot = FindQuestSlot(quest_id);
     if( log_slot < MAX_QUEST_LOG_SIZE)
-        SetQuestSlot(log_slot,0);
+        SetQuestSlot(log_slot, 0);
 
     QuestStatusData& q_status = m_QuestStatus[quest_id];
 
