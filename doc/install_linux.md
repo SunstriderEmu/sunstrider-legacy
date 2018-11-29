@@ -67,10 +67,6 @@ https://trinitycore.atlassian.net/wiki/spaces/tc/pages/2130092/Databases+Install
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
-You can skip this step by downloading [the already extracted data folders][githubdata] and extracting them into your `<root_install_folder>/data` folder.
-
-Otherwise, if those files were missing, outdated, if if you want to do it by yourself, here are instructions to extract them:
-
 1. If everything compiled correctly, the following binaries should have been created in your `<root_install_folder>/bin` folder:  
 
 	- **mapextractor**
