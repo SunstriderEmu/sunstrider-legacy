@@ -19,8 +19,9 @@ class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovemen
         MovementGeneratorType GetMovementGeneratorType() const override;
     private:
         TimeTrackerSmall _timer;
+        Position _reference;
         std::unique_ptr<PathGenerator> _path;
 
-        float wander_distance;
+        float _wanderDistance;
 };
 #endif

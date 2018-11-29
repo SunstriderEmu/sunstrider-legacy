@@ -15,7 +15,9 @@
 template<class T>
 RandomMovementGenerator<T>::RandomMovementGenerator(float spawn_dist /*= 0.0f*/) 
     : MovementGeneratorMedium<T, RandomMovementGenerator<T>>(MOTION_MODE_DEFAULT, MOTION_PRIORITY_NORMAL, UNIT_STATE_ROAMING),
-    _timer(0), wander_distance(spawn_dist) { }
+    _timer(0), _wanderDistance(spawn_dist), _reference()
+{ 
+}
 
 template RandomMovementGenerator<Creature>::RandomMovementGenerator(float/* distance*/);
 
@@ -40,81 +42,23 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
     {
         AddFlag(MOVEMENTGENERATOR_FLAG_INTERRUPTED);
         owner->StopMoving();
+        _path = nullptr;
         return;
     }
 
-    float respX, respY, respZ, respO, destX, destY, destZ, travelDistZ;
-    owner->GetHomePosition(respX, respY, respZ, respO);
-    Map const* map = owner->GetBaseMap();
-
-    // For 2D/3D system selection
-    //bool is_land_ok  = creature.CanWalk();                // not used?
-    //bool is_water_ok = creature.CanSwim();                // not used?
-    bool is_air_ok = owner->CanFly();
-
-    const float angle = float(rand_norm()) * static_cast<float>(M_PI*2.0f);
-    const float range = float(rand_norm()) * wander_distance;
-    const float distanceX = range * std::cos(angle);
-    const float distanceY = range * std::sin(angle);
-
-    destX = respX + distanceX;
-    destY = respY + distanceY;
-
-    // prevent invalid coordinates generation
-    Trinity::NormalizeMapCoord(destX);
-    Trinity::NormalizeMapCoord(destY);
-
-    travelDistZ = distanceX*distanceX + distanceY*distanceY;
-
-    if (is_air_ok)                                          // 3D system above ground and above water (flying mode)
-    {
-        // Limit height change
-        const float distanceZ = float(rand_norm()) * sqrtf(travelDistZ)/2.0f;
-        destZ = respZ + distanceZ;
-        float levelZ = map->GetWaterOrGroundLevel(owner->GetPhaseMask(), destX, destY, destZ-2.0f);
-
-        float diff = destZ - levelZ;
-        // Problem here, we must fly above the ground and water, not under. Let's try on next tick
-        if (diff < 0)
-            return;
-        else if (diff < 2.5f)
-            destZ += 2.5f - diff; //just go a little higher, we don't want to brush the ground with our wings
-    }
-    //else if (is_water_ok)                                 // 3D system under water and above ground (swimming mode)
-    else                                                    // 2D only
-    {
-        // 10.0 is the max that vmap high can check (MAX_CAN_FALL_DISTANCE)
-        travelDistZ = travelDistZ >= 100.0f ? 10.0f : sqrtf(travelDistZ);
-
-        // The fastest way to get an accurate result 90% of the time.
-        // Better result can be obtained like 99% accuracy with a ray light, but the cost is too high and the code is too long.
-        destZ = map->GetHeight(owner->GetPhaseMask(), destX, destY, respZ+travelDistZ-2.0f, false);
-
-        if (fabs(destZ - respZ) > travelDistZ)              // Map check
-        {
-            // Vmap Horizontal or above
-            destZ = map->GetHeight(owner->GetPhaseMask(), destX, destY, respZ - 2.0f, true);
-
-            if (fabs(destZ - respZ) > travelDistZ)
-            {
-                // Vmap Higher
-                destZ = map->GetHeight(owner->GetPhaseMask(), destX, destY, respZ+travelDistZ-2.0f, true);
-
-                // let's forget this bad coords where a z cannot be find and retry at next tick
-                if (fabs(destZ - respZ) > travelDistZ)
-                    return;
-            }
-        }
-    }
+    Position position(_reference);
+    float distance = frand(0.f, 1.f) * _wanderDistance;
+    float angle = frand(0.f, 1.f) * float(M_PI) * 2.f;
+    owner->MovePositionToFirstCollision(position, distance, angle);
 
     if (!_path)
     {
         _path = std::make_unique<PathGenerator>(owner);
         _path->ExcludeSteepSlopes();
-        _path->SetPathLengthLimit(wander_distance * 1.5f);
+        _path->SetPathLengthLimit(_wanderDistance * 1.5f);
     }
 
-    bool result = _path->CalculatePath(destX, destY, destZ);
+    bool result = _path->CalculatePath(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
         _timer.Reset(100);
@@ -126,15 +70,15 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
     Movement::MoveSplineInit init(owner);
     init.MovebyPath(_path->GetPath());
     init.SetWalk(true);
-    if(is_air_ok)
+    if(owner->IsFlying())
         init.SetFly();
-    uint32 travelTime = init.Launch();
 
+    uint32 travelTime = init.Launch();
     uint32 resetTimer = roll_chance_i(50) ? urand(5000, 10000) : urand(1000, 2000);
     _timer.Reset(travelTime + resetTimer);
 
     //Call for creature group update
-    owner->SignalFormationMovement(Position(destX, destY, destZ));
+    owner->SignalFormationMovement(position);
 }
 
 template<>
@@ -146,8 +90,10 @@ bool RandomMovementGenerator<Creature>::DoInitialize(Creature* owner)
     if (!owner || !owner->IsAlive())
         return false;
 
-    if (!wander_distance)
-        wander_distance = owner->GetRespawnRadius();
+    _reference = owner->GetPosition();
+
+    if (!_wanderDistance)
+        _wanderDistance = owner->GetRespawnRadius();
 
     _timer.Reset(0);
     _path = nullptr;
