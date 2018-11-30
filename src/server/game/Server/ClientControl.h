@@ -98,8 +98,6 @@ private:
     void SetActiveMover(Unit* activeMover);
     void DisallowMover(Unit* mover);
     void AllowMover(Unit* mover);
-    //Timer before kicking player. If set but == 0, start timer at next update
-    Optional<uint32> _releaseMoverTimeout;
 
     WorldSession* _owner;
     std::shared_ptr<ClientControl> _this; //used to delete references to this class in other classes when ClientControl gets destroyed

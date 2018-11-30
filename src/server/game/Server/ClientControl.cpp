@@ -9,8 +9,7 @@ ClientControl::ClientControl(WorldSession* session) :
     lastMoveServerTimestamp(0),
     _pendingActiveMoverSplineId(0),
     _activeMover(),
-    _serverActiveMover(),
-    _releaseMoverTimeout()
+    _serverActiveMover()
 {
     _this = std::shared_ptr<ClientControl>(this, [](ClientControl*) {});
 }
@@ -18,25 +17,6 @@ ClientControl::ClientControl(WorldSession* session) :
 void ClientControl::Update(uint32 diff)
 {
     CheckPendingMovementAcks();
-
-    if (_releaseMoverTimeout)
-    {
-        //if 0, start timer. We start now instead of starting immediately when releasing mover to compensate for big server lag or debugger usage
-        if (*_releaseMoverTimeout == 0)
-            _releaseMoverTimeout = sWorld->getIntConfig(CONFIG_PENDING_MOVE_CHANGES_TIMEOUT);
-        else
-        {
-            if (diff >= *_releaseMoverTimeout)
-            {
-                TC_LOG_DEBUG("movement", "Player %s (%u) did not ack the mover change fast enough and was kicked",
-                    _owner->GetPlayer()->GetName().c_str(), _owner->GetPlayer()->GetGUID().GetCounter());
-
-                _owner->KickPlayer();
-            }
-            else
-                *_releaseMoverTimeout -= diff;
-        }
-    }
 }
 
 void ClientControl::ResolveAllPendingChanges()
@@ -114,8 +94,6 @@ void ClientControl::UpdateTakeControl(Unit* target, bool allowMove)
     }
     else if (/*!allowMove &&*/ _serverActiveMover.unit.lock().get() == target)
     {
-        _releaseMoverTimeout = 0; // 0 = start timer at next update
-
         _serverActiveMover.Reset();
         target->m_playerMovingMe.reset();
     }
@@ -324,8 +302,6 @@ void ClientControl::ClientSetActiveMover(ObjectGuid guid)
         return;
     }
 
-    _releaseMoverTimeout.reset();
-
     Unit* mover = ObjectAccessor::GetUnit(*_owner->GetPlayer(), guid);
     if (!mover)
     {
@@ -342,7 +318,6 @@ void ClientControl::ClientSetActiveMover(ObjectGuid guid)
 
 void ClientControl::ClientSetNotActiveMover(MovementInfo& movementInfo)
 {
-    _releaseMoverTimeout.reset();
     Unit* mover = _activeMover.lock().get();
     if (!mover)
     {
