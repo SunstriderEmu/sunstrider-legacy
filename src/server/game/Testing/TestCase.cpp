@@ -375,6 +375,7 @@ TestPlayer* TestCase::_CreateTestBot(Position loc, Classes cls, Races race, uint
     player->LearnAllClassProficiencies();
     player->UpdateSkillsToMaxSkillsForLevel();
 
+    player->GetMotionMaster()->Initialize();
     session->_HandlePlayerLogin((Player*)player, holder);
 
     sCharacterCache->AddCharacterCacheEntry(player->GetGUID().GetCounter(), testAccountId, player->GetName(), cci.Gender, cci.Race, cci.Class, level, 0);

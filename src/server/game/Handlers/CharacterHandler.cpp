@@ -636,7 +636,7 @@ void WorldSession::_HandlePlayerLogin(Player* pCurrChar, LoginQueryHolder* holde
     // for send server info and strings (config)
     ChatHandler chH = ChatHandler(pCurrChar);
 
-    pCurrChar->GetMotionMaster()->Initialize();
+    //pCurrChar->GetMotionMaster()->Initialize(); sun: initialize motion before loading auras instead
 
     SetPlayer(pCurrChar);
 
@@ -985,6 +985,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     ObjectGuid playerGuid = holder->GetGuid();
 
     Player* pCurrChar = new Player(this);
+
+    pCurrChar->GetMotionMaster()->Initialize(); //sun: initialize motion before loading auras instead
 
     // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
     if (!pCurrChar->LoadFromDB(playerGuid.GetCounter(), holder))
