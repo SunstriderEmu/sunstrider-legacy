@@ -3879,7 +3879,7 @@ uint32 Spell::GetChannelStartDuration() const
         // 1 - Get first spell effect needing explicit target
         uint8 i = EFFECT_0;
         bool unused, unused2;
-        for (; ; i++)
+        for (; i < MAX_SPELL_EFFECTS; i++)
         {
             auto effect = m_spellInfo->Effects[i];
             if (!effect.IsEffect() || !effect.IsAura())
@@ -3887,10 +3887,10 @@ uint32 Spell::GetChannelStartDuration() const
 
             if (effect.TargetA.GetExplicitTargetMask(unused, unused2) & TARGET_FLAG_UNIT_MASK)
                 break;
-
-            if (i >= MAX_SPELL_EFFECTS)
-                return 0;
         }
+
+        if (i >= MAX_SPELL_EFFECTS)
+            return 0;
 
         // 2 - Select first target unit with this effect applied as channel target
         Unit const* channelTarget = nullptr;
