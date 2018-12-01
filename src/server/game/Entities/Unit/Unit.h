@@ -803,7 +803,7 @@ enum PlayerTotemType
 
 struct SpellProcEntry;                                 // used only privately
 
-class TC_GAME_API Unit : public WorldObject, std::enable_shared_from_this<Unit>
+class TC_GAME_API Unit : public WorldObject
 {
     friend class WorldSession;
     friend class PlayerMovementPendingChange;
