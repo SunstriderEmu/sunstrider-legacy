@@ -10612,16 +10612,16 @@ void Unit::RestoreFaction()
         (this->ToPlayer())->SetFactionForRace(GetRace());
     else
     {
-        CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
-
-        if((this->ToCreature())->IsPet())
+        if (HasUnitTypeMask(UNIT_MASK_MINION))
         {
-            if(Unit* owner = GetOwner())
+            if (Unit* owner = GetOwner())
+            {
                 SetFaction(owner->GetFaction());
-            else if(cinfo)
-                SetFaction(cinfo->faction);
+                return;
+            }
         }
-        else if(cinfo)  // normal creature
+
+        if (CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate())  // normal creature
             SetFaction(cinfo->faction);
     }
 }
