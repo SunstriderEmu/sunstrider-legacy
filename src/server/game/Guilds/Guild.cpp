@@ -1262,6 +1262,8 @@ bool Guild::Create(Player* pLeader, std::string const& name)
 
     CharacterDatabase.CommitTransaction(trans);
 
+    SetBankLoaded(true); //nothing to load at creation
+
     /*if (ret)
         sScriptMgr->OnGuildCreate(this, pLeader, name);*/
 
