@@ -6235,7 +6235,7 @@ void AuraEffect::HandleSchoolAbsorb(AuraApplication const* aurApp, uint8 mode, b
     */
     if (apply)
     {
-        Unit* caster = GetCaster();
+        if(Unit* caster = GetCaster())
         {
             float threat = GetAmount() * 0.5f;
             m_target->GetThreatManager().ForwardThreatForAssistingMe(caster, threat, GetSpellInfo());
