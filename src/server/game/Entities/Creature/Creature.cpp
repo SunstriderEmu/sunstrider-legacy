@@ -3429,7 +3429,7 @@ void Creature::UpdateMovementFlags(bool force /* = false */)
         return;
 
     // Do not update movement flags if creature is controlled by a player (charm/vehicle)
-    if (m_playerMovingMe.expired())
+    if (!m_playerMovingMe.expired())
         return;
 
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
