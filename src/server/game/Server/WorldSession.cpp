@@ -1001,7 +1001,7 @@ void WorldSession::ReadAddon(ByteBuffer& addonInfo)
     addonInfo >> enabled >> crc >> unk1;
 #else
     //"Huf: the tbc client only seems to be sending info for the standard addons"
-    uint32 unk2;
+    uint8 unk2;
     addonInfo >> crc >> unk1 >> unk2;
 #endif
 
