@@ -34,6 +34,7 @@
 #include "SpawnData.h"
 #include "GameTime.h"
 #include "QueryPackets.h"
+#include "GuildMgr.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -5921,6 +5922,10 @@ void ObjectMgr::SetHighestGuids()
     {
         _ItemTextId = (*result)[0].GetUInt32()+1;
     }
+
+    result = CharacterDatabase.Query("SELECT MAX(guildid) FROM guild");
+    if (result)
+        sGuildMgr->SetNextGuildId((*result)[0].GetUInt32() + 1);
 
     result = CharacterDatabase.Query("SELECT MAX(guid) FROM `groups`");
     if (result)
