@@ -208,11 +208,11 @@ void Quest::LoadQuestMailSender(Field* fields)
     _rewardMailSenderEntry = fields[1].GetUInt32();
 }
 
-uint32 Quest::XPValue( Player *pPlayer ) const
+uint32 Quest::XPValue(Player* pPlayer) const
 {
-    if( pPlayer )
+    if (pPlayer)
     {
-        if( RewardMoneyMaxLevel > 0 )
+        if (RewardMoneyMaxLevel > 0)
         {
             uint32 pLevel = pPlayer->GetLevel();
             uint32 qLevel = _level;
