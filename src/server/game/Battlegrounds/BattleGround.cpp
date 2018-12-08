@@ -697,7 +697,8 @@ void Battleground::EndBattleground(uint32 winner)
                 loser_arena_team->MemberLost(plr,winner_rating);
         }
 
-        if (team == winner) {
+        if (team == winner) 
+        {
             if(!Source)
                 Source = plr;
             RewardMark(plr, ITEM_WINNER_COUNT);

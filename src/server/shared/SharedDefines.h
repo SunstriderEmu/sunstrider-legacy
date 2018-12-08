@@ -81,6 +81,12 @@ enum Races
     (1<<(RACE_GNOME-1))   |(1<<(RACE_TROLL-1))        |(1<<(RACE_BLOODELF-1))| \
     (1<<(RACE_DRAENEI-1)) )
 
+#define RACEMASK_ALLIANCE \
+    ((1<<(RACE_HUMAN-1)) | (1<<(RACE_DWARF-1)) | (1<<(RACE_NIGHTELF-1)) | \
+     (1<<(RACE_GNOME-1)) | (1<<(RACE_DRAENEI-1)))
+
+#define RACEMASK_HORDE RACEMASK_ALL_PLAYABLE & ~RACEMASK_ALLIANCE
+
 // Class value is index in ChrClasses.dbc
 enum Classes : uint32
 {
@@ -101,10 +107,18 @@ enum Classes : uint32
 // max+1 for player class
 #define MAX_CLASSES       12
 
+#ifdef LICH_KING
 #define CLASSMASK_ALL_PLAYABLE \
     ((1<<(CLASS_WARRIOR-1))|(1<<(CLASS_PALADIN-1))|(1<<(CLASS_HUNTER-1))| \
     (1<<(CLASS_ROGUE-1))  |(1<<(CLASS_PRIEST-1)) |(1<<(CLASS_SHAMAN-1))| \
     (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1))   )
+#else
+#define CLASSMASK_ALL_PLAYABLE \
+    ((1<<(CLASS_WARRIOR-1))|(1<<(CLASS_PALADIN-1))|(1<<(CLASS_HUNTER-1))| \
+    (1<<(CLASS_ROGUE-1))  |(1<<(CLASS_PRIEST-1)) |(1<<(CLASS_SHAMAN-1))| \
+    (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1)) | \
+    (1<<(CLASS_DEATH_KNIGHT-1)))
+#endif
 
 #define MAX_TALENT_TREES 3
 
@@ -2018,7 +2032,11 @@ enum QuestTypes
     QUEST_TYPE_WORLD_EVENT         = 82,
     QUEST_TYPE_LEGENDARY           = 83,
     QUEST_TYPE_ESCORT              = 84,
-    QUEST_TYPE_HEROIC              = 85,
+    QUEST_TYPE_HEROIC              = 85, //last in QuestInfo.dbc for TBC
+#ifdef LICH_KING
+    QUEST_TYPE_RAID_10             = 88,
+    QUEST_TYPE_RAID_25             = 89
+#endif
 };
 
 // values based at QuestSort.dbc
@@ -2058,14 +2076,14 @@ enum QuestSort
     QUEST_SORT_REPUTATION          = 367,
     QUEST_SORT_INVASION            = 368,
     QUEST_SORT_MIDSUMMER           = 369,
-    QUEST_SORT_BREWFEST            = 370,
+    QUEST_SORT_BREWFEST            = 370, //last entry in QuestSort.dbc for tbc
 #ifdef LICH_KING
     QUEST_SORT_INSCRIPTION         = 371,
     QUEST_SORT_DEATH_KNIGHT        = 372,
     QUEST_SORT_JEWELCRAFTING       = 373,
     QUEST_SORT_NOBLEGARDEN         = 374,
     QUEST_SORT_PILGRIMS_BOUNTY     = 375,
-    QUEST_SORT_LOVE_IS_IN_THE_AIR  = 376,
+    QUEST_SORT_LOVE_IS_IN_THE_AIR  = 376, //event was present before LK but wans't yet present in QuestSort.dbc for some reason
 #endif
 };
 

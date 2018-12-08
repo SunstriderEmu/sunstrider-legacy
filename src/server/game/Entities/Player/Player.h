@@ -51,9 +51,6 @@ typedef std::deque<Mail*> PlayerMails;
 #define PLAYER_MAX_DAILY_QUESTS     25
 #define PLAYER_EXPLORED_ZONES_SIZE  128
 
-#define REPUTATION_CAP    42999
-#define REPUTATION_BOTTOM -42999
-
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
 {
@@ -684,6 +681,17 @@ enum AtLoginFlags
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
+typedef std::set<uint32> RewardedQuestSet;
+
+enum QuestSaveType
+{
+    QUEST_DEFAULT_SAVE_TYPE = 0,
+    QUEST_DELETE_SAVE_TYPE,
+    QUEST_FORCE_DELETE_SAVE_TYPE
+};
+
+//               quest
+typedef std::map<uint32, QuestSaveType> QuestStatusSaveMap;
 
 enum QuestSlotOffsets
 {
@@ -963,27 +971,34 @@ enum PlayerChatTag
 // used at player loading query list preparing, and later result selection
 enum PlayerLoginQueryIndex
 {
-    PLAYER_LOGIN_QUERY_LOAD_FROM                  = 0,
-    PLAYER_LOGIN_QUERY_LOAD_GROUP                 = 1,
-    PLAYER_LOGIN_QUERY_LOAD_BOUND_INSTANCES       = 2,
-    PLAYER_LOGIN_QUERY_LOAD_AURAS                 = 3,
-    PLAYER_LOGIN_QUERY_LOAD_SPELLS                = 4,
-    PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS    = 6,
-    PLAYER_LOGIN_QUERY_LOAD_REPUTATION            = 7,
-    PLAYER_LOGIN_QUERY_LOAD_INVENTORY             = 8,
-    PLAYER_LOGIN_QUERY_LOAD_ACTIONS               = 9,
-    PLAYER_LOGIN_QUERY_LOAD_MAIL_COUNT            = 10,
-    PLAYER_LOGIN_QUERY_LOAD_MAIL_DATE             = 11,
-    PLAYER_LOGIN_QUERY_LOAD_SOCIAL_LIST           = 12,
-    PLAYER_LOGIN_QUERY_LOAD_HOME_BIND             = 13,
-    PLAYER_LOGIN_QUERY_LOAD_SPELL_COOLDOWNS       = 14,
-    PLAYER_LOGIN_QUERY_LOAD_DECLINED_NAMES        = 15,
-    PLAYER_LOGIN_QUERY_LOAD_GUILD                 = 16,
-    PLAYER_LOGIN_QUERY_LOAD_ARENA_INFO            = 17,
-    PLAYER_LOGIN_QUERY_LOAD_SKILLS                = 18,
-    PLAYER_LOGIN_QUERY_LOAD_BG_DATA               = 19,
-    PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION       = 20,
+    PLAYER_LOGIN_QUERY_LOAD_FROM              = 0,
+    PLAYER_LOGIN_QUERY_LOAD_GROUP                ,
+    PLAYER_LOGIN_QUERY_LOAD_BOUND_INSTANCES      ,
+    PLAYER_LOGIN_QUERY_LOAD_AURAS                ,
+    PLAYER_LOGIN_QUERY_LOAD_SPELLS               ,
+    PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS         ,
+    PLAYER_LOGIN_QUERY_LOAD_DAILY_QUEST_STATUS   ,
+    PLAYER_LOGIN_QUERY_LOAD_REPUTATION           ,
+    PLAYER_LOGIN_QUERY_LOAD_INVENTORY            ,
+    PLAYER_LOGIN_QUERY_LOAD_ACTIONS              ,
+    PLAYER_LOGIN_QUERY_LOAD_MAIL_COUNT           ,
+    PLAYER_LOGIN_QUERY_LOAD_MAIL_DATE            ,
+    PLAYER_LOGIN_QUERY_LOAD_SOCIAL_LIST          ,
+    PLAYER_LOGIN_QUERY_LOAD_HOME_BIND            ,
+    PLAYER_LOGIN_QUERY_LOAD_SPELL_COOLDOWNS      ,
+    PLAYER_LOGIN_QUERY_LOAD_DECLINED_NAMES       ,
+    PLAYER_LOGIN_QUERY_LOAD_GUILD                ,
+    PLAYER_LOGIN_QUERY_LOAD_ARENA_INFO           ,
+    PLAYER_LOGIN_QUERY_LOAD_SKILLS               ,
+    PLAYER_LOGIN_QUERY_LOAD_BG_DATA              ,
+    PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION      ,
+    PLAYER_LOGIN_QUERY_LOAD_QUEST_STATUS_REW     ,
+    PLAYER_LOGIN_QUERY_LOAD_SEASONAL_QUEST_STATUS,
+#ifdef LICH_KING
+    PLAYER_LOGIN_QUERY_LOAD_RANDOM_BG,
+    PLAYER_LOGIN_QUERY_LOAD_WEEKLY_QUEST_STATUS  ,
+    PLAYER_LOGIN_QUERY_LOAD_MONTHLY_QUEST_STATUS ,
+#endif
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1429,32 +1444,53 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void CompleteQuest(uint32 quest_id);
         void IncompleteQuest(uint32 quest_id);
         void RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver, bool announce = true);
+        void SetRewardedQuest(uint32 quest_id);
         void FailQuest(uint32 quest_id);
         void AbandonQuest(uint32 quest_id);
-        void FailTimedQuest(uint32 quest_id);
-        bool SatisfyQuestSkillOrClass(Quest const* qInfo, bool msg);
+        bool SatisfyQuestSkill(Quest const* qInfo, bool msg) const;
+        bool SatisfyQuestClass(Quest const* qInfo, bool msg) const;
         bool SatisfyQuestLevel(Quest const* qInfo, bool msg);
         bool SatisfyQuestLog(bool msg);
-        bool SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg);
+        bool SatisfyQuestDependentQuests(Quest const* qInfo, bool msg) const;
+        bool SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg) const;
+        bool SatisfyQuestDependentPreviousQuests(Quest const* qInfo, bool msg) const;
         bool SatisfyQuestRace(Quest const* qInfo, bool msg);
         bool SatisfyQuestReputation(Quest const* qInfo, bool msg);
         bool SatisfyQuestStatus(Quest const* qInfo, bool msg);
         bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
         bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
         bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
-        bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
-        bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
         bool SatisfyQuestDay(Quest const* qInfo, bool msg);
+#ifdef LICH_KING
+        bool SatisfyQuestWeek(Quest const* qInfo, bool msg) const;
+        bool SatisfyQuestMonth(Quest const* qInfo, bool msg) const;
+#else
+        inline bool SatisfyQuestWeek(Quest const* qInfo, bool msg) const { return true; }
+        inline bool SatisfyQuestMonth(Quest const* qInfo, bool msg) const { return true; }
+#endif
+        bool SatisfyQuestSeasonal(Quest const* qInfo, bool msg) const;
         bool GiveQuestSourceItem(Quest const *pQuest);
         bool TakeQuestSourceItem(uint32 quest_id, bool msg);
         bool GetQuestRewardStatus(uint32 quest_id) const;
         QuestStatus GetQuestStatus(uint32 quest_id) const;
-        void SetQuestStatus(uint32 quest_id, QuestStatus status);
+        void SetQuestStatus(uint32 questId, QuestStatus status, bool update = true);
+        void RemoveActiveQuest(uint32 questId, bool update = true);
+        void RemoveRewardedQuest(uint32 questId, bool update = true);
+        void SendQuestUpdate(uint32 questId);
         QuestGiverStatus GetQuestDialogStatus(Object* questGiver);
 
         void SetDailyQuestStatus(uint32 quest_id);
         void ResetDailyQuestStatus();
         bool IsDailyQuestDone(uint32 quest_id) const;
+#ifdef LICH_KING
+        void SetWeeklyQuestStatus(uint32 quest_id);
+        void ResetWeeklyQuestStatus();
+        void SetMonthlyQuestStatus(uint32 quest_id);
+        void ResetMonthlyQuestStatus();
+#endif
+        void ResetSeasonalQuestStatus(uint16 event_id);
+        void SetSeasonalQuestStatus(uint32 quest_id);
+
 
         uint16 FindQuestSlot(uint32 quest_id) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }
@@ -1485,7 +1521,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
             }
         }
         uint32 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry);
-        void AdjustQuestRequiredItemCount(Quest const* pQuest);
+        void AdjustQuestReqItemCount(Quest const* quest, QuestStatusData& questStatusData);
         void AreaExploredOrEventHappens(uint32 questId);
         void GroupEventHappens(uint32 questId, WorldObject const* pEventObject);
         void ItemAddedQuestCheck(uint32 entry, uint32 count);
@@ -1502,10 +1538,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool CanShareQuest(uint32 quest_id) const;
 
         void SendQuestComplete(uint32 quest_id);
-        void SendQuestReward(Quest const *pQuest, uint32 XP, Object* questGiver);
-        void SendQuestFailed(uint32 quest_id);
-        void SendQuestTimerFailed(uint32 quest_id);
-        void SendCanTakeQuestResponse(uint32 msg);
+        void SendQuestReward(Quest const *pQuest, uint32 XP);
+        void SendQuestFailed(uint32 quest_id) const;
+        void SendQuestTimerFailed(uint32 quest_id) const;
+        void SendCanTakeQuestResponse(uint32 msg) const;
         void SendQuestConfirmAccept(Quest const* pQuest, Player* pReceiver);
         void SendPushToPartyResponse(Player *pPlayer, uint32 msg);
         void SendQuestUpdateAddItem(Quest const* pQuest, uint32 item_idx, uint32 count);
@@ -1522,6 +1558,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetInGameTime( uint32 time ) { m_ingametime = time; };
 
         void AddTimedQuest( uint32 quest_id ) { m_timedquests.insert(quest_id); }
+        void RemoveTimedQuest(uint32 questId) { m_timedquests.erase(questId); }
 
         /*********************************************************/
         /***                   LOAD SYSTEM                     ***/
@@ -1581,9 +1618,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool ModifyMoney(int32 amount, bool sendError = true);
         void SetMoney( uint32 value );
         bool HasEnoughMoney(int32 amount) const;
-        
-        QuestStatusMap& getQuestStatusMap() { return m_QuestStatus; }
 
+        RewardedQuestSet const& GetRewardedQuests() const { return m_RewardedQuests; }
+        QuestStatusMap& GetQuestStatusMap() { return m_QuestStatus; }
+
+        size_t GetRewardedQuestCount() const { return m_RewardedQuests.size(); }
         bool IsQuestRewarded(uint32 quest_id) const;
 
         Unit* GetSelectedUnit() const;
@@ -1672,8 +1711,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LearnDefaultSkill(uint32 skillId, uint16 rank);
         //Old mangos/windrunner logic. Replaced by LearnDefaultSkills except for some rare spells (16 at time of writing). We'll keep this function for now
         void LearnDefaultSpells(bool loading = false); 
-        void learnQuestRewardedSpells();
-        void learnQuestRewardedSpells(Quest const* quest);
+        void LearnQuestRewardedSpells();
+        void LearnQuestRewardedSpells(Quest const* quest);
         void LearnAllClassSpells();
         void LearnAllClassProficiencies();
 
@@ -2137,6 +2176,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool isAllowedToTakeBattlegroundBase();
         bool IsTotalImmune();
 
+#ifdef LICH_KING
+        bool GetRandomWinner() const { return m_IsBGRandomWinner; }
+        void SetRandomWinner(bool isWinner);
+#endif
+
         /*********************************************************/
         /***               OUTDOOR PVP SYSTEM                  ***/
         /*********************************************************/
@@ -2417,6 +2461,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         BgBattlegroundQueueID_Rec m_bgBattlegroundQueueID[PLAYER_MAX_BATTLEGROUND_QUEUES];
         BGData                    m_bgData;
 
+#ifdef LICH_KING
+        bool m_IsBGRandomWinner; //NYI
+#endif
+
         uint8 m_bgAfkReportedCount;
         time_t m_bgAfkReportedTimer;
         uint32 m_regenTimerCount;
@@ -2428,7 +2476,16 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /***                    QUEST SYSTEM                   ***/
         /*********************************************************/
 
-        std::set<uint32> m_timedquests;
+        typedef std::set<uint32> QuestSet;
+        typedef std::set<uint32> SeasonalQuestSet;
+        typedef std::unordered_map<uint32, SeasonalQuestSet> SeasonalEventQuestMap;
+
+        QuestSet m_timedquests;
+#ifdef LICH_KING
+        QuestSet m_weeklyquests;
+        QuestSet m_monthlyquests;
+#endif
+        SeasonalEventQuestMap m_seasonalquests;
 
         ObjectGuid m_playerSharingQuest;
         uint32 m_sharedQuestId;
@@ -2446,7 +2503,14 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _LoadMail();
         void _LoadMailedItems(Mail *mail);
         void _LoadQuestStatus(PreparedQueryResult result);
+        void _LoadQuestStatusRewarded(PreparedQueryResult result);
         void _LoadDailyQuestStatus(PreparedQueryResult result);
+#ifdef LICH_KING
+        void _LoadWeeklyQuestStatus(PreparedQueryResult result);
+        void _LoadMonthlyQuestStatus(PreparedQueryResult result);
+        void _LoadRandomBGStatus(PreparedQueryResult result);
+#endif
+        void _LoadSeasonalQuestStatus(PreparedQueryResult result);
         void _LoadGroup(PreparedQueryResult result);
         void _LoadSkills(PreparedQueryResult result);
         void _LoadSpells(PreparedQueryResult result);
@@ -2463,8 +2527,13 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveAuras(SQLTransaction trans);
         void _SaveInventory(SQLTransaction trans);
         void _SaveMail(SQLTransaction trans);
-        void _SaveQuestStatus(SQLTransaction trans);
+        void _SaveQuestStatus(SQLTransaction& trans);
         void _SaveDailyQuestStatus(SQLTransaction trans);
+#ifdef LICH_KING
+        void _SaveWeeklyQuestStatus(SQLTransaction& trans);
+        void _SaveMonthlyQuestStatus(SQLTransaction& trans);
+#endif
+        void _SaveSeasonalQuestStatus(SQLTransaction& trans);
         void _SaveSpells(SQLTransaction trans);
         void _SaveSkills(SQLTransaction trans);
         void _SaveBGData(SQLTransaction& trans);
@@ -2519,7 +2588,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         int8 m_comboPoints;
 
         QuestStatusMap m_QuestStatus;
-        
+        QuestStatusSaveMap m_QuestStatusSave;
+
+        RewardedQuestSet m_RewardedQuests;
+        QuestStatusSaveMap m_RewardedQuestsSave;
+
         SkillStatusMap mSkillStatus;
 
         uint32 _guildIdInvited;
@@ -2556,6 +2629,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         TradeData* m_trade;
 
         bool   m_DailyQuestChanged;
+#ifdef LICH_KING
+        bool   m_WeeklyQuestChanged;
+        bool   m_MonthlyQuestChanged;
+#endif
+        bool   m_SeasonalQuestChanged;
         time_t m_lastDailyQuestTime;
 
         uint32 m_hostileReferenceCheckTimer;

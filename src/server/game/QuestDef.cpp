@@ -23,37 +23,26 @@
 #include "World.h"
 #include "QuestPackets.h"
 #include "ObjectMgr.h"
+#include "Formulas.h"
 
-Quest::Quest(Field * questRecord)
+Quest::Quest(Field* questRecord)
 {
     uint32 i = 0;
-    QuestId = questRecord[i++].GetUInt32();
-    QuestMethod = questRecord[i++].GetUInt8();
-    ZoneOrSort = questRecord[i++].GetInt16();
-    SkillOrClass = questRecord[i++].GetInt16();
+    _id = questRecord[i++].GetUInt32();
+    _method = questRecord[i++].GetUInt8();
+    _zoneOrSort = questRecord[i++].GetInt16();
     MinLevel = questRecord[i++].GetUInt8();
-    QuestLevel = questRecord[i++].GetUInt8();
+    _level = questRecord[i++].GetUInt8();
     Type = (QuestTypes)(questRecord[i++].GetUInt16());
-    RequiredRaces = questRecord[i++].GetUInt16();
-    RequiredSkillValue = questRecord[i++].GetUInt16();
-    RepObjectiveFaction = questRecord[i++].GetUInt16();
-    RepObjectiveValue = questRecord[i++].GetInt32();
-    RequiredMinRepFaction = questRecord[i++].GetUInt16();
-    RequiredMinRepValue = questRecord[i++].GetInt32();
-    RequiredMaxRepFaction = questRecord[i++].GetUInt16();
-    RequiredMaxRepValue = questRecord[i++].GetInt32();
-    SuggestedPlayers = questRecord[i++].GetUInt8();
-    LimitTime = questRecord[i++].GetUInt32();
-    QuestFlags = questRecord[i++].GetUInt16();
-    uint8 SpecialFlags = questRecord[i++].GetUInt8();
-    CharTitleId = questRecord[i++].GetUInt8();
-    PrevQuestId = questRecord[i++].GetInt32();
-    NextQuestId = questRecord[i++].GetInt32();
-    ExclusiveGroup = questRecord[i++].GetInt32();
+    _suggestedPlayers = questRecord[i++].GetUInt8();
+    _timeAllowed = questRecord[i++].GetUInt32();
+    _allowableRaces = questRecord[i++].GetUInt16();
+    _requiredFactionId1 = questRecord[i++].GetUInt16();
+    _requiredFactionValue1 = questRecord[i++].GetInt32();
+    _flags = questRecord[i++].GetUInt16();
+    _rewardTitleId = questRecord[i++].GetUInt8();
     _rewardNextQuest = questRecord[i++].GetUInt32();
-    SrcItemId = questRecord[i++].GetUInt32();
-    SrcItemCount = questRecord[i++].GetUInt8();
-    SrcSpell = questRecord[i++].GetUInt32();
+    _startItem = questRecord[i++].GetUInt32();
     Title = questRecord[i++].GetString();
     Details = questRecord[i++].GetString();
     Objectives = questRecord[i++].GetString();
@@ -107,10 +96,8 @@ Quest::Quest(Field * questRecord)
     RewardHonorableKills = questRecord[i++].GetUInt32();
     RewardOrReqMoney = questRecord[i++].GetInt32();
     RewardMoneyMaxLevel = questRecord[i++].GetUInt32();
-    RewardSpell = questRecord[i++].GetUInt32();
-    RewardSpellCast = questRecord[i++].GetUInt32();
-    RewardMailTemplateId = questRecord[i++].GetUInt32();
-    RewardMailDelaySecs = questRecord[i++].GetUInt32();
+    _rewardDisplaySpell = questRecord[i++].GetUInt32();
+    _rewardSpell = questRecord[i++].GetUInt32();
     PointMapId = questRecord[i++].GetUInt16();
     PointX = questRecord[i++].GetFloat();
     PointY = questRecord[i++].GetFloat();
@@ -119,35 +106,26 @@ Quest::Quest(Field * questRecord)
     QuestStartScript = questRecord[i++].GetUInt32();
     QuestCompleteScript = questRecord[i++].GetUInt32();
 
-    QuestFlags |= SpecialFlags << 16;
-
-    m_reqitemscount = 0;
-    m_reqCreatureOrGOcount = 0;
-    m_rewitemscount = 0;
-    m_rewchoiceitemscount = 0;
+    _reqItemsCount = 0;
+    _reqCreatureOrGOcount = 0;
+    _rewItemsCount = 0;
+    _rewChoiceItemsCount = 0;
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
-    {
         if ( RequiredNpcOrGo[j] )
-            ++m_reqCreatureOrGOcount;
-    }
+            ++_reqCreatureOrGOcount;
+
     for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
-    {
         if (RequiredItemId[j])
-            ++m_reqitemscount;
-    }
+            ++_reqItemsCount;
 
     for (uint32 j : RewardItemId)
-    {
         if (j)
-            ++m_rewitemscount;
-    }
+            ++_rewItemsCount;
 
     for (uint32 j : RewardChoiceItemId)
-    {
         if (j)
-            ++m_rewchoiceitemscount;
-    }
+            ++_rewChoiceItemsCount;
 }
 
 void Quest::LoadQuestDetails(Field* fields)
@@ -181,6 +159,31 @@ void Quest::LoadQuestRequestItems(Field* fields)
     _requestItemsText = fields[3].GetString();
 }
 
+void Quest::LoadQuestTemplateAddon(Field* fields)
+{
+    _maxLevel = fields[1].GetUInt8();
+    _requiredClasses = fields[2].GetUInt32();
+    _sourceSpellid = fields[3].GetUInt32();
+    _prevQuestId = fields[4].GetInt32();
+    _nextQuestId = fields[5].GetUInt32();
+    _exclusiveGroup = fields[6].GetInt32();
+    _rewardMailTemplateId = fields[7].GetUInt32();
+    _rewardMailDelay = fields[8].GetUInt32();
+    _requiredSkillId = fields[9].GetUInt16();
+    _requiredSkillPoints = fields[10].GetUInt16();
+    _requiredMinRepFaction = fields[11].GetUInt16();
+    _requiredMaxRepFaction = fields[12].GetUInt16();
+    _requiredMinRepValue = fields[13].GetInt32();
+    _requiredMaxRepValue = fields[14].GetInt32();
+    _startItemCount = fields[15].GetUInt8();
+    _specialFlags = fields[16].GetUInt8();
+
+#ifdef LICH_KING
+    if (_specialFlags & QUEST_SPECIAL_FLAGS_AUTO_ACCEPT)
+        _flags |= QUEST_FLAGS_AUTO_ACCEPT;
+#endif
+}
+
 void Quest::LoadQuestOfferReward(Field* fields)
 {
     for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
@@ -202,7 +205,7 @@ void Quest::LoadQuestOfferReward(Field* fields)
 
 void Quest::LoadQuestMailSender(Field* fields)
 {
-    RewardMailSenderEntry = fields[1].GetUInt32();
+    _rewardMailSenderEntry = fields[1].GetUInt32();
 }
 
 uint32 Quest::XPValue( Player *pPlayer ) const
@@ -212,7 +215,7 @@ uint32 Quest::XPValue( Player *pPlayer ) const
         if( RewardMoneyMaxLevel > 0 )
         {
             uint32 pLevel = pPlayer->GetLevel();
-            uint32 qLevel = QuestLevel;
+            uint32 qLevel = _level;
             float fullxp = 0;
             if (qLevel >= 65)
                 fullxp = RewardMoneyMaxLevel / 6.0f;
@@ -254,11 +257,75 @@ int32 Quest::GetRewOrReqMoney() const
 
 bool Quest::IsAutoComplete() const 
 { 
-    return QuestMethod == 0 
+    return _method == 0 
 #ifdef LICH_KING
         || HasFlag(QUEST_FLAGS_AUTOCOMPLETE)
 #endif
         ;
+}
+
+bool Quest::IsRaidQuest(Difficulty difficulty) const
+{
+    switch (Type)
+    {
+    case QUEST_TYPE_RAID:
+        return true;
+#ifdef LICH_KING
+    case QUEST_TYPE_RAID_10:
+        return !(difficulty & RAID_DIFFICULTY_MASK_25MAN);
+    case QUEST_TYPE_RAID_25:
+        return difficulty & RAID_DIFFICULTY_MASK_25MAN;
+    default:
+        break;
+#endif
+    }
+
+    if ((_flags & QUEST_FLAGS_RAID) != 0)
+        return true;
+
+    return false;
+}
+
+bool Quest::IsAllowedInRaid(Difficulty difficulty) const
+{
+    if (IsRaidQuest(difficulty))
+        return true;
+
+    //TC return sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_RAID);
+    return false;
+}
+
+uint32 Quest::CalculateHonorGain(uint8 level) const
+{
+    uint32 honor = 0;
+
+#ifdef LICH_KING
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
+
+    if (GetRewHonorAddition() > 0 || GetRewHonorMultiplier() > 0.0f)
+    {
+        // values stored from 0.. for 1...
+        TeamContributionPointsEntry const* tc = sTeamContributionPointsStore.LookupEntry(level);
+        if (!tc)
+            return 0;
+
+        honor = uint32(tc->value * GetRewHonorMultiplier() * 0.1f);
+        honor += GetRewHonorAddition();
+    }
+#else
+    //quest as simply a kill count, we calculate honor given from that
+    honor = Trinity::Honor::hk_honor_at_level(level, GetRewHonorableKills());
+#endif
+
+    return honor;
+}
+
+bool Quest::CanIncreaseRewardedQuestCounters() const
+{
+    // Dungeon Finder/Daily/Repeatable (if not weekly, monthly or seasonal) quests are never considered rewarded serverside.
+    // This affects counters and client requests for completed quests.
+    return (!IsDFQuest() && !IsDaily() && (!IsRepeatable() || IsWeekly() || IsMonthly() || IsSeasonal()));
 }
 
 void Quest::InitializeQueryData()

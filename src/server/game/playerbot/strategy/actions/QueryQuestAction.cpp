@@ -49,7 +49,7 @@ bool QueryQuestAction::Execute(Event event)
 void QueryQuestAction::TellObjectives(uint32 questId)
 {
     Quest const* questTemplate = sObjectMgr->GetQuestTemplate(questId);
-    QuestStatusMap &questMap = bot->getQuestStatusMap();
+    QuestStatusMap &questMap = bot->GetQuestStatusMap();
     QuestStatusData questStatus = questMap[questId];
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)

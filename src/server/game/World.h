@@ -753,6 +753,8 @@ class TC_GAME_API World
         void LoadDBVersion();
         char const* GetDBVersion() { return m_DBVersion.c_str(); }
 
+        void ResetEventSeasonalQuests(uint16 event_id);
+
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);

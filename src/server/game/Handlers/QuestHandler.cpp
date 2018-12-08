@@ -351,22 +351,25 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             if(!_player->TakeQuestSourceItem(questId, true ))
                 return;                                     // can't un-equip some items, reject quest cancel
 
-            /* TC
             if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
             {
                 if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))
                     _player->RemoveTimedQuest(questId);
 
+#ifdef LICH_KING
                 if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
                 {
                     _player->pvpInfo.IsHostile = _player->pvpInfo.IsInHostileArea || _player->HasPvPForcingQuest();
                     _player->UpdatePvPState();
                 }
+#endif
             }
-            */
 
             _player->AbandonQuest(questId);
-            _player->SetQuestStatus(questId, QUEST_STATUS_NONE); //_player->RemoveActiveQuest(questId);
+            _player->SetQuestStatus(questId, QUEST_STATUS_NONE);
+            _player->RemoveActiveQuest(questId);
+
+            TC_LOG_INFO("network", "Player %u abandoned quest %u", _player->GetGUID().GetCounter(), questId);
 
             //sScriptMgr->OnQuestStatusChange(_player, questId);
         }
@@ -608,24 +611,21 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
     {
         QuestGiverStatus result2 = DIALOG_STATUS_NONE;
         uint32 quest_id = i->second;
-        Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
-        if ( !pQuest ) 
+        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+        if (!quest)
             continue;
 
-        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), this))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId(), this))
             continue;
 
-        QuestStatus status = this->GetQuestStatus( quest_id );
-        if( (status == QUEST_STATUS_COMPLETE && !this->GetQuestRewardStatus(quest_id)) ||
-            (pQuest->IsAutoComplete() && this->CanTakeQuest(pQuest, false)) )
-        {
-            if ( pQuest->IsAutoComplete() && pQuest->IsRepeatable() )
-                result2 = DIALOG_STATUS_REWARD_REP;
-            else
-                result2 = DIALOG_STATUS_REWARD;
-        }
-        else if ( status == QUEST_STATUS_INCOMPLETE )
+        QuestStatus status = GetQuestStatus(quest_id);
+        if (status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(quest_id))
+            result2 = DIALOG_STATUS_REWARD;
+        else if (status == QUEST_STATUS_INCOMPLETE)
             result2 = DIALOG_STATUS_INCOMPLETE;
+
+        if (quest->IsAutoComplete() && CanTakeQuest(quest, false) && quest->IsRepeatable() && !quest->IsDailyOrWeekly())
+            result2 = DIALOG_STATUS_REWARD_REP;
 
         if (result2 > result)
             result = result2;
@@ -635,25 +635,23 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
     {
         QuestGiverStatus result2 = DIALOG_STATUS_NONE;
         uint32 quest_id = i->second;
-        Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
-        if ( !pQuest )
+        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+        if (!quest)
             continue;
 
-        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), this))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId(), this))
             continue;
 
-        QuestStatus status = this->GetQuestStatus( quest_id );
-        if ( status == QUEST_STATUS_NONE )
+        QuestStatus status = this->GetQuestStatus(quest_id);
+        if (status == QUEST_STATUS_NONE)
         {
-            if ( this->CanSeeStartQuest( pQuest ) )
+            if (CanSeeStartQuest(quest))
             {
-                if (this->SatisfyQuestLevel(pQuest, false) )
+                if (SatisfyQuestLevel(quest, false))
                 {
-                    if ( pQuest->IsAutoComplete() || (pQuest->IsRepeatable() && this->getQuestStatusMap()[quest_id].Rewarded))
-                        result2 = DIALOG_STATUS_REWARD_REP;
-                    else if (this->GetLevel() <= pQuest->GetQuestLevel() + sWorld->getConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF) )
+                    if (this->GetLevel() <= quest->GetQuestLevel() + sWorld->getConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF))
                     {
-                        if (pQuest->HasFlag(QUEST_FLAGS_DAILY))
+                        if (quest->IsDaily())
                             result2 = DIALOG_STATUS_AVAILABLE_REP;
                         else
                             result2 = DIALOG_STATUS_AVAILABLE;

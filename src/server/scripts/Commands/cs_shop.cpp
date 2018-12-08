@@ -454,55 +454,62 @@ public:
         Field* fields = nullptr;
         bool force = (cForce && strcmp(cForce, "force") == 0);
 
-        if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
+        if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) 
+        {
             //TODO translate
-            handler->PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
-            //PSendSysMessage("Race/Faction change is deactivated.");
+            //handler->PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
+            handler->PSendSysMessage("Race/Faction change is deactivated.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (!handler->GetSession()->GetPlayer()->IsAlive()) {
+        if (!handler->GetSession()->GetPlayer()->IsAlive()) 
+        {
             //TODO translate
-            handler->PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
-            //PSendSysMessage("You must be alive to perform race or faction change.");
+            //handler->PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+            handler->PSendSysMessage("You must be alive to perform race or faction change.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (handler->GetSession()->GetPlayer()->IsInCombat()) {
+        if (handler->GetSession()->GetPlayer()->IsInCombat()) 
+        {
             //TODO translate
-            //SendSysMessage("Impossible en combat.");
+            //handler->SendSysMessage("Impossible en combat.");
             handler->SendSysMessage("Cannot do this in combat.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (handler->GetSession()->GetPlayer()->GetBattleground()) {
+        if (handler->GetSession()->GetPlayer()->GetBattleground()) 
+        {
             //TODO translate
-            //SendSysMessage("Impossible en champ de bataille ou en arène.");
+            //handler->SendSysMessage("Impossible en champ de bataille ou en arène.");
             handler->SendSysMessage("Impossible in battleground or arena.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (handler->GetSession()->GetPlayer()->GetGroup()) {
+        if (handler->GetSession()->GetPlayer()->GetGroup()) 
+        {
             //TODO translate
-            //PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+            //handler->PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
             handler->SendSysMessage("Please leave your group to perform the change.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (handler->GetSession()->GetPlayer()->GetInstanceId() != 0) {
+        if (handler->GetSession()->GetPlayer()->GetInstanceId() != 0) 
+        {
             //TODO translate
-            //PSendSysMessage("Impossible en instance.");
-            handler->SendSysMessage("Impossible in instance.");
+            //handler->PSendSysMessage("Impossible en instance.");
+            handler->SendSysMessage("Impossible while in instance.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (!force && handler->GetSession()->GetPlayer()->GetLevel() < 10) {
+        if (!force && handler->GetSession()->GetPlayer()->GetLevel() < 10) 
+        {
             handler->PSendSysMessage(LANG_FACTIONCHANGE_LEVEL_MIN);
             handler->SetSentErrorMessage(true);
             return false;
@@ -510,9 +517,10 @@ public:
 
         result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
 
-        if (!result) {
+        if (!result) 
+        {
             //TODO translate
-            //SendSysMessage("Personnage cible non trouvé.");
+            //handler->SendSysMessage("Personnage cible non trouvé.");
             handler->SendSysMessage("Targeted character not found.");
             handler->SetSentErrorMessage(true);
             return false;
@@ -538,17 +546,19 @@ public:
         uint32 t_playerBytes = fields[4].GetUInt32();
         uint32 t_playerBytes2 = fields[5].GetUInt32();
 
-        if (m_guid == t_guid) {
+        if (m_guid == t_guid) 
+        {
             //TODO translate
-            //SendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum !");
+            //handler->SendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum !");
             handler->SendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        if (!force && m_account != t_account) {
+        if (!force && m_account != t_account) 
+        {
             //TODO translate
-            //SendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+            //handler->SendSysMessage("Le personnage modèle doit être présent sur votre compte.");
             handler->SendSysMessage("The model character must be on your account.");
             handler->SetSentErrorMessage(true);
             return false;
@@ -570,9 +580,10 @@ public:
         }
 
         PlayerInfo const* targetInfo = sObjectMgr->GetPlayerInfo(t_race, m_class);
-        if (!targetInfo) {
+        if (!targetInfo) 
+        {
             //TODO translate
-            //SendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+            //handler->SendSysMessage("La race du personnage cible est incompatible avec votre classe.");
             handler->SendSysMessage("The targeted character's race is incompatible with your class.");
             handler->SetSentErrorMessage(true);
             return false;
@@ -582,7 +593,8 @@ public:
         PlayerInfo const* myInfo = sObjectMgr->GetPlayerInfo(m_race, m_class);
         bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
         uint32 cost = sWorld->getConfig(CONFIG_RACE_CHANGE_COST);
-        if (factionChange) {
+        if (factionChange) 
+        {
             if (dest_team == TEAM_HORDE)
             {
                 if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H))
@@ -599,7 +611,7 @@ public:
                 if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A))
                 {
                     //TODO translate
-                    //SendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                    //handler->SendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
                     handler->SendSysMessage("Faction change from Horde to Alliance is deactivated.");
                     handler->SetSentErrorMessage(true);
                     return false;
@@ -609,10 +621,12 @@ public:
         }
 
         // Check if enough credits
-        if (cost && handler->GetSession()->GetSecurity() <= SEC_PLAYER) {
+        if (cost && handler->GetSession()->GetSecurity() <= SEC_PLAYER) 
+        {
             result = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
-            if (!result) {
+            if (!result) 
+            {
                 handler->PSendSysMessage(LANG_NO_CREDIT_EVER);
                 handler->SetSentErrorMessage(true);
                 return false;
@@ -621,7 +635,8 @@ public:
             fields = result->Fetch();
             uint32 credits = fields[0].GetUInt32();
 
-            if (credits < cost) {
+            if (credits < cost) 
+            {
                 handler->PSendSysMessage(LANG_CREDIT_NOT_ENOUGH);
                 handler->SetSentErrorMessage(true);
                 return false;
@@ -630,11 +645,13 @@ public:
 
         // Check guild and arena team, friends are removed after the SaveToDB() call
         // Guild
-        if (factionChange) {
+        if (factionChange) 
+        {
             Guild* guild = sGuildMgr->GetGuildById(plr->GetGuildId());
-            if (guild) {
+            if (guild) 
+            {
                 //TODO translate
-                //SendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+                //handler->SendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
                 handler->SendSysMessage("You must leave your guild to perform faction change.");
                 handler->SetSentErrorMessage(true);
                 return false;
@@ -646,7 +663,7 @@ public:
             result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUID().GetCounter());
 
             if (result) {
-                //SendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+                //handler->SendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
                 handler->SendSysMessage("You must leave your arena team(s) to perform faction change.");
                 handler->SetSentErrorMessage(true);
                 return false;
@@ -693,13 +710,15 @@ public:
 
         // Remove previous race starting spells
         std::list<CreateSpellPair>::const_iterator spell_itr;
-        for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
+        for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) 
+        {
             uint16 tspell = spell_itr->first;
             if (tspell)
                 plr->RemoveSpell(tspell, false);
         }
         // Add new race starting spells
-        for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
+        for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) 
+        {
             uint16 tspell = spell_itr->first;
             if (tspell) {
                 if (!spell_itr->second)               // don't care about passive spells or loading case
@@ -710,7 +729,8 @@ public:
         }
 
         // Reset current quests
-        for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; slot++) {
+        for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; slot++) 
+        {
             if (uint32 quest = plr->GetQuestSlotQuestId(slot)) {
                 plr->TakeQuestSourceItem(quest, true);
 
@@ -721,7 +741,8 @@ public:
         }
 
         // Titles
-        if (factionChange) {
+        if (factionChange) 
+        {
             for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_titles.begin(); it != sObjectMgr->factionchange_titles.end(); ++it) {
                 CharTitlesEntry const* title_alliance = sCharTitlesStore.LookupEntry(it->first);
                 CharTitlesEntry const* title_horde = sCharTitlesStore.LookupEntry(it->second);
@@ -746,7 +767,8 @@ public:
 
         // Reputations
         result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
-        if (result) {
+        if (result) 
+        {
             do {
                 Field* _fields = result->Fetch();
 
@@ -765,7 +787,8 @@ public:
 
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-        if (factionChange) {
+        if (factionChange) 
+        {
             for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_reput_generic.begin(); it != sObjectMgr->factionchange_reput_generic.end(); ++it) {
                 uint32 faction_alliance = it->first;
                 uint32 faction_horde = it->second;
@@ -790,7 +813,8 @@ public:
         }
 
         // Spells
-        if (factionChange) {
+        if (factionChange) 
+        {
             for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_spells.begin(); it != sObjectMgr->factionchange_spells.end(); ++it) {
                 uint32 spell_alliance = it->first;
                 uint32 spell_horde = it->second;
@@ -845,7 +869,8 @@ public:
         }
 
         // Items
-        if (factionChange) {
+        if (factionChange) 
+        {
             for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_items.begin(); it != sObjectMgr->factionchange_items.end(); ++it) {
                 uint32 item_alliance = it->first;
                 uint32 item_horde = it->second;
@@ -913,7 +938,8 @@ public:
 
         // Items, race specific
         result = WorldDatabase.PQuery("SELECT item1, item2 FROM player_factionchange_items_race_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
-        if (result) {
+        if (result) 
+        {
             do {
                 Field* _fields = result->Fetch();
 
@@ -954,7 +980,8 @@ public:
         }
 
         result = WorldDatabase.PQuery("SELECT item2, item1 FROM player_factionchange_items_race_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
-        if (result) {
+        if (result) 
+        {
             do {
                 Field* _fields = result->Fetch();
 
@@ -1023,27 +1050,58 @@ public:
         //***********************************************************************//
 
         // Quests
-        if (factionChange) {
-            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_quests.begin(); it != sObjectMgr->factionchange_quests.end(); ++it) {
+        if (factionChange) 
+        {
+            PreparedStatement* stmt = nullptr;
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+            ObjectGuid::LowType lowGuid = plr->GetGUID().GetCounter();
+
+            // Delete all current quests
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS);
+            stmt->setUInt32(0, lowGuid);
+            trans->Append(stmt);
+
+            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_quests.begin(); it != sObjectMgr->factionchange_quests.end(); ++it) 
+            {
                 uint32 quest_alliance = it->first;
                 uint32 quest_horde = it->second;
 
-                if (dest_team == TEAM_ALLIANCE) {
-                    if (quest_alliance == 0)
-                        CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUID().GetCounter(), quest_horde);
-                    else
-                        CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_alliance, plr->GetGUID().GetCounter(), quest_horde);
-                }
-                else {
-                    if (quest_horde == 0)
-                        CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUID().GetCounter(), quest_alliance);
-                    else
-                        CharacterDatabase.PExecute("UPDATE character_queststatus SET quest = %u WHERE guid = %u AND quest = %u", quest_horde, plr->GetGUID().GetCounter(), quest_alliance);
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST);
+                stmt->setUInt32(0, lowGuid);
+                stmt->setUInt32(1, (dest_team == ALLIANCE ? quest_alliance : quest_horde));
+                trans->Append(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_QUESTSTATUS_REWARDED_FACTION_CHANGE);
+                stmt->setUInt32(0, (dest_team == ALLIANCE ? quest_alliance : quest_horde));
+                stmt->setUInt32(1, (dest_team == ALLIANCE ? quest_horde : quest_alliance));
+                stmt->setUInt32(2, lowGuid);
+                trans->Append(stmt);
+            }
+
+            // Mark all rewarded quests as "active" (will count for completed quests achievements)
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_QUESTSTATUS_REWARDED_ACTIVE);
+            stmt->setUInt32(0, lowGuid);
+            trans->Append(stmt);
+
+            // Disable all old-faction specific quests
+            {
+                ObjectMgr::QuestContainer const& questTemplates = sObjectMgr->GetQuestTemplates();
+                for (auto const& questTemplatePair : questTemplates)
+                {
+                    uint32 newRaceMask = (dest_team == ALLIANCE) ? RACEMASK_ALLIANCE : RACEMASK_HORDE;
+                    if (!(questTemplatePair.second.GetAllowableRaces() & newRaceMask))
+                    {
+                        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_QUESTSTATUS_REWARDED_ACTIVE_BY_QUEST);
+                        stmt->setUInt32(0, lowGuid);
+                        stmt->setUInt32(1, questTemplatePair.first);
+                        trans->Append(stmt);
+                    }
                 }
             }
 
-            // Friend list
-            CharacterDatabase.PExecute("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter());
+            // Friend list (todo: should only do it for pvp server)
+            trans->PAppend("DELETE FROM character_social WHERE guid = %u OR friend = %u", plr->GetGUID().GetCounter(), plr->GetGUID().GetCounter());
 
             // Relocation
             switch (t_race)
@@ -1065,6 +1123,7 @@ public:
                 Player::SavePositionInDB(1, 1632.54f, -4440.77f, 15.4584f, 1.0637f, 1637, m_fullGUID);
                 break;
             }
+            CharacterDatabase.CommitTransaction(trans); //todo: all this function should use transaction
         }
         return true;
     }

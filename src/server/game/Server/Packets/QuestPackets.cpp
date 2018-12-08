@@ -62,7 +62,7 @@ WorldPacket const* WorldPackets::Quest::QueryQuestInfoResponse::Write()
     _worldPacket << float(Info.RewardKillHonor);
 #else
     RewardHonorForPlayerPos = _worldPacket.wpos(); //save position for usage in SendQuestQueryResponse
-    _worldPacket << uint32(Info.RewardHonorForPlayer);
+    _worldPacket << uint32(0); //will be overwritten at send
 #endif
     _worldPacket << uint32(Info.StartItem);
     _worldPacket << uint32(Info.Flags & 0xFFFF);

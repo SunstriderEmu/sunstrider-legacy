@@ -513,14 +513,13 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
     }
 
     // rewarded honor points. Multiply with 10 to satisfy client
-    data << uint32(10*Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));
-  //  data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
+    data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
 #ifdef LICH_KING
     data << float(0.0f);                                    // unk, honor multiplier?
 #endif
-    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
+    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if _rewardSpell == 0)
     data << uint32(quest->GetRewSpellCast());                // cast spell
-    data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
+    data << uint32(quest->GetCharTitleId());                // _rewardTitleId, new 2.4.0, player gets this title (id from CharTitles)
 #ifdef LICH_KING
     if(_session->GetClientBuild() == BUILD_335)
     {
@@ -562,7 +561,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     // Workaround for BC. The query system is designed for static paquets but this info is not static because 
     // the field RewardHonorForPlayer depends on the player level.
     size_t offset = WorldPackets::Quest::QueryQuestInfoResponse::RewardHonorForPlayerPos;
-    queryPacket.put<uint32>(offset, Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), queryPacket.read<uint32>(offset)));
+    queryPacket.put<uint32>(offset, quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
 #endif
 
     _session->SendPacket(&queryPacket);
@@ -649,14 +648,13 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
 #endif
 
     // rewarded honor points. Multiply with 10 to satisfy client
-   // data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
-    data << uint32(10*Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));
+    data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
 #ifdef LICH_KING
     data << float(0.0f);                                    // unk, honor multiplier?
 #endif
 
     data << uint32(0x08);                                   // unused by client?
-    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
+    data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if _rewardSpell == 0)
     data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(0);                                        // unknown
 #ifdef LICH_KING

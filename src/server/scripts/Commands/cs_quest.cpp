@@ -114,14 +114,20 @@ public:
 
                 // we ignore unequippable quest items in this case, its' still be equipped
                 player->TakeQuestSourceItem(quest, false);
+
+#ifdef LICH_KING
+                if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
+                {
+                    player->pvpInfo.IsHostile = player->pvpInfo.IsInHostileArea || player->HasPvPForcingQuest();
+                    player->UpdatePvPState();
+                }
+#endif
             }
         }
+        player->RemoveActiveQuest(entry, false);
+        player->RemoveRewardedQuest(entry);
 
-        // set quest status to not started (will updated in DB at next save)
-        player->SetQuestStatus(entry, QUEST_STATUS_NONE);
-
-        // reset rewarded for restart repeatable quest
-        player->getQuestStatusMap()[entry].Rewarded = false;
+        //sScriptMgr->OnQuestStatusChange(player, entry);
 
         handler->SendSysMessage(LANG_COMMAND_QUEST_REMOVED);
         return true;

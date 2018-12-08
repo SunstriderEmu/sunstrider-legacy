@@ -2952,26 +2952,29 @@ void World::ResetDailyQuests()
     TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
 
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
-    time_t curTime = WorldGameTime::GetGameTime();
-    tm localTm = *localtime(&curTime);
-    bool reinitConsortium = false;
-    if (localTm.tm_mday == 1) {
-        reinitConsortium = true;
-        CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
-    }
-
-    CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus_daily");
-    for(auto & m_session : m_sessions) {
-        if(m_session.second->GetPlayer()) {
-            m_session.second->GetPlayer()->ResetDailyQuestStatus();
-            if (reinitConsortium) {
-                m_session.second->GetPlayer()->SetQuestStatus(9884, QUEST_STATUS_NONE);
-                m_session.second->GetPlayer()->SetQuestStatus(9885, QUEST_STATUS_NONE);
-                m_session.second->GetPlayer()->SetQuestStatus(9886, QUEST_STATUS_NONE);
-                m_session.second->GetPlayer()->SetQuestStatus(9887, QUEST_STATUS_NONE);
-            }
+    {
+        time_t curTime = WorldGameTime::GetGameTime();
+        tm localTm = *localtime(&curTime);
+        if (localTm.tm_mday == 1) 
+        {
+            CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
+            for (auto & m_session : m_sessions)
+                if (m_session.second->GetPlayer())
+                {
+                    m_session.second->GetPlayer()->SetQuestStatus(9884, QUEST_STATUS_NONE);
+                    m_session.second->GetPlayer()->SetQuestStatus(9885, QUEST_STATUS_NONE);
+                    m_session.second->GetPlayer()->SetQuestStatus(9886, QUEST_STATUS_NONE);
+                    m_session.second->GetPlayer()->SetQuestStatus(9887, QUEST_STATUS_NONE);
+                }
         }
     }
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_DAILY);
+    CharacterDatabase.Execute(stmt);
+
+    for (auto & m_session : m_sessions)
+        if (m_session.second->GetPlayer())
+            m_session.second->GetPlayer()->ResetDailyQuestStatus();
 
     // change available dailies
     //TC sPoolMgr->ChangeDailyQuests();
@@ -3235,6 +3238,19 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
 void World::RemoveOldCorpses()
 {
     m_timers[WUPDATE_CORPSES].SetCurrent(m_timers[WUPDATE_CORPSES].GetInterval());
+}
+
+void World::ResetEventSeasonalQuests(uint16 event_id)
+{
+    TC_LOG_INFO("misc", "Seasonal quests reset for all characters.");
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_RESET_CHARACTER_QUESTSTATUS_SEASONAL_BY_EVENT);
+    stmt->setUInt16(0, event_id);
+    CharacterDatabase.Execute(stmt);
+
+    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+        if (itr->second->GetPlayer())
+            itr->second->GetPlayer()->ResetSeasonalQuestStatus(event_id);
 }
 
 Realm realm;

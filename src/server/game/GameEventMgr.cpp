@@ -852,6 +852,47 @@ void GameEventMgr::LoadFromDB()
         } while( result->NextRow() );
         TC_LOG_INFO("server.loading", ">> Loaded %u battleground holidays in game events", count );
     }
+
+
+    TC_LOG_INFO("server.loading", "Loading Game Event Seasonal Quest Relations...");
+    {
+        uint32 oldMSTime = GetMSTime();
+
+        //                                                  0          1
+        QueryResult result = WorldDatabase.Query("SELECT questId, eventEntry FROM game_event_seasonal_questrelation");
+
+        if (!result)
+            TC_LOG_INFO("server.loading", ">> Loaded 0 seasonal quests additions in game events. DB table `game_event_seasonal_questrelation` is empty.");
+        else
+        {
+            uint32 count = 0;
+            do
+            {
+                Field* fields = result->Fetch();
+
+                uint32 questId = fields[0].GetUInt32();
+                uint32 eventEntry = fields[1].GetUInt32(); /// @todo Change to uint8
+
+                Quest* questTemplate = const_cast<Quest*>(sObjectMgr->GetQuestTemplate(questId));
+                if (!questTemplate)
+                {
+                    TC_LOG_ERROR("sql.sql", "`game_event_seasonal_questrelation`: quest id (%u) does not exist in `quest_template`.", questId);
+                    continue;
+                }
+
+                if (eventEntry >= mGameEvent.size())
+                {
+                    TC_LOG_ERROR("sql.sql", "`game_event_seasonal_questrelation`: event id (%u) is out of range compared to max event in `game_event`.", eventEntry);
+                    continue;
+                }
+
+                questTemplate->SetEventIdForQuest(static_cast<uint16>(eventEntry));
+                ++count;
+            } while (result->NextRow());
+
+            TC_LOG_INFO("server.loading", ">> Loaded %u quests additions in game events in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+        }
+    }
 }
 
 uint32 GameEventMgr::GetNPCFlag(Creature * cr)
@@ -1004,6 +1045,12 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
     UpdateEventNPCTrainer(event_id, true);
     // update bg holiday
     UpdateBattlegroundSettings();
+
+    // If event's worldstate is 0, it means the event hasn't been started yet. In that case, reset seasonal quests.
+    // When event ends (if it expires or if it's stopped via commands) worldstate will be set to 0 again, ready for another seasonal quest reset.
+    /*TODO WorldState
+    if (sWorld->GetWorldState(event_id) == 0)
+        sWorld->ResetEventSeasonalQuests(event_id);*/
 }
 
 void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)

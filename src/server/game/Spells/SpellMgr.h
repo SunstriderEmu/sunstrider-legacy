@@ -790,10 +790,12 @@ typedef std::multimap<uint32, SpellArea> SpellAreaMap;
 typedef std::multimap<uint32, SpellArea const*> SpellAreaForQuestMap;
 typedef std::multimap<uint32, SpellArea const*> SpellAreaForAuraMap;
 typedef std::multimap<uint32, SpellArea const*> SpellAreaForAreaMap;
+typedef std::multimap<std::pair<uint32, uint32>, SpellArea const*> SpellAreaForQuestAreaMap;
 typedef std::pair<SpellAreaMap::const_iterator, SpellAreaMap::const_iterator> SpellAreaMapBounds;
 typedef std::pair<SpellAreaForQuestMap::const_iterator, SpellAreaForQuestMap::const_iterator> SpellAreaForQuestMapBounds;
 typedef std::pair<SpellAreaForAuraMap::const_iterator, SpellAreaForAuraMap::const_iterator>  SpellAreaForAuraMapBounds;
 typedef std::pair<SpellAreaForAreaMap::const_iterator, SpellAreaForAreaMap::const_iterator>  SpellAreaForAreaMapBounds;
+typedef std::pair<SpellAreaForQuestAreaMap::const_iterator, SpellAreaForQuestAreaMap::const_iterator> SpellAreaForQuestAreaMapBounds;
 
 // Spell rank chain  (accessed using SpellMgr functions)
 struct SpellChainNode
@@ -989,6 +991,7 @@ class TC_GAME_API SpellMgr
         SpellAreaForQuestMapBounds GetSpellAreaForQuestEndMapBounds(uint32 quest_id) const;
         SpellAreaForAuraMapBounds GetSpellAreaForAuraMapBounds(uint32 spell_id) const;
         SpellAreaForAreaMapBounds GetSpellAreaForAreaMapBounds(uint32 area_id) const;
+        SpellAreaForQuestAreaMapBounds GetSpellAreaForQuestAreaMapBounds(uint32 area_id, uint32 quest_id) const;
 
         float GetSpellThreatModPercent(SpellInfo const* spellInfo) const;
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
@@ -1076,10 +1079,11 @@ class TC_GAME_API SpellMgr
         SpellLinkedMap               mSpellLinkedMap;
         SpellEnchantProcEventMap     mSpellEnchantProcEventMap;
         SpellAreaMap               mSpellAreaMap;
-        SpellAreaForQuestMap       mSpellAreaForQuestMap;
-        SpellAreaForQuestMap       mSpellAreaForQuestEndMap;
+        SpellAreaForQuestMap       mSpellAreaForQuestMap; //now useless?
+        SpellAreaForQuestMap       mSpellAreaForQuestEndMap; //now useless?
         SpellAreaForAuraMap        mSpellAreaForAuraMap;
         SpellAreaForAreaMap        mSpellAreaForAreaMap;
+        SpellAreaForQuestAreaMap   mSpellAreaForQuestAreaMap;
 
         SpellInfoMap               mSpellInfoMap;
 };

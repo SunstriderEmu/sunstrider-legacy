@@ -187,7 +187,7 @@ public:
         }
 
         player->LearnDefaultSpells();
-        player->learnQuestRewardedSpells();
+        player->LearnQuestRewardedSpells();
 
         handler->PSendSysMessage(LANG_COMMAND_LEARN_ALL_DEFAULT_AND_QUEST,player->GetName().c_str());
         return true;

@@ -138,7 +138,7 @@ void QueryItemUsageAction::QueryItemsUsage(ItemIds items)
 void QueryItemUsageAction::QueryQuestItem(uint32 itemId)
 {
     Player* _bot = ai->GetBot();
-    QuestStatusMap const& questMap = _bot->getQuestStatusMap();
+    QuestStatusMap const& questMap = _bot->GetQuestStatusMap();
     for (QuestStatusMap::const_iterator i = questMap.begin(); i != questMap.end(); i++)
     {
         const Quest *questTemplate = sObjectMgr->GetQuestTemplate( i->first );

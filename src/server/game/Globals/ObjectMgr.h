@@ -394,6 +394,9 @@ typedef std::map<uint32, PageText> PageTextContainer;
 typedef std::unordered_map<uint16, InstanceTemplate> InstanceTemplateContainer;
 typedef std::unordered_map<uint16, InstanceTemplateAddon> InstanceTemplateAddonContainer;
 
+typedef std::multimap<int32, uint32> ExclusiveQuestGroups; // exclusiveGroupId -> quest
+typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
+
 struct PetLevelInfo
 {
     PetLevelInfo() : health(0), mana(0), minDamage(0), maxDamage(0), armor(0), stats()
@@ -878,8 +881,10 @@ class TC_GAME_API ObjectMgr
         uint32 CreateItemText(std::string const& text);
         std::string GetItemText(uint32 id);
 
-        typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
-        ExclusiveQuestGroups mExclusiveQuestGroups;
+        ExclusiveQuestGroupsBounds GetExclusiveQuestGroupBounds(int32 exclusiveGroupId) const
+        {
+            return _exclusiveQuestGroups.equal_range(exclusiveGroupId);
+        }
 
         WeatherZoneChances const* GetWeatherChances(uint32 zone_id) const
         {
@@ -1280,6 +1285,8 @@ class TC_GAME_API ObjectMgr
         uint32 maxSpellId;
 
         std::set<uint32> _transportMaps; // Helper container storing map ids that are for transports only, loaded from gameobject_template
+
+        ExclusiveQuestGroups _exclusiveQuestGroups;
 };
 
 #define sObjectMgr ObjectMgr::instance()

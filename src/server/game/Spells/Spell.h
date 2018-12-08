@@ -321,7 +321,6 @@ class TC_GAME_API Spell
         void EffectProficiency(uint32 i);
         void EffectSummonType(uint32 i);
         void _EffectSummonType(uint32 effIndex, SummonPropertiesEntry const* properties);
-        //void EffectSummon(uint32 i);
         void EffectLearnSpell(uint32 i);
         void EffectDispel(uint32 i);
         void EffectDualWield(uint32 i);
