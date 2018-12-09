@@ -605,7 +605,7 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
 
     // Check water type in cell
     int idx=(x_int>>3)*16 + (y_int>>3);
-    uint8 typeMask = _liquidFlags ? _liquidFlags[idx] : _liquidType; //renamed from 'type' on TC
+    uint8 typeMask = _liquidFlags ? _liquidFlags[idx] : _liquidType; //sun: renamed from 'type' on TC
     uint32 entry = 0;
     if (_liquidEntry)
     {

@@ -52,13 +52,13 @@ enum LiquidType : uint32
 #define MAP_LIQUID_NO_TYPE    0x0001
 #define MAP_LIQUID_NO_HEIGHT  0x0002
 
-enum ZLiquidStatus
+enum ZLiquidStatus : uint32
 {
-    LIQUID_MAP_NO_WATER     = 0,
-    LIQUID_MAP_ABOVE_WATER  = 1,
-    LIQUID_MAP_WATER_WALK   = 2,
-    LIQUID_MAP_IN_WATER     = 3,
-    LIQUID_MAP_UNDER_WATER  = 4,
+    LIQUID_MAP_NO_WATER     = 0x0,
+    LIQUID_MAP_ABOVE_WATER  = 0x1,
+    LIQUID_MAP_WATER_WALK   = 0x2,
+    LIQUID_MAP_IN_WATER     = 0x4,
+    LIQUID_MAP_UNDER_WATER  = 0x8,
 };
 
 struct LiquidData
