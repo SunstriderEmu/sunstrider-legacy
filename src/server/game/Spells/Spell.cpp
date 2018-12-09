@@ -2812,7 +2812,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
     // sun: trigger this block even if we missed target //_spellHitTarget can be null if spell is missed in DoSpellHitOnUnit
     if (MissCondition != SPELL_MISS_EVADE && /*_spellHitTarget && */ !spell->m_caster->IsFriendlyTo(unit) && (!spell->IsPositive() || spell->m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
-        if (!spell->IsTriggered()) //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action
+        //sun: prevent triggered spells to trigger pvp... a frost armor proc is not an offensive action. But we also want it to proc for some direct trigger spells such as charge stun.
+        if (!spell->m_triggeredByAuraSpell || !unit->IsCharmedOwnedByPlayerOrPlayer()) 
             if (Unit* uCaster = spell->m_caster->ToUnit())
                 uCaster->AttackedTarget(unit, spell->m_spellInfo->HasInitialAggro());
 
