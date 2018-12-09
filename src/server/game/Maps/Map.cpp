@@ -2030,6 +2030,8 @@ ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTyp
             // Get position delta
             if (delta > collisionHeight)                   // Under water
                 return LIQUID_MAP_UNDER_WATER;
+            if (delta > 0.0f && delta - collisionHeight / 2.0f < 0.0f) //sun: allow for shallow water at mid collision height. This works for aquatic form since player is actually about ~collisionheight under the water when on the surface
+                return LIQUID_MAP_ABOVE_WATER;
             if (delta > 0.0f)                   // In water
                 return LIQUID_MAP_IN_WATER;
             if (delta > -0.1f)                   // Walk on water
@@ -2172,6 +2174,8 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
         float delta = vmapData.liquidInfo->level - z;
         if (delta > collisionHeight)
             data.liquidStatus = LIQUID_MAP_UNDER_WATER;
+        else if (delta > 0.0f && delta - collisionHeight / 2.0f < 0.0f) //sun: allow for shallow water at mid collision height. This works for aquatic form since player is actually about ~collisionheight under the water when on the surface
+            data.liquidStatus = LIQUID_MAP_ABOVE_WATER;
         else if (delta > 0.0f)
             data.liquidStatus = LIQUID_MAP_IN_WATER;
         else if (delta > -0.1f)
