@@ -7136,11 +7136,12 @@ void Unit::EngageWithTarget(Unit* enemy)
     if (!enemy)
         return;
 
-    if (IsEngagedBy(enemy))
-        return;
-
+    //sun: rewritten this so we can refresh PvP timers
     if (CanHaveThreatList())
-        m_threatManager.AddThreat(enemy, 0.0f, nullptr, true, true);
+    {
+        if (!IsEngagedBy(enemy))
+            m_threatManager.AddThreat(enemy, 0.0f, nullptr, true, true);
+    }
     else
         SetInCombatWith(enemy);
 }
