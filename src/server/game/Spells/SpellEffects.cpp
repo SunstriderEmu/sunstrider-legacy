@@ -2444,10 +2444,6 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
         && effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH)
         return;
 
-    // Prevent triggering spells here if spell has a charge effect (handled in ChargeMovementGenerator)
-    if ((m_spellInfo->Effects[0].Effect == SPELL_EFFECT_CHARGE || m_spellInfo->Effects[1].Effect == SPELL_EFFECT_CHARGE || m_spellInfo->Effects[2].Effect == SPELL_EFFECT_CHARGE))
-        return;
-    
     uint32 triggered_spell_id = m_spellInfo->Effects[effIndex].TriggerSpell;
 
     // special cases
@@ -6721,34 +6717,9 @@ void Spell::EffectCharge(uint32 i)
 
     if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET )
     {
-        //TODO: Why is this handled here?
-        uint32 triggeredSpellId = 0;
-        switch (i) {
-        case 0:
-            if (m_spellInfo->Effects[1].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[1].TriggerSpell;
-            if (m_spellInfo->Effects[2].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[2].TriggerSpell;
-            break;
-        case 1:
-            if (m_spellInfo->Effects[0].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[0].TriggerSpell;
-            if (m_spellInfo->Effects[2].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[2].TriggerSpell;
-            break;
-        case 2:
-            if (m_spellInfo->Effects[0].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[0].TriggerSpell;
-            if (m_spellInfo->Effects[1].Effect == SPELL_EFFECT_TRIGGER_SPELL)
-                triggeredSpellId = m_spellInfo->Effects[1].TriggerSpell;
-            break;
-        }
         // not all charge effects used in negative spells
         if (!m_spellInfo->IsPositive() && _unitCaster->GetTypeId() == TYPEID_PLAYER)
             _unitCaster->Attack(target, true);
-
-        if(triggeredSpellId)
-            _unitCaster->CastSpell(target, triggeredSpellId, TRIGGERED_FULL_MASK);
     }
 }
 
