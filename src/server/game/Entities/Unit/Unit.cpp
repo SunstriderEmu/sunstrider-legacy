@@ -4532,6 +4532,7 @@ void Unit::CombatStop(bool includingCast, bool mutualPvP)
         (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
 
     AttackStop();
+    SetTarget(ObjectGuid::Empty); //sun: make sure target is cleared even if we're not melee attacking (AttackStop handles only that case)
     RemoveAllAttackers();
 
     if (mutualPvP)
