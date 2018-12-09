@@ -683,13 +683,15 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
     // For speed check as int values
     float delta = liquid_level - z;
 
-    if (delta > collisionHeight)                   // Under water
+    if (delta > collisionHeight)               // Under water
         return LIQUID_MAP_UNDER_WATER;
-    if (delta > 0.0f)                   // In water
+    if (delta > 0.0f && delta - collisionHeight / 2.0f < 0.0f) //sun: allow for shallow water at mid collision height. This works for aquatic form since player is actually about ~collisionheight under the water when on the surface
+        return LIQUID_MAP_ABOVE_WATER;
+    if (delta > 0.0f)                          // In water
         return LIQUID_MAP_IN_WATER;
-    if (delta > -0.1f)                   // Walk on water
+    if (delta > -0.1f)                         // Very close to surface: Walk on water 
         return LIQUID_MAP_WATER_WALK;
-                                      // Above water
+                                               // Above water
     return LIQUID_MAP_ABOVE_WATER;
 }
 
