@@ -2849,7 +2849,7 @@ void SmartScript::AddEvent(uint32 id, uint32 link, SMART_EVENT e, uint32 event_f
     auto event = CreateSmartEvent(e, event_flags, event_param1, event_param2, event_param3, event_param4, event_param5, action, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, t, target_param1, target_param2, target_param3, target_param4, phaseMask, templatePhaseMask);
     event.event_id = id;
     event.link = link;
-    event.entryOrGuid = me->GetEntry();
+    event.entryOrGuid = me ? me->GetEntry() : go ? go->GetEntry(): 0;
     mInstallEvents.push_back(std::move(event));
 }
 
