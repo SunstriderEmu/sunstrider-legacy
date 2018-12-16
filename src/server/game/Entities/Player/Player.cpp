@@ -1781,6 +1781,25 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     if (!InBattleground() && mEntry->IsBattlegroundOrArena())
         return false;
 
+    // client without expansion support
+    if (GetSession()->Expansion() < mEntry->Expansion())
+    {
+        TC_LOG_DEBUG("maps", "Player '%s' (%s) using client without required expansion tried teleport to non accessible map (MapID: %u)",
+            GetName().c_str(), GetGUID().ToString().c_str(), mapid);
+
+        if (Transport* transport = GetTransport())
+        {
+            transport->RemovePassenger(this);
+            RepopAtGraveyard();                             // teleport to near graveyard if on transport, looks blizz like :)
+        }
+
+        SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL);
+
+        return false;                                       // normal client can't teleport to this map...
+    }
+    else
+        TC_LOG_DEBUG("maps", "Player %s (%s) is being teleported to map (MapID: %u)", GetName().c_str(), GetGUID().ToString().c_str(), mapid);
+
     // preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)
     Pet* pet = GetPet();
 
@@ -15337,6 +15356,23 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     // Map could be changed before
     mapEntry = sMapStore.LookupEntry(mapId);
 
+    // client without expansion support
+    if (mapEntry)
+    {
+        if (GetSession()->Expansion() < mapEntry->Expansion())
+        {
+            TC_LOG_DEBUG("entities.player.loading", "Player::LoadFromDB: Player '%s' (%s) using client without required expansion tried login at non accessible map %u",
+                GetName().c_str(), GetGUID().ToString().c_str(), mapId);
+            RelocateToHomebind();
+        }
+
+        // fix crash (because of if (Map* map = _FindMap(instanceId)) in MapInstanced::CreateInstance)
+        if (instanceId)
+            if (InstanceSave* save = GetInstanceSave(mapId, mapEntry->IsRaid()))
+                if (save->GetInstanceId() != instanceId)
+                    instanceId = 0;
+    }
+
     // NOW player must have valid map
     // load the player's map here if it's not already loaded
     if (!map)
@@ -16932,9 +16968,11 @@ bool Player::_LoadHomeBind(PreparedQueryResult result)
         m_homebindY = fields[3].GetFloat();
         m_homebindZ = fields[4].GetFloat();
 
+        MapEntry const* bindMapEntry = sMapStore.LookupEntry(m_homebindMapId);
+
         // accept saved data only for valid position (and non instanceable)
-        if( MapManager::IsValidMapCoord(m_homebindMapId,m_homebindX,m_homebindY,m_homebindZ) &&
-            !sMapStore.LookupEntry(m_homebindMapId)->Instanceable() )
+        if( MapManager::IsValidMapCoord(m_homebindMapId,m_homebindX,m_homebindY,m_homebindZ) && bindMapEntry && 
+            !bindMapEntry->Instanceable() && GetSession()->Expansion() >= bindMapEntry->Expansion())
         {
             ok = true;
         }
