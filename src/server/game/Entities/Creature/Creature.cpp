@@ -497,7 +497,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 /**
  * change the entry of creature until respawn
  */
-bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
+bool Creature::InitEntry(uint32 Entry, const CreatureData* data)
 {
     CreatureTemplate const* normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!normalInfo)
@@ -591,8 +591,8 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
         _SetCanFly(GetMovementTemplate().IsFlightAllowed());
 
     // checked at loading
-    m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
-    if(!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
+    m_defaultMovementType = MovementGeneratorType(data ? data->movementType : cinfo->MovementType);
+    if (!m_respawnradius && m_defaultMovementType == RANDOM_MOTION_TYPE)
         m_defaultMovementType = IDLE_MOTION_TYPE;
 
     for (uint8 i=0; i < MAX_CREATURE_SPELLS; ++i)
@@ -603,7 +603,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data)
     return true;
 }
 
-bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
+bool Creature::UpdateEntry(uint32 Entry, const CreatureData* data)
 {
     if(!InitEntry(Entry,data))
         return false;
@@ -1066,7 +1066,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     return true;
 }
 
-bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData *data, bool dynamic)
+bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, uint32 entry, Position const& pos, const CreatureData* data, bool dynamic)
 {
     ASSERT(map);
     SetMap(map);
@@ -1668,7 +1668,6 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
     }
 
     CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
-
     if(!data)
     {
         TC_LOG_ERROR("sql.sql","Creature (SpawnID : %u) not found in table `creature`, can't load. ", spawnId);

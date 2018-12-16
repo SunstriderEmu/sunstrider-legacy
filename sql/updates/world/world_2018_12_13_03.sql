@@ -1,0 +1,2 @@
+UPDATE gossip_text SET text0_0 = "Tomorrow, the baron gets his town back... but for today - Pirates' Day - it belongs to the Dread Captain DeMeza and her crew. Yarrr!$B$BAnd remember: lookin' the part's only HALF the celebration. Talk like a pirate, $glad:lass;!" WHERE ID = 27454;
+UPDATE broadcast_text SET FemaleText = "Ahoy! It's Pirates' Day, ye know... and 'til the sun rises on the morrow, Booty Bay is MINE$B$BSo! What do ye say? Raise a drink ta me and me crew, and join the celebration?." WHERE ID = 27471;

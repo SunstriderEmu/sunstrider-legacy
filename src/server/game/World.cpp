@@ -1646,9 +1646,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Objects Pooling Data...");
     sPoolMgr->LoadFromDB();
 
-    TC_LOG_INFO("server.loading", "Loading Game Event Data...");
-    sGameEventMgr->LoadFromDB();
-
     TC_LOG_INFO("server.loading", "Loading Weather Data..." );
     sObjectMgr->LoadWeatherZoneChances();
 
@@ -1669,6 +1666,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Quests Greetings...");
     sObjectMgr->LoadQuestGreetings();                           // must be loaded after creature_template, gameobject_template tables
+
+    TC_LOG_INFO("server.loading", "Loading Game Event Data..."); //must be after quests
+    sGameEventMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading AreaTrigger definitions..." );
     sObjectMgr->LoadAreaTriggerTeleports();

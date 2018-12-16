@@ -4092,14 +4092,14 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
 #endif
     data << uint8 (log->schoolMask);                         //damage school
     data << uint32(log->absorb);                             //AbsorbedDamage
-    data << uint32(log->resist);                             //resist
+    data << int32(log->resist);                              //resist
     data << uint8 (log->periodicLog);                        // if 1, then client show spell name (example: %s's ranged shot hit %s for %u school or %s suffers %u school damage from %s's spell_name
     data << uint8 (log->unused);                             //unused
     data << uint32(log->blocked);                            //blocked
     data << uint32(log->HitInfo);
     data << uint8 (log->HitInfo & (SPELL_HIT_TYPE_CRIT_DEBUG | SPELL_HIT_TYPE_HIT_DEBUG | SPELL_HIT_TYPE_ATTACK_TABLE_DEBUG));
 
-    /* Sun: Those don't seem to appear on regular client
+    /* Sun: Those don't seem to appear on regular client. Struct ok for BC and TLK
     if (log->HitInfo & SPELL_HIT_TYPE_CRIT_DEBUG)
     {
         data << float(log->CritRoll);
