@@ -1,5 +1,5 @@
 -- Importing creature with guid 1007 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1095729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1095729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1095729 AND spawnType = 0 WHERE ce.spawnID = 1095729;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1095729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1095729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1095729 AND spawnType = 0 WHERE ce.spawnID = 1095729;
 INSERT INTO creature_entry (spawnID, entry) VALUES (1007, 18694);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (1007, 530, 1, 0, 0, -3035.06, 424.317,  2.77, 0.89, 86400, 0, 0, 13084, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -45,8 +45,8 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (1007, 10070, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 32914 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032774 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032774 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032774 AND spawnType = 0 WHERE ce.spawnID = 1032774;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051562 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051562 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051562 AND spawnType = 0 WHERE ce.spawnID = 1051562;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032774 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032774 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032774 AND spawnType = 0 WHERE ce.spawnID = 1032774;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051562 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051562 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051562 AND spawnType = 0 WHERE ce.spawnID = 1051562;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32914, 10647);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32914, 1, 1, 11331, 1, 2808.24, -3003.13,  157.067, 4.11898, 19990, 0, 1, 1332, 1169, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -104,7 +104,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (32914, 329140, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 32869 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032729 AND spawnType = 0 WHERE ce.spawnID = 1032729;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032729 AND spawnType = 0 WHERE ce.spawnID = 1032729;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32869, 10639);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32869, 1, 1, 6800, 1, 3265.91, -365.72,  153.103, 5.31552, 19990, 0, 1, 713, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -142,19 +142,19 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (32869, 328690, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 32773 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32761 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32761 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32761 AND spawnType = 0 WHERE ce.spawnID = 32761;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32763 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32763 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32763 AND spawnType = 0 WHERE ce.spawnID = 32763;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32764 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32764 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32764 AND spawnType = 0 WHERE ce.spawnID = 32764;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32765 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32765 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32765 AND spawnType = 0 WHERE ce.spawnID = 32765;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32766 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32766 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32766 AND spawnType = 0 WHERE ce.spawnID = 32766;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32767 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32767 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32767 AND spawnType = 0 WHERE ce.spawnID = 32767;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32768 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32768 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32768 AND spawnType = 0 WHERE ce.spawnID = 32768;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32769 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32769 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32769 AND spawnType = 0 WHERE ce.spawnID = 32769;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32770 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32770 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32770 AND spawnType = 0 WHERE ce.spawnID = 32770;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32771 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32771 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32771 AND spawnType = 0 WHERE ce.spawnID = 32771;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32772 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32772 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32772 AND spawnType = 0 WHERE ce.spawnID = 32772;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32773 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32773 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32773 AND spawnType = 0 WHERE ce.spawnID = 32773;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032622 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032622 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032622 AND spawnType = 0 WHERE ce.spawnID = 1032622;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32761 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32761 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32761 AND spawnType = 0 WHERE ce.spawnID = 32761;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32763 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32763 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32763 AND spawnType = 0 WHERE ce.spawnID = 32763;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32764 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32764 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32764 AND spawnType = 0 WHERE ce.spawnID = 32764;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32765 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32765 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32765 AND spawnType = 0 WHERE ce.spawnID = 32765;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32766 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32766 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32766 AND spawnType = 0 WHERE ce.spawnID = 32766;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32767 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32767 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32767 AND spawnType = 0 WHERE ce.spawnID = 32767;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32768 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32768 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32768 AND spawnType = 0 WHERE ce.spawnID = 32768;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32769 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32769 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32769 AND spawnType = 0 WHERE ce.spawnID = 32769;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32770 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32770 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32770 AND spawnType = 0 WHERE ce.spawnID = 32770;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32771 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32771 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32771 AND spawnType = 0 WHERE ce.spawnID = 32771;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32772 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32772 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32772 AND spawnType = 0 WHERE ce.spawnID = 32772;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32773 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32773 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32773 AND spawnType = 0 WHERE ce.spawnID = 32773;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032622 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032622 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032622 AND spawnType = 0 WHERE ce.spawnID = 1032622;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32773, 3715);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32773, 1, 1, 4981, 1, 3652.6, 1017.44,  -0.965293, 0.02262, 300, 12, 0, 404, 456, 1, 0, 0, 10);
 INSERT INTO spawn_group VALUES (2, 0, 32773);
@@ -232,20 +232,20 @@ INSERT INTO spawn_group VALUES (2, 0, 32761);
 -- Already batch replaced
 
 -- Importing creature with guid 32735 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32722 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32722 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32722 AND spawnType = 0 WHERE ce.spawnID = 32722;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32723 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32723 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32723 AND spawnType = 0 WHERE ce.spawnID = 32723;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32724 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32724 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32724 AND spawnType = 0 WHERE ce.spawnID = 32724;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32725 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32725 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32725 AND spawnType = 0 WHERE ce.spawnID = 32725;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32726 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32726 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32726 AND spawnType = 0 WHERE ce.spawnID = 32726;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32727 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32727 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32727 AND spawnType = 0 WHERE ce.spawnID = 32727;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32729 AND spawnType = 0 WHERE ce.spawnID = 32729;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32730 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32730 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32730 AND spawnType = 0 WHERE ce.spawnID = 32730;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32731 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32731 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32731 AND spawnType = 0 WHERE ce.spawnID = 32731;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32732 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32732 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32732 AND spawnType = 0 WHERE ce.spawnID = 32732;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32733 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32733 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32733 AND spawnType = 0 WHERE ce.spawnID = 32733;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32734 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32734 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32734 AND spawnType = 0 WHERE ce.spawnID = 32734;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 32735 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -32735 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 32735 AND spawnType = 0 WHERE ce.spawnID = 32735;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032588 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032588 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032588 AND spawnType = 0 WHERE ce.spawnID = 1032588;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32722 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32722 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32722 AND spawnType = 0 WHERE ce.spawnID = 32722;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32723 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32723 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32723 AND spawnType = 0 WHERE ce.spawnID = 32723;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32724 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32724 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32724 AND spawnType = 0 WHERE ce.spawnID = 32724;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32725 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32725 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32725 AND spawnType = 0 WHERE ce.spawnID = 32725;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32726 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32726 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32726 AND spawnType = 0 WHERE ce.spawnID = 32726;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32727 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32727 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32727 AND spawnType = 0 WHERE ce.spawnID = 32727;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32729 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32729 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32729 AND spawnType = 0 WHERE ce.spawnID = 32729;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32730 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32730 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32730 AND spawnType = 0 WHERE ce.spawnID = 32730;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32731 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32731 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32731 AND spawnType = 0 WHERE ce.spawnID = 32731;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32732 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32732 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32732 AND spawnType = 0 WHERE ce.spawnID = 32732;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32733 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32733 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32733 AND spawnType = 0 WHERE ce.spawnID = 32733;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32734 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32734 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32734 AND spawnType = 0 WHERE ce.spawnID = 32734;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 32735 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -32735 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 32735 AND spawnType = 0 WHERE ce.spawnID = 32735;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032588 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032588 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032588 AND spawnType = 0 WHERE ce.spawnID = 1032588;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32735, 3711);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32735, 1, 1, 6747, 1, 3480.51, 1051.29,  0.15928, 2.85975, 300, 12, 0, 494, 0, 1, 0, 0, 10);
 INSERT INTO spawn_group VALUES (2, 0, 32735);
@@ -328,7 +328,7 @@ INSERT INTO spawn_group VALUES (2, 0, 32722);
 -- Already batch replaced
 
 -- Importing creature with guid 32617 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032477 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032477 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032477 AND spawnType = 0 WHERE ce.spawnID = 1032477;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032477 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032477 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032477 AND spawnType = 0 WHERE ce.spawnID = 1032477;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32617, 3943);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32617, 1, 1, 5029, 0, 4157.59, 1272.73,  3.22775, 3.14648, 300, 0, 0, 731, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -349,8 +349,8 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 32617);
 
 -- Importing creature with guid 32384 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032244 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032244 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032244 AND spawnType = 0 WHERE ce.spawnID = 1032244;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051580 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051580 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051580 AND spawnType = 0 WHERE ce.spawnID = 1051580;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032244 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032244 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032244 AND spawnType = 0 WHERE ce.spawnID = 1032244;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051580 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051580 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051580 AND spawnType = 0 WHERE ce.spawnID = 1051580;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32384, 10559);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32384, 1, 1, 4979, 1, 3722.43, 913.772,  1.00271, 1.84775, 19990, 0, 1, 508, 544, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -460,7 +460,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (32384, 323840, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 32296 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1032156 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1032156 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1032156 AND spawnType = 0 WHERE ce.spawnID = 1032156;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1032156 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1032156 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1032156 AND spawnType = 0 WHERE ce.spawnID = 1032156;
 INSERT INTO creature_entry (spawnID, entry) VALUES (32296, 4074);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (32296, 1, 1, 1269, 0, 1222.28, 199.114,  5.52599, 5.10178, 300, 0, 1, 617, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -520,7 +520,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 32296);
 
 -- Importing creature with guid 29247 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1029112 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1029112 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1029112 AND spawnType = 0 WHERE ce.spawnID = 1029112;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1029112 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1029112 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1029112 AND spawnType = 0 WHERE ce.spawnID = 1029112;
 INSERT INTO creature_entry (spawnID, entry) VALUES (29247, 11862);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (29247, 1, 1, 5562, 0, 824.854, 933.05,  155.485, 2.16375, 300, 0, 0, 713, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (29247, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -540,7 +540,7 @@ UPDATE smart_scripts SET target_param1 = 26895 WHERE target_param1 = 1097110 AND
 UPDATE spawn_group SET spawnID = 26895 WHERE spawnID = 1097110 AND spawnType = 0;
 
 -- Importing creature with guid 26577 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1026444 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1026444 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1026444 AND spawnType = 0 WHERE ce.spawnID = 1026444;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1026444 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1026444 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1026444 AND spawnType = 0 WHERE ce.spawnID = 1026444;
 INSERT INTO creature_entry (spawnID, entry) VALUES (26577, 2988);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (26577, 1, 1, 1624, 1, -2369.16, -876.936,  -9.42208, 4.55148, 250, 0, 0, 198, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -570,13 +570,13 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (26568, NULL, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 26208 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1026075 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1026075 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1026075 AND spawnType = 0 WHERE ce.spawnID = 1026075;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1026075 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1026075 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1026075 AND spawnType = 0 WHERE ce.spawnID = 1026075;
 INSERT INTO creature_entry (spawnID, entry) VALUES (26208, 3229);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (26208, 1, 1, 1254, 0, -3103.75, -1196.7,  85.6689, 5.48033, 250, 0, 0, 102, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (26208, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 26053 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1025921 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1025921 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1025921 AND spawnType = 0 WHERE ce.spawnID = 1025921;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1025921 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1025921 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1025921 AND spawnType = 0 WHERE ce.spawnID = 1025921;
 INSERT INTO creature_entry (spawnID, entry) VALUES (26053, 3224);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (26053, 1, 1, 10181, 1, -2258.76, -296.012,  -9.42604, 4.05437, 250, 5, 0, 600, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -591,7 +591,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (26053, 260530, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 24790 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1024659 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1024659 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1024659 AND spawnType = 0 WHERE ce.spawnID = 1024659;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1024659 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1024659 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1024659 AND spawnType = 0 WHERE ce.spawnID = 1024659;
 INSERT INTO creature_entry (spawnID, entry) VALUES (24790, 4721);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (24790, 1, 1, 2738, 1, -1207.75, -57.0394,  158.601, 4.74729, 250, 0, 0, 713, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (24790, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -602,7 +602,7 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (24709, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 23741 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1023613 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1023613 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1023613 AND spawnType = 0 WHERE ce.spawnID = 1023613;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1023613 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1023613 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1023613 AND spawnType = 0 WHERE ce.spawnID = 1023613;
 DELETE FROM waypoint_data WHERE id = 2077;
 INSERT INTO creature_entry (spawnID, entry) VALUES (23741, 6498);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (23741, 1, 1, 5239, 0, -7223.92, -1582.28,  -269.345, 0.518643, 600, 0, 0, 7599, 0, 2, 0, 0, 10);
@@ -688,7 +688,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (23741, 237410, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 23419 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1023291 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1023291 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1023291 AND spawnType = 0 WHERE ce.spawnID = 1023291;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1023291 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1023291 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1023291 AND spawnType = 0 WHERE ce.spawnID = 1023291;
 DELETE FROM waypoint_data WHERE id = 512;
 INSERT INTO creature_entry (spawnID, entry) VALUES (23419, 21448);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (23419, 1, 1, 11376, 1, -7164.7, -3855.56,  15.3137, 1.39094, 300, 0, 0, 7456, 0, 2, 0, 0, 10);
@@ -706,13 +706,13 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (23419, 234190, 0, 0, 0, 2, 0, NULL);
 
 -- Importing creature with guid 23280 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1023153 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1023153 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1023153 AND spawnType = 0 WHERE ce.spawnID = 1023153;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1023153 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1023153 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1023153 AND spawnType = 0 WHERE ce.spawnID = 1023153;
 INSERT INTO creature_entry (spawnID, entry) VALUES (23280, 19861);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (23280, 1, 1, 19224, 1, -7139.31, -3761.98,  9.54388, 1.78024, 300, 0, 0, 6986, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (23280, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 18599 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1018479 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1018479 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1018479 AND spawnType = 0 WHERE ce.spawnID = 1018479;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1018479 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1018479 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1018479 AND spawnType = 0 WHERE ce.spawnID = 1018479;
 DELETE FROM waypoint_scripts WHERE id = 377;
 DELETE FROM waypoint_scripts WHERE id = 377;
 DELETE FROM waypoint_data WHERE id = 377;
@@ -720,7 +720,7 @@ INSERT INTO creature_entry (spawnID, entry) VALUES (18599, 23995);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (18599, 1, 1, 7049, 1, -4629.94, -3176.12,  41.2235, 6.26344, 360, 0, 0, 1180, 1236, 0, 0, 0, 10);
 
 -- Importing creature with guid 18589 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1018469 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1018469 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1018469 AND spawnType = 0 WHERE ce.spawnID = 1018469;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1018469 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1018469 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1018469 AND spawnType = 0 WHERE ce.spawnID = 1018469;
 INSERT INTO creature_entry (spawnID, entry) VALUES (18589, 23835);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (18589, 1, 1, 4670, 1, -3839.59, -4562.36,  8.63999, 3.89208, 360, 0, 0, 4906, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -739,9 +739,9 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (18589, 185890, 2402, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 21679 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1021554 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1021554 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1021554 AND spawnType = 0 WHERE ce.spawnID = 1021554;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1021555 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1021555 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1021555 AND spawnType = 0 WHERE ce.spawnID = 1021555;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1021556 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1021556 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1021556 AND spawnType = 0 WHERE ce.spawnID = 1021556;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1021554 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1021554 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1021554 AND spawnType = 0 WHERE ce.spawnID = 1021554;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1021555 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1021555 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1021555 AND spawnType = 0 WHERE ce.spawnID = 1021555;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1021556 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1021556 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1021556 AND spawnType = 0 WHERE ce.spawnID = 1021556;
 INSERT INTO creature_entry (spawnID, entry) VALUES (21679, 4250);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (21679, 1, 1, 2726, 0, -5065.41, -1433.43,  -52.0541, 2.67263, 300, 0, 0, 664, 0, 0, 0, 0, 10);
 INSERT INTO creature_entry (spawnID, entry) VALUES (21678, 4250);
@@ -756,7 +756,7 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 -- Already batch replaced
 
 -- Importing creature with guid 21580 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1021457 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1021457 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1021457 AND spawnType = 0 WHERE ce.spawnID = 1021457;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1021457 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1021457 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1021457 AND spawnType = 0 WHERE ce.spawnID = 1021457;
 INSERT INTO creature_entry (spawnID, entry) VALUES (21580, 10617);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (21580, 1, 1, 9532, 0, -5128.15, -2080.7,  -37.4284, 0.847854, 300, 0, 1, 787, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -881,7 +881,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (21580, 215800, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 21388 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1021265 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1021265 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1021265 AND spawnType = 0 WHERE ce.spawnID = 1021265;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1021265 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1021265 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1021265 AND spawnType = 0 WHERE ce.spawnID = 1021265;
 INSERT INTO creature_entry (spawnID, entry) VALUES (21388, 5933);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (21388, 1, 1, 9418, 0, -5065.41, -1433.43,  -52.0541, 2.29257, 7200, 0, 1, 1308, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -920,7 +920,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (21388, 213880, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 20720 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1020597 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1020597 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1020597 AND spawnType = 0 WHERE ce.spawnID = 1020597;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1020597 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1020597 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1020597 AND spawnType = 0 WHERE ce.spawnID = 1020597;
 INSERT INTO creature_entry (spawnID, entry) VALUES (20720, 5841);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (20720, 1, 1, 9533, 1, -1201.63, -3099.24,  94.8781, 3.0143, 43200, 0, 0, 1158, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -956,21 +956,21 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (20720, 207200, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 20588 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20575 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20575 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20575 AND spawnType = 0 WHERE ce.spawnID = 20575;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20576 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20576 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20576 AND spawnType = 0 WHERE ce.spawnID = 20576;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20577 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20577 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20577 AND spawnType = 0 WHERE ce.spawnID = 20577;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20578 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20578 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20578 AND spawnType = 0 WHERE ce.spawnID = 20578;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20575 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20575 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20575 AND spawnType = 0 WHERE ce.spawnID = 20575;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20576 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20576 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20576 AND spawnType = 0 WHERE ce.spawnID = 20576;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20577 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20577 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20577 AND spawnType = 0 WHERE ce.spawnID = 20577;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20578 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20578 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20578 AND spawnType = 0 WHERE ce.spawnID = 20578;
 DELETE FROM waypoint_data WHERE id = 428;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20579 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20579 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20579 AND spawnType = 0 WHERE ce.spawnID = 20579;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20580 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20580 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20580 AND spawnType = 0 WHERE ce.spawnID = 20580;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20581 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20581 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20581 AND spawnType = 0 WHERE ce.spawnID = 20581;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20582 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20582 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20582 AND spawnType = 0 WHERE ce.spawnID = 20582;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20583 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20583 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20583 AND spawnType = 0 WHERE ce.spawnID = 20583;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20584 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20584 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20584 AND spawnType = 0 WHERE ce.spawnID = 20584;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20585 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20585 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20585 AND spawnType = 0 WHERE ce.spawnID = 20585;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20586 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20586 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20586 AND spawnType = 0 WHERE ce.spawnID = 20586;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 20587 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -20587 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 20587 AND spawnType = 0 WHERE ce.spawnID = 20587;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1020465 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1020465 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1020465 AND spawnType = 0 WHERE ce.spawnID = 1020465;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20579 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20579 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20579 AND spawnType = 0 WHERE ce.spawnID = 20579;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20580 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20580 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20580 AND spawnType = 0 WHERE ce.spawnID = 20580;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20581 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20581 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20581 AND spawnType = 0 WHERE ce.spawnID = 20581;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20582 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20582 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20582 AND spawnType = 0 WHERE ce.spawnID = 20582;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20583 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20583 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20583 AND spawnType = 0 WHERE ce.spawnID = 20583;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20584 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20584 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20584 AND spawnType = 0 WHERE ce.spawnID = 20584;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20585 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20585 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20585 AND spawnType = 0 WHERE ce.spawnID = 20585;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20586 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20586 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20586 AND spawnType = 0 WHERE ce.spawnID = 20586;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 20587 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -20587 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 20587 AND spawnType = 0 WHERE ce.spawnID = 20587;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1020465 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1020465 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1020465 AND spawnType = 0 WHERE ce.spawnID = 1020465;
 INSERT INTO creature_entry (spawnID, entry) VALUES (20588, 3275);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (20588, 1, 1, 4874, 1, -1198.8, -3096.75,  94.5592, -3.03911, 275, 0, 0, 328, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (20588, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -1089,7 +1089,7 @@ INSERT INTO spawn_group VALUES (2, 0, 20575);
 -- Already batch replaced
 
 -- Importing creature with guid 20429 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1020307 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1020307 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1020307 AND spawnType = 0 WHERE ce.spawnID = 1020307;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1020307 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1020307 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1020307 AND spawnType = 0 WHERE ce.spawnID = 1020307;
 INSERT INTO creature_entry (spawnID, entry) VALUES (20429, 5830);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (20429, 1, 1, 10876, 0, 578.54, -1335.66,  92.8374, 4.92376, 43200, 0, 0, 1212, 1368, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1153,7 +1153,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (20429, 204290, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 15144 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1015033 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1015033 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1015033 AND spawnType = 0 WHERE ce.spawnID = 1015033;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1015033 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1015033 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1015033 AND spawnType = 0 WHERE ce.spawnID = 1015033;
 INSERT INTO creature_entry (spawnID, entry) VALUES (15144, 3237);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (15144, 1, 1, 10914, 0, -2891.01, -2150.02,  94.2478, 2.6034, 275, 0, 0, 734, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1217,13 +1217,13 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 15144);
 
 -- Importing creature with guid 15142 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 15137 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -15137 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 15137 AND spawnType = 0 WHERE ce.spawnID = 15137;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 15138 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -15138 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 15138 AND spawnType = 0 WHERE ce.spawnID = 15138;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 15139 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -15139 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 15139 AND spawnType = 0 WHERE ce.spawnID = 15139;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 15137 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -15137 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 15137 AND spawnType = 0 WHERE ce.spawnID = 15137;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 15138 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -15138 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 15138 AND spawnType = 0 WHERE ce.spawnID = 15138;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 15139 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -15139 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 15139 AND spawnType = 0 WHERE ce.spawnID = 15139;
 DELETE FROM waypoint_data WHERE id = 151390;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 15140 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -15140 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 15140 AND spawnType = 0 WHERE ce.spawnID = 15140;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1015030 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1015030 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1015030 AND spawnType = 0 WHERE ce.spawnID = 1015030;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1015031 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1015031 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1015031 AND spawnType = 0 WHERE ce.spawnID = 1015031;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 15140 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -15140 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 15140 AND spawnType = 0 WHERE ce.spawnID = 15140;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1015030 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1015030 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1015030 AND spawnType = 0 WHERE ce.spawnID = 1015030;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1015031 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1015031 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1015031 AND spawnType = 0 WHERE ce.spawnID = 1015031;
 INSERT INTO creature_entry (spawnID, entry) VALUES (15142, 3236);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (15142, 1, 1, 1453, 0, -2895.78, -2158.99,  91.6667, 2.60247, 275, 0, 0, 449, 0, 0, 0, 0, 10);
 INSERT INTO spawn_group VALUES (2, 0, 15142);
@@ -1292,25 +1292,25 @@ INSERT INTO spawn_group VALUES (2, 0, 15137);
 -- Already batch replaced
 
 -- Importing creature with guid 14008 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13991 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13991 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13991 AND spawnType = 0 WHERE ce.spawnID = 13991;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13992 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13992 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13992 AND spawnType = 0 WHERE ce.spawnID = 13992;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13993 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13993 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13993 AND spawnType = 0 WHERE ce.spawnID = 13993;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13994 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13994 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13994 AND spawnType = 0 WHERE ce.spawnID = 13994;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13995 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13995 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13995 AND spawnType = 0 WHERE ce.spawnID = 13995;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13996 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13996 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13996 AND spawnType = 0 WHERE ce.spawnID = 13996;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13997 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13997 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13997 AND spawnType = 0 WHERE ce.spawnID = 13997;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13998 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13998 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13998 AND spawnType = 0 WHERE ce.spawnID = 13998;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 13999 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -13999 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 13999 AND spawnType = 0 WHERE ce.spawnID = 13999;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14000 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14000 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14000 AND spawnType = 0 WHERE ce.spawnID = 14000;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14001 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14001 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14001 AND spawnType = 0 WHERE ce.spawnID = 14001;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14002 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14002 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14002 AND spawnType = 0 WHERE ce.spawnID = 14002;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14003 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14003 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14003 AND spawnType = 0 WHERE ce.spawnID = 14003;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14004 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14004 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14004 AND spawnType = 0 WHERE ce.spawnID = 14004;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14005 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14005 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14005 AND spawnType = 0 WHERE ce.spawnID = 14005;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14006 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14006 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14006 AND spawnType = 0 WHERE ce.spawnID = 14006;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13991 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13991 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13991 AND spawnType = 0 WHERE ce.spawnID = 13991;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13992 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13992 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13992 AND spawnType = 0 WHERE ce.spawnID = 13992;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13993 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13993 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13993 AND spawnType = 0 WHERE ce.spawnID = 13993;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13994 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13994 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13994 AND spawnType = 0 WHERE ce.spawnID = 13994;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13995 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13995 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13995 AND spawnType = 0 WHERE ce.spawnID = 13995;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13996 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13996 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13996 AND spawnType = 0 WHERE ce.spawnID = 13996;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13997 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13997 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13997 AND spawnType = 0 WHERE ce.spawnID = 13997;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13998 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13998 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13998 AND spawnType = 0 WHERE ce.spawnID = 13998;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 13999 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -13999 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 13999 AND spawnType = 0 WHERE ce.spawnID = 13999;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14000 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14000 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14000 AND spawnType = 0 WHERE ce.spawnID = 14000;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14001 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14001 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14001 AND spawnType = 0 WHERE ce.spawnID = 14001;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14002 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14002 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14002 AND spawnType = 0 WHERE ce.spawnID = 14002;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14003 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14003 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14003 AND spawnType = 0 WHERE ce.spawnID = 14003;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14004 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14004 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14004 AND spawnType = 0 WHERE ce.spawnID = 14004;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14005 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14005 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14005 AND spawnType = 0 WHERE ce.spawnID = 14005;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14006 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14006 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14006 AND spawnType = 0 WHERE ce.spawnID = 14006;
 DELETE FROM waypoint_data WHERE id = 264;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 14008 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -14008 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 14008 AND spawnType = 0 WHERE ce.spawnID = 14008;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1013945 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1013945 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1013945 AND spawnType = 0 WHERE ce.spawnID = 1013945;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 14008 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -14008 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 14008 AND spawnType = 0 WHERE ce.spawnID = 14008;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1013945 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1013945 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1013945 AND spawnType = 0 WHERE ce.spawnID = 1013945;
 INSERT INTO creature_entry (spawnID, entry) VALUES (14008, 3397);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (14008, 1, 1, 9447, 1, -1250.49, -3090.42,  92.84, 0.129407, 275, 5, 0, 235, 295, 1, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (14008, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -1458,13 +1458,13 @@ INSERT INTO spawn_group VALUES (2, 0, 13991);
 -- Already batch replaced
 
 -- Importing creature with guid 12166 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1012121 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1012121 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1012121 AND spawnType = 0 WHERE ce.spawnID = 1012121;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1012121 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1012121 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1012121 AND spawnType = 0 WHERE ce.spawnID = 1012121;
 INSERT INTO creature_entry (spawnID, entry) VALUES (12166, 3455);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (12166, 1, 1, 0, 1, -2093.53, -3496.47,  130.084, 3.008, 180, 0, 0, 449, 0, 0, 0, 0, 10);
 INSERT INTO spawn_group VALUES (2, 0, 12166);
 
 -- Importing creature with guid 51892 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051585 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051585 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051585 AND spawnType = 0 WHERE ce.spawnID = 1051585;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051585 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051585 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051585 AND spawnType = 0 WHERE ce.spawnID = 1051585;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51892, 10200);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51892, 1, 1, 0, 0, 8021.76, -3946.8,  687.148, 6.22522, 9900, 0, 0, 3758, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1493,7 +1493,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51892, 518920, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 51890 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051583 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051583 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051583 AND spawnType = 0 WHERE ce.spawnID = 1051583;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051583 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051583 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051583 AND spawnType = 0 WHERE ce.spawnID = 1051583;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51890, 10202);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51890, 1, 1, 0, 0, 5986.52, -5055.29,  795.339, 0.409894, 43200, 0, 0, 8883, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1594,7 +1594,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51890, 518900, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 51883 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051576 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051576 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051576 AND spawnType = 0 WHERE ce.spawnID = 1051576;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051576 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051576 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051576 AND spawnType = 0 WHERE ce.spawnID = 1051576;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51883, 3773);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51883, 1, 1, 0, 1, 2230.63, 222.503,  134.671, 2.16137, 9900, 0, 1, 684, 693, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1658,25 +1658,25 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51883, 518830, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 6619 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 6619 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -6619 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 6619 AND spawnType = 0 WHERE ce.spawnID = 6619;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 6619 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -6619 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 6619 AND spawnType = 0 WHERE ce.spawnID = 6619;
 INSERT INTO creature_entry (spawnID, entry) VALUES (6619, 5195);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (6619, 1, 1, 2328, 0, 2158.74, -4661.51,  49.9269, 2.00713, 300, 0, 0, 198, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6619, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 6618 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 6618 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -6618 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 6618 AND spawnType = 0 WHERE ce.spawnID = 6618;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 6618 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -6618 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 6618 AND spawnType = 0 WHERE ce.spawnID = 6618;
 INSERT INTO creature_entry (spawnID, entry) VALUES (6618, 14541);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (6618, 1, 1, 14574, 0, 2155.59, -4649.18,  50.0618, 5.3058, 300, 0, 0, 198, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6618, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 6617 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 6617 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -6617 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 6617 AND spawnType = 0 WHERE ce.spawnID = 6617;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 6617 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -6617 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 6617 AND spawnType = 0 WHERE ce.spawnID = 6617;
 INSERT INTO creature_entry (spawnID, entry) VALUES (6617, 14539);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (6617, 1, 1, 14575, 0, 2153.65, -4657.14,  49.9992, 0.484856, 300, 0, 0, 198, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6617, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 6616 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 6616 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -6616 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 6616 AND spawnType = 0 WHERE ce.spawnID = 6616;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 6616 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -6616 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 6616 AND spawnType = 0 WHERE ce.spawnID = 6616;
 INSERT INTO creature_entry (spawnID, entry) VALUES (6616, 12351);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (6616, 1, 1, 2327, 0, 2162.76, -4659.62,  49.9817, 2.25148, 300, 0, 0, 198, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6616, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -1687,7 +1687,7 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6615, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 6614 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 6614 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -6614 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 6614 AND spawnType = 0 WHERE ce.spawnID = 6614;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 6614 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -6614 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 6614 AND spawnType = 0 WHERE ce.spawnID = 6614;
 INSERT INTO creature_entry (spawnID, entry) VALUES (6614, 14540);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (6614, 1, 1, 14573, 0, 2161.67, -4648.08,  50.5901, 4.18879, 300, 0, 0, 198, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6614, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -1698,7 +1698,7 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (6459, NULL, 0, 0, 0, 257, 0, NULL);
 
 -- Importing creature with guid 51882 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051575 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051575 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051575 AND spawnType = 0 WHERE ce.spawnID = 1051575;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051575 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051575 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051575 AND spawnType = 0 WHERE ce.spawnID = 1051575;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51882, 10641);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51882, 1, 1, 0, 0, 2971.35, -982.098,  198.683, 1.72311, 9900, 0, 1, 713, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1731,7 +1731,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51882, 518820, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 51870 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051565 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051565 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051565 AND spawnType = 0 WHERE ce.spawnID = 1051565;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051565 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051565 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051565 AND spawnType = 0 WHERE ce.spawnID = 1051565;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51870, 3792);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51870, 1, 1, 0, 0, 3150.4, -1170.14,  217.299, 5.14352, 9900, 0, 1, 1107, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1752,7 +1752,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51870, 518700, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 51845 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051544 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051544 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051544 AND spawnType = 0 WHERE ce.spawnID = 1051544;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051544 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051544 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051544 AND spawnType = 0 WHERE ce.spawnID = 1051544;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51845, 3056);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51845, 1, 1, 0, 0, -758.331, 132.167,  2.77833, 6.16915, 9900, 0, 0, 247, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1827,7 +1827,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51845, 518450, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 51842 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051541 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051541 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051541 AND spawnType = 0 WHERE ce.spawnID = 1051541;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051541 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051541 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051541 AND spawnType = 0 WHERE ce.spawnID = 1051541;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51842, 5354);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51842, 1, 1, 0, 0, -5022.19, 629.697,  33.8359, 4.09332, 9900, 0, 1, 2138, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1879,7 +1879,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51842, 518420, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 51840 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051539 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051539 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051539 AND spawnType = 0 WHERE ce.spawnID = 1051539;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051539 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051539 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051539 AND spawnType = 0 WHERE ce.spawnID = 1051539;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51840, 5347);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51840, 1, 1, 0, 0, -5750.38, 1687.03,  102.643, 0.756947, 9900, 0, 1, 2576, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1896,7 +1896,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51840, 518400, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 51838 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051537 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051537 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051537 AND spawnType = 0 WHERE ce.spawnID = 1051537;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051537 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051537 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051537 AND spawnType = 0 WHERE ce.spawnID = 1051537;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51838, 14471);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51838, 1, 1, 0, 0, -7970.9, 1507.22,  -1.55187, 3.46744, 43200, 0, 0, 31440, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1954,7 +1954,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51838, 518380, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 57800 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1057215 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1057215 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1057215 AND spawnType = 0 WHERE ce.spawnID = 1057215;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1057215 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1057215 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1057215 AND spawnType = 0 WHERE ce.spawnID = 1057215;
 INSERT INTO creature_entry (spawnID, entry) VALUES (57800, 16797);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (57800, 530, 1, 0, 1, 74.0635, 4333.11,  101.473, 3.12649, 300, 0, 0, 2136, 5751, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -1992,7 +1992,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (57800, 578000, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 58438 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1057851 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1057851 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1057851 AND spawnType = 0 WHERE ce.spawnID = 1057851;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1057851 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1057851 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1057851 AND spawnType = 0 WHERE ce.spawnID = 1057851;
 INSERT INTO creature_entry (spawnID, entry) VALUES (58438, 16887);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (58438, 530, 1, 0, 0, -759.964, 2726.03,  170.241, 3.61563, 300, 0, 0, 2061, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2020,7 +2020,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (58438, 584380, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 59482 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1058894 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1058894 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1058894 AND spawnType = 0 WHERE ce.spawnID = 1058894;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1058894 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1058894 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1058894 AND spawnType = 0 WHERE ce.spawnID = 1058894;
 INSERT INTO creature_entry (spawnID, entry) VALUES (59482, 17084);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (59482, 530, 1, 0, 1, -1144.66, 4221.21,  53.5334, 4.05735, 300, 0, 0, 5306, 2620, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2043,7 +2043,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 59482);
 
 -- Importing creature with guid 63387 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1062734 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1062734 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1062734 AND spawnType = 0 WHERE ce.spawnID = 1062734;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1062734 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1062734 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1062734 AND spawnType = 0 WHERE ce.spawnID = 1062734;
 INSERT INTO creature_entry (spawnID, entry) VALUES (63387, 17664);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (63387, 530, 1, 0, 1, -1936.22, -10803.3,  86.3798, 5.1831, 300, 0, 0, 1131, 408, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2102,7 +2102,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (63387, 633870, 2346, 0, 0, 354, 0, NULL);
 
 -- Importing creature with guid 65501 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1064837 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1064837 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1064837 AND spawnType = 0 WHERE ce.spawnID = 1064837;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1064837 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1064837 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1064837 AND spawnType = 0 WHERE ce.spawnID = 1064837;
 DELETE FROM waypoint_data WHERE id = 1425;
 INSERT INTO creature_entry (spawnID, entry) VALUES (65501, 18230);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (65501, 530, 1, 0, 0, 9885.4, -7178.18,  31.0353, 2.1744, 120, 0, 0, 1, 0, 2, 0, 0, 10);
@@ -2116,7 +2116,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (65501, 655010, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 65572 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1064903 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1064903 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1064903 AND spawnType = 0 WHERE ce.spawnID = 1064903;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1064903 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1064903 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1064903 AND spawnType = 0 WHERE ce.spawnID = 1064903;
 INSERT INTO creature_entry (spawnID, entry) VALUES (65572, 18281);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (65572, 530, 1, 0, 0, -566.173, 5350.9,  17.5357, 2.69483, 300, 0, 0, 15474, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2146,7 +2146,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 65572);
 
 -- Importing creature with guid 65808 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1065139 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1065139 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1065139 AND spawnType = 0 WHERE ce.spawnID = 1065139;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1065139 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1065139 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1065139 AND spawnType = 0 WHERE ce.spawnID = 1065139;
 DELETE FROM waypoint_data WHERE id = 1442;
 INSERT INTO creature_entry (spawnID, entry) VALUES (65808, 18416);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (65808, 530, 1, 0, 0, -2541.65, 7323.38,  6.99469, 3.88646, 300, 0, 0, 4572, 2705, 2, 0, 0, 10);
@@ -2185,7 +2185,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (65808, 658080, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 66605 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1310726 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1310726 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1310726 AND spawnType = 0 WHERE ce.spawnID = 1310726;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1310726 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1310726 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1310726 AND spawnType = 0 WHERE ce.spawnID = 1310726;
 DELETE FROM waypoint_data WHERE id = 12949497;
 INSERT INTO creature_entry (spawnID, entry) VALUES (66605, 18482);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (66605, 530, 1, 0, 1, -1954.98, 4752.3,  -2.76344, 1.01889, 300, 0, 0, 3316, 2620, 2, 0, 0, 10);
@@ -2350,12 +2350,12 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (66605, 666050, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 66606 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1310727 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1310727 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1310727 AND spawnType = 0 WHERE ce.spawnID = 1310727;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1310727 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1310727 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1310727 AND spawnType = 0 WHERE ce.spawnID = 1310727;
 INSERT INTO creature_entry (spawnID, entry) VALUES (66606, 18483);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (66606, 530, 1, 0, 1, -1956.58, 4751.76,  -2.86066, 2.00512, 300, 0, 0, 5341, 0, 0, 0, 0, 10);
 
 -- Importing creature with guid 66701 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1066028 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1066028 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1066028 AND spawnType = 0 WHERE ce.spawnID = 1066028;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1066028 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1066028 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1066028 AND spawnType = 0 WHERE ce.spawnID = 1066028;
 INSERT INTO creature_entry (spawnID, entry) VALUES (66701, 18541);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (66701, 530, 1, 0, 0, -2531.76, 5367.72,  27.4804, 1.94111, 300, 0, 0, 5527, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2371,7 +2371,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 66701);
 
 -- Importing creature with guid 68323 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1067566 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1067566 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1067566 AND spawnType = 0 WHERE ce.spawnID = 1067566;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1067566 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1067566 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1067566 AND spawnType = 0 WHERE ce.spawnID = 1067566;
 INSERT INTO creature_entry (spawnID, entry) VALUES (68323, 19012);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (68323, 530, 1, 0, 1, -2539.58, 7356.25,  7.04717, 0.821933, 300, 0, 0, 4979, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2384,7 +2384,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (68323, 683230, 0, 0, 0, 257, 233, NULL);
 
 -- Importing creature with guid 68374 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1067617 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1067617 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1067617 AND spawnType = 0 WHERE ce.spawnID = 1067617;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1067617 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1067617 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1067617 AND spawnType = 0 WHERE ce.spawnID = 1067617;
 INSERT INTO creature_entry (spawnID, entry) VALUES (68374, 19073);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (68374, 530, 1, 0, 0, -4051.89, -11864.4,  1.78296, 3.62379, 300, 0, 0, 3052, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2434,7 +2434,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (68374, 683740, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 96619 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1094830 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1094830 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1094830 AND spawnType = 0 WHERE ce.spawnID = 1094830;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1094830 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1094830 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1094830 AND spawnType = 0 WHERE ce.spawnID = 1094830;
 INSERT INTO creature_entry (spawnID, entry) VALUES (96619, 25138);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (96619, 530, 1, 22928, 0, -1842.62, 5313.06,  -12.4282, 3.14159, 180, 0, 0, 7181, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_scripts (id, delay, command, datalong, datalong2, dataint, x, y, z, o) VALUES (8025158, 0, 1, 25, 0, 0, 0, 0, 0, 0);
@@ -2486,7 +2486,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (96619, 966190, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 41792 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1041606 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1041606 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1041606 AND spawnType = 0 WHERE ce.spawnID = 1041606;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1041606 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1041606 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1041606 AND spawnType = 0 WHERE ce.spawnID = 1041606;
 INSERT INTO creature_entry (spawnID, entry) VALUES (41792, 15937);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (41792, 530, 1, 0, 1, 8869.87, -5775.96,  0.405, 1.25926, 300, 0, 1, 183, 178, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2538,7 +2538,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 41792);
 
 -- Importing creature with guid 68851 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1068092 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1068092 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1068092 AND spawnType = 0 WHERE ce.spawnID = 1068092;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1068092 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1068092 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1068092 AND spawnType = 0 WHERE ce.spawnID = 1068092;
 INSERT INTO creature_entry (spawnID, entry) VALUES (68851, 19282);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (68851, 530, 1, 0, 1, 54.6004, 1805.33,  49.121, 1.30409, 300, 0, 0, 4274, 2568, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2566,7 +2566,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 68851);
 
 -- Importing creature with guid 40619 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1040433 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1040433 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1040433 AND spawnType = 0 WHERE ce.spawnID = 1040433;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1040433 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1040433 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1040433 AND spawnType = 0 WHERE ce.spawnID = 1040433;
 INSERT INTO creature_entry (spawnID, entry) VALUES (40619, 23267);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (40619, 530, 1, 0, 0, -5115.44, 144.561,  130.161, 1.37753, 300, 0, 0, 36900, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2580,7 +2580,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (40619, 406190, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 68916 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1068156 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1068156 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1068156 AND spawnType = 0 WHERE ce.spawnID = 1068156;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1068156 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1068156 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1068156 AND spawnType = 0 WHERE ce.spawnID = 1068156;
 INSERT INTO creature_entry (spawnID, entry) VALUES (68916, 19335);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (68916, 530, 1, 0, 1, -500.38, 1718.96,  60.8718, 3.73401, 300, 0, 0, 4274, 2568, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2599,7 +2599,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 68916);
 
 -- Importing creature with guid 69051 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1068283 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1068283 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1068283 AND spawnType = 0 WHERE ce.spawnID = 1068283;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1068283 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1068283 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1068283 AND spawnType = 0 WHERE ce.spawnID = 1068283;
 INSERT INTO creature_entry (spawnID, entry) VALUES (69051, 19354);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (69051, 530, 1, 0, 1, -617.618, 4800.32,  38.5306, 6.0912, 300, 0, 0, 30954, 5240, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2636,7 +2636,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (69051, 690510, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 69634 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1068863 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1068863 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1068863 AND spawnType = 0 WHERE ce.spawnID = 1068863;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1068863 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1068863 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1068863 AND spawnType = 0 WHERE ce.spawnID = 1068863;
 INSERT INTO creature_entry (spawnID, entry) VALUES (69634, 19442);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (69634, 530, 1, 0, 0, -1057.88, 1996.64,  67.3418, 1.04782, 300, 0, 0, 3734, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2646,7 +2646,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 69634);
 
 -- Importing creature with guid 69855 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1069084 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1069084 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1069084 AND spawnType = 0 WHERE ce.spawnID = 1069084;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1069084 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1069084 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1069084 AND spawnType = 0 WHERE ce.spawnID = 1069084;
 DELETE FROM waypoint_data WHERE id = 12949501;
 INSERT INTO creature_entry (spawnID, entry) VALUES (69855, 19494);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (69855, 530, 1, 0, 0, 2240.61, 2231.97,  101.754, 0.156277, 300, 0, 0, 6280, 2991, 2, 0, 0, 10);
@@ -2662,7 +2662,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 69855);
 
 -- Importing creature with guid 69957 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1069186 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1069186 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1069186 AND spawnType = 0 WHERE ce.spawnID = 1069186;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1069186 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1069186 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1069186 AND spawnType = 0 WHERE ce.spawnID = 1069186;
 INSERT INTO creature_entry (spawnID, entry) VALUES (69957, 19544);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (69957, 530, 1, 0, 1, 2308.53, 2152.49,  89.9053, 5.59527, 300, 0, 0, 6803, 5982, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2693,7 +2693,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (69957, 699570, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 69959 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1069188 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1069188 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1069188 AND spawnType = 0 WHERE ce.spawnID = 1069188;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1069188 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1069188 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1069188 AND spawnType = 0 WHERE ce.spawnID = 1069188;
 INSERT INTO creature_entry (spawnID, entry) VALUES (69959, 19546);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (69959, 530, 1, 0, 1, 2162.67, 2239.2,  74.9615, 3.86508, 300, 0, 0, 6803, 4786, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2720,8 +2720,8 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (69959, 699590, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 70177 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1310619 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1310619 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1310619 AND spawnType = 0 WHERE ce.spawnID = 1310619;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1310815 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1310815 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1310815 AND spawnType = 0 WHERE ce.spawnID = 1310815;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1310619 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1310619 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1310619 AND spawnType = 0 WHERE ce.spawnID = 1310619;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1310815 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1310815 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1310815 AND spawnType = 0 WHERE ce.spawnID = 1310815;
 DELETE FROM waypoint_data WHERE id = 12949525;
 INSERT INTO creature_entry (spawnID, entry) VALUES (70177, 19684);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (70177, 530, 1, 0, 0, -1560.23, 5327.7,  11.5866, 5.93463, 540, 0, 0, 7097, 0, 2, 0, 0, 10);
@@ -2735,7 +2735,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (70177, 701770, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 71806 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1071001 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1071001 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1071001 AND spawnType = 0 WHERE ce.spawnID = 1071001;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1071001 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1071001 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1071001 AND spawnType = 0 WHERE ce.spawnID = 1071001;
 INSERT INTO creature_entry (spawnID, entry) VALUES (71806, 20202);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (71806, 530, 1, 0, 0, 4672.65, 2833.64,  119.721, 2.08893, 300, 0, 0, 27044, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2765,7 +2765,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 71806);
 
 -- Importing creature with guid 72380 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1071571 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1071571 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1071571 AND spawnType = 0 WHERE ce.spawnID = 1071571;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1071571 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1071571 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1071571 AND spawnType = 0 WHERE ce.spawnID = 1071571;
 INSERT INTO creature_entry (spawnID, entry) VALUES (72380, 20410);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (72380, 530, 1, 0, 1, 2288.35, 2051.09,  69.9698, 1.8877, 300, 0, 0, 7437, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2790,7 +2790,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 72380);
 
 -- Importing creature with guid 73833 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1073005 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1073005 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1073005 AND spawnType = 0 WHERE ce.spawnID = 1073005;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1073005 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1073005 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1073005 AND spawnType = 0 WHERE ce.spawnID = 1073005;
 INSERT INTO creature_entry (spawnID, entry) VALUES (73833, 21023);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (73833, 530, 1, 0, 0, 1650.71, 6811.52,  132.554, 0.402455, 300, 0, 0, 8562, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2822,9 +2822,9 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 73833);
 
 -- Importing creature with guid 74219 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1073385 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1073385 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1073385 AND spawnType = 0 WHERE ce.spawnID = 1073385;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1073386 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1073386 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1073386 AND spawnType = 0 WHERE ce.spawnID = 1073386;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1073387 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1073387 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1073387 AND spawnType = 0 WHERE ce.spawnID = 1073387;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1073385 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1073385 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1073385 AND spawnType = 0 WHERE ce.spawnID = 1073385;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1073386 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1073386 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1073386 AND spawnType = 0 WHERE ce.spawnID = 1073386;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1073387 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1073387 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1073387 AND spawnType = 0 WHERE ce.spawnID = 1073387;
 INSERT INTO creature_entry (spawnID, entry) VALUES (74219, 21153);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (74219, 530, 1, 0, 1, -3014.28, 2567.43,  141.622, 5, 300, 0, 0, 17742, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2857,7 +2857,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (74219, 742190, 17722, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 75406 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1074567 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1074567 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1074567 AND spawnType = 0 WHERE ce.spawnID = 1074567;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1074567 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1074567 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1074567 AND spawnType = 0 WHERE ce.spawnID = 1074567;
 DELETE FROM waypoint_data WHERE id = 12949516;
 INSERT INTO creature_entry (spawnID, entry) VALUES (75406, 21499);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (75406, 530, 1, 0, 0, -3227.25, 2925.98,  127.161, 2.3555, 300, 0, 0, 6761, 0, 2, 0, 0, 10);
@@ -2891,7 +2891,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (75406, 754060, 0, 0, 0, 0, 0, NULL);
 
 -- Importing creature with guid 75407 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1074568 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1074568 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1074568 AND spawnType = 0 WHERE ce.spawnID = 1074568;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1074568 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1074568 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1074568 AND spawnType = 0 WHERE ce.spawnID = 1074568;
 DELETE FROM waypoint_data WHERE id = 12949512;
 INSERT INTO creature_entry (spawnID, entry) VALUES (75407, 21500);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (75407, 530, 1, 0, 1, -3342.88, 2942.85,  170.004, 2.49643, 300, 0, 0, 20932, 2991, 2, 0, 0, 10);
@@ -2914,7 +2914,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 75407);
 
 -- Importing creature with guid 76076 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1075224 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1075224 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1075224 AND spawnType = 0 WHERE ce.spawnID = 1075224;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1075224 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1075224 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1075224 AND spawnType = 0 WHERE ce.spawnID = 1075224;
 DELETE FROM waypoint_data WHERE id = 1549;
 INSERT INTO creature_entry (spawnID, entry) VALUES (76076, 21774);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (76076, 530, 1, 0, 1, -3970.86, 2191.12,  101.885, 0.523995, 300, 0, 0, 55890, 3155, 2, 0, 0, 10);
@@ -2933,7 +2933,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (76076, 760760, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 76114 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1075262 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1075262 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1075262 AND spawnType = 0 WHERE ce.spawnID = 1075262;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1075262 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1075262 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1075262 AND spawnType = 0 WHERE ce.spawnID = 1075262;
 INSERT INTO creature_entry (spawnID, entry) VALUES (76114, 21801);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (76114, 530, 1, 0, 0, -5140.63, 537.607,  225.587, 0.0201144, 300, 0, 0, 104790, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -2972,7 +2972,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 76114);
 
 -- Importing creature with guid 76771 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1075911 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1075911 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1075911 AND spawnType = 0 WHERE ce.spawnID = 1075911;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1075911 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1075911 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1075911 AND spawnType = 0 WHERE ce.spawnID = 1075911;
 INSERT INTO creature_entry (spawnID, entry) VALUES (76771, 21981);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (76771, 530, 1, 0, 1, 2725.66, 5433,  137.267, 5.78059, 300, 0, 0, 5060, 2933, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3032,7 +3032,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (76771, 767710, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 77084 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1076224 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1076224 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1076224 AND spawnType = 0 WHERE ce.spawnID = 1076224;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1076224 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1076224 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1076224 AND spawnType = 0 WHERE ce.spawnID = 1076224;
 INSERT INTO creature_entry (spawnID, entry) VALUES (77084, 22006);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (77084, 530, 1, 0, 1, -3225.12, 246.817,  195.679, 4.87723, 300, 0, 0, 83835, 18930, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3063,7 +3063,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 77084);
 
 -- Importing creature with guid 78783 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1077901 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1077901 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1077901 AND spawnType = 0 WHERE ce.spawnID = 1077901;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1077901 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1077901 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1077901 AND spawnType = 0 WHERE ce.spawnID = 1077901;
 DELETE FROM waypoint_data WHERE id = 12949484;
 INSERT INTO creature_entry (spawnID, entry) VALUES (78783, 22429);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (78783, 530, 1, 0, 0, -1668.65, 5531.65,  2.08439, 4.30748, 300, 0, 0, 5914, 0, 2, 0, 0, 10);
@@ -3109,7 +3109,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (78783, 787830, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 81720 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1080771 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1080771 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1080771 AND spawnType = 0 WHERE ce.spawnID = 1080771;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1080771 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1080771 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1080771 AND spawnType = 0 WHERE ce.spawnID = 1080771;
 INSERT INTO creature_entry (spawnID, entry) VALUES (81720, 16224);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (81720, 530, 1, 0, 1, 7638.23, -6842.24,  84.2546, 4.69922, 300, 0, 0, 233, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3131,7 +3131,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (81720, 817200, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 84491 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1083512 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1083512 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1083512 AND spawnType = 0 WHERE ce.spawnID = 1083512;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1083512 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1083512 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1083512 AND spawnType = 0 WHERE ce.spawnID = 1083512;
 DELETE FROM waypoint_data WHERE id = 12949511;
 INSERT INTO creature_entry (spawnID, entry) VALUES (84491, 21501);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (84491, 530, 1, 0, 1, -3334.17, 2837.7,  135.984, 1.83354, 120, 0, 0, 26168, 0, 2, 0, 0, 10);
@@ -3172,8 +3172,8 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 84491);
 
 -- Importing creature with guid 85987 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1084762 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1084762 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1084762 AND spawnType = 0 WHERE ce.spawnID = 1084762;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1084765 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1084765 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1084765 AND spawnType = 0 WHERE ce.spawnID = 1084765;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1084762 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1084762 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1084762 AND spawnType = 0 WHERE ce.spawnID = 1084762;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1084765 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1084765 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1084765 AND spawnType = 0 WHERE ce.spawnID = 1084765;
 INSERT INTO creature_entry (spawnID, entry) VALUES (85987, 19443);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (85987, 530, 1, 0, 1, -179.792, 2839.99,  23.6469, 5.36435, 120, 0, 0, 20632, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3379,13 +3379,13 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (85987, 859870, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 3416 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1003395 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1003395 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1003395 AND spawnType = 0 WHERE ce.spawnID = 1003395;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1003395 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1003395 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1003395 AND spawnType = 0 WHERE ce.spawnID = 1003395;
 INSERT INTO creature_entry (spawnID, entry) VALUES (3416, 11943);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (3416, 1, 1, 11901, 0, 327.574, -4682.93,  16.4578, 5.8253, 200, 0, 0, 102, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (3416, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 86493 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1085212 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1085212 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1085212 AND spawnType = 0 WHERE ce.spawnID = 1085212;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1085212 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1085212 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1085212 AND spawnType = 0 WHERE ce.spawnID = 1085212;
 INSERT INTO creature_entry (spawnID, entry) VALUES (86493, 22024);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (86493, 530, 1, 0, 0, -3477.82, 2277.81,  64.315, 5.38, 1524, 0, 0, 5233, 2991, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3402,7 +3402,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (86493, 864930, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 86748 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1085465 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1085465 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1085465 AND spawnType = 0 WHERE ce.spawnID = 1085465;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1085465 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1085465 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1085465 AND spawnType = 0 WHERE ce.spawnID = 1085465;
 DELETE FROM waypoint_data WHERE id = 1823;
 INSERT INTO creature_entry (spawnID, entry) VALUES (86748, 20931);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (86748, 530, 1, 0, 0, 5100.75, 2970.8,  80.0953, 0.130239, 160, 0, 0, 9335, 0, 2, 0, 0, 10);
@@ -3444,7 +3444,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (86751, 867510, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 86754 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1085469 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1085469 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1085469 AND spawnType = 0 WHERE ce.spawnID = 1085469;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1085469 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1085469 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1085469 AND spawnType = 0 WHERE ce.spawnID = 1085469;
 DELETE FROM waypoint_data WHERE id = 1825;
 INSERT INTO creature_entry (spawnID, entry) VALUES (86754, 22357);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (86754, 530, 1, 0, 0, -1470.79, 9695.28,  201.915, 2.14272, 4242, 0, 0, 151750, 13548, 2, 0, 0, 10);
@@ -3484,7 +3484,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (28796, 232830, 0, 0, 33554432, 1, 0, NULL);
 
 -- Importing creature with guid 33909 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1033769 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1033769 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1033769 AND spawnType = 0 WHERE ce.spawnID = 1033769;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1033769 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1033769 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1033769 AND spawnType = 0 WHERE ce.spawnID = 1033769;
 INSERT INTO creature_entry (spawnID, entry) VALUES (33909, 4841);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (33909, 1, 1, 0, 0, -3949.69, -3471.04,  29.1544, 4.28802, 360, 0, 0, 1902, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3498,7 +3498,7 @@ INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emo
 INSERT INTO spawn_group VALUES (2, 0, 33909);
 
 -- Importing creature with guid 51821 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051520 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051520 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051520 AND spawnType = 0 WHERE ce.spawnID = 1051520;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051520 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051520 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051520 AND spawnType = 0 WHERE ce.spawnID = 1051520;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51821, 5934);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51821, 1, 1, 0, 0, -5183.81, -1170.22,  45.1108, 4.18436, 43200, 0, 0, 3171, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3524,12 +3524,12 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51821, 518210, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 51809 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051508 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051508 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051508 AND spawnType = 0 WHERE ce.spawnID = 1051508;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051508 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051508 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051508 AND spawnType = 0 WHERE ce.spawnID = 1051508;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51809, 3295);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51809, 1, 1, 0, 0, 1071.4, -3135.26,  67.39, 3.63731, 9900, 0, 0, 449, 0, 0, 0, 0, 10);
 
 -- Importing creature with guid 51808 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051507 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051507 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051507 AND spawnType = 0 WHERE ce.spawnID = 1051507;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051507 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051507 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051507 AND spawnType = 0 WHERE ce.spawnID = 1051507;
 INSERT INTO creature_entry (spawnID, entry) VALUES (51808, 5835);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (51808, 1, 1, 0, 1, 1060.82, -3089.71,  105.229, 4.64184, 9900, 0, 0, 314, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3631,7 +3631,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (51808, 518080, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 40645 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1040459 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1040459 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1040459 AND spawnType = 0 WHERE ce.spawnID = 1040459;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1040459 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1040459 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1040459 AND spawnType = 0 WHERE ce.spawnID = 1040459;
 INSERT INTO creature_entry (spawnID, entry) VALUES (40645, 23269);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (40645, 530, 1, 0, 0, -5028.41, 385.658,  171.015, 2.01292, 300, 0, 0, 29520, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3654,33 +3654,33 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO game_event_creature (guid, event) VALUES (202718, 1);
 
 -- Importing creature with guid 70553 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1069758 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1069758 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1069758 AND spawnType = 0 WHERE ce.spawnID = 1069758;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1069758 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1069758 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1069758 AND spawnType = 0 WHERE ce.spawnID = 1069758;
 INSERT INTO creature_entry (spawnID, entry) VALUES (70553, 15605);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (70553, 1, 1, 0, 0, 2793.12, -350.333,  107.189, 1.97254, 25, 0, 0, 2563, 5751, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (70553, NULL, 0, 0, 0, 4097, 0, NULL);
 INSERT INTO game_event_creature (guid, event) VALUES (70553, 7);
 
 -- Importing creature with guid 70576 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1069781 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1069781 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1069781 AND spawnType = 0 WHERE ce.spawnID = 1069781;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1069781 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1069781 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1069781 AND spawnType = 0 WHERE ce.spawnID = 1069781;
 INSERT INTO creature_entry (spawnID, entry) VALUES (70576, 15586);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (70576, 1, 1, 0, 0, -7155.89, -3770.23,  9.0816, 2.38788, 25, 0, 0, 2563, 5751, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (70576, NULL, 0, 0, 0, 4097, 0, NULL);
 INSERT INTO game_event_creature (guid, event) VALUES (70576, 7);
 
 -- Importing creature with guid 39704 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1039525 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1039525 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1039525 AND spawnType = 0 WHERE ce.spawnID = 1039525;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1039525 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1039525 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1039525 AND spawnType = 0 WHERE ce.spawnID = 1039525;
 INSERT INTO creature_entry (spawnID, entry) VALUES (39704, 10658);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (39704, 1, 1, 9990, 0, 5126.69, -332.264,  356.926, 2.40376, 300, 8, 0, 42, 0, 1, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (39704, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 42904 with import type REPLACE_ALL
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42904 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42904 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42904 AND spawnType = 0 WHERE ce.spawnID = 42904;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42905 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42905 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42905 AND spawnType = 0 WHERE ce.spawnID = 42905;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42907 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42907 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42907 AND spawnType = 0 WHERE ce.spawnID = 42907;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42908 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42908 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42908 AND spawnType = 0 WHERE ce.spawnID = 42908;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42909 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42909 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42909 AND spawnType = 0 WHERE ce.spawnID = 42909;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 42910 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -42910 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 42910 AND spawnType = 0 WHERE ce.spawnID = 42910;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1042718 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1042718 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1042718 AND spawnType = 0 WHERE ce.spawnID = 1042718;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42904 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42904 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42904 AND spawnType = 0 WHERE ce.spawnID = 42904;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42905 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42905 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42905 AND spawnType = 0 WHERE ce.spawnID = 42905;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42907 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42907 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42907 AND spawnType = 0 WHERE ce.spawnID = 42907;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42908 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42908 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42908 AND spawnType = 0 WHERE ce.spawnID = 42908;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42909 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42909 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42909 AND spawnType = 0 WHERE ce.spawnID = 42909;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 42910 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -42910 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 42910 AND spawnType = 0 WHERE ce.spawnID = 42910;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1042718 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1042718 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1042718 AND spawnType = 0 WHERE ce.spawnID = 1042718;
 INSERT INTO creature_entry (spawnID, entry) VALUES (42904, 15441);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (42904, 1, 1, 15566, 1, -7163.64, 1389.07,  2.96657, 2.87979, 300, 0, 0, 6104, 0, 0, 0, 0, 10);
 INSERT INTO creature_entry (spawnID, entry) VALUES (42905, 15441);
@@ -3715,8 +3715,8 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 -- Already batch replaced
 
 -- Importing creature with guid 43120 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1042932 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1042932 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1042932 AND spawnType = 0 WHERE ce.spawnID = 1042932;
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1051481 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1051481 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1051481 AND spawnType = 0 WHERE ce.spawnID = 1051481;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1042932 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1042932 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1042932 AND spawnType = 0 WHERE ce.spawnID = 1042932;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1051481 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1051481 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1051481 AND spawnType = 0 WHERE ce.spawnID = 1051481;
 INSERT INTO creature_entry (spawnID, entry) VALUES (43120, 14473);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (43120, 1, 1, 14521, 0, -7803.76, 515.706,  -38.3517, 2.41835, 43200, 25, 0, 12208, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3760,7 +3760,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (43120, 431200, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 43126 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1042938 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1042938 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1042938 AND spawnType = 0 WHERE ce.spawnID = 1042938;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1042938 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1042938 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1042938 AND spawnType = 0 WHERE ce.spawnID = 1042938;
 INSERT INTO creature_entry (spawnID, entry) VALUES (43126, 14479);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (43126, 1, 1, 14526, 1, -7952.43, 1900.06,  1.37144, 2.85624, 21000, 0, 0, 3297, 2434, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3780,7 +3780,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (43126, 431260, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 46187 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1045978 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1045978 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1045978 AND spawnType = 0 WHERE ce.spawnID = 1045978;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1045978 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1045978 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1045978 AND spawnType = 0 WHERE ce.spawnID = 1045978;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46187, 20497);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46187, 1, 1, 18968, 0, 9975.44, 2333.33,  1330.79, 5.48594, 300, 0, 0, 6986, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46187, NULL, 0, 0, 0, 4097, 0, NULL);
@@ -3794,7 +3794,7 @@ UPDATE smart_scripts SET target_param1 = 46205 WHERE target_param1 = 1045996 AND
 UPDATE spawn_group SET spawnID = 46205 WHERE spawnID = 1045996 AND spawnType = 0;
 
 -- Importing creature with guid 46216 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046007 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046007 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046007 AND spawnType = 0 WHERE ce.spawnID = 1046007;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046007 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046007 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046007 AND spawnType = 0 WHERE ce.spawnID = 1046007;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46216, 14378);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46216, 1, 1, 14417, 1, 9789.95, 2531.94,  1319.86, 5.42763, 600, 0, 0, 50400, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -3973,7 +3973,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46216, 462160, 9991, 0, 0, 257, 0, NULL);
 
 -- Importing creature with guid 46219 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046010 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046010 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046010 AND spawnType = 0 WHERE ce.spawnID = 1046010;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046010 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046010 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046010 AND spawnType = 0 WHERE ce.spawnID = 1046010;
 DELETE FROM waypoint_data WHERE id = 1126;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46219, 14379);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46219, 1, 1, 14418, 1, 10172.5, 2350.92,  1327.93, 0.33403, 600, 0, 0, 50400, 0, 2, 0, 0, 10);
@@ -4085,7 +4085,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46219, 462190, 9991, 0, 0, 257, 0, NULL);
 
 -- Importing creature with guid 46220 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046011 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046011 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046011 AND spawnType = 0 WHERE ce.spawnID = 1046011;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046011 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046011 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046011 AND spawnType = 0 WHERE ce.spawnID = 1046011;
 DELETE FROM waypoint_data WHERE id = 1127;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46220, 14380);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46220, 1, 1, 14419, 1, 9667.44, 2324.24,  1327.61, 2.64222, 600, 0, 0, 50400, 0, 2, 0, 0, 10);
@@ -4215,7 +4215,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46220, 462200, 9991, 0, 0, 257, 0, NULL);
 
 -- Importing creature with guid 46350 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046141 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046141 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046141 AND spawnType = 0 WHERE ce.spawnID = 1046141;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046141 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046141 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046141 AND spawnType = 0 WHERE ce.spawnID = 1046141;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46350, 14428);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46350, 1, 1, 6818, 0, 9816.84, 355.442,  1308.46, 0.660401, 7200, 0, 1, 137, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -4272,7 +4272,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46350, 463500, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 46352 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046143 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046143 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046143 AND spawnType = 0 WHERE ce.spawnID = 1046143;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046143 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046143 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046143 AND spawnType = 0 WHERE ce.spawnID = 1046143;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46352, 14431);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46352, 1, 1, 2296, 0, 10652.1, 2065.57,  1330.61, 4.3596, 7200, 0, 0, 156, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -4295,7 +4295,7 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46352, 463520, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 46354 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1046145 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1046145 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1046145 AND spawnType = 0 WHERE ce.spawnID = 1046145;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1046145 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1046145 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1046145 AND spawnType = 0 WHERE ce.spawnID = 1046145;
 INSERT INTO creature_entry (spawnID, entry) VALUES (46354, 14432);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (46354, 1, 1, 904, 1, 10115.9, 1167.52,  1314.17, 5.5061, 7200, 0, 1, 115, 126, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
@@ -4333,7 +4333,7 @@ INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (46827, NULL, 0, 0, 0, 4097, 0, NULL);
 
 -- Importing creature with guid 49525 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1049264 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1049264 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1049264 AND spawnType = 0 WHERE ce.spawnID = 1049264;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1049264 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1049264 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1049264 AND spawnType = 0 WHERE ce.spawnID = 1049264;
 INSERT INTO creature_entry (spawnID, entry) VALUES (49525, 3562);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (49525, 1, 1, 2203, 1, 9800.17, 2528.08,  1320.35, 4.25791, 300, 0, 0, 1003, 0, 2, 0, 0, 10);
 INSERT INTO waypoint_scripts (id, delay, command, datalong, datalong2, dataint, x, y, z, o) VALUES (1213, 1, 30, 0, 0, 0, 0, 0, 0, 0.0349066);
@@ -4401,21 +4401,21 @@ INSERT INTO waypoint_data VALUES
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (49525, 495250, 0, 0, 0, 1, 0, NULL);
 
 -- Importing creature with guid 49970 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1049686 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1049686 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1049686 AND spawnType = 0 WHERE ce.spawnID = 1049686;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1049686 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1049686 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1049686 AND spawnType = 0 WHERE ce.spawnID = 1049686;
 INSERT INTO creature_entry (spawnID, entry) VALUES (49970, 12803);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (49970, 1, 1, 12683, 0, -5704.74, 3379.41,  63.0866, 3.21747, 600, 15, 0, 323700, 0, 1, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (49970, NULL, 0, 0, 0, 4097, 0, NULL);
 INSERT INTO spawn_group VALUES (2, 0, 49970);
 
 -- Importing creature with guid 86641 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1085358 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1085358 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1085358 AND spawnType = 0 WHERE ce.spawnID = 1085358;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1085358 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1085358 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1085358 AND spawnType = 0 WHERE ce.spawnID = 1085358;
 INSERT INTO creature_entry (spawnID, entry) VALUES (86641, 25945);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (86641, 1, 1, 16334, 0, -5519.48, -2294.23,  -57.9951, 3.1765, 300, 0, 0, 1848, 0, 0, 0, 0, 10);
 INSERT INTO creature_addon (spawnID, path_id, mount, bytes0, bytes1, bytes2, emote, auras) VALUES (86641, NULL, 0, 0, 0, 4097, 0, NULL);
 INSERT INTO game_event_creature (guid, event) VALUES (86641, 1);
 
 -- Importing creature with guid 150185 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1096571 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1096571 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1096571 AND spawnType = 0 WHERE ce.spawnID = 1096571;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1096571 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1096571 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1096571 AND spawnType = 0 WHERE ce.spawnID = 1096571;
 INSERT INTO creature_entry (spawnID, entry) VALUES (150185, 15440);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (150185, 1, 1, 0, 1, -7168.18, 1380.71,  2.91784, 1.09484, 540, 0, 0, 1, 0, 0, 0, 0, 10);
 
@@ -4449,7 +4449,7 @@ INSERT INTO creature_entry (spawnID, entry) VALUES (88298, 7772);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (88298, 1, 1, 0, 1, -3285, 2003.85,  245.986, 2.584, 900, 0, 0, 7900, 2434, 0, 0, 5, 10);
 
 -- Importing creature with guid 40470 with import type MOVE_UNIQUE_IMPORT_WP
-DELETE ce, c1, c2, sg FROM world.creature_entry ce LEFT JOIN world.conditions c1 ON c1.ConditionValue3 = 1095321 AND c1.ConditionTypeOrReference = 31 LEFT JOIN world.conditions c2 ON c1.SourceEntry = -1095321 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN world.spawn_group sg ON sg.spawnID = 1095321 AND spawnType = 0 WHERE ce.spawnID = 1095321;
+DELETE ce, c1, c2, sg FROM creature_entry ce LEFT JOIN conditions c1 ON c1.ConditionValue3 = 1095321 AND c1.ConditionTypeOrReference = 31 LEFT JOIN conditions c2 ON c1.SourceEntry = -1095321 AND c2.SourceTypeOrReferenceId = 22 LEFT JOIN spawn_group sg ON sg.spawnID = 1095321 AND spawnType = 0 WHERE ce.spawnID = 1095321;
 INSERT INTO creature_entry (spawnID, entry) VALUES (40470, 18686);
 INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, patch_min, patch_max) VALUES (40470, 530, 1, 0, 0, -2847.33, 3195.11,  7.4167, 0.091094, 300, 0, 0, 9144, 13525, 2, 0, 0, 10);
 INSERT INTO waypoint_data VALUES 
