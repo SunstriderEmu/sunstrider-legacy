@@ -2959,12 +2959,12 @@ uint8 Creature::GetLevelForTarget( WorldObject const* target ) const
     return uint8(level);
 }
 
-std::string Creature::GetScriptName()
+std::string Creature::GetScriptName() const
 {
     return sObjectMgr->GetScriptName(GetScriptId());
 }
 
-uint32 Creature::GetScriptId()
+uint32 Creature::GetScriptId() const
 {
     if (CreatureData const* creatureData = GetCreatureData())
         if (uint32 scriptId = creatureData->scriptId)
@@ -3667,6 +3667,15 @@ bool Creature::IsEscortNPC(bool onlyIfActive)
         return ai->IsEscortNPC(onlyIfActive);
 
     return false;
+}
+
+std::string Creature::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << Unit::GetDebugInfo() << "\n"
+        << "AIName: " << GetAIName() << " ScriptName: " << GetScriptName()
+        << " WaypointPath: " << GetWaypointPath() << " SpawnId: " << GetSpawnId();
+    return sstr.str();
 }
 
 VendorItemCount::VendorItemCount(uint32 _item, uint32 _count) : 

@@ -2266,6 +2266,14 @@ GameObjectModel* GameObject::CreateModel()
     return GameObjectModel::Create(Trinity::make_unique<GameObjectModelOwnerImpl>(this), sWorld->GetDataPath());
 }
 
+std::string GameObject::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << WorldObject::GetDebugInfo() << "\n"
+        << "SpawnId: " << GetSpawnId() << " GoState: " << std::to_string(GetGoState()) << " ScriptId: " << GetScriptId() << " AIName: " << GetAIName();
+    return sstr.str();
+}
+
 void GameObject::SetTransportPathRotation(G3D::Quat const& rot)
 {
     SetFloatValue(GAMEOBJECT_PARENTROTATION + 0, rot.x);

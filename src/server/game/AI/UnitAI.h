@@ -174,6 +174,8 @@ class TC_GAME_API UnitAI
         // Called when a game event starts or ends
         virtual void OnGameEvent(bool /*start*/, uint16 /*eventId*/) { }
 
+        virtual std::string GetDebugInfo() const;
+
         // Select the best target (in <targetType> order) from the threat list that fulfill the following:
         // - Not among the first <offset> entries in <targetType> order (or MAXTHREAT order, if <targetType> is RANDOM).
         // - Within at most <dist> yards (if dist > 0.0f)

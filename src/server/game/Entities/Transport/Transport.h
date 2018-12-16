@@ -24,6 +24,7 @@ public:
     uint32 GetPathProgress() const;
     void SetPathProgress(uint32 val) { m_goValue.Transport.PathProgress = val; }
 
+    std::string GetDebugInfo() const override;
 protected:
     PassengerSet _passengers;
 };

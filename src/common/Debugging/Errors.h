@@ -20,14 +20,15 @@
 #define TRINITYCORE_ERRORS_H
 
 #include "Define.h"
+#include <string>
 
 namespace Trinity
 {
-    DECLSPEC_NORETURN TC_COMMON_API void Assert(char const* file, int line, char const* function, char const* message) ATTR_NORETURN;
-    TC_COMMON_API void DebugAssert(char const* file, int line, char const* function, char const* message);
+    DECLSPEC_NORETURN TC_COMMON_API void Assert(char const* file, int line, char const* function, std::string debugInfo, char const* message) ATTR_NORETURN;
+    DECLSPEC_NORETURN TC_COMMON_API void DebugAssert(char const* file, int line, char const* function, std::string debugInfo, char const* message);
     
-    DECLSPEC_NORETURN TC_COMMON_API void Assert(char const* file, int line, char const* function, char const* message, char const* format, ...) ATTR_NORETURN ATTR_PRINTF(5, 6);
-    TC_COMMON_API void DebugAssert(char const* file, int line, char const* function, char const* message, char const* format, ...) ATTR_PRINTF(5, 6);
+    DECLSPEC_NORETURN TC_COMMON_API void Assert(char const* file, int line, char const* function, std::string debugInfo, char const* message, char const* format, ...) ATTR_NORETURN ATTR_PRINTF(5, 6);
+    DECLSPEC_NORETURN TC_COMMON_API void DebugAssert(char const* file, int line, char const* function, std::string debugInfo, char const* message, char const* format, ...) ATTR_PRINTF(5, 6);
 
 	DECLSPEC_NORETURN TC_COMMON_API void Fatal(char const* file, int line, char const* function, char const* message, ...) ATTR_NORETURN ATTR_PRINTF(4, 5);
 
@@ -41,6 +42,8 @@ namespace Trinity
 
 } // namespace Trinity
 
+TC_COMMON_API std::string GetDebugInfo();
+
 #if COMPILER == TRINITY_COMPILER_MICROSOFT
 #define ASSERT_BEGIN __pragma(warning(push)) __pragma(warning(disable: 4127))
 #define ASSERT_END __pragma(warning(pop))
@@ -53,8 +56,10 @@ namespace Trinity
 #define EXCEPTION_ASSERTION_FAILURE 0xC0000420L
 #endif
 
-#define WPAssert(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::Assert(__FILE__, __LINE__, __FUNCTION__, #cond, ##__VA_ARGS__); } while(0) ASSERT_END
-#define WPDebugAssert(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::DebugAssert(__FILE__, __LINE__, __FUNCTION__, #cond, ##__VA_ARGS__); } while(0) ASSERT_END
+#define WPAssert(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::Assert(__FILE__, __LINE__, __FUNCTION__, GetDebugInfo(), #cond, ##__VA_ARGS__); } while(0) ASSERT_END
+#define WPAssert_NODEBUGINFO(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::Assert(__FILE__, __LINE__, __FUNCTION__, "", #cond, ##__VA_ARGS__); } while(0) ASSERT_END
+#define WPDebugAssert(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::DebugAssert(__FILE__, __LINE__, __FUNCTION__, GetDebugInfo(), #cond, ##__VA_ARGS__); } while(0) ASSERT_END
+#define WPDebugAssert_NODEBUGINFO(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::DebugAssert(__FILE__, __LINE__, __FUNCTION__, "", #cond, ##__VA_ARGS__); } while(0) ASSERT_END
 #define WPFatal(cond, ...) ASSERT_BEGIN do { if (!(cond)) Trinity::Fatal(__FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0) ASSERT_END
 #define WPError(cond, msg) ASSERT_BEGIN do { if (!(cond)) Trinity::Error(__FILE__, __LINE__, __FUNCTION__, (msg)); } while(0) ASSERT_END
 #define WPWarning(cond, msg) ASSERT_BEGIN do { if (!(cond)) Trinity::Warning(__FILE__, __LINE__, __FUNCTION__, (msg)); } while(0) ASSERT_END
@@ -63,6 +68,8 @@ namespace Trinity
 #define ASSERT WPAssert
 //Same as ASSERT, except only enabled when TRINITY_DEBUG is true
 #define DEBUG_ASSERT WPDebugAssert
+#define ASSERT_NODEBUGINFO WPAssert_NODEBUGINFO
+#define DEBUG_ASSERT_NODEBUGINFO WPDebugAssert_NODEBUGINFO
 #define ABORT WPAbort
 
 template <typename T> inline T* ASSERT_NOTNULL(T* pointer)

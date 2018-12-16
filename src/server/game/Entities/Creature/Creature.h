@@ -702,8 +702,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         CreatureData const* GetCreatureData() const { return m_creatureData; }
         CreatureAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
-        std::string GetScriptName();
-        uint32 GetScriptId();
+        std::string GetScriptName() const;
+        uint32 GetScriptId() const;
         std::string GetAIName() const;
 
         void ResetCreatureEmote();
@@ -940,6 +940,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void AtEnterCombat() override;
         void AtExitCombat() override;
+
+        std::string GetDebugInfo() const override;
 
     protected:
         bool CreateFromProto(ObjectGuid::LowType guidlow, uint32 Entry, const CreatureData *data = nullptr);

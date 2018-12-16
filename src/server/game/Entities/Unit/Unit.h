@@ -1246,7 +1246,7 @@ class TC_GAME_API Unit : public WorldObject
         bool IsAlive() const { return (m_deathState == ALIVE); };
         bool IsDying() const { return (m_deathState == JUST_DIED); };
         bool IsDead() const { return ( m_deathState == DEAD || m_deathState == CORPSE ); };
-        DeathState GetDeathState() { return m_deathState; };
+        DeathState GetDeathState() const { return m_deathState; };
         virtual void SetDeathState(DeathState s);           // overwrited in Creature/Player/Pet
 
         ObjectGuid GetOwnerGUID() const override { return  GetGuidValue(UNIT_FIELD_SUMMONEDBY); }
@@ -1630,6 +1630,8 @@ class TC_GAME_API Unit : public WorldObject
         bool m_ControlledByPlayer;
 
         void HandleSpellClick(Unit* clicker, int8 seatId = -1);
+
+        std::string GetDebugInfo() const override;
 #ifdef LICH_KING
         void EnterVehicle(Unit* base, int8 seatId = -1);
         void EnterVehicleUnattackable(Unit *base, int8 seatId = -1);

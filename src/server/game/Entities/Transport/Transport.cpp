@@ -1093,3 +1093,10 @@ void StaticTransport::RemovePassenger(WorldObject* passenger)
         }
     }
 }
+
+std::string Transport::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << GameObject::GetDebugInfo();
+    return sstr.str();
+}

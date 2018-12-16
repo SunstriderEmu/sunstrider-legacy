@@ -845,10 +845,9 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
         // last damage from duel opponent
         if(duel_hasEnded)
         {
-            assert(pVictim->GetTypeId()==TYPEID_PLAYER);
-            Player *he = pVictim->ToPlayer();
+            Player* he = pVictim->ToPlayer();
 
-            assert(he->duel);
+            ASSERT_NODEBUGINFO(he && he->duel);
 
             he->SetHealth(he->GetMaxHealth()/10.0f);
 
@@ -1918,7 +1917,7 @@ static const SpellPartialResistDistribution SPELL_PARTIAL_RESIST_DISTRIBUTION = 
     float damageResisted = damage * (float(portion) / float(NUM_SPELL_PARTIAL_RESISTS));
     //--
 #endif
-    DEBUG_ASSERT(damageResisted < damage);
+    DEBUG_ASSERT_NODEBUGINFO(damageResisted < damage);
 
 #ifdef LICH_KING
     if (damageResisted > 0.0f) // if any damage was resisted
@@ -12327,6 +12326,17 @@ float Unit::ComputeCollisionHeight() const
 
     float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->Scale * displayInfo->scale;
     return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+}
+
+std::string Unit::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << WorldObject::GetDebugInfo() << "\n"
+        << std::boolalpha
+        << "IsAIEnabled: " << IsAIEnabled() << " DeathState: " << std::to_string(GetDeathState())
+        << " UnitMovementFlags: " << GetUnitMovementFlags() << " ExtraUnitMovementFlags: " << GetExtraUnitMovementFlags()
+        << " Class: " << std::to_string(GetClass());
+    return sstr.str();
 }
 
 PlayerMovementPendingChange::PlayerMovementPendingChange(uint32 time) :

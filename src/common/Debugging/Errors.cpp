@@ -59,7 +59,7 @@ namespace
         int32 length = vsnprintf(nullptr, 0, format, len);
         va_end(len);
 
-        formatted.resize(length + 1);
+        formatted.resize(length);
         vsnprintf(&formatted[0], length + 1, format, args);
 
         return formatted;
@@ -69,7 +69,7 @@ namespace
 namespace Trinity
 {
 
-void Assert(char const* file, int line, char const* function, char const* message)
+void Assert(char const* file, int line, char const* function, std::string debugInfo, char const* message)
 {
     std::string formattedMessage = StringFormat("\n%s:%i in %s ASSERTION FAILED:\n  %s\n", file, line, function, message);
     fprintf(stderr, "%s", formattedMessage.c_str());
@@ -77,7 +77,7 @@ void Assert(char const* file, int line, char const* function, char const* messag
     Crash(formattedMessage.c_str());
 }
 
-void DebugAssert(char const* file, int line, char const* function, char const* message)
+void DebugAssert(char const* file, int line, char const* function, std::string debugInfo, char const* message)
 {
     std::string formattedMessage = StringFormat("\n%s:%i in %s ASSERTION FAILED:\n  %s\n", file, line, function, message);
     fprintf(stderr, "%s", formattedMessage.c_str());
@@ -88,7 +88,7 @@ void DebugAssert(char const* file, int line, char const* function, char const* m
 #endif
 }
 
-void Assert(char const* file, int line, char const* function, char const* message, char const* format, ...)
+void Assert(char const* file, int line, char const* function, std::string debugInfo, char const* message, char const* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -102,7 +102,7 @@ void Assert(char const* file, int line, char const* function, char const* messag
     Crash(formattedMessage.c_str());
 }
 
-void DebugAssert(char const* file, int line, char const* function, char const* message, char const* format, ...)
+void DebugAssert(char const* file, int line, char const* function, std::string debugInfo, char const* message, char const* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -165,3 +165,8 @@ void AbortHandler(int sigval)
 }
 
 } // namespace Trinity
+
+std::string GetDebugInfo()
+{
+    return "";
+}

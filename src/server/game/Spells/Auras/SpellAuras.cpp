@@ -535,8 +535,8 @@ m_isPeriodic(false), m_updated(false), m_amplitude(0)
 
 uint8 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint8 availableEffectMask, WorldObject* owner)
 {
-    ASSERT(spellProto);
-    ASSERT(owner);
+    ASSERT_NODEBUGINFO(spellProto);
+    ASSERT_NODEBUGINFO(owner);
     uint8 effMask = 0;
     switch (owner->GetTypeId())
     {
@@ -565,7 +565,7 @@ uint8 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint8 available
 
 Aura* Aura::TryRefreshStackOrCreate(AuraCreateInfo& createInfo)
 {
-    ASSERT(createInfo.Caster || createInfo.CasterGUID);
+    ASSERT_NODEBUGINFO(createInfo.Caster || createInfo.CasterGUID);
     if (createInfo.IsRefresh)
         *createInfo.IsRefresh = false;
 
@@ -662,7 +662,7 @@ Aura* Aura::Create(AuraCreateInfo& createInfo)
             effMask = createInfo._targetEffectMask;
 
         effMask = Aura::BuildEffectMaskForOwner(createInfo._spellInfo, effMask, createInfo._owner);
-        ASSERT(effMask);
+        ASSERT_NODEBUGINFO(effMask);
 
         Unit* unit = createInfo._owner->ToUnit();
         aura->ToUnitAura()->AddStaticApplication(unit, effMask);
@@ -670,7 +670,7 @@ Aura* Aura::Create(AuraCreateInfo& createInfo)
     }
     case TYPEID_DYNAMICOBJECT:
         createInfo._auraEffectMask = Aura::BuildEffectMaskForOwner(createInfo._spellInfo, createInfo._auraEffectMask, createInfo._owner);
-        ASSERT(createInfo._auraEffectMask);
+        ASSERT_NODEBUGINFO(createInfo._auraEffectMask);
 
         aura = new DynObjAura(createInfo);
         break;
@@ -2632,6 +2632,14 @@ bool Aura::HasEffectType(AuraType type) const
     return false;
 }
 
+std::string Aura::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << std::boolalpha
+        << "Id: " << GetId() << " Caster: " << GetCasterGUID().ToString()
+        << "\nOwner: " << (GetOwner() ? GetOwner()->GetDebugInfo() : "NULL");
+    return sstr.str();
+}
 
 UnitAura::UnitAura(AuraCreateInfo const& createInfo)
     : Aura(createInfo)

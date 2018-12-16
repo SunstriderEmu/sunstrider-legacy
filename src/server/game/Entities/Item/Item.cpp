@@ -940,10 +940,10 @@ Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
 
     if (pProto)
     {
-        if (count > pProto->Stackable)
-            count = pProto->Stackable;
+        if (count > pProto->GetMaxStackSize())
+            count = pProto->GetMaxStackSize();
 
-        assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
+        ASSERT_NODEBUGINFO(count != 0 && "pProto->Stackable == 0 but checked at loading already");
 
         Item *pItem = NewItemOrBag(pProto);
         if (pItem->Create(sObjectMgr->GetGenerator<HighGuid::Item>().Generate(), item, player, pProto))
@@ -1077,3 +1077,13 @@ uint32 Item::GetEnchantmentDuration(EnchantmentSlot slot) const { return GetUInt
 uint32 Item::GetEnchantmentCharges(EnchantmentSlot slot)  const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET); }
 int32 Item::GetSpellCharges(uint8 index) const { return GetInt32Value(ITEM_FIELD_SPELL_CHARGES + index); }
 void  Item::SetSpellCharges(uint8 index, int32 value) { SetInt32Value(ITEM_FIELD_SPELL_CHARGES + index, value); }
+
+std::string Item::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << Object::GetDebugInfo() << "\n"
+        << std::boolalpha
+        << "Owner: " << GetOwnerGUID().ToString() << " Count: " << GetCount()
+        << " BagSlot: " << std::to_string(GetBagSlot()) << " Slot: " << std::to_string(GetSlot()) << " Equipped: " << IsEquipped();
+    return sstr.str();
+}

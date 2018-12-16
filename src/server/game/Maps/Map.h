@@ -201,6 +201,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         float GetVisibilityRange() const { return m_VisibleDistance; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
+
 		void SetVisibilityDistance(float dist);
 
         void PlayerRelocation(Player* player, float x, float y, float z, float angle);
@@ -248,6 +249,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		{
 			_updateObjects.erase(obj);
 		}
+
+        virtual std::string GetDebugInfo() const;
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
@@ -837,7 +840,7 @@ class TC_GAME_API InstanceMap : public Map
         void Update(const uint32&) override;
         void CreateInstanceData(bool load);
         bool Reset(uint8 method);
-        uint32 GetScriptId() { return i_script_id; }
+        uint32 GetScriptId() const { return i_script_id; }
         std::string const& GetScriptName() const;
         InstanceScript* GetInstanceScript() { return i_data; }
         void PermBindAllPlayers();
@@ -849,6 +852,8 @@ class TC_GAME_API InstanceMap : public Map
 
         float GetDefaultVisibilityDistance() const override;
 		float GetVisibilityNotifierPeriod() const override;
+
+        std::string GetDebugInfo() const override;
     protected:
         bool m_unloadWhenEmpty;
     private:

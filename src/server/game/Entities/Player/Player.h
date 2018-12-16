@@ -2241,6 +2241,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
         void GetBetaZoneCoord(uint32& map, float& x, float& y, float& z, float& o);
         
+        std::string GetDebugInfo() const override;
+
     public:
 		void SetSeer(WorldObject* target) { m_seer = target; }
 		void SetViewpoint(WorldObject* target, bool apply);

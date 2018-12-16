@@ -2451,6 +2451,13 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 #endif
 }
 
+std::string Object::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << GetGUID().ToString() + " Entry " << GetEntry();
+    return sstr.str();
+}
+
 void MovementInfo::OutDebug() const
 {
     TC_LOG_DEBUG("misc", "MOVEMENT INFO");
@@ -3959,6 +3966,15 @@ void WorldObject::GetPlayerListInGrid(Container& playerContainer, float maxSearc
     Trinity::AnyPlayerInObjectRangeCheck checker(this, maxSearchRange);
     Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, playerContainer, checker);
     Cell::VisitWorldObjects(this, searcher, maxSearchRange);
+}
+
+std::string WorldObject::GetDebugInfo() const
+{
+    std::stringstream sstr;
+    sstr << WorldLocation::GetDebugInfo() << "\n"
+        << Object::GetDebugInfo() << "\n"
+        << "Name: " << GetName();
+    return sstr.str();
 }
 
 template TC_GAME_API void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>&, uint32, float) const;

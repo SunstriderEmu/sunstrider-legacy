@@ -734,6 +734,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         bool AIM_Initialize();
         void AIM_Destroy();
+
+        std::string GetDebugInfo() const override;
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
