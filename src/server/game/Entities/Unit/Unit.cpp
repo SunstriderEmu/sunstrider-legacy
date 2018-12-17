@@ -9822,13 +9822,15 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
         player->RewardPlayerAndGroupAtKill(pVictim);
     }
 
+    //sun: rewritten condition here
     // Do KILL and KILLED procs. KILL proc is called only for the unit who landed the killing blow (and its owner - for pets and totems) regardless of who tapped the victim
-    if (attacker && (attacker->IsPet() || attacker->IsTotem()))
+    if (attacker && !pVictim->IsCritter())
     {
         // proc only once for victim
-        if (Unit* owner = attacker->GetOwner())
+        if (Unit* owner = attacker->GetCharmerOrOwnerOrSelf())
             Unit::ProcSkillsAndAuras(owner, pVictim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
     }
+    //Sun: TC has handling of old proc flag PROC_FLAG_KILLED at this point, but this flag is wrong.
 
     // Proc auras on death - must be before aura/combat remove
     Unit::ProcSkillsAndAuras(pVictim, pVictim, PROC_FLAG_NONE, PROC_FLAG_DEATH, PROC_SPELL_TYPE_MASK_ALL, PROC_SPELL_PHASE_NONE, PROC_HIT_NONE, nullptr, nullptr, nullptr);
