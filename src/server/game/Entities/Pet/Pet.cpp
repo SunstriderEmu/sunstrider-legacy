@@ -137,6 +137,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     uint32 ownerid = owner->GetGUID().GetCounter();
     Unit* target = nullptr;
 
+    PreparedStatement* stmt;
     QueryResult result;
 
     if(petnumber)
@@ -315,8 +316,20 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if(fields[10].GetUInt8() != 0)
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        trans->PAppend("UPDATE character_pet SET slot = '%u' WHERE owner = '%u' AND slot = '0' AND id <> '%u'", PET_SAVE_NOT_IN_SLOT, ownerid, m_charmInfo->GetPetNumber());
-        trans->PAppend("UPDATE character_pet SET slot = '%u' WHERE owner = '%u' AND id = '%u'", PET_SAVE_AS_CURRENT, ownerid, m_charmInfo->GetPetNumber());
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_SLOT_EXCLUDE_ID);
+        stmt->setUInt8(0, uint8(PET_SAVE_NOT_IN_SLOT));
+        stmt->setUInt32(1, ownerid);
+        stmt->setUInt8(2, uint8(PET_SAVE_AS_CURRENT));
+        stmt->setUInt32(3, m_charmInfo->GetPetNumber());
+        trans->Append(stmt);
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
+        stmt->setUInt8(0, uint8(PET_SAVE_AS_CURRENT));
+        stmt->setUInt32(1, ownerid);
+        stmt->setUInt32(2, m_charmInfo->GetPetNumber());
+        trans->Append(stmt);
+
         CharacterDatabase.CommitTransaction(trans);
     }
 
@@ -494,15 +507,30 @@ void Pet::SavePetToDB(PetSaveMode mode)
         std::string name = m_name;
         CharacterDatabase.EscapeString(name);
         // remove current data
-        trans->PAppend("DELETE FROM character_pet WHERE owner = '%u' AND id = '%u'", owner,m_charmInfo->GetPetNumber() );
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_ID);
+        stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+        trans->Append(stmt);
 
         // prevent duplicate using slot (except PET_SAVE_NOT_IN_SLOT)
-        if(mode!=PET_SAVE_NOT_IN_SLOT)
-            trans->PAppend("UPDATE character_pet SET slot = 3 WHERE owner = '%u' AND slot = '%u'", owner, uint32(mode) );
+        if (mode != PET_SAVE_NOT_IN_SLOT)
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_SLOT);
+            stmt->setUInt8(0, uint8(PET_SAVE_NOT_IN_SLOT));
+            stmt->setUInt32(1, owner);
+            stmt->setUInt8(2, uint8(mode));
+            trans->Append(stmt);
+        }
 
         // prevent existence another hunter pet in PET_SAVE_AS_CURRENT and PET_SAVE_NOT_IN_SLOT
-        if(getPetType()==HUNTER_PET && (mode==PET_SAVE_AS_CURRENT||mode==PET_SAVE_NOT_IN_SLOT))
-            trans->PAppend("DELETE FROM character_pet WHERE owner = '%u' AND (slot = '%u' OR slot > '%u')", owner, PET_SAVE_AS_CURRENT, PET_SAVE_LAST_STABLE_SLOT );
+        if (getPetType() == HUNTER_PET && (mode == PET_SAVE_AS_CURRENT || mode == PET_SAVE_NOT_IN_SLOT))
+        {
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_SLOT);
+            stmt->setUInt32(0, owner);
+            stmt->setUInt8(1, uint8(PET_SAVE_AS_CURRENT));
+            stmt->setUInt8(2, uint8(PET_SAVE_LAST_STABLE_SLOT));
+            trans->Append(stmt);
+        }
+
         // save pet
         std::ostringstream ss;
         ss << "INSERT INTO character_pet ( id, entry,  owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType) "
@@ -553,17 +581,27 @@ void Pet::SavePetToDB(PetSaveMode mode)
 void Pet::DeleteFromDB(ObjectGuid::LowType guidlow)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    PreparedStatement* stmt;
 
-    trans->PAppend("DELETE FROM character_pet WHERE id = '%u'", guidlow);
-    trans->PAppend("DELETE FROM character_pet_declinedname WHERE id = '%u'", guidlow);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_ID);
+    stmt->setUInt32(0, guidlow);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_DECLINEDNAME);
+    stmt->setUInt32(0, guidlow);
+    trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_AURAS);
     stmt->setUInt32(0, guidlow);
     trans->Append(stmt);
 
-    trans->PAppend("DELETE FROM pet_spell WHERE guid = '%u'", guidlow);
-    trans->PAppend("DELETE FROM pet_spell_cooldown WHERE guid = '%u'", guidlow);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_SPELLS);
+    stmt->setUInt32(0, guidlow);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_SPELL_COOLDOWNS);
+    stmt->setUInt32(0, guidlow);
+    trans->Append(stmt);
+
     CharacterDatabase.CommitTransaction(trans);
 }
 
@@ -1403,17 +1441,19 @@ void Pet::_LoadSpellCooldowns()
 
 void Pet::_LoadSpells()
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot, active FROM pet_spell WHERE guid = '%u'",m_charmInfo->GetPetNumber());
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SPELL);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
     if(result)
     {
         do
         {
-            Field *fields = result->Fetch();
+            Field* fields = result->Fetch();
 
-            AddSpell(fields[0].GetUInt32(), ActiveStates(fields[2].GetUInt16()), PETSPELL_UNCHANGED);
+            AddSpell(fields[0].GetUInt32(), ActiveStates(fields[1].GetUInt8()), PETSPELL_UNCHANGED);
         }
-        while( result->NextRow() );
+        while (result->NextRow());
     }
 }
 
@@ -1427,19 +1467,36 @@ void Pet::_SaveSpells(SQLTransaction& trans)
         if (itr->second.type == PETSPELL_FAMILY)
             continue;
 
+        PreparedStatement* stmt;
+
         switch (itr->second.state)
         {
         case PETSPELL_REMOVED:
-            trans->PAppend("DELETE FROM pet_spell WHERE guid = '%u' and spell = '%u'", m_charmInfo->GetPetNumber(), itr->first);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_SPELL_BY_SPELL);
+            stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+            stmt->setUInt32(1, itr->first);
+            trans->Append(stmt);
 
             m_spells.erase(itr);
             continue; //not break
         case PETSPELL_CHANGED:
-            trans->PAppend("DELETE FROM pet_spell WHERE guid = '%u' and spell = '%u'", m_charmInfo->GetPetNumber(), itr->first);
-            trans->PAppend("INSERT INTO pet_spell (guid,spell,slot,active) VALUES ('%u', '%u', '%u','%u')", m_charmInfo->GetPetNumber(), itr->first, itr->second.slotId, itr->second.active);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_SPELL_BY_SPELL);
+            stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+            stmt->setUInt32(1, itr->first);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_SPELL);
+            stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+            stmt->setUInt32(1, itr->first);
+            stmt->setUInt8(2, itr->second.active);
+            trans->Append(stmt);
             break;
         case PETSPELL_NEW:
-            trans->PAppend("INSERT INTO pet_spell (guid,spell,slot,active) VALUES ('%u', '%u', '%u','%u')", m_charmInfo->GetPetNumber(), itr->first, itr->second.slotId, itr->second.active);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_SPELL);
+            stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+            stmt->setUInt32(1, itr->first);
+            stmt->setUInt8(2, itr->second.active);
+            trans->Append(stmt);
             break;
         case PETSPELL_UNCHANGED:
             continue;
@@ -1614,7 +1671,9 @@ bool Pet::AddSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
         if(state == PETSPELL_UNCHANGED)                     // spell load case
         {
             TC_LOG_ERROR("entities.pet","Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.", spellId);
-            CharacterDatabase.PExecute("DELETE FROM pet_spell WHERE spell = '%u'", spellId);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVALID_PET_SPELL);
+            stmt->setUInt32(0, spellId);
+            CharacterDatabase.Execute(stmt);
         }
         else
             TC_LOG_ERROR("entities.pet","Pet::addSpell: Non-existed in SpellStore spell #%u request.", spellId);

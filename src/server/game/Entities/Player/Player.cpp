@@ -4230,7 +4230,9 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
 
             // unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
             // Get guids of character's pets, will deleted in transaction
-            QueryResult resultPets = CharacterDatabase.PQuery("SELECT id FROM character_pet WHERE owner = '%u'", guid);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PETS);
+            stmt->setUInt32(0, guid);
+            PreparedQueryResult resultPets = CharacterDatabase.Query(stmt);
 
             // NOW we can finally clear other DB data related to character
             if (resultPets)
@@ -4274,8 +4276,14 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
-            trans->PAppend("DELETE FROM character_pet WHERE owner = '%u'", guid);
-            trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'", guid);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_OWNER);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_DECLINEDNAME_BY_OWNER);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
             trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'", guid);
 
             trans->PAppend("DELETE FROM character_queststatus WHERE guid = '%u'", guid);
