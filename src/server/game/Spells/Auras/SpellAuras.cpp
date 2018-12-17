@@ -1069,13 +1069,14 @@ float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& event
     if ((procEntry.AttributesMask & PROC_ATTR_REDUCE_PROC_60) && eventInfo.GetActor()->GetLevel() > 60)
         chance = std::max(0.f, (1.f - ((eventInfo.GetActor()->GetLevel() - 60) * 1.f / 30.f)) * chance);
 
-    //sun: reduce chance for channeled spells, dividing by they number of ticks. (Affected: Pyroclasm, Aftermath, ...)
+    //sun: reduce chance for channeled spells, dividing by they number of ticks. (Affected: Pyroclasm, Aftermath, Blizzard, Volley, Arcane Missiles?, ...) //SELECT st.entry, st.spellname1, st2.entry, st2.spellname1 FROM spell_template st JOIN spell_template st2 ON st2.entry = st.effectTriggerSpell1 OR st2.entry = st.effectTriggerSpell2 OR st2.entry = st.effectTriggerSpell3 WHERE st2.AttributesEx3 & 0x02000000
     //This is from Pyroclasm wowwiki: "Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick."
     if(Spell const* procSpell = eventInfo.GetProcSpell())
-        if(SpellInfo const* triggeredBy = procSpell->GetTriggeredByAura())
-            if (triggeredBy->IsChanneled())
-                if (uint32 maxTicks = triggeredBy->GetMaxTicks())
-                    chance /= maxTicks;
+        if(procSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR3_TREAT_AS_PERIODIC))
+            if(SpellInfo const* triggeredBy = procSpell->GetTriggeredByAura())
+                if (triggeredBy->IsChanneled())
+                    if (uint32 maxTicks = triggeredBy->GetMaxTicks())
+                        chance /= maxTicks;
 
     return chance;
 }
