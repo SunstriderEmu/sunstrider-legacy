@@ -85,21 +85,13 @@ public:
             if (!target || !target->IsAlive() || target == GetCaster() || procSpell == nullptr)
                 return false;
             
-            //WoWWiki: Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick.
-            uint32 tickCount = 1;
-            // Hellfire have 15 tick
-            if (procSpell->GetSpellInfo()->SpellFamilyFlags & 0x0000000000000040LL)
-                tickCount = 15;
-            // Rain of Fire have 4 tick
-            else if (procSpell->GetSpellInfo()->SpellFamilyFlags & 0x0000000000000020LL)
-                tickCount = 4;  // was 4
-            //else soulfire : 0x8000000000, default to 1 tick
+            //reduced chance for channeling spells is already handled in Aura::CalcProcChance
 
             float chance = 0.0f;
             switch (GetAura()->GetId())
             {
-            case 18096: chance = 13.0f / tickCount; break; //rank 1
-            case 18073: chance = 26.0f / tickCount; break; //rank 2
+            case 18096: chance = 13.0f; break; //rank 1
+            case 18073: chance = 26.0f; break; //rank 2
             }
             if (!roll_chance_f(chance))
                 return false;

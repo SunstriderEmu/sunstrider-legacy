@@ -79,7 +79,7 @@ void AuraApplication::_UpdateSlot()
         {
             DEBUG_ASSERT(false, "Wrong debuff limit %u", buffLimit);
             TC_LOG_ERROR("spells", "Aura: %u Effect: %d on unit with entry %u has wrong debuff limit %u", GetBase()->GetId(), GetEffectMask(), GetTarget()->GetEntry(), buffLimit);
-            buffLimit = UNIT_BYTE2_CREATURE_BUFF_LIMIT;
+            buffLimit = GetTarget()->GetTypeId() == TYPEID_PLAYER ? UNIT_BYTE2_PLAYER_CONTROLLED_BUFF_LIMIT : UNIT_BYTE2_CREATURE_BUFF_LIMIT;
             GetTarget()->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_BUFF_LIMIT, buffLimit);
         }
 #endif
@@ -1068,6 +1068,14 @@ float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& event
     // proc chance is reduced by an additional 3.333% per level past 60
     if ((procEntry.AttributesMask & PROC_ATTR_REDUCE_PROC_60) && eventInfo.GetActor()->GetLevel() > 60)
         chance = std::max(0.f, (1.f - ((eventInfo.GetActor()->GetLevel() - 60) * 1.f / 30.f)) * chance);
+
+    //sun: reduce chance for channeled spells, dividing by they number of ticks. (Affected: Pyroclasm, Aftermath, ...)
+    //This is from Pyroclasm wowwiki: "Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick."
+    if(Spell const* procSpell = eventInfo.GetProcSpell())
+        if(SpellInfo const* triggeredBy = procSpell->GetTriggeredByAura())
+            if (triggeredBy->IsChanneled())
+                if (uint32 maxTicks = triggeredBy->GetMaxTicks())
+                    chance /= maxTicks;
 
     return chance;
 }

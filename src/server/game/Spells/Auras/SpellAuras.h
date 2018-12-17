@@ -328,7 +328,6 @@ protected:
     //channel information for channel triggering
     ChannelTargetData* m_channelData;
 
-    //int32 m_periodicTimer; //time until next tick
     int32 m_amplitude;
     uint32 m_PeriodicEventId;
 

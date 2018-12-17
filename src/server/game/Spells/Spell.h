@@ -535,6 +535,7 @@ class TC_GAME_API Spell
         bool IsPositive() const;
 
         bool IsTriggeredByAura(SpellInfo const* auraSpellInfo) const { return (auraSpellInfo == m_triggeredByAuraSpell); }
+        SpellInfo const* GetTriggeredByAura() const { return m_triggeredByAuraSpell; }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
