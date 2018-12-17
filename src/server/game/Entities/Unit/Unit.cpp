@@ -12692,19 +12692,10 @@ void Unit::_AddAura(UnitAura* aura, Unit* caster)
     if (aura->IsRemoved())
         return;
 
-    aura->SetIsSingleTarget(caster && (aura->GetSpellInfo()->IsSingleTarget() 
-#ifdef LICH_KING
-        || aura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE)
-#endif
-        ));
+    aura->SetIsSingleTarget(caster && aura->GetSpellInfo()->IsSingleTarget());
     if (aura->IsSingleTarget())
     {
-#ifdef LICH_KING
-        bool loadingVehicle = IsLoading() && aura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE);
-#else
-        bool loadingVehicle = false;
-#endif
-        ASSERT((IsInWorld() && !IsDuringRemoveFromWorld()) || (aura->GetCasterGUID() == GetGUID()) || loadingVehicle);
+        ASSERT((IsInWorld() && !IsDuringRemoveFromWorld()) || aura->GetCasterGUID() == GetGUID());
         /* @HACK: Player is not in world during loading auras.
         *        Single target auras are not saved or loaded from database
         *        but may be created as a result of aura links (player mounts with passengers)

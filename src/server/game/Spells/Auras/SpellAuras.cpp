@@ -2349,11 +2349,6 @@ bool Aura::IsSingleTargetWith(Aura const* aura) const
         break;
     }
 
-#ifdef LICH_KING
-    if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE) && aura->HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
-        return true;
-#endif
-
     return false;
 }
 
