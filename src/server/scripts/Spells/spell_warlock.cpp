@@ -125,6 +125,26 @@ public:
     }
 };
 
+// -18119 - Aftermath (talent)
+class spell_warl_aftermath : public AuraScript
+{
+    PrepareAuraScript(spell_warl_aftermath);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        Unit* target = eventInfo.GetActionTarget();
+        if (!target || !target->IsAlive() || target == GetCaster()) //No proc on self
+            return false;
+
+        return true;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_warl_aftermath::CheckProc);
+    }
+};
+
 // -1120 - Drain soul, improved drain soul talent handling
 class spell_warl_drainsoul : public SpellScriptLoader
 {
@@ -524,6 +544,7 @@ void AddSC_warlock_spell_scripts()
 {
     RegisterAuraScript(spell_warl_curse_of_agony);
     RegisterAuraScript(spell_warl_shadow_vulnerability);
+    RegisterAuraScript(spell_warl_aftermath);
     new spell_warl_pyroclasm();
     new spell_warl_drainsoul();
     new spell_warl_seed_of_corruption();
