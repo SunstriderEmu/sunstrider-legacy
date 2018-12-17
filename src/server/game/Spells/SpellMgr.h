@@ -19,6 +19,7 @@
 class Player;
 class Spell;
 class ProcEventInfo;
+class Aura;
 
 enum SpellCastResult : int
 {

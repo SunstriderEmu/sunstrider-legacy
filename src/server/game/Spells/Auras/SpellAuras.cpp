@@ -943,8 +943,13 @@ uint8 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo,
             return 0;
 
         // check if aura can proc when spell is triggered (exception for hunter auto shot & wands)
-        if (spell->IsTriggered() && !(procEntry->AttributesMask & PROC_ATTR_TRIGGERED_CAN_PROC) && !(eventInfo.GetTypeMask() & AUTO_ATTACK_PROC_FLAG_MASK))
-            if (!GetSpellInfo()->HasAttribute(SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED))
+        //sun: moved triggered check from CanSpellTriggerProcOnEvent to here
+        if (spell->IsTriggered() 
+            && !(procEntry->AttributesMask & PROC_ATTR_TRIGGERED_CAN_PROC) 
+            && !(eventInfo.GetTypeMask() & AUTO_ATTACK_PROC_FLAG_MASK)
+            && !GetSpellInfo()->HasAttribute(SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED)
+            && !spell->GetSpellInfo()->HasAttribute(SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2)
+            && !spell->GetSpellInfo()->HasAttribute(SPELL_ATTR2_TRIGGERED_CAN_TRIGGER_PROC))
                 return 0;
     }
 
@@ -1069,8 +1074,8 @@ float Aura::CalcProcChance(SpellProcEntry const& procEntry, ProcEventInfo& event
     if ((procEntry.AttributesMask & PROC_ATTR_REDUCE_PROC_60) && eventInfo.GetActor()->GetLevel() > 60)
         chance = std::max(0.f, (1.f - ((eventInfo.GetActor()->GetLevel() - 60) * 1.f / 30.f)) * chance);
 
-    //sun: reduce chance for channeled spells, dividing by they number of ticks. (Affected: Pyroclasm, Aftermath, Blizzard, Volley, Arcane Missiles?, ...) //SELECT st.entry, st.spellname1, st2.entry, st2.spellname1 FROM spell_template st JOIN spell_template st2 ON st2.entry = st.effectTriggerSpell1 OR st2.entry = st.effectTriggerSpell2 OR st2.entry = st.effectTriggerSpell3 WHERE st2.AttributesEx3 & 0x02000000
-    //This is from Pyroclasm wowwiki: "Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick."
+    //sun: reduce chance for channeled spells, dividing by they number of ticks. (Affected: Hellfire, Rain of fire, Blizzard, Volley, Arcane Missiles?, ...) //SELECT st.entry, st.spellname1, st2.entry, st2.spellname1 FROM spell_template st JOIN spell_template st2 ON st2.entry = st.effectTriggerSpell1 OR st2.entry = st.effectTriggerSpell2 OR st2.entry = st.effectTriggerSpell3 WHERE st2.AttributesEx3 & 0x02000000
+    //From Pyroclasm wowwiki: "Since Rain of Fire and Hellfire do damage over time, the chance to stun is distributed over all the ticks of the spell, not 13%/26% per tick."
     if(Spell const* procSpell = eventInfo.GetProcSpell())
         if(procSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR3_TREAT_AS_PERIODIC))
             if(SpellInfo const* triggeredBy = procSpell->GetTriggeredByAura())

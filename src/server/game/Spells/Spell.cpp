@@ -2190,11 +2190,12 @@ void Spell::prepareDataForTriggerSystem()
     }
 
     // Hellfire Effect - trigger as DOT
+    /*Sun: removed this, doesn't seem correct. Talents such as  Aftermath don't proc for Dots and should proc Hellfire
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags & 0x00000040)
     {
         m_procAttacker = PROC_FLAG_DONE_PERIODIC;
         m_procVictim = PROC_FLAG_TAKEN_PERIODIC;
-    }
+    }*/
 }
 
 void Spell::CleanupTargetList()
