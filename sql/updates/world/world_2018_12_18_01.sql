@@ -1,0 +1,1 @@
+UPDATE creature_template SET BaseVariance = 1, DamageModifier = 1 WHERE entry IN (416, 1860, 1863, 417, 17252, 510, 1964, 15438, 19668);
