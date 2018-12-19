@@ -7519,7 +7519,7 @@ void ObjectMgr::LoadGossipMenu()
 
     _gossipMenusStore.clear();
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, text_id FROM gossip_menu");
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, text_id FROM gossip_menu WHERE %u >= patch_min AND %u <= patch_max", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -7559,11 +7559,11 @@ void ObjectMgr::LoadGossipMenuItems()
 
     _gossipMenuItemsStore.clear(); //for reload case
 
-    QueryResult result = WorldDatabase.Query(
+    QueryResult result = WorldDatabase.PQuery(
         //      0        1   2            3            4                      5          6                   7               8              9          10         11        12
         "SELECT menu_id, id, option_icon, option_text, OptionBroadcastTextID, option_id, npc_option_npcflag, action_menu_id, action_poi_id, box_coded, box_money, box_text, BoxBroadcastTextID "
-        "FROM gossip_menu_option ORDER BY menu_id, id");
-
+        "FROM gossip_menu_option WHERE %u >= patch_min AND %u <= patch_max ORDER BY menu_id, id", sWorld->GetWowPatch(), sWorld->GetWowPatch());
+    
     if (result)
     {
         uint32 count = 0;
