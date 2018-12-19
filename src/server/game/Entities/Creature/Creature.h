@@ -360,7 +360,7 @@ struct GossipMenuItemsLocale
 
 struct PointOfInterestLocale
 {
-    std::vector<std::string> IconName;
+    std::vector<std::string> Name;
 };
 
 struct EquipmentInfo

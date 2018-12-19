@@ -6556,8 +6556,8 @@ void ObjectMgr::LoadPointsOfInterest()
 
     uint32 count = 0;
 
-    //                                                  0   1  2   3      4     5       6
-    QueryResult result = WorldDatabase.Query("SELECT entry, x, y, icon, flags, data, icon_name FROM points_of_interest");
+    //                                               0       1          2        3     4      5    6
+    QueryResult result = WorldDatabase.Query("SELECT ID, PositionX, PositionY, Icon, Flags, Importance, Name FROM points_of_interest");
 
     if (!result)
     {
@@ -6571,22 +6571,22 @@ void ObjectMgr::LoadPointsOfInterest()
 
         uint32 point_id = fields[0].GetUInt32();
 
-        PointOfInterest POI;
-        POI.entry = point_id;
-        POI.x = fields[1].GetFloat();
-        POI.y = fields[2].GetFloat();
-        POI.icon = fields[3].GetUInt32();
-        POI.flags = fields[4].GetUInt32();
-        POI.data = fields[5].GetUInt32();
-        POI.icon_name = fields[6].GetString();
+        PointOfInterest pointOfInterest;
+        pointOfInterest.ID = id;
+        pointOfInterest.PositionX = fields[1].GetFloat();
+        pointOfInterest.PositionY = fields[2].GetFloat();
+        pointOfInterest.Icon = fields[3].GetUInt32();
+        pointOfInterest.Flags = fields[4].GetUInt32();
+        pointOfInterest.Importance = fields[5].GetUInt32();
+        pointOfInterest.Name = fields[6].GetString();
 
-        if (!Trinity::IsValidMapCoord(POI.x, POI.y))
+        if (!Trinity::IsValidMapCoord(pointOfInterest.PositionX, pointOfInterest.PositionY))
         {
-            TC_LOG_ERROR("sql.sql", "Table `points_of_interest` (Entry: %u) have invalid coordinates (X: %f Y: %f), ignored.", point_id, POI.x, POI.y);
+            TC_LOG_ERROR("sql.sql", "Table `points_of_interest` (ID: %u) have invalid coordinates (X: %f Y: %f), ignored.", id, pointOfInterest.PositionX, pointOfInterest.PositionY);
             continue;
         }
 
-        _pointsOfInterestStore[point_id] = POI;
+        _pointsOfInterestStore[id] = pointOfInterest;
 
         ++count;
     } while (result->NextRow());

@@ -260,44 +260,36 @@ void PlayerMenu::SendCloseGossip()
     _session->SendPacket(&data);
 }
 
-void PlayerMenu::SendPointOfInterest( float X, float Y, uint32 Icon, uint32 Flags, uint32 Data, char const * locName ) const
+void PlayerMenu::SendPointOfInterest(float x, float y, uint32 icon, uint32 flags, uint32 importance, char const* locName) const
 {
     WorldPacket data( SMSG_GOSSIP_POI, (4+4+4+4+4+10) );    // guess size
-    data << uint32(Flags);
-    data << float(X);
-    data << float(Y);
-    data << uint32(Icon);
-    data << uint32(Data);
+    data << uint32(flags);
+    data << float(x);
+    data << float(y);
+    data << uint32(icon);
+    data << uint32(importance);
     data << locName;
 
-    _session->SendPacket( &data );
+    _session->SendPacket(&data);
     //sLog.outDebug("WORLD: Sent SMSG_GOSSIP_POI");
 }
 
-void PlayerMenu::SendPointOfInterest(uint32 poiId) const
+void PlayerMenu::SendPointOfInterest(uint32 id) const
 {
-   PointOfInterest const* poi = sObjectMgr->GetPointOfInterest(poiId);
+   PointOfInterest const* poi = sObjectMgr->GetPointOfInterest(id);
     if (!poi)
     {
-        TC_LOG_ERROR("sql.sql", "Request to send non-existing POI (Id: %u), ignored.", poiId);
+        TC_LOG_ERROR("sql.sql", "Request to send non-existing POI (Id: %u), ignored.", id);
         return;
     }
 
-    std::string iconText = poi->icon_name;
-    int32 locale = _session->GetSessionDbLocaleIndex();
-    if (locale != DEFAULT_LOCALE)
-        if (PointOfInterestLocale const* localeData = sObjectMgr->GetPointOfInterestLocale(poiId))
-            ObjectMgr::GetLocaleString(localeData->IconName, locale, iconText);
+    std::string name = poi->Name;
+    int32 localeConstant = _session->GetSessionDbLocaleIndex();
+    if (localeConstant != DEFAULT_LOCALE)
+        if (PointOfInterestLocale const* localeData = sObjectMgr->GetPointOfInterestLocale(id))
+            ObjectMgr::GetLocaleString(localeData->Name, localeConstant, name);
 
-    WorldPacket data(SMSG_GOSSIP_POI, 4 + 4 + 4 + 4 + 4 + 10);  // guess size
-    data << uint32(poi->flags);
-    data << float(poi->x);
-    data << float(poi->y);
-    data << uint32(poi->icon);
-    data << uint32(poi->data);
-    data << iconText;
-
-    _session->SendPacket(&data);
+    SendPointOfInterest(poi->PositionX, poi->PositionY, poi->Icon, poi->Flags, poi->Importance, name.c_str());
 }
 
 /*********************************************************/

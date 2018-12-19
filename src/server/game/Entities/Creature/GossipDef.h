@@ -203,7 +203,7 @@ class TC_GAME_API PlayerMenu
         //Sends a gossip menu with given text id. /!\ This is NOT a menu id
         void SendGossipMenuTextID(uint32 titleTextId, ObjectGuid objectGUID);
         void SendCloseGossip();
-        void SendPointOfInterest( float X, float Y, uint32 Icon, uint32 Flags, uint32 Data, const char * locName ) const;
+        void SendPointOfInterest(float x, float y, uint32 icon, uint32 flags, uint32 importance, const char* locName) const;
         void SendPointOfInterest(uint32 poiId) const;
 
         /*********************************************************/
