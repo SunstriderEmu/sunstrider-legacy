@@ -6569,7 +6569,7 @@ void ObjectMgr::LoadPointsOfInterest()
     {
         Field* fields = result->Fetch();
 
-        uint32 point_id = fields[0].GetUInt32();
+        uint32 id = fields[0].GetUInt32();
 
         PointOfInterest pointOfInterest;
         pointOfInterest.ID = id;

@@ -52,7 +52,7 @@ void WorldSession::SendWrongFactionNotice()
     SendPacket(&data);
 }
 
-void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
+void WorldSession::HandleMessagechatOpcode(WorldPacket & recvData)
 {
     uint32 type;
     uint32 lang;
@@ -154,7 +154,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         || type == CHAT_MSG_BATTLEGROUND_LEADER)
         {
             GetPlayer()->UpdateSpeakTime();
-            if ( !_player->CanSpeak() )
+            if (!_player->CanSpeak())
             {
                 std::string timeStr = secsToTimeString(m_muteTime - WorldGameTime::GetGameTime());
                 SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
