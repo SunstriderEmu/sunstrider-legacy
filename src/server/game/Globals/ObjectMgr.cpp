@@ -6556,8 +6556,8 @@ void ObjectMgr::LoadPointsOfInterest()
 
     uint32 count = 0;
 
-    //                                               0       1          2        3     4      5    6
-    QueryResult result = WorldDatabase.Query("SELECT ID, PositionX, PositionY, Icon, Flags, Importance, Name FROM points_of_interest");
+    //                                                0       1          2        3     4        5        6
+    QueryResult result = WorldDatabase.PQuery("SELECT ID, PositionX, PositionY, Icon, Flags, Importance, Name, MAX(patch) FROM points_of_interest WHERE patch <= %u GROUP BY ID", sWorld->GetWowPatch());
 
     if (!result)
     {

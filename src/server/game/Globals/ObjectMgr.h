@@ -502,6 +502,25 @@ struct GM_Ticket
 };
 typedef std::list<GM_Ticket*> GmTicketList;
 
+enum PointOfInterestIcon
+{
+#ifdef LICH_KING
+    //TODO
+#else
+    POI_HORDE_TOWER                       = 1,
+    POI_TOWER_ALLIANCE                    = 2,
+    POI_NEUTRAL_CEMETERY_PENDING_ALLIANCE = 3,
+    POI_HOUSE                             = 4, //base?
+    POI_TOWER_NEUTRAL                     = 5,
+    POI_GUARD_DIRECTION                   = 6,
+    POI_NEUTRAL_CEMETERY                  = 7,
+    POI_NEUTRAL_TOWER_PENDING_ALLIANCE    = 8,
+    POI_TOWER_HORDE                       = 9,
+    //?
+    POI_TOWER_NEUTRAL_PENDING_HORDE       = 11,
+#endif
+};
+
 struct PointOfInterest
 {
     uint32 ID;
