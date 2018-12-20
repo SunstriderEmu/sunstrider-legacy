@@ -243,9 +243,12 @@ public:
         {
             PreventDefaultAction();
 
-            // if damage is more than need or target die from damage deal finish spell
             // + proc is apparently not supposed to go off on other SoC procs (to be confirmed)
-            if ((uint32(aurEff->GetAmount()) <= eventInfo.GetDamageInfo()->GetDamage() && eventInfo.GetSpellInfo()->GetFirstRankSpell()->Id != SPELL_WARLOCK_SEED_OF_CORRUPTION_PROC) 
+            if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->GetFirstRankSpell()->Id != SPELL_WARLOCK_SEED_OF_CORRUPTION_PROC)
+                return;
+
+            // if damage is more than need or target die from damage deal finish spell
+            if ((uint32(aurEff->GetAmount()) <= eventInfo.GetDamageInfo()->GetDamage())
                 || GetTarget()->GetHealth() <= eventInfo.GetDamageInfo()->GetDamage())
             {
                 // Remove our seed aura before casting
