@@ -727,6 +727,54 @@ public:
     }
 };
 
+// 31789 - Righteous Defense
+class spell_pal_righteous_defense : public SpellScript
+{
+    PrepareSpellScript(spell_pal_righteous_defense);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_PALADIN_RIGHTEOUS_DEFENSE_TAUNT });
+    }
+
+    SpellCastResult CheckCast()
+    {
+        Unit* caster = GetCaster();
+        if (caster->GetTypeId() != TYPEID_PLAYER)
+            return SPELL_FAILED_DONT_REPORT;
+
+        if (Unit* target = GetExplTargetUnit())
+        {
+            if (!target->IsFriendlyTo(caster) || target == caster || target->GetAttackers().empty())
+                return SPELL_FAILED_BAD_TARGETS;
+        }
+        else
+            return SPELL_FAILED_BAD_TARGETS;
+
+        return SPELL_CAST_OK;
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& damage)
+    {
+        if (Unit* target = GetHitUnit())
+        {
+            auto const& attackers = target->GetAttackers();
+
+            std::vector<Unit*> list(attackers.cbegin(), attackers.cend());
+            Trinity::Containers::RandomResize(list, 3);
+
+            for (Unit* attacker : list)
+                GetCaster()->CastSpell(attacker, SPELL_PALADIN_RIGHTEOUS_DEFENSE_TAUNT, TRIGGERED_FULL_MASK);
+        }
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_pal_righteous_defense::CheckCast);
+        OnEffectHitTarget += SpellEffectFn(spell_pal_righteous_defense::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_judgement_of_light_heal();
@@ -741,4 +789,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_illumination();
     new spell_pal_item_healing_discount();
     new spell_pal_eye_for_an_eye();
+    RegisterSpellScript(spell_pal_righteous_defense);
 }

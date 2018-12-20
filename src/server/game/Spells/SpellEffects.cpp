@@ -2176,44 +2176,6 @@ void Spell::EffectDummy(uint32 i)
 
             switch(m_spellInfo->Id)
             {
-                case 31789:                                 // Righteous Defense (step 1)
-                {
-                    // 31989 -> dummy effect (step 1) + dummy effect (step 2) -> 31709 (taunt like spell for each target)
-
-                    // non-standard cast requirement check
-                    if (!unitTarget || unitTarget->GetAttackers().empty())
-                    {
-                        // clear cooldown at fail
-                        if(m_caster->GetTypeId()==TYPEID_PLAYER && _unitCaster)
-                            _unitCaster->GetSpellHistory()->ResetCooldown(m_spellInfo->Id, true);
-
-                        SendCastResult(SPELL_FAILED_BAD_TARGETS);
-                        return;
-                    }
-
-                    // Righteous Defense (step 2) (in old version 31980 dummy effect)
-                    // Clear targets for eff 1
-                    for(auto & ihit : m_UniqueTargetInfo)
-                        ihit.EffectMask &= ~(1<<1);
-
-                    // select up to 3 random targets
-                    Unit::AttackerSet const& attackers = unitTarget->GetAttackers();
-                    std::set<Unit*> targetSet (attackers);
-                    size_t setSize = targetSet.size();
-                    while (setSize > 3)
-                    {
-                        auto itr = targetSet.begin();
-                        std::advance(itr, urand(0, setSize - 1));
-                        targetSet.erase(itr);
-                        --setSize;
-                    }
-
-                    for(auto itr : targetSet)
-                        AddUnitTarget(itr, 1);
-
-                    // now let next effect cast spell at each target.
-                    return;
-                }
                 case 37877:                                 // Blessing of Faith
                 {
                     if(!unitTarget)
@@ -2548,12 +2510,6 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                     args.SetCastItem(m_CastItem);
                     m_caster->CastSpell(unitTarget, spell->Id, args);
                 }
-                return;
-            }
-            // Righteous Defense
-            case 31980:
-            {
-                m_caster->CastSpell(unitTarget, 31790, m_originalCasterGUID);
                 return;
             }
             // Cloak of Shadows
