@@ -533,6 +533,18 @@ enum ScriptCommands
     SCRIPT_COMMAND_SMART_SET_DATA =       23,              // source = unit, datalong=id, datalong2=value // triggers SMART_EVENT_DATA_SET for unit if using SmartAI
 };
 
+enum WorldStates
+{
+    WS_ARENA_DISTRIBUTION_TIME  = 20001,                     // Next arena distribution time
+//TC    WS_CLEANING_FLAGS           = 20004,                     // Cleaning Flags
+#ifdef LICH_KING
+    WS_WEEKLY_QUEST_RESET_TIME  = 20002,                     // Next weekly reset time
+    WS_BG_DAILY_RESET_TIME      = 20003,                     // Next daily BG reset time
+    WS_GUILD_DAILY_RESET_TIME   = 20006,                     // Next guild cap reset time
+    WS_MONTHLY_QUEST_RESET_TIME = 20007,                     // Next monthly reset time
+#endif
+};
+
 /// Storage class for commands issued for delayed execution
 struct CliCommandHolder
 {
@@ -701,6 +713,10 @@ class TC_GAME_API World
 #define getBoolConfig(a) getConfig(a)
 #define getFloatConfig(a) getConfig(a)
 
+        void SetWorldState(uint32 index, uint64 value);
+        uint64 GetWorldState(uint32 index) const;
+        void LoadWorldStates();
+
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }
         bool IsFFAPvPRealm() { return getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP; }
@@ -817,6 +833,8 @@ class TC_GAME_API World
 
         float rate_values[MAX_RATES];
         int32 m_configs[CONFIG_VALUE_COUNT];
+        typedef std::map<uint32, uint64> WorldStatesMap;
+        WorldStatesMap m_worldstates;
         int32 m_playerLimit;
         uint8 m_wowPatch;
         AccountTypes m_allowedSecurityLevel;

@@ -421,8 +421,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_WORLD_STATE:
         {
-           // condMeets = ConditionValue2 == sWorld->GetWorldState(ConditionValue1);
-            condMeets = true;
+            condMeets = ConditionValue2 == sWorld->GetWorldState(ConditionValue1);
             break;
         }
         case CONDITION_PHASEMASK:
@@ -2222,11 +2221,11 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
         }
         case CONDITION_WORLD_STATE:
         {
-          /*  if (!sWorld->getWorldState(cond->ConditionValue1))
+            if (!sWorld->GetWorldState(cond->ConditionValue1))
             {
                 TC_LOG_ERROR("sql.sql", "%s has non existing world state in value1 (%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;
-            } */
+            }
             break;
         }
         case CONDITION_TITLE:

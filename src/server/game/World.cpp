@@ -3216,6 +3216,66 @@ void World::UpdateArenaSeasonLogs()
     }
 }
 
+void World::LoadWorldStates()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    QueryResult result = CharacterDatabase.Query("SELECT entry, value FROM worldstates");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 world states. DB table `worldstates` is empty!");
+
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+        m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt32();
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u world states in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+
+}
+
+// Setting a worldstate will save it to DB
+void World::SetWorldState(uint32 index, uint64 value)
+{
+    WorldStatesMap::const_iterator it = m_worldstates.find(index);
+    if (it != m_worldstates.end())
+    {
+        if (it->second == value)
+            return;
+
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_WORLDSTATE);
+
+        stmt->setUInt32(0, uint32(value));
+        stmt->setUInt32(1, index);
+
+        CharacterDatabase.Execute(stmt);
+    }
+    else
+    {
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_WORLDSTATE);
+
+        stmt->setUInt32(0, index);
+        stmt->setUInt32(1, uint32(value));
+
+        CharacterDatabase.Execute(stmt);
+    }
+    m_worldstates[index] = value;
+}
+
+uint64 World::GetWorldState(uint32 index) const
+{
+    WorldStatesMap::const_iterator it = m_worldstates.find(index);
+    return it != m_worldstates.end() ? it->second : 0;
+}
+
 void World::ProcessQueryCallbacks()
 {
     _queryProcessor.ProcessReadyQueries();

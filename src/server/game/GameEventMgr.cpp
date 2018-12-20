@@ -81,7 +81,7 @@ uint32 GameEventMgr::NextCheck(uint16 entry) const
         return delay;
 }
 
-bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
+bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
 {
     // Temp hack until game_event dependencies is implemented
     if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(GAME_EVENT_HALLOWS_END))
@@ -95,8 +95,11 @@ bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
         {
             mGameEvent[event_id].start = WorldGameTime::GetGameTime();
             if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
-                mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
+                mGameEvent[event_id].end = mGameEvent[event_id].start + mGameEvent[event_id].length;
         }
+
+        // When event is started, set its worldstate to current time
+        sWorld->SetWorldState(event_id, WorldGameTime::GetGameTime());
         return false;
     }
     else
@@ -130,6 +133,9 @@ void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 
     RemoveActiveEvent(event_id);
     UnApplyEvent(event_id);
+
+    // When event is stopped, clean up its worldstate
+    sWorld->SetWorldState(event_id, 0);
 
     if(overwrite && !serverwide_evt)
     {
@@ -958,6 +964,9 @@ uint32 GameEventMgr::Update()                                  // return the nex
         }
         else
         {
+            // If event is inactive, periodically clean up its worldstate
+            sWorld->SetWorldState(itr, 0);
+
             //TC_LOG_DEBUG("gameevent","GameEventMgr %u is not active",itr->first);
             if (IsActiveEvent(itr))
                 deactivate.insert(itr);
@@ -1048,9 +1057,8 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
 
     // If event's worldstate is 0, it means the event hasn't been started yet. In that case, reset seasonal quests.
     // When event ends (if it expires or if it's stopped via commands) worldstate will be set to 0 again, ready for another seasonal quest reset.
-    /*TODO WorldState
     if (sWorld->GetWorldState(event_id) == 0)
-        sWorld->ResetEventSeasonalQuests(event_id);*/
+        sWorld->ResetEventSeasonalQuests(event_id);
 }
 
 void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)
