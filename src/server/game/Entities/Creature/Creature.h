@@ -615,7 +615,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         using Unit::SetImmuneToNPC;
         void SetImmuneToNPC(bool apply) override { Unit::SetImmuneToNPC(apply, HasReactState(REACT_PASSIVE)); }
 
-        bool isTrainerFor(Player* player, bool msg) const;
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool isCanTrainingAndResetTalentsOf(Player* player) const;
         bool canResetTalentsOf(Player* pPlayer) const;

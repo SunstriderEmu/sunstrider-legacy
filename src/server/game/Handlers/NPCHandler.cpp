@@ -102,13 +102,13 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
     ObjectGuid guid;
 
     recvData >> guid;
-    SendTrainerList( guid );
+    SendTrainerList(guid);
 }
 
 void WorldSession::SendTrainerList( ObjectGuid guid )
 {
     std::string str = GetTrinityString(LANG_NPC_TAINER_HELLO);
-    SendTrainerList( guid, str );
+    SendTrainerList(guid, str);
 }
 
 void WorldSession::SendTrainerList( ObjectGuid guid, const std::string& strTitle )
@@ -124,12 +124,7 @@ void WorldSession::SendTrainerList( ObjectGuid guid, const std::string& strTitle
     if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    // trainer list loaded at check;
-    if(!unit->isTrainerFor(_player,true))
-        return;
-
     CreatureTemplate const *ci = unit->GetCreatureTemplate();
-
     if (!ci)
     {
         TC_LOG_ERROR("network", "WORLD: SendTrainerList - (GUID: %u) NO CREATUREINFO!",guid.GetCounter() );
@@ -206,9 +201,6 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
     if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if(!unit->isTrainerFor(_player,true))
-        return;
-
     // check present spell in trainer spell list
     TrainerSpellData const* trainer_spells = unit->GetTrainerSpells();
     if(!trainer_spells)
@@ -251,7 +243,6 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
 //    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GOSSIP_HELLO");
-    
     ObjectGuid guid;
     recvData >> guid;
 
@@ -298,8 +289,6 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
 {
-    
-
     ObjectGuid guid;
 
     recvData >> guid;
