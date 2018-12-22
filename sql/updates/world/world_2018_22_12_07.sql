@@ -1,0 +1,1 @@
+UPDATE creature SET patch_min = 5 WHERE map IN (595, 619);
