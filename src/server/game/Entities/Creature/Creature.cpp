@@ -57,23 +57,6 @@ std::string CreatureMovementData::ToString() const
     return str.str();
 }
 
-void TrainerSpellData::Clear()
-{
-    for (auto & itr : spellList)
-        delete itr;
-
-    spellList.clear();
-}
-
-TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
-{
-    for(auto itr : spellList)
-        if(itr->spell == spell_id)
-            return itr;
-
-    return nullptr;
-}
-
 bool VendorItemData::RemoveItem( uint32 item_id )
 {
     for(auto i = m_items.begin(); i != m_items.end(); ++i )
@@ -1246,11 +1229,13 @@ void Creature::InitializeReactState()
         SetReactState(REACT_AGGRESSIVE);
 }
 
-bool Creature::isCanTrainingAndResetTalentsOf(Player* player) const
+bool Creature::CanResetTalents(Player* player) const
 {
-    return player->GetLevel() >= 10
-        && GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS
-        && player->GetClass() == GetCreatureTemplate()->trainer_class;
+    Trainer::Trainer const* trainer = sObjectMgr->GetTrainer(GetEntry());
+    if (!trainer)
+        return false;
+
+    return player->GetLevel() >= 10 && trainer->IsTrainerValidForPlayer(player) && trainer->GetTrainerType() == Trainer::Type::Class;
 }
 
 bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
@@ -1280,13 +1265,6 @@ bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
         return false;
     }
     return true;
-}
-
-bool Creature::canResetTalentsOf(Player* pPlayer) const
-{
-    return pPlayer->GetLevel() >= 10
-        && GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS
-        && pPlayer->GetClass() == GetCreatureTemplate()->trainer_class;
 }
 
 Player* Creature::GetLootRecipient() const
@@ -2966,11 +2944,6 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
     vCount->count = vCount->count > used_count ? vCount->count-used_count : 0;
     vCount->lastIncrementTime = ptime;
     return vCount->count;
-}
-
-TrainerSpellData const* Creature::GetTrainerSpells() const
-{
-    return sObjectMgr->GetNpcTrainerSpells(GetEntry());
 }
 
 // overwrite WorldObject function for proper name localization

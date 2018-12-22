@@ -67,7 +67,6 @@ public:
             { "gossip_menu",                 SEC_ADMINISTRATOR, true, &HandleReloadGossipMenuCommand,              "" },
             { "gossip_menu_option",          SEC_ADMINISTRATOR, true, &HandleReloadGossipMenuOptionCommand,        "" },
             { "gossip_text",                 SEC_ADMINISTRATOR, true, &HandleReloadGossipTextCommand,              "" },
-            { "npc_trainer",                 SEC_ADMINISTRATOR, true, &HandleReloadNpcTrainerCommand,              "" },
             { "npc_vendor",                  SEC_ADMINISTRATOR, true, &HandleReloadNpcVendorCommand,               "" },
             { "page_text",                   SEC_ADMINISTRATOR, true, &HandleReloadPageTextsCommand,               "" },
             { "pickpocketing_loot_template", SEC_ADMINISTRATOR, true, &HandleReloadLootTemplatesPickpocketingCommand,"" },
@@ -99,6 +98,7 @@ public:
             { "spell_target_position",       SEC_ADMINISTRATOR, true, &HandleReloadSpellTargetPositionCommand,     "" },
             { "spell_template",              SEC_ADMINISTRATOR, true, &HandleReloadSpellTemplates,                 "" },
             { "spell_threats",               SEC_ADMINISTRATOR, true, &HandleReloadSpellThreatsCommand,            "" },
+            { "trainer",                     SEC_ADMINISTRATOR, true, &HandleReloadTrainerCommand,                 "" },
             { "trinity_string",              SEC_ADMINISTRATOR, true, &HandleReloadTrinityStringCommand,           "" },
             { "waypoint_scripts",            SEC_ADMINISTRATOR, true, &HandleReloadWpScriptsCommand,               "" },
             { "waypoints",                   SEC_ADMINISTRATOR, true, &HandleReloadSmartWaypointsCommand,          "" },
@@ -178,7 +178,7 @@ public:
     {
         HandleReloadCreatureGossipCommand(handler, "a");
         HandleReloadGossipMenuOptionCommand(handler, "a");
-        HandleReloadNpcTrainerCommand(handler, "a");
+        HandleReloadTrainerCommand(handler, "a");
         HandleReloadNpcVendorCommand(handler, "a");
         return true;
     }
@@ -487,12 +487,15 @@ public:
         return true;
     }
 
-    static bool HandleReloadNpcTrainerCommand(ChatHandler* handler, char const* /*args*/)
+    static bool HandleReloadTrainerCommand(ChatHandler* handler, char const* /*args*/)
     {
-        TC_LOG_INFO("command", "Re-Loading `npc_trainer` Table!");
-        sObjectMgr->LoadTrainerSpell();
-        sGameEventMgr->LoadTrainers();
-        handler->SendGlobalGMSysMessage("DB table `npc_trainer` reloaded.");
+        TC_LOG_INFO("command", "Re-Loading `trainer` Table!");
+        sObjectMgr->LoadTrainers();
+        sObjectMgr->LoadCreatureDefaultTrainers();
+        handler->SendGlobalGMSysMessage("DB table `trainer` reloaded.");
+        handler->SendGlobalGMSysMessage("DB table `trainer_locale` reloaded.");
+        handler->SendGlobalGMSysMessage("DB table `trainer_spell` reloaded.");
+        handler->SendGlobalGMSysMessage("DB table `creature_default_trainer` reloaded.");
         return true;
     }
 

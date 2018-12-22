@@ -14,6 +14,7 @@
 #include "World.h"
 #include "Position.h"
 #include "IteratorPair.h"
+#include "Trainer.h"
 
 #include <string>
 #include <map>
@@ -457,7 +458,6 @@ typedef std::unordered_map<uint32, uint32> CacheNpcTextIdMap;
 typedef std::unordered_map<uint32, uint32> CacheGoTextIdMap;
 
 typedef std::unordered_map<uint32, VendorItemData> CacheVendorItemMap;
-typedef std::unordered_map<uint32, TrainerSpellData> CacheTrainerSpellMap;
 
 typedef std::unordered_map<uint32, ItemExtendedCostEntry> ItemExtendedStore;
 
@@ -837,7 +837,6 @@ class TC_GAME_API ObjectMgr
         void LoadReputationOnKill();
 
         void LoadPointsOfInterest();
-        void LoadQuestPOI();
 
         void LoadWeatherZoneChances();
         void LoadGameTele();
@@ -847,7 +846,8 @@ class TC_GAME_API ObjectMgr
         void LoadGossipMenuItems();
         void LoadCreatureGossip();
         void LoadVendors();
-        void LoadTrainerSpell();
+        void LoadTrainers();
+        void LoadCreatureDefaultTrainers();
 
         void InitializeQueriesData(QueryDataGroup mask);
 
@@ -1115,10 +1115,7 @@ class TC_GAME_API ObjectMgr
             return iter->second;
         }
 
-        TrainerSpellData const* GetNpcTrainerSpells(uint32 entry) const
-        {
-            return Trinity::Containers::MapGetValuePtr(m_mCacheTrainerSpellMap, entry);
-        }
+        Trainer::Trainer const* GetTrainer(uint32 creatureId) const;
 
         VendorItemData const* GetNpcVendorItemList(uint32 entry) const
         {
@@ -1127,8 +1124,6 @@ class TC_GAME_API ObjectMgr
         void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = false); // for event
         bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = false); // for event
         bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = nullptr, std::set<uint32>* skip_vendors = nullptr, uint32 ORnpcflag = 0 ) const;
-        bool AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell);
-        bool RemoveTrainerSpell(uint32 creatureId, uint32 spellId);
 
         void LoadScriptNames();
         ScriptNameContainer const& GetAllScriptNames() const;
@@ -1296,7 +1291,8 @@ class TC_GAME_API ObjectMgr
         CacheGoTextIdMap m_mCacheGoMenuIdMap;
         CacheNpcTextIdMap m_mCacheNpcMenuIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
-        CacheTrainerSpellMap m_mCacheTrainerSpellMap;
+        std::unordered_map<uint32, Trainer::Trainer> _trainers;
+        std::unordered_map<uint32, uint32> _creatureDefaultTrainers;
 
         ItemExtendedStore sItemExtendedCostStore;
 

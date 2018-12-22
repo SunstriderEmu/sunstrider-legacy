@@ -500,6 +500,9 @@ public:
     bool IsBinarySpell() const;
 
     bool IsProfessionOrRiding() const;
+    bool IsProfession() const;
+    bool IsPrimaryProfession() const;
+    bool IsPrimaryProfessionFirstRank() const;
     bool IsAbilityLearnedWithProfession() const;
 
     /** Some spells, such as dispells, can be positive or negative depending on target */

@@ -120,13 +120,6 @@ struct SpellCooldown
     uint16 itemid;
 };
 
-enum TrainerSpellState
-{
-    TRAINER_SPELL_GREEN = 0,
-    TRAINER_SPELL_RED   = 1,
-    TRAINER_SPELL_GRAY  = 2
-};
-
 enum ActionButtonUpdateState
 {
     ACTIONBUTTON_UNCHANGED = 0,
@@ -1697,7 +1690,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendRemoveControlBar() const;
         bool HasSpell(uint32 spell) const override;
         bool HasSpellButDisabled(uint32 spell) const;
-        TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
         bool HandlePassiveSpellLearn(SpellInfo const* spellInfo);
 
@@ -1728,8 +1720,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 #endif
         void LearnTalent(uint32 talentId, uint32 talentRank);
 
-        uint32 GetFreePrimaryProffesionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
-        void SetFreePrimaryProffesions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2,profs); }
+        uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
+        void SetFreePrimaryProfessions(uint16 profs) { SetUInt32Value(PLAYER_CHARACTER_POINTS2, profs); }
         void InitPrimaryProffesions();
 
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
@@ -1948,10 +1940,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData, bool updateCreatureLiquid ) override;
         void AtExitCombat() override;
 
-        void SendMessageToSet(WorldPacket const* data, bool self) override;
-        void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) override;
-		void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr = nullptr);
-        void SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr) override;
+        void SendMessageToSet(WorldPacket const* data, bool self) const override;
+        void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) const override;
+		void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr = nullptr) const;
+        void SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr) const override;
 
         /**
         * Deletes a character from the database
@@ -2121,7 +2113,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SendInitWorldStates(uint32 zoneid, uint32 areaid);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
-        void SendDirectMessage(WorldPacket *data) const;
+        void SendDirectMessage(WorldPacket const* data) const;
 
         void SendAuraDurationsForTarget(Unit* target);
 

@@ -127,9 +127,6 @@ ObjectMgr::~ObjectMgr()
     for (auto & itr : m_mCacheVendorItemMap)
         itr.second.Clear();
 
-    for (auto & itr : m_mCacheTrainerSpellMap)
-        itr.second.Clear();
-
     for (auto itr : spellTemplates)
         delete itr.second;
 }
@@ -228,7 +225,7 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //
                                              "scale, `rank`, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
                                              //   
-                                             "trainer_type, trainer_spell, trainer_class, trainer_race, type,"
+                                             "type,"
                                              //  
                                              "type_flags, lootid, pickpocketloot, skinloot, resistance1, resistance2, resistance3, resistance4, resistance5, resistance6, spell1, "
                                              //
@@ -302,10 +299,6 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.unit_flags2      = fields[f++].GetUInt32();
     creatureTemplate.dynamicflags     = fields[f++].GetUInt32();
     creatureTemplate.family           = CreatureFamily(fields[f++].GetUInt8());
-    creatureTemplate.trainer_type     = fields[f++].GetUInt8();
-    creatureTemplate.trainer_spell    = fields[f++].GetUInt32();
-    creatureTemplate.trainer_class    = fields[f++].GetUInt8();
-    creatureTemplate.trainer_race     = fields[f++].GetUInt8();
     creatureTemplate.type             = fields[f++].GetUInt8();
     creatureTemplate.type_flags       = fields[f++].GetUInt32();
     creatureTemplate.lootid           = fields[f++].GetUInt32();
@@ -379,26 +372,6 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         if(cInfo->npcflag != difficultyInfo->npcflag)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
-        }
-
-        if(cInfo->trainer_class != difficultyInfo->trainer_class)
-        {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_class` in heroic mode.",i);
-        }
-
-        if(cInfo->trainer_race != difficultyInfo->trainer_race)
-        {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `race` in heroic mode.",i);
-        }
-
-        if(cInfo->trainer_type != difficultyInfo->trainer_type)
-        {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_type` in heroic mode.",i);
-        }
-
-        if(cInfo->trainer_spell != difficultyInfo->trainer_spell)
-        {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `trainer_spell` in heroic mode.",i);
         }
 
         uint32 differenceMask = cInfo->npcflag ^ difficultyInfo->npcflag;
@@ -504,9 +477,6 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 
     if(cInfo->rangeattacktime == 0)
         const_cast<CreatureTemplate*>(cInfo)->rangeattacktime = BASE_ATTACK_TIME;
-
-    if((cInfo->npcflag & UNIT_NPC_FLAG_TRAINER) && cInfo->trainer_type >= MAX_TRAINER_TYPE)
-        TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has wrong trainer type %u",cInfo->Entry,cInfo->trainer_type);
 
     if (cInfo->speed_walk == 0.0f)
     {
@@ -7342,79 +7312,165 @@ bool ObjectMgr::DeleteGameTele(const std::string& name)
     return false;
 }
 
-void ObjectMgr::LoadTrainerSpell()
+void ObjectMgr::LoadTrainers()
 {
+    uint32 oldMSTime = GetMSTime();
+
     // For reload case
-    for (auto & itr : m_mCacheTrainerSpellMap)
-        itr.second.Clear();
+    _trainers.clear();
 
-    m_mCacheTrainerSpellMap.clear();
-
-    QueryResult result = WorldDatabase.Query("SELECT entry, spell,spellcost,reqskill,reqskillvalue,reqlevel FROM npc_trainer");
-
-    if( !result )
+    std::unordered_map<int32, std::vector<Trainer::TrainerSpell>> spellsByTrainer;
+    if (QueryResult trainerSpellsResult = WorldDatabase.PQuery("SELECT TrainerId, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel FROM trainer_spell WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch()))
     {
-        TC_LOG_ERROR("server.loading",">> Loaded `npc_trainer`, table is empty!");
-        
-        return;
+        do
+        {
+            Field* fields = trainerSpellsResult->Fetch();
+
+            Trainer::TrainerSpell spell;
+            uint32 trainerId = fields[0].GetUInt32();
+            spell.SpellId = fields[1].GetUInt32();
+            spell.MoneyCost = fields[2].GetUInt32();
+            spell.ReqSkillLine = fields[3].GetUInt32();
+            spell.ReqSkillRank = fields[4].GetUInt32();
+            spell.ReqAbility[0] = fields[5].GetUInt32();
+            spell.ReqAbility[1] = fields[6].GetUInt32();
+            spell.ReqAbility[2] = fields[7].GetUInt32();
+            spell.ReqLevel = fields[8].GetUInt8();
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell.SpellId);
+            if (!spellInfo)
+            {
+                //might have TLK spells here
+               // TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing spell (SpellId: %u) for TrainerId %u, ignoring", spell.SpellId, trainerId);
+                continue;
+            }
+
+            if (GetTalentSpellCost(spell.SpellId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing spell (SpellId: %u) which is a talent, for TrainerId %u, ignoring", spell.SpellId, trainerId);
+                continue;
+            }
+
+            if (spell.ReqSkillLine && !sSkillLineStore.LookupEntry(spell.ReqSkillLine))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing skill (ReqSkillLine: %u) for TrainerId %u and SpellId %u, ignoring",
+                    spell.ReqSkillLine, spell.SpellId, trainerId);
+                continue;
+            }
+
+            bool allReqValid = true;
+            for (std::size_t i = 0; i < spell.ReqAbility.size(); ++i)
+            {
+                uint32 requiredSpell = spell.ReqAbility[i];
+                if (requiredSpell && !sSpellMgr->GetSpellInfo(requiredSpell))
+                {
+                    TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing spell (ReqAbility" SZFMTD ": %u) for TrainerId %u and SpellId %u, ignoring",
+                        i + 1, requiredSpell, trainerId, spell.SpellId);
+                    allReqValid = false;
+                }
+            }
+
+            if (!allReqValid)
+                continue;
+
+            spell.LearnedSpellId = spell.SpellId;
+            /* TODO: Handle multiple learned spells
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
+                {
+                    ASSERT(spell.LearnedSpellId == spell.SpellId,
+                        "Only one learned spell is currently supported - spell %u already teaches %u but it tried to overwrite it with %u",
+                        spell.SpellId, spell.LearnedSpellId, spellInfo->Effects[i].TriggerSpell);
+                    spell.LearnedSpellId = spellInfo->Effects[i].TriggerSpell;
+                }
+            }
+            */
+
+            spellsByTrainer[trainerId].push_back(spell);
+        } while (trainerSpellsResult->NextRow());
     }
 
-    uint32 count = 0;
-    do
+    if (QueryResult trainersResult = WorldDatabase.Query("SELECT Id, Type, Requirement, Greeting FROM trainer"))
     {
-        Field* fields = result->Fetch();
-
-        uint32 entry  = fields[0].GetUInt32();
-        uint32 spell  = fields[1].GetUInt32();
-
-        CreatureTemplate const* cInfo = GetCreatureTemplate(entry);
-        if(!cInfo)
+        do
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_trainer` have entry for not existed creature template (Entry: %u), ignore", entry);
-            continue;
-        }
+            Field* fields = trainersResult->Fetch();
 
-        if(!(cInfo->npcflag & UNIT_NPC_FLAG_TRAINER))
+            uint32 trainerId = fields[0].GetUInt32();
+            Trainer::Type trainerType = Trainer::Type(fields[1].GetUInt8());
+            uint32 requirement = fields[2].GetUInt32();
+            std::string greeting = fields[3].GetString();
+            std::vector<Trainer::TrainerSpell> spells;
+            auto spellsItr = spellsByTrainer.find(trainerId);
+            if (spellsItr != spellsByTrainer.end())
+            {
+                spells = std::move(spellsItr->second);
+                spellsByTrainer.erase(spellsItr);
+            }
+
+            _trainers.emplace(std::piecewise_construct, std::forward_as_tuple(trainerId), std::forward_as_tuple(trainerId, trainerType, requirement, std::move(greeting), std::move(spells)));
+        } while (trainersResult->NextRow());
+    }
+
+    for (auto const& unusedSpells : spellsByTrainer)
+    {
+        for (Trainer::TrainerSpell const& unusedSpell : unusedSpells.second)
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", entry);
-            continue;
+            TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing trainer (TrainerId: %u) for SpellId %u, ignoring", unusedSpells.first, unusedSpell.SpellId);
         }
+    }
 
-        SpellInfo const *spellinfo = sSpellMgr->GetSpellInfo(spell);
-        if(!spellinfo)
+    if (QueryResult trainerLocalesResult = WorldDatabase.Query("SELECT Id, locale, Greeting_lang FROM trainer_locale"))
+    {
+        do
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
-            continue;
-        }
+            Field* fields = trainerLocalesResult->Fetch();
+            uint32 trainerId = fields[0].GetUInt32();
+            std::string localeName = fields[1].GetString();
 
-        if(!SpellMgr::IsSpellValid(spellinfo))
+            LocaleConstant locale = GetLocaleByName(localeName);
+            if (locale == LOCALE_enUS)
+                continue;
+
+            if (Trainer::Trainer* trainer = Trinity::Containers::MapGetValuePtr(_trainers, trainerId))
+                trainer->AddGreetingLocale(locale, fields[2].GetString());
+            else
+                TC_LOG_ERROR("sql.sql", "Table `trainer_locale` references non-existing trainer (TrainerId: %u) for locale %s, ignoring",
+                    trainerId, localeName.c_str());
+        } while (trainerLocalesResult->NextRow());
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " Trainers in %u ms", _trainers.size(), GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadCreatureDefaultTrainers()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _creatureDefaultTrainers.clear();
+
+    if (QueryResult result = WorldDatabase.Query("SELECT CreatureId, TrainerId FROM creature_default_trainer"))
+    {
+        do
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_trainer` for Trainer (Entry: %u) has broken learning spell %u, ignore", entry, spell);
-            continue;
-        }
+            Field* fields = result->Fetch();
+            uint32 creatureId = fields[0].GetUInt32();
+            uint32 trainerId = fields[1].GetUInt32();
 
-        auto  pTrainerSpell = new TrainerSpell();
-        pTrainerSpell->spell         = spell;
-        pTrainerSpell->spellcost     = fields[2].GetUInt32();
-        pTrainerSpell->reqskill      = fields[3].GetUInt16();
-        pTrainerSpell->reqskillvalue = fields[4].GetUInt16();
-        pTrainerSpell->reqlevel      = fields[5].GetUInt8();
+            if (!GetCreatureTemplate(creatureId))
+            {
+                //sun: disabled since we have TLK data
+                //TC_LOG_ERROR("sql.sql", "Table `creature_default_trainer` references non-existing creature template (CreatureId: %u), ignoring", creatureId);
+                continue;
+            }
 
-        if(!pTrainerSpell->reqlevel)
-            pTrainerSpell->reqlevel = spellinfo->SpellLevel;
+            _creatureDefaultTrainers[creatureId] = trainerId;
 
-        TrainerSpellData& data = m_mCacheTrainerSpellMap[entry];
+        } while (result->NextRow());
+    }
 
-        if(SpellMgr::IsProfessionSpell(spell))
-            data.trainerType = 2;
-
-        data.spellList.push_back(pTrainerSpell);
-        ++count;
-
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded Trainers %d", count );
-    
+    TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " default trainers in %u ms", _creatureDefaultTrainers.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadVendors()
@@ -7687,7 +7743,16 @@ void ObjectMgr::LoadGossipMenuItems()
     }
 }
 
-void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
+Trainer::Trainer const* ObjectMgr::GetTrainer(uint32 creatureId) const
+{
+    auto itr = _creatureDefaultTrainers.find(creatureId);
+    if (itr != _creatureDefaultTrainers.end())
+        return Trinity::Containers::MapGetValuePtr(_trainers, itr->second);
+
+    return nullptr;
+}
+
+void ObjectMgr::AddVendorItem(uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
 {
     VendorItemData& vList = m_mCacheVendorItemMap[entry];
     vList.AddItem(proto->ItemId, maxcount, incrtime, extendedcost);
@@ -7786,35 +7851,6 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
     }
 
     return true;
-}
-
-bool ObjectMgr::AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell)
-{
-    TrainerSpellData& data = m_mCacheTrainerSpellMap[creatureId];
-
-    if (SpellMgr::IsProfessionSpell(spell.spell))
-        data.trainerType = 2;
-
-    auto  new_spell = new TrainerSpell(spell);
-    data.spellList.push_back(new_spell);
-    return true;
-}
-
-bool ObjectMgr::RemoveTrainerSpell(uint32 creatureId, uint32 spellId)
-{
-    bool removed = false;
-    TrainerSpellData& data = m_mCacheTrainerSpellMap[creatureId];
-    for (auto itr = data.spellList.begin(); itr != data.spellList.end();)
-    {
-        if ((*itr)->spell == spellId)
-        {
-            itr = data.spellList.erase(itr);
-            removed = true;
-            continue;
-        }
-        itr++;
-    }
-    return removed;
 }
 
 void ObjectMgr::LoadScriptNames()

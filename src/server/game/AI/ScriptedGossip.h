@@ -258,7 +258,6 @@ void TC_GAME_API ClearGossipMenuFor(Player* player);
 
 // Fuctions to send NPC lists, a - is always the npc guid(uint64)
 #define SEND_VENDORLIST(a)         GetSession()->SendListInventory(a)
-#define SEND_TRAINERLIST(a)        GetSession()->SendTrainerList(a)
 #define SEND_BANKERLIST(a)         GetSession()->SendShowBank(a)
 #define SEND_TABARDLIST(a)         GetSession()->SendTabardVendorActivate(a)
 #define SEND_AUCTIONLIST(a)        GetSession()->SendAuctionHello(a)

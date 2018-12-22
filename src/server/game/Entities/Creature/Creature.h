@@ -235,10 +235,6 @@ struct CreatureTemplate
     uint32  unit_flags2;                                    // enum UnitFlags2 mask values
     uint32  dynamicflags;
     CreatureFamily family;                                         // enum CreatureFamily values for type==CREATURE_TYPE_BEAST, or 0 in another cases
-    uint32  trainer_type;
-    uint32  trainer_spell;
-    uint32  trainer_class;
-    uint32  trainer_race;
     uint32  type;                                           // enum CreatureType values
     uint32  type_flags;                                     // enum CreatureTypeFlags mask values
     uint32  lootid;
@@ -513,29 +509,6 @@ struct VendorItemCount
 
 typedef std::list<VendorItemCount> VendorItemCounts;
 
-struct TrainerSpell
-{
-    uint32 spell;
-    uint32 spellcost;
-    uint32 reqskill;
-    uint32 reqskillvalue;
-    uint32 reqlevel;
-};
-
-typedef std::vector<TrainerSpell*> TrainerSpellList;
-
-struct TrainerSpellData
-{
-    TrainerSpellData() : trainerType(0) {}
-
-    TrainerSpellList spellList;
-    uint32 trainerType;                                     // trainer type based at trainer spells, can be different from creature_template value.
-                                                            // req. for correct show non-prof. trainers like weaponmaster, allowed values 0 and 2.
-
-    void Clear();
-    TrainerSpell const* Find(uint32 spell_id) const;
-};
-
 typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 
 // max different by z coordinate for creature aggro reaction
@@ -616,8 +589,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetImmuneToNPC(bool apply) override { Unit::SetImmuneToNPC(apply, HasReactState(REACT_PASSIVE)); }
 
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
-        bool isCanTrainingAndResetTalentsOf(Player* player) const;
-        bool canResetTalentsOf(Player* pPlayer) const;
+        bool CanResetTalents(Player* player) const;
         bool IsOutOfThreatArea(Unit const* pVictim) const;
         bool IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const override;
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const override;
@@ -694,8 +666,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         VendorItemData const* GetVendorItems() const;
         uint32 GetVendorItemCurrentCount(VendorItem const* vItem);
         uint32 UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 used_count);
-
-        TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureTemplate const *GetCreatureTemplate() const { return m_creatureInfo; }
         CreatureData const* GetCreatureData() const { return m_creatureData; }

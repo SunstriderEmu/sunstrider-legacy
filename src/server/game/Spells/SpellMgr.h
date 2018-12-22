@@ -8,9 +8,9 @@
 #include "SharedDefines.h"
 #include "DBCStructure.h"
 #include "SpellInfo.h"
-#include <unordered_map>
 #include "Util.h"
 #include "Duration.h"
+#include "IteratorPair.h"
 
 #include <map>
 #include <unordered_map>
@@ -811,9 +811,12 @@ struct SpellChainNode
 typedef std::unordered_map<uint32, SpellChainNode> SpellChainMap;
 
 //                 spell_id  req_spell
-typedef std::unordered_map<uint32, uint32> SpellRequiredMap;
+typedef std::multimap<uint32, uint32> SpellRequiredMap;
+typedef std::pair<SpellRequiredMap::const_iterator, SpellRequiredMap::const_iterator> SpellRequiredMapBounds;
 
+//                   req_spell spell_id
 typedef std::multimap<uint32, uint32> SpellsRequiringSpellMap;
+typedef std::pair<SpellsRequiringSpellMap::const_iterator, SpellsRequiringSpellMap::const_iterator> SpellsRequiringSpellMapBounds;
 
 // Spell learning properties (accessed using SpellMgr functions)
 struct SpellLearnSkillNode
@@ -900,14 +903,10 @@ class TC_GAME_API SpellMgr
             return Trinity::Containers::MapGetValuePtr(mSpellChains, spell_id);
         }
 
-        uint32 GetSpellRequired(uint32 spell_id) const
-        {
-            auto itr = mSpellReq.find(spell_id);
-            if(itr == mSpellReq.end())
-                return 0;
-
-            return itr->second;
-        }
+        // Spell Required table
+        Trinity::IteratorPair<SpellRequiredMap::const_iterator> GetSpellsRequiredForSpellBounds(uint32 spell_id) const;
+        SpellsRequiringSpellMapBounds GetSpellsRequiringSpellBounds(uint32 spell_id) const;
+        bool IsSpellRequiringSpell(uint32 spellid, uint32 req_spellid) const;
 
         uint32 GetFirstSpellInChain(uint32 spell_id) const;
         uint32 GetLastSpellInChain(uint32 spell_id) const;
@@ -950,7 +949,6 @@ class TC_GAME_API SpellMgr
 
         static bool IsProfessionSpell(uint32 spellId);
         static bool IsPrimaryProfessionSpell(uint32 spellId);
-        bool IsPrimaryProfessionFirstRankSpell(uint32 spellId) const;
 
         // Spell script targets
         SpellScriptTarget::const_iterator GetBeginSpellScriptTarget(uint32 spell_id) const
@@ -998,7 +996,6 @@ class TC_GAME_API SpellMgr
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
 
         static bool IsBinaryMagicResistanceSpell(SpellInfo const* spell);
-
 
         static bool IsPrimaryProfessionSkill(uint32 skill);
         static bool IsProfessionSkill(uint32 skill);

@@ -69,6 +69,7 @@
 #include "ArenaTeamMgr.h"
 #include "PetitionMgr.h"
 #include "ReputationMgr.h"
+#include "Trainer.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -3231,9 +3232,10 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         // do character spell book cleanup (all characters)
         if(!IsInWorld() && !learning)                            // spell load case
         {
-            TC_LOG_ERROR("entities.player","Player::AddSpell: Broken spell #%u learning not allowed, deleting for all characters in `character_spell`.",spell_id);
+            //sun: don't alter character database if something went wrong with spell_template loading
+            //TC_LOG_ERROR("entities.player","Player::AddSpell: Broken spell #%u learning not allowed, deleting for all characters in `character_spell`.",spell_id);
             //DeleteSpellFromAllPlayers(spellId);
-            CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
+            //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
         }
         else
             TC_LOG_ERROR("entities.player","Player::AddSpell: Broken spell #%u learning not allowed.",spell_id);
@@ -3460,32 +3462,48 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
     // update used talent points count
     m_usedTalentCount += talentCost;
 
-    // update free primary prof.points (if any, can be none in case GM .learn prof. learning)
-    if(uint32 freeProfs = GetFreePrimaryProffesionPoints())
+    // update free primary prof.points (if not overflow setting, can be in case GM use before .learn prof. learning)
+    if (spellInfo->IsPrimaryProfessionFirstRank())
     {
-        if(sSpellMgr->IsPrimaryProfessionFirstRankSpell(spell_id))
-            SetFreePrimaryProffesions(freeProfs-1);
+        uint32 freeProfs = GetFreePrimaryProfessionPoints() + 1;
+        if (freeProfs <= sWorld->getIntConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
+            SetFreePrimaryProfessions(freeProfs);
     }
 
     // add dependent skills
     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spell_id);
     if (SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id))
     {
-        // add dependent skills if this spell is not learned from adding skill already
-        if (spellLearnSkill->skill != fromSkill)
+        uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spell_id);
+        if (!prev_spell)                                    // first rank, remove skill
+            SetSkill(spellLearnSkill->skill, 0, 0, 0);
+        else
         {
-            uint32 skill_value = GetPureSkillValue(spellLearnSkill->skill);
-            uint32 skill_max_value = GetPureMaxSkillValue(spellLearnSkill->skill);
+            // search prev. skill setting by spell ranks chain
+            SpellLearnSkillNode const* prevSkill = sSpellMgr->GetSpellLearnSkill(prev_spell);
+            while (!prevSkill && prev_spell)
+            {
+                prev_spell = sSpellMgr->GetPrevSpellInChain(prev_spell);
+                prevSkill = sSpellMgr->GetSpellLearnSkill(sSpellMgr->GetFirstSpellInChain(prev_spell));
+            }
 
-            if (skill_value < spellLearnSkill->value)
-                skill_value = spellLearnSkill->value;
+            if (!prevSkill)                                 // not found prev skill setting, remove skill
+                SetSkill(spellLearnSkill->skill, 0, 0, 0);
+            else                                            // set to prev. skill setting values
+            {
+                uint32 skill_value = GetPureSkillValue(prevSkill->skill);
+                uint32 skill_max_value = GetPureMaxSkillValue(prevSkill->skill);
 
-            uint32 new_skill_max_value = spellLearnSkill->maxvalue == 0 ? GetMaxSkillValueForLevel() : spellLearnSkill->maxvalue;
+                if (skill_value > prevSkill->value)
+                    skill_value = prevSkill->value;
 
-            if (skill_max_value < new_skill_max_value)
-                skill_max_value = new_skill_max_value;
+                uint32 new_skill_max_value = prevSkill->maxvalue == 0 ? GetMaxSkillValueForLevel() : prevSkill->maxvalue;
 
-            SetSkill(spellLearnSkill->skill, spellLearnSkill->step, skill_value, skill_max_value);
+                if (skill_max_value > new_skill_max_value)
+                    skill_max_value = new_skill_max_value;
+
+                SetSkill(prevSkill->skill, prevSkill->step, skill_value, skill_max_value);
+            }
         }
     }
     else
@@ -3591,15 +3609,13 @@ void Player::LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill /*= 0*
                 LearnSpell(nextSpell, false, fromSkill);
         }
 
-        /* TC
         SpellsRequiringSpellMapBounds spellsRequiringSpell = sSpellMgr->GetSpellsRequiringSpellBounds(spell_id);
         for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequiringSpell.first; itr2 != spellsRequiringSpell.second; ++itr2)
         {
-        PlayerSpellMap::iterator iter2 = m_spells.find(itr2->second);
-        if (iter2 != m_spells.end() && iter2->second->disabled)
-        LearnSpell(itr2->second, false, fromSkill);
+            PlayerSpellMap::iterator iter2 = m_spells.find(itr2->second);
+            if (iter2 != m_spells.end() && iter2->second->disabled)
+                LearnSpell(itr2->second, false, fromSkill);
         }
-        */
     }
 }
 
@@ -3619,16 +3635,18 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
         if(node->next && HasSpell(node->next->Id) && !GetTalentSpellPos(node->next->Id))
             RemoveSpell(node->next->Id,disabled);
     }
+
     //unlearn spells dependent from recently removed spells
-    SpellsRequiringSpellMap const& reqMap = sSpellMgr->GetSpellsRequiringSpell();
-    auto itr2 = reqMap.find(spell_id);
-    for (uint32 i = reqMap.count(spell_id); i > 0; i--, itr2++)
-        RemoveSpell(itr2->second,disabled);
+    SpellsRequiringSpellMapBounds spellsRequiringSpell = sSpellMgr->GetSpellsRequiringSpellBounds(spell_id);
+    for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequiringSpell.first; itr2 != spellsRequiringSpell.second; ++itr2)
+        RemoveSpell(itr2->second, disabled);
 
     // re-search, it can be corrupted in prev loop
     itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
         return;
+
+    bool giveTalentPoints = disabled || !itr->second->disabled;
 
     // removing
     WorldPacket data(SMSG_REMOVED_SPELL, 4);
@@ -3669,11 +3687,12 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
     }
 
     // update free primary prof.points (if not overflow setting, can be in case GM use before .learn prof. learning)
-    if(sSpellMgr->IsPrimaryProfessionFirstRankSpell(spell_id))
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    if (spellInfo && spellInfo->IsPrimaryProfessionFirstRank())
     {
-        uint32 freeProfs = GetFreePrimaryProffesionPoints()+1;
+        uint32 freeProfs = GetFreePrimaryProfessionPoints()+1;
         if(freeProfs <= sWorld->getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL))
-            SetFreePrimaryProffesions(freeProfs);
+            SetFreePrimaryProfessions(freeProfs);
     }
 
     // remove dependent skill
@@ -3993,64 +4012,6 @@ bool Player::HasSpellButDisabled(uint32 spell) const
 {
     auto itr = m_spells.find((uint16)spell);
     return (itr != m_spells.end() && itr->second->state != PLAYERSPELL_REMOVED && itr->second->disabled);
-}
-
-TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell) const
-{
-    if (!trainer_spell)
-        return TRAINER_SPELL_RED;
-
-    if (!trainer_spell->spell)
-        return TRAINER_SPELL_RED;
-
-    // known spell
-    if(HasSpell(trainer_spell->spell))
-        return TRAINER_SPELL_GRAY;
-
-    // check race/class requirement
-    if(!IsSpellFitByClassAndRace(trainer_spell->spell))
-        return TRAINER_SPELL_RED;
-
-    // check level requirement
-    if(GetLevel() < trainer_spell->reqlevel)
-        return TRAINER_SPELL_RED;
-
-    if(SpellChainNode const* spell_chain = sSpellMgr->GetSpellChainNode(trainer_spell->spell))
-    {
-        // check prev.rank requirement
-        if(spell_chain->prev && !HasSpell(spell_chain->prev->Id))
-            return TRAINER_SPELL_RED;
-    }
-
-    if(uint32 spell_req = sSpellMgr->GetSpellRequired(trainer_spell->spell))
-    {
-        // check additional spell requirement
-        if(!HasSpell(spell_req))
-            return TRAINER_SPELL_RED;
-    }
-
-    // check skill requirement
-    if(trainer_spell->reqskill && GetBaseSkillValue(trainer_spell->reqskill) < trainer_spell->reqskillvalue)
-        return TRAINER_SPELL_RED;
-
-    SpellInfo const* spell = sSpellMgr->GetSpellInfo(trainer_spell->spell);
-    if (!spell)
-    {
-        TC_LOG_ERROR("entities.player", "GetTrainerSpellState could not find spell %u", trainer_spell->spell);
-        return TRAINER_SPELL_RED;
-    }
-
-    // secondary prof. or not prof. spell
-    uint32 skill = spell->Effects[1].MiscValue;
-
-    if(spell->Effects[1].Effect != SPELL_EFFECT_SKILL || !SpellMgr::IsPrimaryProfessionSkill(skill))
-        return TRAINER_SPELL_GREEN;
-
-    // check primary prof. limit
-    if(sSpellMgr->IsPrimaryProfessionFirstRankSpell(spell->Id) && GetFreePrimaryProffesionPoints() == 0)
-        return TRAINER_SPELL_RED;
-
-    return TRAINER_SPELL_GREEN;
 }
 
 void Player::LeaveAllArenaTeams(ObjectGuid guid)
@@ -6079,17 +6040,17 @@ void Player::SaveRecallPosition()
     m_recall_location.WorldRelocate(*this);
 }
 
-void Player::SendMessageToSet(WorldPacket const* data, bool self)
+void Player::SendMessageToSet(WorldPacket const* data, bool self) const
 {
     SendMessageToSetInRange(data, GetVisibilityRange(), self);
 }
 
-void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/) const
 {
     SendMessageToSetInRange(data, dist, self, includeMargin, false, skipped_rcvr);
 }
 
-void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr /* = nullptr*/)
+void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr /* = nullptr*/) const
 {
     if (self)
         GetSession()->SendPacket(data);
@@ -6102,7 +6063,7 @@ void Player::SendMessageToSetInRange(WorldPacket const* data, float dist, bool s
     Cell::VisitWorldObjects(this, notifier, dist);
 }
 
-void Player::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr)
+void Player::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr) const
 {
     if (skipped_rcvr != this)
         GetSession()->SendPacket(data);
@@ -6113,7 +6074,7 @@ void Player::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr)
     Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
 }
 
-void Player::SendDirectMessage(WorldPacket *data) const
+void Player::SendDirectMessage(WorldPacket const* data) const
 {
     GetSession()->SendPacket(data);
 }
@@ -20095,7 +20056,7 @@ void Player::UpdateVisibilityForPlayer()
 
 void Player::InitPrimaryProffesions()
 {
-    SetFreePrimaryProffesions(sWorld->getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
+    SetFreePrimaryProfessions(sWorld->getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
 }
 
 bool Player::IsQuestRewarded(uint32 quest_id) const
@@ -20730,18 +20691,14 @@ void Player::LearnAllClassProficiencies()
         if (GetClass() == CLASS_SHAMAN && itr == 674)
             continue;
 
-        //a bit hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
-        TrainerSpell trainerSpell;
-        trainerSpell.reqlevel = 0;
-        trainerSpell.reqskill = 0;
-        trainerSpell.reqskillvalue = 0;
-        trainerSpell.spell = itr;
-        trainerSpell.spellcost = 0;
+        //hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
+        Trainer::TrainerSpell trainerSpell;
+        trainerSpell.SpellId = itr;
 
-        if (GetTrainerSpellState(&trainerSpell) != TRAINER_SPELL_GREEN)
+        if (Trainer::Trainer::GetSpellState(this, &trainerSpell) != Trainer::SpellState::Available)
             continue;
 
-        LearnSpell(trainerSpell.spell, false);
+        LearnSpell(itr, false);
     }
 }
 
@@ -20900,8 +20857,8 @@ void Player::LearnAllClassSpells()
         }
     }
 
-    TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(classMaster);
-    if(!trainer_spells)
+    Trainer::Trainer const* trainer = sObjectMgr->GetTrainer(classMaster);
+    if(!trainer)
     {
         TC_LOG_ERROR("entities.player","Player::LearnAllClassSpell - No trainer spells for entry %u.",playerClass);
         return;
@@ -20910,12 +20867,16 @@ void Player::LearnAllClassSpells()
     //the spells in trainer list aren't in the right order, so some spells won't be learned. The i loop is a ugly hack to fix this.
     for(int i = 0; i < 15; i++)
     {
-        for(auto itr : trainer_spells->spellList)
+        for(auto itr : trainer->GetSpells())
         {
-            if(GetTrainerSpellState(itr) != TRAINER_SPELL_GREEN)
+            //hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
+            Trainer::TrainerSpell trainerSpell;
+            trainerSpell.SpellId = itr.SpellId;
+
+            if (Trainer::Trainer::GetSpellState(this, &trainerSpell) != Trainer::SpellState::Available)
                 continue;
 
-            LearnSpell(itr->spell, false);
+            LearnSpell(itr.SpellId, false);
         }
     }
 }
@@ -23286,16 +23247,16 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 }
 #ifdef LICH_KING
                 case GOSSIP_OPTION_LEARNDUALSPEC:
-                    if (!(GetSpecsCount() == 1 && creature->isCanTrainingAndResetTalentsOf(this) && !(GetLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
+                    if (!(GetSpecsCount() == 1 && creature->CanResetTalents(this) && !(GetLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
                         canTalk = false;
                     break;
 #endif
                 case GOSSIP_OPTION_UNLEARNTALENTS:
-                    if (!creature->canResetTalentsOf(this))
+                    if (!creature->CanResetTalents(this))
                         canTalk = false;
                     break;
                 case GOSSIP_OPTION_UNLEARNPETTALENTS:
-                    if (!GetPet() || GetPet()->getPetType() != HUNTER_PET || GetPet()->m_spells.size() <= 1 || creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_PETS || creature->GetCreatureTemplate()->trainer_class != CLASS_HUNTER)
+                    if (!GetPet() || GetPet()->getPetType() != HUNTER_PET || GetPet()->m_spells.size() <= 1 || !creature->CanResetTalents(this))
                         canTalk = false;
                     break;
                 case GOSSIP_OPTION_TAXIVENDOR:
@@ -23314,11 +23275,16 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     canTalk = false;
                     break;
                 case GOSSIP_OPTION_TRAINER:
-                    if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
-                        TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
-                            GetName().c_str(), GetGUID().GetCounter(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
-
+                {
+                    Trainer::Trainer const* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
+                    if (!trainer || !trainer->IsTrainerValidForPlayer(this))
+                    {
+                        TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) requested wrong gossip menu: %u at Creature: %s (Entry: %u)",
+                            GetName().c_str(), GetGUID().GetCounter(), menu->GetGossipMenu().GetMenuId(), creature->GetName().c_str(), creature->GetEntry());
+                        canTalk = false;
+                    }
                     [[fallthrough]];
+                }
                 case GOSSIP_OPTION_GOSSIP:
                 case GOSSIP_OPTION_SPIRITGUIDE:
                 case GOSSIP_OPTION_INNKEEPER:
@@ -23498,9 +23464,10 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             GetSession()->SendStablePet(guid);
             break;
         case GOSSIP_OPTION_TRAINER:
-            GetSession()->SendTrainerList(guid);
+            GetSession()->SendTrainerList(source->ToCreature());
             break;
-       /* case GOSSIP_OPTION_LEARNDUALSPEC:
+#ifdef LICH_KING
+        case GOSSIP_OPTION_LEARNDUALSPEC:
             if (GetSpecsCount() == 1 && getLevel() >= sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))
             {
                 // Cast spells that teach dual spec
@@ -23508,11 +23475,11 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
                 CastSpell(this, 63680, TRIGGERED_FULL_MASK, NULL, NULL, GetGUID());
                 CastSpell(this, 63624, TRIGGERED_FULL_MASK, NULL, NULL, GetGUID());
 
-                // Should show another Gossip text with "Congratulations..."
-                PlayerTalkClass->SendCloseGossip();
+                PrepareGossipMenu(source, menuItemData->GossipActionMenuId);
+                SendPreparedGossip(source);
             }
             break;
-           */
+#endif
         case GOSSIP_OPTION_UNLEARNTALENTS:
             PlayerTalkClass->SendCloseGossip();
             SendTalentWipeConfirm(guid);

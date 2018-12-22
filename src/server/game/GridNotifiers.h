@@ -100,19 +100,19 @@ namespace Trinity
 
 	struct TC_GAME_API MessageDistDeliverer
 	{
-		WorldObject* i_source;
+		WorldObject const* i_source;
 		WorldPacket const* i_message;
 		uint32 i_phaseMask;
 		float i_distSq;
 		Team team;
 		Player const* skipped_receiver;
-		MessageDistDeliverer(WorldObject* src, WorldPacket const* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
+		MessageDistDeliverer(WorldObject const* src, WorldPacket const* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
 			: i_source(src), i_message(msg), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist)
 			, team(Team(0))
 			, skipped_receiver(skipped)
 		{
 			if (own_team_only)
-				if (Player* player = src->ToPlayer())
+				if (Player const* player = src->ToPlayer())
 					team = Team(player->GetTeam());
 		}
 		void Visit(PlayerMapType &m);

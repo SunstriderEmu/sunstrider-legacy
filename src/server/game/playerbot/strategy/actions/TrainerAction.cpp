@@ -4,15 +4,16 @@
 
 using namespace ai;
 
+/* TODO PLAYERBOT
 void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
     if (bot->GetMoney() < cost)
         return;
 
     bot->ModifyMoney(-int32(cost));
-    /* TC if (tSpell->IsCastable())
+    if (tSpell->IsCastable())
         bot->CastSpell(bot, tSpell->spell, true);
-    else */
+    else 
         bot->LearnSpell(tSpell->spell, false, false);
 
     msg << " - learned";
@@ -20,7 +21,6 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
 
 void TrainerAction::List(Creature* creature, TrainerSpellAction action, SpellIds& spells)
 {
-    /* TODO PLAYERBOT
     TellHeader(creature);
 
     TrainerSpellData const* trainer_spells = creature->GetTrainerSpells();
@@ -59,7 +59,6 @@ void TrainerAction::List(Creature* creature, TrainerSpellAction action, SpellIds
     }
 
     TellFooter(totalCost);
-    */
 }
 
 
@@ -114,3 +113,4 @@ void TrainerAction::TellFooter(uint32 totalCost)
         ai->TellMaster(out);
     }
 }
+*/

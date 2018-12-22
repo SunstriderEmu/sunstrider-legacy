@@ -2153,11 +2153,46 @@ bool SpellInfo::IsProfessionOrRiding() const
         {
             uint32 skill = Effect.MiscValue;
 
-            if (sSpellMgr->IsProfessionOrRidingSkill(skill))
+            if (SpellMgr::IsProfessionOrRidingSkill(skill))
                 return true;
         }
     }
     return false;
+}
+
+bool SpellInfo::IsProfession() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].Effect == SPELL_EFFECT_SKILL)
+        {
+            uint32 skill = Effects[i].MiscValue;
+
+            if (SpellMgr::IsProfessionSkill(skill))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool SpellInfo::IsPrimaryProfession() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].Effect == SPELL_EFFECT_SKILL)
+        {
+            uint32 skill = Effects[i].MiscValue;
+
+            if (SpellMgr::IsPrimaryProfessionSkill(skill))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool SpellInfo::IsPrimaryProfessionFirstRank() const
+{
+    return IsPrimaryProfession() && GetRank() == 1;
 }
 
 bool SpellInfo::IsAbilityLearnedWithProfession() const

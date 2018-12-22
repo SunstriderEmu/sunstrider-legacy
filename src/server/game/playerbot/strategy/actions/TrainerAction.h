@@ -4,6 +4,7 @@
 
 namespace ai
 {
+    /*
     class TrainerAction : public Action {
     public:
         TrainerAction(PlayerbotAI* ai) : Action(ai, "trainer") {}
@@ -18,5 +19,5 @@ namespace ai
         void TellHeader(Creature* creature);
         void TellFooter(uint32 totalCost);
     };
-
+    */
 }

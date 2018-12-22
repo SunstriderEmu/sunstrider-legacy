@@ -26,7 +26,7 @@
 #include "ChangeTalentsAction.h"
 #include "ListSpellsAction.h"
 #include "ChangeStrategyAction.h"
-#include "TrainerAction.h"
+//#include "TrainerAction.h"
 #include "ChangeChatAction.h"
 #include "SetHomeAction.h"
 #include "ResetAiAction.h"
@@ -87,7 +87,7 @@ namespace ai
             creators["co"] = &ChatActionContext::co;
             creators["nc"] = &ChatActionContext::nc;
             creators["dead"] = &ChatActionContext::dead;
-            creators["trainer"] = &ChatActionContext::trainer;
+            //creators["trainer"] = &ChatActionContext::trainer;
             creators["attack my target"] = &ChatActionContext::attack_my_target;
             creators["chat"] = &ChatActionContext::chat;
             creators["home"] = &ChatActionContext::home;
@@ -150,7 +150,7 @@ namespace ai
         static std::shared_ptr<Action> home(PlayerbotAI* ai) { return std::make_shared<SetHomeAction>(ai); }
         static std::shared_ptr<Action> chat(PlayerbotAI* ai) { return std::make_shared<ChangeChatAction>(ai); }
         static std::shared_ptr<Action> attack_my_target(PlayerbotAI* ai) { return std::make_shared<AttackMyTargetAction>(ai); }
-        static std::shared_ptr<Action> trainer(PlayerbotAI* ai) { return std::make_shared<TrainerAction>(ai); }
+        // static std::shared_ptr<Action> trainer(PlayerbotAI* ai) { return std::make_shared<TrainerAction>(ai); }
         static std::shared_ptr<Action> co(PlayerbotAI* ai) { return std::make_shared<ChangeCombatStrategyAction>(ai); }
         static std::shared_ptr<Action> nc(PlayerbotAI* ai) { return std::make_shared<ChangeNonCombatStrategyAction>(ai); }
         static std::shared_ptr<Action> dead(PlayerbotAI* ai) { return std::make_shared<ChangeDeadStrategyAction>(ai); }

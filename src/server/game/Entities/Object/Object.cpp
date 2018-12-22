@@ -1453,19 +1453,19 @@ void Object::ForceValuesUpdateAtIndex(uint32 i)
     AddToObjectUpdateIfNeeded();
 }
 
-void WorldObject::SendMessageToSet(WorldPacket const* data, bool self)
+void WorldObject::SendMessageToSet(WorldPacket const* data, bool self) const
 {
     if (IsInWorld()) 
         SendMessageToSetInRange(data, GetVisibilityRange(), self, true);
 }
 
-void WorldObject::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr)
+void WorldObject::SendMessageToSet(WorldPacket const* data, Player* skipped_rcvr) const
 {
     if (IsInWorld()) 
         SendMessageToSetInRange(data, GetVisibilityRange(), false, true, skipped_rcvr);
 }
 
-void WorldObject::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/)
+void WorldObject::SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/) const
 {
     dist += GetCombatReach();
     if (includeMargin)
