@@ -1430,6 +1430,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void PrepareQuestMenu(ObjectGuid guid);
         void SendPreparedQuest(ObjectGuid guid);
+        std::string GetQuestOrTrainerTitleText(Creature* source, QEmote* emote = nullptr, bool allowDefault = true) const; //sun, moved part of SendPreparedQuest in this
         bool IsActiveQuest(uint32 quest_id) const;
         Quest const *GetNextQuest(ObjectGuid guid, Quest const *pQuest);
         bool CanSeeStartQuest(Quest const *pQuest);

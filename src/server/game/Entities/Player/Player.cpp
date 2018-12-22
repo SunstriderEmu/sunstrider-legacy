@@ -12931,6 +12931,48 @@ void Player::PrepareQuestMenu(ObjectGuid guid)
     }
 }
 
+ std::string Player::GetQuestOrTrainerTitleText(Creature* source, QEmote* qe /*= nullptr*/, bool allowDefault /*= true*/) const
+{
+     std::string title;
+
+     uint32 textid = GetGossipTextId(source);
+     GossipText const* gossiptext = sObjectMgr->GetGossipText(textid);
+     if (!gossiptext || (!allowDefault && textid == DEFAULT_GOSSIP_MESSAGE))
+     {
+         if (qe)
+         {
+             qe->_Delay = 0;                              //TEXTEMOTE_MESSAGE;              //zyg: player emote
+             qe->_Emote = 0;                              //TEXTEMOTE_HELLO;                //zyg: NPC emote
+         }
+         return "";
+     }
+     else
+     {
+         if(qe)
+             *qe = gossiptext->Options[0].Emotes[0];
+
+         if (!gossiptext->Options[0].Text_0.empty())
+         {
+             title = gossiptext->Options[0].Text_0;
+
+             LocaleConstant localeConstant = GetSession()->GetSessionDbLocaleIndex();
+             if (localeConstant != LOCALE_enUS)
+                 if (NpcTextLocale const* nl = sObjectMgr->GetNpcTextLocale(textid))
+                     ObjectMgr::GetLocaleString(nl->Text_0[0], localeConstant, title);
+         }
+         else
+         {
+             title = gossiptext->Options[0].Text_1;
+
+             LocaleConstant localeConstant = GetSession()->GetSessionDbLocaleIndex();
+             if (localeConstant != LOCALE_enUS)
+                 if (NpcTextLocale const* nl = sObjectMgr->GetNpcTextLocale(textid))
+                     ObjectMgr::GetLocaleString(nl->Text_1[0], localeConstant, title);
+         }
+     }
+     return title;
+}
+
 void Player::SendPreparedQuest(ObjectGuid guid)
 {
     QuestMenu& questMenu = PlayerTalkClass->GetQuestMenu();
@@ -12969,39 +13011,8 @@ void Player::SendPreparedQuest(ObjectGuid guid)
         // need pet case for some quests
         Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, guid);
         if (creature)
-        {
-            uint32 textid = GetGossipTextId(creature);
-            GossipText const* gossiptext = sObjectMgr->GetGossipText(textid);
-            if (!gossiptext)
-            {
-                qe._Delay = 0;                              //TEXTEMOTE_MESSAGE;              //zyg: player emote
-                qe._Emote = 0;                              //TEXTEMOTE_HELLO;                //zyg: NPC emote
-                title.clear();
-            }
-            else
-            {
-                qe = gossiptext->Options[0].Emotes[0];
+            title = GetQuestOrTrainerTitleText(creature, &qe);
 
-                if(!gossiptext->Options[0].Text_0.empty())
-                {
-                    title = gossiptext->Options[0].Text_0;
-
-                    LocaleConstant localeConstant = GetSession()->GetSessionDbLocaleIndex();
-                    if (localeConstant != LOCALE_enUS)
-                        if (NpcTextLocale const* nl = sObjectMgr->GetNpcTextLocale(textid))
-                            ObjectMgr::GetLocaleString(nl->Text_0[0], localeConstant, title);
-                }
-                else
-                {
-                    title = gossiptext->Options[0].Text_1;
-
-                    LocaleConstant localeConstant = GetSession()->GetSessionDbLocaleIndex();
-                    if (localeConstant != LOCALE_enUS)
-                        if (NpcTextLocale const* nl = sObjectMgr->GetNpcTextLocale(textid))
-                            ObjectMgr::GetLocaleString(nl->Text_1[0], localeConstant, title);
-                }
-            }
-        }
         PlayerTalkClass->SendQuestGiverQuestList( qe, title, guid );
     }
 }

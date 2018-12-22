@@ -107,7 +107,14 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
 
 void WorldSession::SendTrainerList( ObjectGuid guid )
 {
-    std::string str = GetTrinityString(LANG_NPC_TAINER_HELLO);
+    //sun: custom handling here, send gossip text if there is any instead of default text
+    std::string str;
+    if (Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER))
+        str = _player->GetQuestOrTrainerTitleText(unit, nullptr, false);
+
+    if(str == "")
+        str = GetTrinityString(LANG_NPC_TAINER_HELLO);
+
     SendTrainerList(guid, str);
 }
 
