@@ -69,7 +69,7 @@ uint32 GetItemEnchantMod(uint32 entry)
 
     if (tab == RandomItemEnch.end())
     {
-        TC_LOG_ERROR("FIXME","Item RandomProperty / RandomSuffix id #%u used in `item_template` but it doesn't have records in `item_enchantment_template` table.",entry);
+        TC_LOG_ERROR("sql.sql","Item RandomProperty / RandomSuffix id #%u used in `item_template` but it doesn't have records in `item_enchantment_template` table.",entry);
         return 0;
     }
 

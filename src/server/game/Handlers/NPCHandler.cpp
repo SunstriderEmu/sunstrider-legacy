@@ -107,7 +107,7 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
 
 void WorldSession::SendTrainerList( ObjectGuid guid )
 {
-    //sun: custom handling here, send gossip text if there is any instead of default text
+    //sun: custom handling here, send gossip text if there is any instead of default text... I think this is wrong, this text should be before the trainer list
     std::string str;
     if (Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER))
         str = _player->GetQuestOrTrainerTitleText(unit, nullptr, false);

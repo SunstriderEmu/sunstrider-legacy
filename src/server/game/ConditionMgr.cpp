@@ -1078,8 +1078,8 @@ void ConditionMgr::LoadConditions(bool isReload)
         sSpellMgr->UnloadSpellInfoImplicitTargetConditionLists();
     }
 
-    QueryResult result = WorldDatabase.Query("SELECT SourceTypeOrReferenceId, SourceGroup, SourceEntry, SourceId, ElseGroup, ConditionTypeOrReference, ConditionTarget, "
-                                             " ConditionValue1, ConditionValue2, ConditionValue3, NegativeCondition, ErrorType, ErrorTextId, ScriptName FROM conditions");
+    QueryResult result = WorldDatabase.PQuery("SELECT SourceTypeOrReferenceId, SourceGroup, SourceEntry, SourceId, ElseGroup, ConditionTypeOrReference, ConditionTarget, "
+                                             " ConditionValue1, ConditionValue2, ConditionValue3, NegativeCondition, ErrorType, ErrorTextId, ScriptName FROM conditions WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -1286,7 +1286,7 @@ void ConditionMgr::LoadConditions(bool isReload)
 
             if (!valid)
             {
-                TC_LOG_ERROR("sql.sql", "%s Not handled grouped condition.", cond->ToString().c_str());
+                TC_LOG_ERROR("sql.sql", "%s Not handled or invalid grouped condition.", cond->ToString().c_str());
                 delete cond;
             }
             else
