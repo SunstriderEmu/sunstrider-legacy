@@ -8874,7 +8874,8 @@ void ObjectMgr::LoadBroadcastTexts()
         {
             if (!sSoundEntriesStore.LookupEntry(bct.SoundId))
             {
-                TC_LOG_DEBUG("broadcasttext", "BroadcastText (Id: %u) in table `broadcast_text` has SoundId %u but sound does not exist.", bct.Id, bct.SoundId);
+                //sun: change it to trace level, this can happen with TLK sounds
+                TC_LOG_TRACE("broadcasttext", "BroadcastText (Id: %u) in table `broadcast_text` has SoundId %u but sound does not exist.", bct.Id, bct.SoundId);
                 bct.SoundId = 0;
             }
         }
