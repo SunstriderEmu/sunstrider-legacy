@@ -3474,36 +3474,24 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spell_id);
     if (SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id))
     {
-        uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spell_id);
-        if (!prev_spell)                                    // first rank, remove skill
-            SetSkill(spellLearnSkill->skill, 0, 0, 0);
-        else
+        // add dependent skills if this spell is not learned from adding skill already
+        if (spellLearnSkill->skill != fromSkill)
         {
-            // search prev. skill setting by spell ranks chain
-            SpellLearnSkillNode const* prevSkill = sSpellMgr->GetSpellLearnSkill(prev_spell);
-            while (!prevSkill && prev_spell)
-            {
-                prev_spell = sSpellMgr->GetPrevSpellInChain(prev_spell);
-                prevSkill = sSpellMgr->GetSpellLearnSkill(sSpellMgr->GetFirstSpellInChain(prev_spell));
-            }
+            uint32 skill_value = GetPureSkillValue(spellLearnSkill->skill);
+            uint32 skill_max_value = GetPureMaxSkillValue(spellLearnSkill->skill);
 
-            if (!prevSkill)                                 // not found prev skill setting, remove skill
-                SetSkill(spellLearnSkill->skill, 0, 0, 0);
-            else                                            // set to prev. skill setting values
-            {
-                uint32 skill_value = GetPureSkillValue(prevSkill->skill);
-                uint32 skill_max_value = GetPureMaxSkillValue(prevSkill->skill);
+            if (skill_value < spellLearnSkill->value)
+                skill_value = spellLearnSkill->value;
 
-                if (skill_value > prevSkill->value)
-                    skill_value = prevSkill->value;
+            uint32 new_skill_max_value = spellLearnSkill->maxvalue == 0 ? GetMaxSkillValueForLevel() : spellLearnSkill->maxvalue;
 
-                uint32 new_skill_max_value = prevSkill->maxvalue == 0 ? GetMaxSkillValueForLevel() : prevSkill->maxvalue;
+            if (skill_max_value < new_skill_max_value)
+                skill_max_value = new_skill_max_value;
 
-                if (skill_max_value > new_skill_max_value)
-                    skill_max_value = new_skill_max_value;
+            if (sWorld->getBoolConfig(CONFIG_ALWAYS_MAXSKILL) && !SpellMgr::IsProfessionOrRidingSkill(spellLearnSkill->skill))
+                skill_value = skill_max_value;
 
-                SetSkill(prevSkill->skill, prevSkill->step, skill_value, skill_max_value);
-            }
+            SetSkill(spellLearnSkill->skill, spellLearnSkill->step, skill_value, skill_max_value);
         }
     }
     else
