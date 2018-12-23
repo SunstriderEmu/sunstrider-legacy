@@ -270,7 +270,7 @@ bool RecupMgr::RecupProfession(Player* player, RecupProfessionType profession, u
             player->StoreNewItemInBestSlots(16207, 1); // Runed arcanite rod
         break;
     case RECUP_PROFESSION_MINING:
-        player->SetSkill(182, 4, maxSkill, maxSkill);
+        player->SetSkill(186, 4, maxSkill, maxSkill);
         player->LearnSpell(29354, false);
         player->StoreNewItemInBestSlots(2901, 1); //mining pick
         break;
