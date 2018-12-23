@@ -7340,8 +7340,7 @@ void ObjectMgr::LoadTrainers()
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell.SpellId);
             if (!spellInfo)
             {
-                //might have TLK spells here
-               // TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing spell (SpellId: %u) for TrainerId %u, ignoring", spell.SpellId, trainerId);
+                TC_LOG_ERROR("sql.sql", "Table `trainer_spell` references non-existing spell (SpellId: %u) for TrainerId %u, ignoring", spell.SpellId, trainerId);
                 continue;
             }
 
@@ -7450,7 +7449,7 @@ void ObjectMgr::LoadCreatureDefaultTrainers()
 
     _creatureDefaultTrainers.clear();
 
-    if (QueryResult result = WorldDatabase.Query("SELECT CreatureId, TrainerId FROM creature_default_trainer"))
+    if (QueryResult result = WorldDatabase.PQuery("SELECT CreatureId, TrainerId FROM creature_default_trainer WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch()))
     {
         do
         {
@@ -7460,8 +7459,7 @@ void ObjectMgr::LoadCreatureDefaultTrainers()
 
             if (!GetCreatureTemplate(creatureId))
             {
-                //sun: disabled since we have TLK data
-                //TC_LOG_ERROR("sql.sql", "Table `creature_default_trainer` references non-existing creature template (CreatureId: %u), ignoring", creatureId);
+                TC_LOG_ERROR("sql.sql", "Table `creature_default_trainer` references non-existing creature template (CreatureId: %u), ignoring", creatureId);
                 continue;
             }
 
