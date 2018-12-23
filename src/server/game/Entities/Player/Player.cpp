@@ -20869,11 +20869,7 @@ void Player::LearnAllClassSpells()
     {
         for(auto itr : trainer->GetSpells())
         {
-            //hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
-            Trainer::TrainerSpell trainerSpell;
-            trainerSpell.SpellId = itr.SpellId;
-
-            if (Trainer::Trainer::GetSpellState(this, &trainerSpell) != Trainer::SpellState::Available)
+            if (Trainer::Trainer::GetSpellState(this, &itr) != Trainer::SpellState::Available)
                 continue;
 
             LearnSpell(itr.SpellId, false);
