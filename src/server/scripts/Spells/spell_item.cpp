@@ -518,6 +518,81 @@ class spell_item_alchemists_stone : public AuraScript
     }
 };
 
+
+// 37657 - Lightning Capacitor 
+// Item apply aura 37657 which procs 18350 on self
+class spell_item_lightning_capacitor_aura : public AuraScript
+{
+    PrepareAuraScript(spell_item_lightning_capacitor_aura);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        //prevent lightning capacitor from proccing on self
+        if (Spell const* spell = eventInfo.GetProcSpell())
+        {
+            if(spell->IsTriggered())
+                return false;
+        }
+
+        return true;
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_item_lightning_capacitor_aura::CheckProc);
+    }
+};
+
+// 18350 - Lightning capacitor dummy spell
+class spell_item_lightning_capacitor : public SpellScript
+{
+    PrepareSpellScript(spell_item_lightning_capacitor);
+
+    enum Spells
+    {
+        SPELL_LIGHTNING_CAPACITOR = 37657,
+        SPELL_ELECTRICAL_CHARGE = 37658,
+        SPELL_LIGHTNING_BOLT    = 37661,
+    };
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_LIGHTNING_CAPACITOR,
+                SPELL_ELECTRICAL_CHARGE,
+                SPELL_LIGHTNING_BOLT,
+            });
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*dmg*/)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        uint32 releaseCount = sSpellMgr->AssertSpellInfo(SPELL_LIGHTNING_CAPACITOR)->Effects[EFFECT_0].CalcValue(caster);
+        if (!target || releaseCount < 1)
+            return;
+
+        if (Aura* aura = caster->GetAura(SPELL_ELECTRICAL_CHARGE))
+        {
+            //Release if enough charges
+            if (aura->GetStackAmount() >= releaseCount - 1) //if we already got 2 charges, this is the third and we should release
+            {
+                caster->CastSpell(target, SPELL_LIGHTNING_BOLT, true);
+                caster->RemoveAurasDueToSpell(SPELL_ELECTRICAL_CHARGE);
+                return;
+            }
+        }
+        //Or build up charges
+        caster->CastSpell(caster, SPELL_ELECTRICAL_CHARGE, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_item_lightning_capacitor::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     new spell_item_improved_mana_gems();
@@ -535,4 +610,6 @@ void AddSC_item_spell_scripts()
     RegisterAuraScript(spell_item_charm_witch_doctor);
     RegisterAuraScript(spell_item_mana_drain);
     RegisterAuraScript(spell_item_alchemists_stone);
+    RegisterAuraScript(spell_item_lightning_capacitor_aura);
+    RegisterSpellScript(spell_item_lightning_capacitor);
 }
