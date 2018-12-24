@@ -1,0 +1,1 @@
+UPDATE smart_scripts SET event_phase_mask = 2 WHERE event_type = 3 AND event_param1 = 30 AND event_phase_mask = 0 AND COMMENT LIKE "%Between 30-100%";
