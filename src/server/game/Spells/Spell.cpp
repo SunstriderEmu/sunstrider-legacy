@@ -3876,9 +3876,6 @@ uint32 Spell::GetChannelStartDuration() const
 
     bool const useAuraDuration = m_spellInfo->HasAnyAura() && m_spellInfo->NeedsExplicitUnitTarget();
     auto auraDuration = [this]() {
-        if (!_spellAura)
-            return 0;
-
         // 1 - Get first spell effect needing explicit target
         uint8 i = EFFECT_0;
         bool unused, unused2;
@@ -3896,23 +3893,22 @@ uint32 Spell::GetChannelStartDuration() const
             return 0;
 
         // 2 - Select first target unit with this effect applied as channel target
-        Unit const* channelTarget = nullptr;
+        UnitAura const* hitAura = nullptr;
         for (auto const target : m_UniqueTargetInfo)
         {
-            if (target.MissCondition != SPELL_MISS_NONE || !target.HitAura)
+            if (!target.HitAura)
                 continue;
 
             if (!(target.EffectMask & (1 << i)))
                 continue;
 
-            channelTarget = target.GetSpellHitTarget();
-            if (channelTarget)
-                break;
+            hitAura = target.HitAura;
+            break;
         }
 
-        // 3 - Use aura duration if channel target has aura, else 0
-        if(channelTarget)
-            return _spellAura->IsAppliedOnTarget(channelTarget->GetGUID()) ? _spellAura->GetDuration() : 0;
+        // 3 - Use aura duration if channel target has aura
+        if(hitAura)
+            return hitAura->GetDuration();
 
         return 0;
     };
