@@ -20732,26 +20732,26 @@ void Player::LearnAllClassSpells()
             //pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (uint32 i : spellsId)
-                AddSpell(i,true);
+                LearnSpell(i,true);
             break;
         }
         case CLASS_PALADIN:
             //Pala mounts
             if (GetTeam() == ALLIANCE) {
-                AddSpell(23214, true); //60
-                AddSpell(13819, true); //40
+                LearnSpell(23214, true); //60
+                LearnSpell(13819, true); //40
             } else {
-                AddSpell(34767, true); //60
-                AddSpell(34769, true); //40
+                LearnSpell(34767, true); //60
+                LearnSpell(34769, true); //40
             }
             break;
         case CLASS_WARLOCK:
-            AddSpell(5784, true); //mount 40
-            AddSpell(23161, true); //mount 60
-            AddSpell(688, true); //imp
-            AddSpell(697, true); //void walker
-            AddSpell(712, true); //Succubus
-            AddSpell(691, true); //Fel Hunter
+            LearnSpell(5784, true); //mount 40
+            LearnSpell(23161, true); //mount 60
+            LearnSpell(688, true); //imp
+            LearnSpell(697, true); //void walker
+            LearnSpell(712, true); //Succubus
+            LearnSpell(691, true); //Fel Hunter
             break;
         default:
             break;
