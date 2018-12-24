@@ -2875,11 +2875,23 @@ void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
                 continue;
 
             //replace old object by a new one, but keep it's adress, so that code having already pointers to some SpellInfos can continue.
-            //May creates memory leaks...
+            //This WILL creates memory leaks...
+            SpellInfo* newSpellInfo = new SpellInfo(itr->second);
             if (mSpellInfoMap[i])
-                *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
+            {
+                //there may also be references to pointers within old SpellInfo structure... 
+                //also copy the new values into the old pointed at objects
+                for(uint8 j = EFFECT_0; j < MAX_SPELL_EFFECTS; j++)
+                    mSpellInfoMap[i]->Effects[j] = std::move(newSpellInfo->Effects[j]);
+  
+                //there are other pointers here... all should be copied
+
+                //and yes this is ugly, don't ever reload spell_template in production
+
+                *mSpellInfoMap[i] = std::move(*newSpellInfo);
+            }
             else
-                mSpellInfoMap[i] = new SpellInfo(itr->second);
+                mSpellInfoMap[i] = newSpellInfo;
         }
     }
 
