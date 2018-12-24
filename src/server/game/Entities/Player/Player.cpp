@@ -2441,17 +2441,8 @@ Creature* Player::GetNPCIfCanInteractWith(ObjectGuid guid, uint32 npcflagmask)
         return nullptr;
 
     // hostile or unfriendly
-    if (creature->GetReactionTo(this) <= REP_UNFRIENDLY)
+    if (creature->GetReactionTo(this) <= REP_UNFRIENDLY) 
         return nullptr;
-
-    // not unfriendly
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(creature->GetFaction());
-    if(factionTemplate)
-    {
-        FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && GetReputationMgr().GetRank(faction) <= REP_UNFRIENDLY && !HasAuraEffect(29938,0) ) //needed for quest 9410 "A spirit guide"
-            return nullptr;
-    }
 
     // not too far, taken from CGGameUI::SetInteractTarget
     if (!creature->IsWithinDistInMap(this, creature->GetCombatReach() + 4.0f))
