@@ -608,15 +608,19 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
-    if (attacker && pVictim->GetTypeId() == TYPEID_PLAYER && attacker != pVictim)
+    if (attacker && attacker != pVictim)
     {
         // Signal to pets that their owner was attacked - except when DOT.
-        if (damagetype != DOT)
+        if (pVictim->GetTypeId() == TYPEID_PLAYER && damagetype != DOT)
         {
             for (Unit* controlled : pVictim->m_Controlled)
                 if (Creature* cControlled = controlled->ToCreature())
                     if (CreatureAI* controlledAI = cControlled->AI())
                         controlledAI->OwnerAttackedBy(attacker);
+
+            //cmangos: Since patch 1.5.0 sitting characters always stand up on attack (even if stunned)
+            if (!pVictim->IsStandState() && (pVictim->GetTypeId() == TYPEID_PLAYER || !pVictim->HasUnitState(UNIT_STATE_STUNNED)))
+                pVictim->SetStandState(UNIT_STAND_STATE_STAND);
         }
 
         //sunstrider: moved out of last check, some damage are caused by self
