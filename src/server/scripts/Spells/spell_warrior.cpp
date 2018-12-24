@@ -204,10 +204,100 @@ public:
     }
 };
 
+// -12162 - Deep Wounds
+class spell_warr_deep_wounds : public SpellScript
+{
+    PrepareSpellScript(spell_warr_deep_wounds);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo(
+            {
+                SPELL_WARRIOR_DEEP_WOUNDS_RANK_1,
+                SPELL_WARRIOR_DEEP_WOUNDS_RANK_2,
+                SPELL_WARRIOR_DEEP_WOUNDS_RANK_3,
+                SPELL_WARRIOR_DEEP_WOUNDS_PERIODIC
+            });
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*dmg*/)
+    {
+        int32 damage = GetEffectValue();
+        Unit* caster = GetCaster();
+        if (Unit* target = GetHitUnit())
+        {
+#ifdef LICH_KING
+            ApplyPct(damage, 16 * GetSpellInfo()->GetRank());
+#else
+            ApplyPct(damage, 20 * GetSpellInfo()->GetRank()); //"dealing 20% of your melee weapon's average damage"
+#endif
+
+            SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_WARRIOR_DEEP_WOUNDS_PERIODIC);
+
+            ASSERT(spellInfo->GetMaxTicks() > 0);
+            damage /= spellInfo->GetMaxTicks();
+
+            CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+            args.AddSpellBP0(damage);
+            caster->CastSpell(target, SPELL_WARRIOR_DEEP_WOUNDS_PERIODIC, args);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warr_deep_wounds::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+// -12834 - Deep Wounds Aura
+class spell_warr_deep_wounds_aura : public AuraScript
+{
+    PrepareAuraScript(spell_warr_deep_wounds_aura);
+
+    bool Validate(SpellInfo const* spellInfo) override
+    {
+        return ValidateSpellInfo({ spellInfo->Effects[EFFECT_0].TriggerSpell });
+    }
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
+        if (!damageInfo)
+            return false;
+
+        return eventInfo.GetActor()->GetTypeId() == TYPEID_PLAYER;
+    }
+
+    void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        PreventDefaultAction();
+
+        Unit* actor = eventInfo.GetActor();
+        float damage = 0.f;
+
+        if (eventInfo.GetDamageInfo()->GetAttackType() == OFF_ATTACK)
+            damage = (actor->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + actor->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE)) / 2.f;
+        else
+            damage = (actor->GetFloatValue(UNIT_FIELD_MINDAMAGE) + actor->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) / 2.f;
+
+        CastSpellExtraArgs args(aurEff);
+        args.AddSpellBP0(damage);
+        actor->CastSpell(eventInfo.GetProcTarget(), GetSpellInfo()->Effects[EFFECT_0].TriggerSpell, args);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_warr_deep_wounds_aura::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_warr_deep_wounds_aura::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_intimidating_shout();
     new spell_warr_retaliation();
     new spell_warr_second_wind();
     new spell_warr_sweeping_strikes();
+    RegisterSpellScript(spell_warr_deep_wounds);
+    RegisterAuraScript(spell_warr_deep_wounds_aura);
 }

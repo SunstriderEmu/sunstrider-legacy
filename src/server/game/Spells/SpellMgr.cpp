@@ -51,22 +51,6 @@ bool IsPassiveSpell(uint32 spellId)
     return spellInfo->IsPassive();
 }
 
-/*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
-{
-    SpellInfo const *spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
-    SpellInfo const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
-    if(!spellInfo_1 || !spellInfo_2) return false;
-    if(spellInfo_1->Id == spellId_2) return false;
-
-    if (spellInfo_1->Effects[effIndex_1].Effect != spellInfo_2->Effects[effIndex_2].Effect ||
-        spellInfo_1->Effects[effIndex_1].ItemType != spellInfo_2->Effects[effIndex_2].ItemType ||
-        spellInfo_1->Effects[effIndex_1].MiscValue != spellInfo_2->Effects[effIndex_2].MiscValue ||
-        spellInfo_1->Effects[effIndex_1].ApplyAuraName != spellInfo_2->Effects[effIndex_2].ApplyAuraName)
-        return false;
-
-    return true;
-}*/
-
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
     SpellInfo const*spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);

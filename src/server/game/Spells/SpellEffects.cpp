@@ -1108,38 +1108,6 @@ void Spell::EffectDummy(uint32 i)
                     (unitTarget->ToCreature())->SetDeathState(JUST_RESPAWNED);
                     return;
                 }
-                case 12162:                                 // Deep wounds
-                case 12850:                                 // (now good common check for this spells)
-                case 12868:
-                {
-                    if(!unitTarget || !_unitCaster)
-                        return;
-
-                    float localDamage;
-                    // DW should benefit of attack power, damage percent mods etc.
-                    // TODO: check if using offhand damage is correct and if it should be divided by 2
-                    if (_unitCaster->HaveOffhandWeapon() && _unitCaster->GetAttackTimer(BASE_ATTACK) > _unitCaster->GetAttackTimer(OFF_ATTACK))
-                        localDamage = (_unitCaster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + _unitCaster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE))/2;
-                    else
-                        localDamage = (_unitCaster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + _unitCaster->GetFloatValue(UNIT_FIELD_MAXDAMAGE))/2;
-
-                    switch (m_spellInfo->Id)
-                    {
-                        case 12850: localDamage *= 0.2f; break;
-                        case 12162: localDamage *= 0.4f; break;
-                        case 12868: localDamage *= 0.6f; break;
-                        default:
-                            TC_LOG_ERROR("FIXME","Spell::EffectDummy: Spell %u not handled in DW",m_spellInfo->Id);
-                            return;
-                    };
-
-                    int32 deepWoundsDotBasePoints0 = int32(damage / 4);
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(deepWoundsDotBasePoints0));
-                    m_caster->CastSpell(unitTarget, 12721, args);
-                    return;
-                }
                 case 12975:                                 //Last Stand
                 {
                     if (!_unitCaster)
