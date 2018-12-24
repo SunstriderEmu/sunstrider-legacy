@@ -610,22 +610,21 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* pVictim, uint32 damage, CleanDamag
 
     if (attacker && attacker != pVictim)
     {
-        // Signal to pets that their owner was attacked - except when DOT.
-        if (pVictim->GetTypeId() == TYPEID_PLAYER && damagetype != DOT)
+        if (pVictim->GetTypeId() == TYPEID_PLAYER)
         {
-            for (Unit* controlled : pVictim->m_Controlled)
-                if (Creature* cControlled = controlled->ToCreature())
-                    if (CreatureAI* controlledAI = cControlled->AI())
-                        controlledAI->OwnerAttackedBy(attacker);
+            //sunstrider: moved out of last check, some damage are caused by self
+            if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+                return 0;
 
-            //cmangos: Since patch 1.5.0 sitting characters always stand up on attack (even if stunned)
-            if (!pVictim->IsStandState() && (pVictim->GetTypeId() == TYPEID_PLAYER || !pVictim->HasUnitState(UNIT_STATE_STUNNED)))
-                pVictim->SetStandState(UNIT_STAND_STATE_STAND);
+            // Signal to pets that their owner was attacked - except when DOT.
+            if (damagetype != DOT)
+            {
+                for (Unit* controlled : pVictim->m_Controlled)
+                    if (Creature* cControlled = controlled->ToCreature())
+                        if (CreatureAI* controlledAI = cControlled->AI())
+                            controlledAI->OwnerAttackedBy(attacker);
+            }
         }
-
-        //sunstrider: moved out of last check, some damage are caused by self
-        if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
-            return 0;
     }
 
     // Kidney Shot hack
@@ -7157,6 +7156,10 @@ void Unit::AttackedTarget(Unit* target, bool canInitialAggro)
     target->EngageWithTarget(this);
     if (Unit* targetOwner = target->GetCharmerOrOwner())
         targetOwner->EngageWithTarget(this);
+
+    //from cmangos: Since patch 1.5.0 sitting characters always stand up on attack (even if stunned) (sun: moved to AttackedTarget instead of DealDamage, we want to to be triggered even on a miss)
+    if (!target->IsStandState() && (target->GetTypeId() == TYPEID_PLAYER || !target->HasUnitState(UNIT_STATE_STUNNED)))
+        target->SetStandState(UNIT_STAND_STATE_STAND);
 
 #ifdef LICH_KING
     //Patch 3.0.8: All player spells which cause a creature to become aggressive to you will now also immediately cause the creature to be tapped.
