@@ -1910,7 +1910,7 @@ static const SpellPartialResistDistribution SPELL_PARTIAL_RESIST_DISTRIBUTION = 
     // We must exclude full resist chance from it, we already rolled for it as miss type in attack table (so n-1)
     uint8 portion = std::min(uint8(die.roll(random)), uint8(NUM_SPELL_PARTIAL_RESISTS - 1));
     // Simulate old retail rouding error (full hit cut-off) for: NPC non-binary spells; environmental damage (e.g. lava); elemental attacks
-    if (portion == SPELL_PARTIAL_RESIST_NONE && !spellInfo->IsBinarySpell() && averageResist > 54.0f && (info.GetDamageType() == DIRECT_DAMAGE || !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)))
+    if (portion == SPELL_PARTIAL_RESIST_NONE && (!spellInfo || !spellInfo->IsBinarySpell()) && averageResist > 54.0f && (info.GetDamageType() == DIRECT_DAMAGE || !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED)))
         ++portion;
     // To get resisted part ratio, we exclude zero outcome (it is n-1 anyway, so we reuse local var)
     //return (float(portion) / float(NUM_SPELL_PARTIAL_RESISTS));
