@@ -2757,8 +2757,12 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
     if (spellInfo->IsPassive())
         return true;
 
+    if (spellInfo->HasAttribute(SPELL_ATTR0_NEGATIVE_1))
+        return false;
+
     if (spellInfo->HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
-        || spellInfo->HasAttribute(SPELL_ATTR0_NEGATIVE_1))
+        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL) //sun: exclude trigger spells from this check, needed for spells such as 10
+        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE))
         return false;
 
     visited.insert({ spellInfo->Id, effIndex });
