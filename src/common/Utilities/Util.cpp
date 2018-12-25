@@ -1,4 +1,5 @@
 #include "Util.h"
+#include "Containers.h"
 
 #include "utf8.h"
 #include "SFMT.h"
@@ -243,22 +244,16 @@ bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize)
 {
     try
     {
-        size_t len = utf8::distance(utf8str,utf8str+csize);
-        if(len > wsize)
-        {
-            if (wsize > 0)
-                wstr[0] = L'\0';
-            return false;
-        }
-
-        wsize = len;
-        utf8::utf8to16(utf8str,utf8str+csize,wstr);
-        wstr[len] = L'\0';
+        Trinity::CheckedBufferOutputIterator<wchar_t> out(wstr, wsize);
+        out = utf8::utf8to16(utf8str, utf8str + csize, out);
+        wsize -= out.remaining(); // remaining unused space
+        wstr[wsize] = L'\0';
     }
-    catch(std::exception)
+    catch (std::exception)
     {
         if (wsize > 0)
             wstr[0] = L'\0';
+        wsize = 0;
         return false;
     }
 
@@ -267,16 +262,14 @@ bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize)
 
 bool Utf8toWStr(const std::string& utf8str, std::wstring& wstr)
 {
+    wstr.clear();
     try
     {
-        size_t len = utf8::distance(utf8str.c_str(),utf8str.c_str()+utf8str.size());
-        wstr.resize(len);
-
-        utf8::utf8to16(utf8str.c_str(),utf8str.c_str()+utf8str.size(),&wstr[0]);
+        utf8::utf8to16(utf8str.c_str(), utf8str.c_str() + utf8str.size(), std::back_inserter(wstr));
     }
-    catch(std::exception)
+    catch (std::exception)
     {
-        wstr = L"";
+        wstr.clear();
         return false;
     }
 
@@ -288,35 +281,41 @@ bool WStrToUtf8(wchar_t* wstr, size_t size, std::string& utf8str)
     try
     {
         std::string utf8str2;
-        utf8str2.resize(size*4);                            // allocate for most long case
+        utf8str2.resize(size * 4);                            // allocate for most long case
 
-        char* oend = utf8::utf16to8(wstr,wstr+size,&utf8str2[0]);
-        utf8str2.resize(oend-(&utf8str2[0]));               // remove unused tail
+        if (size)
+        {
+            char* oend = utf8::utf16to8(wstr, wstr + size, &utf8str2[0]);
+            utf8str2.resize(oend - (&utf8str2[0]));               // remove unused tail
+        }
         utf8str = utf8str2;
     }
-    catch(std::exception)
+    catch (std::exception)
     {
-        utf8str = "";
+        utf8str.clear();
         return false;
     }
 
     return true;
 }
 
-bool WStrToUtf8(std::wstring wstr, std::string& utf8str)
+bool WStrToUtf8(std::wstring const& wstr, std::string& utf8str)
 {
     try
     {
         std::string utf8str2;
-        utf8str2.resize(wstr.size()*4);                     // allocate for most long case
+        utf8str2.resize(wstr.size() * 4);                     // allocate for most long case
 
-        char* oend = utf8::utf16to8(wstr.c_str(),wstr.c_str()+wstr.size(),&utf8str2[0]);
-        utf8str2.resize(oend-(&utf8str2[0]));                // remove unused tail
+        if (wstr.size())
+        {
+            char* oend = utf8::utf16to8(wstr.c_str(), wstr.c_str() + wstr.size(), &utf8str2[0]);
+            utf8str2.resize(oend - (&utf8str2[0]));                // remove unused tail
+        }
         utf8str = utf8str2;
     }
-    catch(std::exception)
+    catch (std::exception)
     {
-        utf8str = "";
+        utf8str.clear();
         return false;
     }
 
@@ -394,7 +393,7 @@ bool consoleToUtf8(const std::string& conStr,std::string& utf8str)
     wstr.resize(conStr.size());
     OemToCharBuffW(&conStr[0],&wstr[0],conStr.size());
 
-    return WStrToUtf8(wstr,utf8str);
+    return WStrToUtf8(wstr, utf8str);
 #else
     // not implemented yet
     utf8str = conStr;
@@ -410,7 +409,7 @@ bool Utf8FitTo(const std::string& str, std::wstring search)
         return false;
 
     // converting to lower case
-    wstrToLower( temp );
+    wstrToLower(temp);
 
     if(temp.find(search) == std::wstring::npos)
         return false;

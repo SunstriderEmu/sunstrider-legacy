@@ -106,7 +106,7 @@ inline bool Utf8toWStr(const std::string& utf8str, wchar_t* wstr, size_t& wsize)
     return Utf8toWStr(utf8str.c_str(), utf8str.size(), wstr, wsize);
 }
 
-TC_COMMON_API bool WStrToUtf8(std::wstring wstr, std::string& utf8str);
+TC_COMMON_API bool WStrToUtf8(std::wstring const& wstr, std::string& utf8str);
 // size==real string size
 TC_COMMON_API bool WStrToUtf8(wchar_t* wstr, size_t size, std::string& utf8str);
 

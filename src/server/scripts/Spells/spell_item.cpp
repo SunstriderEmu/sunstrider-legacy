@@ -520,7 +520,8 @@ class spell_item_alchemists_stone : public AuraScript
 
 
 // 37657 - Lightning Capacitor 
-// Item apply aura 37657 which procs 18350 on self
+// Item apply aura 37657 which procs 18350 on self 
+// (if you rewrite this, spell_item_lightning_capacitor and and spell_item_lightning_capacitor_aura could be merged into spell_item_lightning_capacitor_aura)
 class spell_item_lightning_capacitor_aura : public AuraScript
 {
     PrepareAuraScript(spell_item_lightning_capacitor_aura);
@@ -543,7 +544,7 @@ class spell_item_lightning_capacitor_aura : public AuraScript
     }
 };
 
-// 18350 - Lightning capacitor dummy spell
+// 18350 - Lightning capacitor dummy spell 
 class spell_item_lightning_capacitor : public SpellScript
 {
     PrepareSpellScript(spell_item_lightning_capacitor);
