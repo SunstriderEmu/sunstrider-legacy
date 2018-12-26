@@ -2364,13 +2364,10 @@ float SpellEffectInfo::CalcRadius(WorldObject* caster /*= nullptr*/, Spell* spel
     {
 #ifdef LICH_KING
         if (Unit* casterUnit = caster->ToUnit())
-            radius += RadiusEntry->RadiusPerLevel * caster->getLevel();
+            radius += RadiusEntry->RadiusPerLevel * caster->GetLevel();
+#endif
 
         radius = std::min(radius, RadiusEntry->RadiusMax);
-#else
-        if (Unit* casterUnit = caster->ToUnit())
-            radius = std::min(radius, RadiusEntry->RadiusMax);
-#endif
             
         if (Player* modOwner = caster->GetSpellModOwner())
             modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_RADIUS, radius, spell);
