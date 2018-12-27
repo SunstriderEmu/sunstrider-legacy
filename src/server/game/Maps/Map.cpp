@@ -2968,7 +2968,7 @@ bool InstanceMap::AddPlayerToMap(Player *player)
                 {
                     // solo saves should be reset when entering a group
                     InstanceGroupBind *groupBind = pGroup->GetBoundInstance(GetDifficulty(), GetId());
-                    if (playerBind)
+                    if (playerBind && playerBind->save != mapSave)
                     {
                         //  TC_LOG_ERROR("maps","InstanceMap::Add: player %s(%d) is being put in instance %d,%d,%d,%d,%d,%d but he is in group %d and is bound to instance %d,%d,%d,%d,%d,%d!", player->GetName(), player->GetGUID().GetCounter(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset(), pGroup->GetLeaderGUID().GetCounter(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset());
                         if (groupBind)
