@@ -325,6 +325,8 @@ void WorldSession::SendStablePet(ObjectGuid guid )
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_DETAIL);
 
     stmt->setUInt32(0, _player->GetGUID().GetCounter());
+    stmt->setUInt8(1, PET_SAVE_FIRST_STABLE_SLOT);
+    stmt->setUInt8(2, PET_SAVE_LAST_STABLE_SLOT);
 
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
 }
@@ -347,6 +349,21 @@ void WorldSession::SendStablePetCallback(ObjectGuid guid, PreparedQueryResult re
 
     uint8 num = 0;                                          // counter for place holder
 
+    Pet* pet = _player->GetPet();
+    // not let move dead pet in slot
+    if (pet && pet->IsAlive() && pet->getPetType() == HUNTER_PET)
+    {
+        data << uint32(pet->GetCharmInfo()->GetPetNumber());
+        data << uint32(pet->GetEntry());
+        data << uint32(pet->GetLevel());
+        data << pet->GetName();                             // petname
+#ifndef LICH_KING
+        data << uint32(pet->GetLoyaltyLevel());
+#endif
+        data << uint8(1);                                   // 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+        ++num;
+    }
+
     if (result)
     {
         do
@@ -357,13 +374,10 @@ void WorldSession::SendStablePetCallback(ObjectGuid guid, PreparedQueryResult re
             data << uint32(fields[2].GetUInt32());          // creature entry
             data << uint32(fields[3].GetUInt16());          // level
             data << fields[4].GetString();                  // name
-            if(GetClientBuild() == BUILD_243)
-                data << uint32(fields[5].GetUInt32());      // loyalty
-
-            if(fields[6].GetUInt32() == PET_SAVE_NOT_IN_SLOT) //pet is currently dismissed
-                data << uint8(1); //current
-            else
-                data << uint8(fields[6].GetUInt32()+1);           // slot. 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
+#ifndef LICH_KING
+            data << uint32(fields[5].GetUInt32());          // loyalty
+#endif
+            data << uint8(2);  // slot. 1 = current, 2/3 = in stable (any from 4, 5, ... create problems with proper show)
 
             ++num;
         }

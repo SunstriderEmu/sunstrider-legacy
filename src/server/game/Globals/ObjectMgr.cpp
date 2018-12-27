@@ -369,40 +369,35 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 
         if(difficultyInfo)
         {
-        if(cInfo->npcflag != difficultyInfo->npcflag)
-        {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
-        }
+            uint32 differenceMask = cInfo->npcflag ^ difficultyInfo->npcflag;
+            if (cInfo->npcflag != difficultyInfo->npcflag)
+            {
+                TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `npcflag`: %u) has different `npcflag` in difficulty %u mode (Entry: %u, `npcflag`: %u).",
+                    cInfo->Entry, cInfo->npcflag, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->npcflag);
+                TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `npcflag`=`npcflag`^%u WHERE `entry`=%u;",
+                    differenceMask, cInfo->difficulty_entry_1);
+            }
 
-        uint32 differenceMask = cInfo->npcflag ^ difficultyInfo->npcflag;
-        if (cInfo->npcflag != difficultyInfo->npcflag)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `npcflag`: %u) has different `npcflag` in difficulty %u mode (Entry: %u, `npcflag`: %u).",
-                cInfo->Entry, cInfo->npcflag, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->npcflag);
-            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `npcflag`=`npcflag`^%u WHERE `entry`=%u;",
-                differenceMask, cInfo->difficulty_entry_1);
-        }
+            if (cInfo->dmgschool != difficultyInfo->dmgschool)
+            {
+                TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `dmgschool`: %u) has different `dmgschool` in difficulty %u mode (Entry: %u, `dmgschool`: %u).",
+                    cInfo->Entry, cInfo->dmgschool, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->dmgschool);
+                TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `dmgschool`=%u WHERE `entry`=%u;",
+                    cInfo->dmgschool, cInfo->difficulty_entry_1);
+            }
 
-        if (cInfo->dmgschool != difficultyInfo->dmgschool)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `dmgschool`: %u) has different `dmgschool` in difficulty %u mode (Entry: %u, `dmgschool`: %u).",
-                cInfo->Entry, cInfo->dmgschool, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->dmgschool);
-            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `dmgschool`=%u WHERE `entry`=%u;",
-                cInfo->dmgschool, cInfo->difficulty_entry_1);
-        }
+            differenceMask = cInfo->unit_flags2 ^ difficultyInfo->unit_flags2;
+            if (cInfo->unit_flags2 != difficultyInfo->unit_flags2)
+            {
+                TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `unit_flags2`: %u) has different `unit_flags2` in difficulty %u mode (Entry: %u, `unit_flags2`: %u).",
+                    cInfo->Entry, cInfo->unit_flags2, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->unit_flags2);
+                TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `unit_flags2`=`unit_flags2`^%u WHERE `entry`=%u;",
+                    differenceMask, cInfo->difficulty_entry_1);
+            }
 
-        differenceMask = cInfo->unit_flags2 ^ difficultyInfo->unit_flags2;
-        if (cInfo->unit_flags2 != difficultyInfo->unit_flags2)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u, `unit_flags2`: %u) has different `unit_flags2` in difficulty %u mode (Entry: %u, `unit_flags2`: %u).",
-                cInfo->Entry, cInfo->unit_flags2, diff + 1, cInfo->difficulty_entry_1, difficultyInfo->unit_flags2);
-            TC_LOG_ERROR("sql.sql", "Possible FIX: UPDATE `creature_template` SET `unit_flags2`=`unit_flags2`^%u WHERE `entry`=%u;",
-                differenceMask, cInfo->difficulty_entry_1);
-        }
-
-        /*
-        hasHeroicEntries.insert(i);
-        heroicEntries.insert(cInfo->difficulty_entry_1);**/
+            /*
+            hasHeroicEntries.insert(i);
+            heroicEntries.insert(cInfo->difficulty_entry_1);**/
         }
     }
 
@@ -2584,7 +2579,7 @@ PetLevelInfo const* ObjectMgr::GetPetLevelInfo(uint32 creature_id, uint32 level)
     if(itr == _petInfoStore.end())
         return nullptr;
 
-    return &itr->second[level-1];                           // data for level 1 stored in [0] array element, ...
+    return &itr->second[level-1];                           // data for level 1 stored in [0] array element, ... Sun: That's not an array, why u do this TC?
 }
 
 void ObjectMgr::LoadPlayerInfo()

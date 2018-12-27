@@ -255,7 +255,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     SetDisplayId(fields[3].GetUInt32());
     SetNativeDisplayId(fields[3].GetUInt32());
-    uint32 petlevel = fields[4].GetUInt8();
+    uint32 petlevel = fields[4].GetUInt16();
     SetUInt32Value(UNIT_NPC_FLAGS , UNIT_NPC_FLAG_NONE);
     SetName(fields[11].GetString());
 

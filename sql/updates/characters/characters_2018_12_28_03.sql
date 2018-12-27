@@ -1,0 +1,17 @@
+ALTER TABLE `character_pet`   
+  CHANGE `id` `id` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `entry` `entry` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `owner` `owner` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `modelid` `modelid` INT(10) UNSIGNED DEFAULT 0  NULL,
+  CHANGE `CreatedBySpell` `CreatedBySpell` MEDIUMINT(8) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `level` `level` SMALLINT(5) UNSIGNED DEFAULT 1  NOT NULL,
+  CHANGE `exp` `exp` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `loyaltypoints` `loyaltypoints` INT(10) DEFAULT 0  NOT NULL,
+  CHANGE `loyalty` `loyalty` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `trainpoint` `trainpoint` INT(10) DEFAULT 0  NOT NULL,
+  CHANGE `curhealth` `curhealth` INT(10) UNSIGNED DEFAULT 1  NOT NULL,
+  CHANGE `curmana` `curmana` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `curhappiness` `curhappiness` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `savetime` `savetime` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `resettalents_cost` `resettalents_cost` INT(10) UNSIGNED DEFAULT 0  NOT NULL,
+  CHANGE `resettalents_time` `resettalents_time` INT(10) UNSIGNED DEFAULT 0  NOT NULL;
