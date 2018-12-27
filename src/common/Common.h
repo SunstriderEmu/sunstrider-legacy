@@ -119,9 +119,7 @@
 
 #include <float.h>
 
-#define snprintf _snprintf
 #define atoll _atoi64
-#define vsnprintf _vsnprintf
 #define strdup _strdup
 #define llabs _abs64
 
