@@ -456,8 +456,9 @@ public:
     ~SpellInfo();
 
     uint32 GetCategory() const;
+    bool HasEffect(SpellEffects effect) const;
+    bool HasEffect(SpellEffects effect, uint8 effectIndex) const;
     bool HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask = SPELL_EFFECT_MASK_ALL) const;
-    bool HasEffect(SpellEffects effect, uint8 effectIndex = 0) const;
     bool HasAura(AuraType aura) const;
     bool HasAuraEffect(AuraType aura) const;
     bool HasAreaAuraEffect() const;

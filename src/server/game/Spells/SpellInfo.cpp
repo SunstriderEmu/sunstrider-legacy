@@ -1531,22 +1531,27 @@ uint32 SpellInfo::GetCategory() const
     return Category ? Category->Id : 0;
 }
 
+bool SpellInfo::HasEffect(SpellEffects effect) const
+{
+    return HasEffectByEffectMask(effect, SPELL_EFFECT_MASK_ALL);
+}
+
+bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
+{
+    return Effects[effectIndex].IsEffect(effect);
+}
+
 bool SpellInfo::HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask) const
 {
     assert(effectMask <= SPELL_EFFECT_MASK_ALL);
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if( (effectMask & (1 << i)) && Effects[i].IsEffect(effect))
+        if ((effectMask & (1 << i)) && Effects[i].IsEffect(effect))
             return true;
     }
 
     return false;
-}
-
-bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
-{
-    return HasEffectByEffectMask(effect, SpellEffectMask(1 << effectIndex));
 }
 
 bool SpellInfo::HasAura(AuraType aura) const
