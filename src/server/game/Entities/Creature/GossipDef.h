@@ -201,7 +201,7 @@ class TC_GAME_API PlayerMenu
         bool IsGossipOptionCoded(uint32 selection) const { return _gossipMenu.IsMenuItemCoded(selection); }
 
         //Sends a gossip menu with given text id. /!\ This is NOT a menu id
-        void SendGossipMenuTextID(uint32 titleTextId, ObjectGuid objectGUID);
+        void SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID);
         void SendCloseGossip();
         void SendPointOfInterest(float x, float y, uint32 icon, uint32 flags, uint32 importance, const char* locName) const;
         void SendPointOfInterest(uint32 poiId) const;

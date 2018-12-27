@@ -194,6 +194,15 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 #define ADD_GOSSIP_ITEM_EXTENDED(iconId, textStr, sender, action, popupTextStr, popupMoneyValue, coded)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, iconId, textStr, sender, action, popupTextStr, popupMoneyValue, coded)
 
 void TC_GAME_API ClearGossipMenuFor(Player* player);
+// Using provided text, not from DB
+void TC_GAME_API AddGossipItemFor(Player* player, uint32 icon, std::string const& text, uint32 sender, uint32 action);
+// Using provided texts, not from DB
+void TC_GAME_API AddGossipItemFor(Player* player, uint32 icon, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded);
+// Uses gossip item info from DB
+void TC_GAME_API AddGossipItemFor(Player* player, uint32 gossipMenuID, uint32 gossipMenuItemID, uint32 sender, uint32 action);
+void TC_GAME_API SendGossipMenuFor(Player* player, uint32 npcTextID, ObjectGuid const& guid);
+void TC_GAME_API SendGossipMenuFor(Player* player, uint32 npcTextID, Creature const* creature);
+void TC_GAME_API CloseGossipMenuFor(Player* player);
 
 /*
  menuId       - menuId
@@ -220,13 +229,13 @@ void TC_GAME_API ClearGossipMenuFor(Player* player);
  textID      - NPCTEXTID(uint32)
  sourceGUID  - npc guid(uint64)
 */
-#define SEND_GOSSIP_MENU_TEXTID(textID, sourceGUID) PlayerTalkClass->SendGossipMenuTextID(textID, sourceGUID)
+#define SEND_GOSSIP_MENU_TEXTID(textID, sourceGUID) PlayerTalkClass->SendGossipMenu(textID, sourceGUID)
 
 /* Same as SEND_GOSSIP_MENU_TEXTID but with default gossip text for this creature.
  pCreature - pointer to source creature
 
 */
-#define SEND_PREPARED_GOSSIP_MENU(pPlayer, pCreature) pPlayer->PlayerTalkClass->SendGossipMenuTextID(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID())
+#define SEND_PREPARED_GOSSIP_MENU(pPlayer, pCreature) pPlayer->PlayerTalkClass->SendGossipMenu(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID())
 
 /* This fuction shows POI(point of interest) to client.
  a - position X
@@ -237,9 +246,6 @@ void TC_GAME_API ClearGossipMenuFor(Player* player);
  f - Location Name
 */
 #define SEND_POI(a,b,c,d,e,f)      PlayerTalkClass->SendPointOfInterest(a,b,c,d,e,f)
-
-// Closes the Menu
-#define CLOSE_GOSSIP_MENU()        PlayerTalkClass->SendCloseGossip()
 
 /* Fuction to tell to client the details
  a - quest object

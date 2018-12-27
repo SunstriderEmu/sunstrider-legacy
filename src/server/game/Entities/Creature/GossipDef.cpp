@@ -191,7 +191,7 @@ void PlayerMenu::ClearMenus()
     _questMenu.ClearMenu();
 }
 
-void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, ObjectGuid senderGUID)
+void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid senderGUID)
 {
     _gossipMenu.SetSenderGUID(senderGUID);
 

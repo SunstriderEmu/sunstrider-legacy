@@ -23366,7 +23366,7 @@ void Player::SendPreparedGossip(WorldObject* source)
     if (uint32 menuId = PlayerTalkClass->GetGossipMenu().GetMenuId())
         textId = GetGossipTextId(menuId, source);
 
-    PlayerTalkClass->SendGossipMenuTextID(textId, source->GetGUID());
+    PlayerTalkClass->SendGossipMenu(textId, source->GetGUID());
 }
 
 void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 menuId)
@@ -23460,8 +23460,12 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             SendTalentWipeConfirm(guid);
             break;
         case GOSSIP_OPTION_UNLEARNPETTALENTS:
-            PlayerTalkClass->SendCloseGossip();
+#ifdef LICH_KING
+            ResetPetTalents();
+#else
             SendPetSkillWipeConfirm();
+#endif
+            PlayerTalkClass->SendCloseGossip();
             break;
         case GOSSIP_OPTION_TAXIVENDOR:
             GetSession()->SendTaxiMenu(source->ToCreature());
