@@ -1825,27 +1825,17 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (!_unitCaster)
                         break;
-                    uint32 healthPerc = uint32((float(_unitCaster->GetHealth())/ _unitCaster->GetMaxHealth())*100);
-                    int32 melee_mod = 10;
-                    int32 spell_mod = 12;
-                    if (healthPerc <= 40) {
-                        melee_mod = 30;
-                        spell_mod = 40;
-                    }
-                    if (healthPerc < 100 && healthPerc > 40) {
-                        melee_mod = 10+(100-healthPerc)/3;
-                        spell_mod = melee_mod + 1;
-                    }
 
-                    int32 hasteModBasePoints0 = melee_mod;          // (EffectBasePoints[0]+1)-1+(5-melee_mod) = (melee_mod-1+1)-1+5-melee_mod = 5-1
-                    int32 hasteModBasePoints1 = (5-melee_mod);
-                    int32 hasteModBasePoints2 = spell_mod;
+                    //from WoWWiki formula: https://wow.gamepedia.com/index.php?title=Berserking&oldid=1422871
+                    float missingPerc = float(_unitCaster->GetMaxHealth() - _unitCaster->GetHealth()) / _unitCaster->GetMaxHealth();
+                    int32 haste = 10.0f + 33.0f * missingPerc;
+                    if (haste > 30)
+                        haste = 30;
 
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(hasteModBasePoints0));
-                    args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(hasteModBasePoints1));
-                    args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(hasteModBasePoints2));
+                    CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT0, int32(haste));
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT1, int32(haste));
+                    args.AddSpellMod(SPELLVALUE_BASE_POINT2, int32(haste));
                     _unitCaster->CastSpell(_unitCaster, 26635, args);
                     return;
                 }
