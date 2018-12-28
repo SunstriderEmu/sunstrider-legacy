@@ -70,6 +70,7 @@
 #include "PetitionMgr.h"
 #include "ReputationMgr.h"
 #include "Trainer.h"
+#include "PoolMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -12804,24 +12805,26 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
 
 void Player::PrepareQuestMenu(ObjectGuid guid)
 {
-    Object *pObject;
-    QuestRelations* pObjectQR;
-    QuestRelations* pObjectQIR;
-    Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
-    if( pCreature )
+    QuestRelationBounds objectQR;
+    QuestRelationBounds objectQIR;
+
+    Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, guid);
+    if (creature)
     {
-        pObject = (Object*)pCreature;
-        pObjectQR  = &sObjectMgr->mCreatureQuestRelations;
-        pObjectQIR = &sObjectMgr->mCreatureQuestInvolvedRelations;
+        objectQR = sObjectMgr->GetCreatureQuestRelationBounds(creature->GetEntry());
+        objectQIR = sObjectMgr->GetCreatureQuestInvolvedRelationBounds(creature->GetEntry());
     }
     else
     {
-        GameObject *pGameObject = ObjectAccessor::GetGameObject(*this, guid);
-        if( pGameObject )
+        //we should obtain map pointer from GetMap() in 99% of cases. Special case
+        //only for quests which cast teleport spells on player
+        Map* _map = IsInWorld() ? GetMap() : sMapMgr->FindMap(GetMapId(), GetInstanceId());
+        ASSERT(_map);
+        GameObject* pGameObject = _map->GetGameObject(guid);
+        if (pGameObject)
         {
-            pObject = (Object*)pGameObject;
-            pObjectQR  = &sObjectMgr->mGOQuestRelations;
-            pObjectQIR = &sObjectMgr->mGOQuestInvolvedRelations;
+            objectQR = sObjectMgr->GetGOQuestRelationBounds(pGameObject->GetEntry());
+            objectQIR = sObjectMgr->GetGOQuestInvolvedRelationBounds(pGameObject->GetEntry());
         }
         else
             return;
@@ -12830,44 +12833,46 @@ void Player::PrepareQuestMenu(ObjectGuid guid)
     QuestMenu &qm = PlayerTalkClass->GetQuestMenu();
     qm.ClearMenu();
 
-    for(QuestRelations::const_iterator i = pObjectQIR->lower_bound(pObject->GetEntry()); i != pObjectQIR->upper_bound(pObject->GetEntry()); ++i)
+    for (QuestRelations::const_iterator i = objectQIR.first; i != objectQIR.second; ++i)
     {
         uint32 quest_id = i->second;
-        QuestStatus status = GetQuestStatus( quest_id );
-        if ( status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus( quest_id ) )
+        QuestStatus status = GetQuestStatus(quest_id);
+#ifdef LICH_KING
+        f(status == QUEST_STATUS_COMPLETE)
+            qm.AddMenuItem(quest_id, 4);
+        else if (status == QUEST_STATUS_INCOMPLETE)
+            qm.AddMenuItem(quest_id, 4);
+#else
+        if (status == QUEST_STATUS_COMPLETE && !GetQuestRewardStatus(quest_id))
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
-        else if ( status == QUEST_STATUS_INCOMPLETE)
+        else if (status == QUEST_STATUS_INCOMPLETE)
             qm.AddMenuItem(quest_id, DIALOG_STATUS_INCOMPLETE);
-        //else if (status == QUEST_STATUS_AVAILABLE)
-        //    qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);
+#endif   
+       /* unused?
+       else if (status == QUEST_STATUS_AVAILABLE)
+            qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);*/
     }
 
-    for(QuestRelations::const_iterator i = pObjectQR->lower_bound(pObject->GetEntry()); i != pObjectQR->upper_bound(pObject->GetEntry()); ++i)
+    for (QuestRelations::const_iterator i = objectQR.first; i != objectQR.second; ++i)
     {
         uint32 quest_id = i->second;
-        Quest const* pQuest = sObjectMgr->GetQuestTemplate(quest_id);
-        if(!pQuest)
+        Quest const* quest = sObjectMgr->GetQuestTemplate(quest_id);
+        if(!quest)
+            continue;
+
+        if (!CanTakeQuest(quest, false))
             continue;
 
         QuestStatus status = GetQuestStatus( quest_id );
 
-        if (pQuest->IsAutoComplete() && CanTakeQuest(pQuest, false))
+        if (quest->IsAutoComplete())
             qm.AddMenuItem(quest_id, DIALOG_STATUS_REWARD_REP);
-        else if ( status == QUEST_STATUS_NONE && CanTakeQuest( pQuest, false ) ) {
-            if (pCreature && pCreature->GetQuestPoolId()) {
-                if (!sWorld->IsQuestInAPool(quest_id)) {
-                    qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);
-                    continue;
-                }
-                // Quest is in a pool, check if it's current
-                if (sWorld->GetCurrentQuestForPool(pCreature->GetQuestPoolId()) != quest_id)
-                    continue;
-                else
-                    qm.AddMenuItem(quest_id, DIALOG_STATUS_CHAT);
-            }
-            else    // No quest pool, just add it
-                qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
-        }
+        else if (status == QUEST_STATUS_NONE)
+#ifdef LICH_KING
+            qm.AddMenuItem(quest_id, 2);
+#else
+            qm.AddMenuItem(quest_id, DIALOG_STATUS_AVAILABLE);
+#endif
     }
 }
 
@@ -12962,8 +12967,8 @@ Quest const* Player::GetNextQuest(ObjectGuid guid, Quest const *pQuest)
     if( pCreature )
     {
         pObject = (Object*)pCreature;
-        pObjectQR  = &sObjectMgr->mCreatureQuestRelations;
-        //pObjectQIR = &sObjectMgr->mCreatureQuestInvolvedRelations;
+        pObjectQR  = &sObjectMgr->_creatureQuestRelations;
+        //pObjectQIR = &sObjectMgr->_creatureQuestInvolvedRelations;
     }
     else
     {
@@ -12971,8 +12976,8 @@ Quest const* Player::GetNextQuest(ObjectGuid guid, Quest const *pQuest)
         if( pGameObject )
         {
             pObject = (Object*)pGameObject;
-            pObjectQR  = &sObjectMgr->mGOQuestRelations;
-            //pObjectQIR = &sObjectMgr->mGOQuestInvolvedRelations;
+            pObjectQR  = &sObjectMgr->_goQuestRelations;
+            //pObjectQIR = &sObjectMgr->_goQuestInvolvedRelations;
         }
         else
             return nullptr;
@@ -13934,7 +13939,7 @@ bool Player::SatisfyQuestDay( Quest const* qInfo, bool msg )
     if(!have_slot)
     {
         if( msg )
-            SendCanTakeQuestResponse( INVALIDREASON_DAILY_QUESTS_REMAINING );
+            SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
         return false;
     }
 
@@ -14044,19 +14049,21 @@ QuestStatus Player::GetQuestStatus(uint32 quest_id) const
 bool Player::CanShareQuest(uint32 quest_id) const
 {
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id);
-    if( qInfo && qInfo->HasFlag(QUEST_FLAGS_SHARABLE) )
+    if (qInfo && qInfo->HasFlag(QUEST_FLAGS_SHARABLE))
     {
-        auto itr = m_QuestStatus.find( quest_id );
-        if( itr != m_QuestStatus.end() )
+        auto itr = m_QuestStatus.find(quest_id);
+        if (itr != m_QuestStatus.end())
         {
             // in pool and not currently available (wintergrasp weekly, dalaran weekly) - can't share
-            /*
             if (sPoolMgr->IsPartOfAPool<Quest>(quest_id) && !sPoolMgr->IsSpawnedObject<Quest>(quest_id))
             {
+#ifdef LICH_KING
                 SendPushToPartyResponse(this, QUEST_PARTY_MSG_CANT_BE_SHARED_TODAY);
+#else
+                ChatHandler(GetSession()).PSendSysMessage("This quest cannot be shared today.");
+#endif
                 return false;
             }
-            TC */
 
             return true;
         }

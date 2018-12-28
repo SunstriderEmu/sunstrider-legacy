@@ -27,9 +27,7 @@ enum WorldDatabaseStatements : uint32
         When updating more than one field, consider looking at the calling function
         name for a suiting suffix.
     */
-    /*
     WORLD_SEL_QUEST_POOLS,
-    */
     WORLD_SEL_CREATURE_TEXT,
     WORLD_SEL_SMART_SCRIPTS,
     /*

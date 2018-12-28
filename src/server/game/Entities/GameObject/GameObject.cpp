@@ -1277,7 +1277,7 @@ GameObjectTemplate const *GameObject::GetGOInfo() const
 /*********************************************************/
 bool GameObject::HasQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr->mGOQuestRelations;
+    QuestRelations const& qr = sObjectMgr->_goQuestRelations;
     for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
@@ -1288,7 +1288,7 @@ bool GameObject::HasQuest(uint32 quest_id) const
 
 bool GameObject::HasInvolvedQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr->mGOQuestInvolvedRelations;
+    QuestRelations const& qr = sObjectMgr->_goQuestInvolvedRelations;
     for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)

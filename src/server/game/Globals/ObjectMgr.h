@@ -386,7 +386,10 @@ typedef std::multimap<uint32, SpawnData const*> SpawnGroupLinkContainer;
 typedef std::unordered_map<uint16, std::vector<InstanceSpawnGroupInfo>> InstanceSpawnGroupContainer;
 typedef std::map<TempSummonGroupKey, std::vector<TempSummonData>> TempSummonDataContainer;
 
-typedef std::multimap<uint32,uint32> QuestRelations;
+typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
+typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
+typedef std::pair<QuestRelations::const_iterator, QuestRelations::const_iterator> QuestRelationBounds;
+typedef std::pair<QuestRelationsReverse::const_iterator, QuestRelationsReverse::const_iterator> QuestRelationReverseBounds;
 
 // Benchmarked: Faster than std::unordered_map (insert/find)
 typedef std::map<uint32, PageText> PageTextContainer;
@@ -764,10 +767,52 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureQuestStarters();
         void LoadCreatureQuestEnders();
 
-        QuestRelations mGOQuestRelations;
-        QuestRelations mGOQuestInvolvedRelations;
-        QuestRelations mCreatureQuestRelations;
-        QuestRelations mCreatureQuestInvolvedRelations;
+        QuestRelations* GetGOQuestRelationMap()
+        {
+            return &_goQuestRelations;
+        }
+
+        QuestRelationBounds GetGOQuestRelationBounds(uint32 go_entry) const
+        {
+            return _goQuestRelations.equal_range(go_entry);
+        }
+
+        QuestRelationBounds GetGOQuestInvolvedRelationBounds(uint32 go_entry) const
+        {
+            return _goQuestInvolvedRelations.equal_range(go_entry);
+        }
+
+        QuestRelationReverseBounds GetGOQuestInvolvedRelationReverseBounds(uint32 questId) const
+        {
+            return _goQuestInvolvedRelationsReverse.equal_range(questId);
+        }
+
+        QuestRelations* GetCreatureQuestRelationMap()
+        {
+            return &_creatureQuestRelations;
+        }
+
+        QuestRelationBounds GetCreatureQuestRelationBounds(uint32 creature_entry) const
+        {
+            return _creatureQuestRelations.equal_range(creature_entry);
+        }
+
+        QuestRelationBounds GetCreatureQuestInvolvedRelationBounds(uint32 creature_entry) const
+        {
+            return _creatureQuestInvolvedRelations.equal_range(creature_entry);
+        }
+
+        QuestRelationReverseBounds GetCreatureQuestInvolvedRelationReverseBounds(uint32 questId) const
+        {
+            return _creatureQuestInvolvedRelationsReverse.equal_range(questId);
+        }
+
+        QuestRelations _goQuestRelations;
+        QuestRelations _goQuestInvolvedRelations;
+        QuestRelationsReverse _goQuestInvolvedRelationsReverse;
+        QuestRelations _creatureQuestRelations;
+        QuestRelations _creatureQuestInvolvedRelations;
+        QuestRelationsReverse _creatureQuestInvolvedRelationsReverse;
 
         void LoadGameObjectScripts();
         void LoadQuestEndScripts();
@@ -1249,7 +1294,7 @@ class TC_GAME_API ObjectMgr
 
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);
-        void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
+        void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reverseMap, std::string const& table, bool starter, bool go);
 
         typedef std::unordered_map<uint32 /*creatureId*/, std::unique_ptr<PetLevelInfo[] /*level*/>> PetLevelInfoContainer;
         PetLevelInfoContainer _petInfoStore;                            // [creature_id][level]

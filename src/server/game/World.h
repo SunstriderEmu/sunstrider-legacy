@@ -771,9 +771,6 @@ class TC_GAME_API World
 
         void ResetEventSeasonalQuests(uint16 event_id);
 
-        uint32 GetCurrentQuestForPool(uint32 poolId);
-        bool IsQuestInAPool(uint32 questId);
-        bool IsQuestCurrentOfAPool(uint32 questId);
         bool IsPhishing(std::string msg);
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
@@ -801,9 +798,6 @@ class TC_GAME_API World
         void _UpdateRealmCharCount(PreparedQueryResult resultCharCount);
 
         void InitDailyQuestResetTime(bool loading = true);
-        void InitNewDataForQuestPools();
-        void LoadQuestPoolsData();
-        void UpdateMonitoring(uint32 diff);
     private:
 
         void UpdateArenaSeasonLogs();
@@ -879,9 +873,6 @@ class TC_GAME_API World
 
         //used versions
         std::string m_DBVersion;
-
-        std::vector<uint32> m_questInPools;
-        std::map<uint32, uint32> m_currentQuestInPools;
 
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 

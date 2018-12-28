@@ -36,6 +36,7 @@
 #include "QueryPackets.h"
 #include "GuildMgr.h"
 #include "ReputationMgr.h"
+#include "PoolMgr.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -6624,13 +6625,13 @@ void ObjectMgr::DeleteGameObjectData(ObjectGuid::LowType guid)
     _gameObjectDataStore.erase(guid);
 }
 
-void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, char const* table)
+void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reverseMap, std::string const& table, bool starter, bool go)
 {
     map.clear();                                            // need for reload case
 
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.PQuery("SELECT id,quest FROM %s",table);
+    QueryResult result = WorldDatabase.PQuery("SELECT id, quest, pool_entry FROM %s qr LEFT JOIN pool_quest pq ON qr.quest = pq.entry", table.c_str());
 
     if(!result)
     {
@@ -6639,12 +6640,17 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, char const* table)
         return;
     }
 
+    PooledQuestRelation* poolRelationMap = go ? &sPoolMgr->mQuestGORelation : &sPoolMgr->mQuestCreatureRelation;
+    if (starter)
+        poolRelationMap->clear();
+
     do
     {
         Field *fields = result->Fetch();
 
         uint32 id    = fields[0].GetUInt32();
         uint32 quest = fields[1].GetUInt32();
+        uint32 poolId = result->Fetch()[2].GetUInt32();
 
         if(_questTemplates.find(quest) == _questTemplates.end())
         {
@@ -6652,20 +6658,26 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, char const* table)
             continue;
         }
 
-        map.insert(QuestRelations::value_type(id,quest));
+        if (!poolId || !starter)
+        {
+            map.insert(QuestRelations::value_type(id, quest));
+            if (reverseMap)
+                reverseMap->insert(QuestRelationsReverse::value_type(quest, id));
+        }
+        else
+            poolRelationMap->insert(PooledQuestRelation::value_type(quest, id));
 
         ++count;
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u quest relations from %s", count,table);
-    
 }
 
 void ObjectMgr::LoadGameobjectQuestStarters()
 {
-    LoadQuestRelationsHelper(mGOQuestRelations,"gameobject_queststarter");
+    LoadQuestRelationsHelper(_goQuestRelations, nullptr, "gameobject_queststarter", true, true);
 
-    for(auto itr = mGOQuestRelations.begin(); itr != mGOQuestRelations.end(); ++itr)
+    for(auto itr = _goQuestRelations.begin(); itr != _goQuestRelations.end(); ++itr)
     {
         GameObjectTemplate const* goInfo = GetGameObjectTemplate(itr->first);
         if(!goInfo)
@@ -6677,9 +6689,9 @@ void ObjectMgr::LoadGameobjectQuestStarters()
 
 void ObjectMgr::LoadGameobjectQuestEnders()
 {
-    LoadQuestRelationsHelper(mGOQuestInvolvedRelations,"gameobject_questender");
+    LoadQuestRelationsHelper(_goQuestInvolvedRelations, &_goQuestInvolvedRelationsReverse, "gameobject_questender", false, true);
 
-    for(auto itr = mGOQuestInvolvedRelations.begin(); itr != mGOQuestInvolvedRelations.end(); ++itr)
+    for(auto itr = _goQuestInvolvedRelations.begin(); itr != _goQuestInvolvedRelations.end(); ++itr)
     {
         GameObjectTemplate const* goInfo = GetGameObjectTemplate(itr->first);
         if(!goInfo)
@@ -6691,9 +6703,9 @@ void ObjectMgr::LoadGameobjectQuestEnders()
 
 void ObjectMgr::LoadCreatureQuestStarters()
 {
-    LoadQuestRelationsHelper(mCreatureQuestRelations,"creature_queststarter");
+    LoadQuestRelationsHelper(_creatureQuestRelations, nullptr, "creature_queststarter", true, false);
 
-    for(auto itr = mCreatureQuestRelations.begin(); itr != mCreatureQuestRelations.end(); ++itr)
+    for(auto itr = _creatureQuestRelations.begin(); itr != _creatureQuestRelations.end(); ++itr)
     {
         CreatureTemplate const* cInfo = GetCreatureTemplate(itr->first);
         if(!cInfo)
@@ -6705,9 +6717,9 @@ void ObjectMgr::LoadCreatureQuestStarters()
 
 void ObjectMgr::LoadCreatureQuestEnders()
 {
-    LoadQuestRelationsHelper(mCreatureQuestInvolvedRelations,"creature_questender");
+    LoadQuestRelationsHelper(_creatureQuestInvolvedRelations, &_creatureQuestInvolvedRelationsReverse, "creature_questender", false, false);
 
-    for(auto itr = mCreatureQuestInvolvedRelations.begin(); itr != mCreatureQuestInvolvedRelations.end(); ++itr)
+    for(auto itr = _creatureQuestInvolvedRelations.begin(); itr != _creatureQuestInvolvedRelations.end(); ++itr)
     {
         CreatureTemplate const* cInfo = GetCreatureTemplate(itr->first);
         if(!cInfo)

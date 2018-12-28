@@ -42,11 +42,11 @@ class TC_GAME_API ActivePoolData
         template<typename T>
         void RemoveObject(uint32 db_guid_or_pool_id, uint32 pool_id);
 
-        //ActivePoolObjects GetActiveQuests() const { return mActiveQuests; } // a copy of the set
+        ActivePoolObjects GetActiveQuests() const { return mActiveQuests; } // a copy of the set
     private:
         ActivePoolObjects mSpawnedCreatures;
         ActivePoolObjects mSpawnedGameobjects;
-        //ActivePoolObjects mActiveQuests;
+        ActivePoolObjects mActiveQuests;
         ActivePoolPools   mSpawnedPools;
 };
 
@@ -61,7 +61,6 @@ class TC_GAME_API PoolGroup
         bool isEmpty() const { return ExplicitlyChanced.empty() && EqualChanced.empty(); }
         void AddEntry(PoolObject& poolitem, uint32 maxentries);
         bool CheckPool() const;
-        PoolObject* RollOne(ActivePoolData& spawns, uint32 triggerFrom);
         void DespawnObject(ActivePoolData& spawns, ObjectGuid::LowType guid=0);
         void Despawn1Object(ObjectGuid::LowType guid);
         void SpawnObject(ActivePoolData& spawns, uint32 limit, float limitPercent, uint32 triggerFrom);
@@ -81,11 +80,11 @@ class TC_GAME_API PoolGroup
         PoolObjectList ExplicitlyChanced;
         PoolObjectList EqualChanced;
 };
-/*
+
 typedef std::multimap<uint32, uint32> PooledQuestRelation;
 typedef std::pair<PooledQuestRelation::const_iterator, PooledQuestRelation::const_iterator> PooledQuestRelationBounds;
 typedef std::pair<PooledQuestRelation::iterator, PooledQuestRelation::iterator> PooledQuestRelationBoundsNC;
-*/
+
 class PoolsMaxLimitTest;
 
 class TC_GAME_API PoolMgr
@@ -97,19 +96,11 @@ class TC_GAME_API PoolMgr
         ~PoolMgr() { };
 
     public:
-        typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
-        typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
-        typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
-        typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
-        //typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
-
         static PoolMgr* instance();
 
         void LoadFromDB();
-        /*
         void LoadQuestPools();
         void SaveQuestsToDB();
-        */
 
         void Initialize();
 
@@ -131,32 +122,37 @@ class TC_GAME_API PoolMgr
         template<typename T>
         void RemoveActiveObject(uint32 pool_id, uint32 db_guid_or_pool_id);
 
-        /*
         void ChangeDailyQuests();
+#ifdef LICH_KING
         void ChangeWeeklyQuests();
+#endif
 
         PooledQuestRelation mQuestCreatureRelation;
         PooledQuestRelation mQuestGORelation;
-        */
 
     private:
         template<typename T>
         void SpawnPool(uint32 pool_id, uint32 db_guid_or_pool_id);
         template<typename T, typename P>
         void SpawnPool(uint32 pool_id, uint32 db_guid_or_pool_id, P& poolGroup); //sun refactor to avoid code duplication
-
-        typedef std::pair<uint32, uint32>           SearchPair;
-        typedef std::map<uint32 /*guid*/, uint32 /*poolId*/>            SearchMap;
+        
+        typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
+        typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
+        typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
+        typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
+        typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
+        typedef std::pair<uint32, uint32>                       SearchPair;
+        typedef std::map<uint32 /*guid*/, uint32 /*poolId*/>    SearchMap;
 
         PoolTemplateDataMap    mPoolTemplate;
         PoolGroupCreatureMap   mPoolCreatureGroups;
         PoolGroupGameObjectMap mPoolGameobjectGroups;
         PoolGroupPoolMap       mPoolPoolGroups;
-        //PoolGroupQuestMap      mPoolQuestGroups;
+        PoolGroupQuestMap      mPoolQuestGroups;
         SearchMap mCreatureSearchMap;
         SearchMap mGameobjectSearchMap;
         SearchMap mPoolSearchMap;
-        //SearchMap mQuestSearchMap;
+        SearchMap mQuestSearchMap;
 
         // LoadFromDB helpers
         template<typename T>
@@ -198,7 +194,6 @@ inline uint32 PoolMgr::IsPartOfAPool<GameObject>(uint32 db_guid) const
 }
 
 // Method that tell if the quest is part of another pool and return the pool id if yes
-/*
 template<>
 inline uint32 PoolMgr::IsPartOfAPool<Quest>(uint32 pool_id) const
 {
@@ -208,7 +203,6 @@ inline uint32 PoolMgr::IsPartOfAPool<Quest>(uint32 pool_id) const
 
     return 0;
 }
-*/
 
 // Method that tell if the pool is part of another pool and return the pool id if yes
 template<>

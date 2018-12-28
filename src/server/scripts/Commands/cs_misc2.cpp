@@ -42,7 +42,6 @@ public:
             { "gps",            SEC_GAMEMASTER1,  true,  &HandleGPSCommand,                 "" },
             { "gpss",           SEC_GAMEMASTER1,  false, &HandleGPSSCommand,                "" },
             { "help",           SEC_PLAYER,       true,  &HandleHelpCommand,                "" },
-            { "heroday",        SEC_PLAYER,       true,  &HandleHerodayCommand,             "" },
             { "loadpath",       SEC_GAMEMASTER3,  false, &HandleWpReloadCommand,            "" },
             { "lockaccount",    SEC_PLAYER,       false, &HandleLockAccountCommand,         "" },
             { "summon",         SEC_GAMEMASTER1,  false, &HandleSummonCommand,              "" },
@@ -290,33 +289,7 @@ public:
         handler->SendSysMessage(LANG_USE_BOL);
         return true;
     }
-
-    static bool HandleHerodayCommand(ChatHandler* handler, char const* args)
-    {
-        LocaleConstant loc_idx = handler->GetSessionDbcLocale();
-        if (loc_idx != DEFAULT_LOCALE)
-        {
-            QuestLocale const* pQuest = sObjectMgr->GetQuestLocale(sWorld->GetCurrentQuestForPool(1));
-            if (pQuest) {
-                if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
-                    //PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
-                    handler->PSendSysMessage("Daily heroic quest: \"%s\".", pQuest->Title[loc_idx].c_str());
-                else {
-                    if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
-                        handler->PSendSysMessage("Daily heroic quest: \"%s\".", qtemplate->GetTitle().c_str());
-                }
-            }
-            else
-                handler->PSendSysMessage("Error while fetching daily heroic quest.");
-        }
-        else {
-            if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
-                handler->PSendSysMessage("Daily heroic quest: \"%s\".", qtemplate->GetTitle().c_str());
-        }
-
-        return true;
-    }
-
+    
     static bool HandleBattlegroundCommand(ChatHandler* handler, char const* args)
     {
         Player* p = handler->GetSession()->GetPlayer();

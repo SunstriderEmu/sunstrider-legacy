@@ -1722,7 +1722,7 @@ bool Creature::HasMainWeapon() const
 
 bool Creature::HasQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr->mCreatureQuestRelations;
+    QuestRelations const& qr = sObjectMgr->_creatureQuestRelations;
     for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
@@ -1733,7 +1733,7 @@ bool Creature::HasQuest(uint32 quest_id) const
 
 bool Creature::HasInvolvedQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr->mCreatureQuestInvolvedRelations;
+    QuestRelations const& qr = sObjectMgr->_creatureQuestInvolvedRelations;
     for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
