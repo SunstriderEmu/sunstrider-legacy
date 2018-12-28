@@ -48,7 +48,7 @@ uint32 FormationMgr::GetInternalGroupId(Creature const* leader)
     uint32 internalId = leader->GetSpawnId();
     if (!internalId)
     {
-        uint32 guid = leader->GetGUID().GetCounter();
+        uint32 const guid = leader->GetGUID().GetCounter();
         if (uint64(guid) + SUMMON_OFFSET > std::numeric_limits<ObjectGuid::LowType>::max()) //make sure we're not overflowing
             ABORT(); // FormationMgr::GetInternalGroupId Group internal id overflow
 
@@ -57,13 +57,13 @@ uint32 FormationMgr::GetInternalGroupId(Creature const* leader)
     return internalId;
 }
 
-CreatureGroup* FormationMgr::AddCreatureToGroup(Creature* leader, Creature* creature)
+/*static*/ CreatureGroup* FormationMgr::AddCreatureToGroup(Creature* leader, Creature* creature)
 {
-    uint32 internalId = FormationMgr::GetInternalGroupId(leader);
+    uint32 const internalId = FormationMgr::GetInternalGroupId(leader);
     return AddCreatureToGroup(internalId, creature);
 }
 
-CreatureGroup* FormationMgr::AddCreatureToGroup(uint32 groupID, Creature* creature)
+/*static*/ CreatureGroup* FormationMgr::AddCreatureToGroup(uint32 groupID, Creature* creature)
 {
     if (groupID == 0)
     {
@@ -104,17 +104,17 @@ CreatureGroup* FormationMgr::AddCreatureToGroup(uint32 groupID, Creature* creatu
     return itr->second;
 }
 
-void FormationMgr::RemoveCreatureFromGroup(uint32 groupId, Creature *member)
+void FormationMgr::RemoveCreatureFromGroup(uint32 groupId, Creature *member) const
 {
-    Map* map = member->GetMap();
-    auto itr = map->CreatureGroupHolder.find(groupId);
+    Map const* map = member->GetMap();
+    auto const itr = map->CreatureGroupHolder.find(groupId);
     if (itr == map->CreatureGroupHolder.end())
         return;
 
     RemoveCreatureFromGroup(itr->second, member);
 }
 
-void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* member)
+void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* member) const
 {
     TC_LOG_DEBUG("entities.unit", "Deleting member pointer to GUID: %u from group %u", group->GetGroupId(), member->GetSpawnId());
     group->RemoveMember(member);
@@ -133,7 +133,7 @@ void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* membe
 
 void FormationMgr::LoadCreatureFormations()
 {
-    uint32 oldMSTime = GetMSTime();
+    uint32 const oldMSTime = GetMSTime();
 
     //Get group data
     QueryResult result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`, `respawn`, `linkedloot` FROM `creature_formations` ORDER BY `leaderGUID`");
@@ -200,7 +200,7 @@ void FormationMgr::AddFormationMember(uint32 internalId, FormationInfo const& gr
     _creatureGroupMap[internalId] = group_member;
 }
 
-void FormationMgr::BreakFormation(Creature* leader)
+/*static*/ void FormationMgr::BreakFormation(Creature* leader)
 {
     CreatureGroup* group = leader->GetFormation();
     if (!group)
@@ -273,7 +273,7 @@ void CreatureGroup::RemoveMember(Creature *member)
     if (_leader == member)
         _leader = nullptr;
 
-    auto itr = _members.find(member);
+    auto const itr = _members.find(member);
     if (itr != _members.end())
     {
         //restore original home (for ex: DarkPortalEventDemonAI rely on this)
@@ -289,11 +289,11 @@ void CreatureGroup::MemberEngagingTarget(Creature *member, Unit *target)
     if (_engaging)
         return;
     
-    auto itr = _members.find(member);
+    auto const itr = _members.find(member);
     if (itr == _members.end())
         return;
 
-    GroupAI groupAI = itr->second.groupAI;
+    GroupAI const groupAI = itr->second.groupAI;
     if (!groupAI)
         return;
 
@@ -390,7 +390,7 @@ void CreatureGroup::LeaderMoveTo(Position const& destination, uint32 id /*= 0*/,
         if (member == followedCreature2)
             member = followedCreature2;
 
-        FormationMoveSegment path(_leader->GetPosition(), destination, moveType, orientation, formationInfo.followAngle, formationInfo.followDist);
+        FormationMoveSegment const path(_leader->GetPosition(), destination, moveType, orientation, formationInfo.followAngle, formationInfo.followDist);
         member->GetMotionMaster()->MoveFormation(id, path, _leader);
     }
 }
@@ -402,15 +402,19 @@ bool CreatureGroup::IsEngaged() const
 
 void CreatureGroup::Respawn()
 {
-    for(auto itr : _members)
+    auto itr = _members.begin();
+    while (itr != _members.end())
     {
-        if(!itr.second.respawn)
+        Creature* member = itr->first;
+        if (!itr->second.respawn || member->IsAlive())
+        {
+            ++itr;
             continue;
-        Creature* member = itr.first;
-        if(member->IsAlive())
-            continue;
+        }
         member->Respawn();
         member->GetMotionMaster()->MoveTargetedHome();
+        //reset itr, _members can be altered in Respawn
+        itr = _members.begin();
     }
 }
 
@@ -459,7 +463,7 @@ void CreatureGroup::SetLootable(bool lootable)
 
 bool CreatureGroup::IsLootLinked(Creature* member)
 {
-    auto itr = _members.find(member);
+    auto const itr = _members.find(member);
     if(itr != _members.end())
         return itr->second.linkedLoot;
 
@@ -468,7 +472,7 @@ bool CreatureGroup::IsLootLinked(Creature* member)
 
 void CreatureGroup::ForEachMember(std::function<void(Creature*)> const& apply)
 {
-    for (auto itr : _members)
+    for (auto const itr : _members)
     {
         Creature* member = itr.first;
         apply(member);

@@ -1,0 +1,1 @@
+UPDATE creature_template SET faction = 16 WHERE entry = 20045;

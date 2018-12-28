@@ -37,16 +37,16 @@ public:
     static FormationMgr* instance();
 
     //return nullptr on failure. Prefer using this first one
-    CreatureGroup* AddCreatureToGroup(Creature* leader, Creature* creature);
+    static CreatureGroup* AddCreatureToGroup(Creature* leader, Creature* creature);
     //return nullptr on failure
-    CreatureGroup* AddCreatureToGroup(uint32 groupID, Creature* creature);
-    void RemoveCreatureFromGroup(uint32 groupId, Creature* member);
-    void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
+    static CreatureGroup* AddCreatureToGroup(uint32 groupID, Creature* creature);
+    void RemoveCreatureFromGroup(uint32 groupId, Creature* member) const;
+    void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member) const;
 
     FormationInfo* GetFormationInfo(uint32 spawnId);
 
     //empty group then delete it
-    void BreakFormation(Creature* leader);
+    static void BreakFormation(Creature* leader);
 
     void LoadCreatureFormations();
 
