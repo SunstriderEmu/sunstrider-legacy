@@ -84,7 +84,7 @@ uint32 GameEventMgr::NextCheck(uint16 entry) const
 bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
 {
     // Temp hack until game_event dependencies is implemented
-    if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(GAME_EVENT_HALLOWS_END))
+    if ((event_id >= GAME_EVENT_WICKERMAN_FESTIVAL && event_id <= GAME_EVENT_HORSENAME_RAZOR_HILL) && !IsActiveEvent(GAME_EVENT_HALLOWS_END))
         return false;
 
     if(mGameEvent[event_id].state == GAMEEVENT_NORMAL)
