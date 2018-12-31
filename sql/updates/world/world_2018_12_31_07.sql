@@ -1,0 +1,1 @@
+UPDATE access_requirement SET level_min = 71 WHERE level_min = 70;
