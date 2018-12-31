@@ -1695,9 +1695,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
+        void SendUnlearnSpells();
         bool AddSpell(uint32 spell_id, bool active, bool learning = true, bool dependent = false, bool disabled = false, bool loading = false, uint32 fromSkill = 0 );
         void LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill = 0);
-        void RemoveSpell(uint32 spell_id, bool disabled = false);
+        void RemoveSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true);
         void resetSpells();
         void LearnDefaultSkills();
         void LearnDefaultSkill(uint32 skillId, uint16 rank);

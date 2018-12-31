@@ -3130,6 +3130,53 @@ void Player::SendInitialSpells()
     //TC_LOG_DEBUG("entities.player", "CHARACTER: Sent Initial Spells" );
 }
 
+void Player::SendUnlearnSpells()
+{
+    WorldPacket data(SMSG_SEND_UNLEARN_SPELLS, 4 + 4 * m_spells.size());
+
+    uint32 spellCount = 0;
+    size_t countPos = data.wpos();
+    data << uint32(spellCount);                             // spell count placeholder
+
+    for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    {
+        if (itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if (itr->second->active || itr->second->disabled)
+            continue;
+
+        auto skillLineAbilities = sSpellMgr->GetSkillLineAbilityMapBounds(itr->first);
+        if (skillLineAbilities.first == skillLineAbilities.second)
+            continue;
+
+        bool hasSupercededSpellInfoInClient = false;
+        for (auto boundsItr = skillLineAbilities.first; boundsItr != skillLineAbilities.second; ++boundsItr)
+        {
+            if (boundsItr->second->forward_spellid)
+            {
+                hasSupercededSpellInfoInClient = true;
+                break;
+            }
+        }
+
+        if (hasSupercededSpellInfoInClient)
+            continue;
+
+        uint32 nextRank = sSpellMgr->GetNextSpellInChain(itr->first);
+        if (!nextRank || !HasSpell(nextRank))
+            continue;
+
+        data << uint32(itr->first);
+
+        ++spellCount;
+    }
+
+    data.put<uint32>(countPos, spellCount);                  // write real count value
+
+    SendDirectMessage(&data);
+}
+
 void Player::RemoveMail(uint32 id)
 {
     for(auto itr = m_mail.begin(); itr != m_mail.end();++itr)
@@ -3201,6 +3248,31 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
     }
 }
 
+static bool IsUnlearnSpellsPacketNeededForSpell(uint32 spellId)
+{
+    SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(spellId);
+    if (spellInfo->IsRanked() && !spellInfo->IsStackableWithRanks())
+    {
+        auto skillLineAbilities = sSpellMgr->GetSkillLineAbilityMapBounds(spellId);
+        if (skillLineAbilities.first != skillLineAbilities.second)
+        {
+            bool hasSupercededSpellInfoInClient = false;
+            for (auto boundsItr = skillLineAbilities.first; boundsItr != skillLineAbilities.second; ++boundsItr)
+            {
+                if (boundsItr->second->forward_spellid)
+                {
+                    hasSupercededSpellInfoInClient = true;
+                    break;
+                }
+            }
+
+            return !hasSupercededSpellInfoInClient;
+        }
+    }
+
+    return false;
+}
+
 bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependent, bool disabled, bool loading, uint32 fromSkill)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
@@ -3210,8 +3282,8 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         if(!IsInWorld() && !learning)                            // spell load case
         {
             TC_LOG_ERROR("entities.player","Player::AddSpell: Non-existed in SpellStore spell #%u request, deleting for all characters in `character_spell`.",spell_id);
-            //DeleteSpellFromAllPlayers(spellId);
-            CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
+            //TC DeleteSpellFromAllPlayers(spellId);
+            //CharacterDatabase.PExecute("DELETE FROM character_spell WHERE spell = '%u'",spell_id);
         }
         else
             TC_LOG_ERROR("entities.player","Player::AddSpell: Non-existed in SpellStore spell #%u request.",spell_id);
@@ -3300,7 +3372,11 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
             else if (IsInWorld())
             {
                 if (next_active_spell_id)
+                {
                     SendSupercededSpell(spell_id, next_active_spell_id);
+                    if (IsUnlearnSpellsPacketNeededForSpell(spell_id))
+                        SendUnlearnSpells();
+                }
                 else
                 {
                     WorldPacket data(SMSG_REMOVED_SPELL, 4);
@@ -3381,6 +3457,8 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         newspell->dependent = dependent;
         newspell->disabled = disabled;
 
+        bool needsUnlearnSpellsPacket = false;
+
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
         if(newspell->active && !newspell->disabled && !SpellMgr::canStackSpellRanks(spellInfo) && sSpellMgr->GetSpellRank(spellInfo->Id) != 0)
         {
@@ -3397,10 +3475,13 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
                 {
                     if(m_spell.second->active)
                     {
-                        if(sSpellMgr->IsHighRankOfSpell(spell_id,m_spell.first))
+                        if (sSpellMgr->IsHighRankOfSpell(spell_id, m_spell.first))
                         {
                             if (IsInWorld())                 // not send spell (re-/over-)learn packets at loading
+                            {
                                 SendSupercededSpell(m_spell.first, spell_id);
+                                needsUnlearnSpellsPacket = needsUnlearnSpellsPacket || IsUnlearnSpellsPacketNeededForSpell(m_spell.first);
+                            }
 
                             // mark old spell as disable (SMSG_SUPERCEDED_SPELL replace it in client by new)
                             m_spell.second->active = false;
@@ -3408,10 +3489,13 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
                                 m_spell.second->state = PLAYERSPELL_CHANGED;
                             superceded_old = true;          // new spell replace old in action bars and spell book.
                         }
-                        else if(sSpellMgr->IsHighRankOfSpell(m_spell.first,spell_id))
+                        else if (sSpellMgr->IsHighRankOfSpell(m_spell.first, spell_id))
                         {
                             if (IsInWorld())                 // not send spell (re-/over-)learn packets at loading
+                            {
                                 SendSupercededSpell(spell_id, m_spell.first);
+                                needsUnlearnSpellsPacket = needsUnlearnSpellsPacket || IsUnlearnSpellsPacketNeededForSpell(spell_id);
+                            }
 
                             // mark new spell as disable (not learned yet for client and will not learned)
                             newspell->active = false;
@@ -3424,6 +3508,9 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         }
 
         m_spells[spell_id] = newspell;
+
+        if (needsUnlearnSpellsPacket)
+            SendUnlearnSpells();
 
         // return false if spell disabled
         if (newspell->disabled)
@@ -3599,7 +3686,7 @@ void Player::LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill /*= 0*
     }
 }
 
-void Player::RemoveSpell(uint32 spell_id, bool disabled)
+void Player::RemoveSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
 {
     auto itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
@@ -3609,11 +3696,10 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
         return;
 
     // unlearn non talent higher ranks (recursive)
-    SpellChainNode const* node = sSpellMgr->GetSpellChainNode(spell_id);
-    if (node)
+    if (uint32 nextSpell = sSpellMgr->GetNextSpellInChain(spell_id))
     {
-        if(node->next && HasSpell(node->next->Id) && !GetTalentSpellPos(node->next->Id))
-            RemoveSpell(node->next->Id,disabled);
+        if (HasSpell(nextSpell) && !GetTalentSpellPos(nextSpell))
+            RemoveSpell(nextSpell, disabled, false);
     }
 
     //unlearn spells dependent from recently removed spells
@@ -3627,6 +3713,9 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
         return;
 
     bool giveTalentPoints = disabled || !itr->second->disabled;
+
+    bool cur_active = itr->second->active;
+    bool cur_dependent = itr->second->dependent;
 
     // removing
     WorldPacket data(SMSG_REMOVED_SPELL, 4);
@@ -3746,6 +3835,65 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
 
     for (auto itr3 = spell_bounds.first; itr3 != spell_bounds.second; ++itr3)
         RemoveSpell(itr3->second.spell, disabled);
+    
+    // activate lesser rank in spellbook/action bar, and cast it if need
+    bool prev_activate = false;
+    bool needsUnlearnSpellsPacket = false;
+
+    if (uint32 prev_id = sSpellMgr->GetPrevSpellInChain(spell_id))
+    {
+        // if talent then lesser rank also talent and need learn
+        if (talentCosts)
+        {
+            // I cannot see why mangos has these lines.
+            //if (learn_low_rank)
+            //    learnSpell(prev_id, false);
+        }
+        // if ranked non-stackable spell: need activate lesser rank and update dendence state
+        /// No need to check for spellInfo != nullptr here because if cur_active is true, then that means that the spell was already in m_spells, and only valid spells can be pushed there.
+        else if (cur_active && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked())
+        {
+            // need manually update dependence state (learn spell ignore like attempts)
+            PlayerSpellMap::iterator prev_itr = m_spells.find(prev_id);
+            if (prev_itr != m_spells.end())
+            {
+                if (prev_itr->second->dependent != cur_dependent)
+                {
+                    prev_itr->second->dependent = cur_dependent;
+                    if (prev_itr->second->state != PLAYERSPELL_NEW)
+                        prev_itr->second->state = PLAYERSPELL_CHANGED;
+                }
+
+                // now re-learn if need re-activate
+                if (!prev_itr->second->active && learn_low_rank)
+                {
+                    if (AddSpell(prev_id, true, false, prev_itr->second->dependent, prev_itr->second->disabled))
+                    {
+                        // downgrade spell ranks in spellbook and action bar
+                        SendSupercededSpell(spell_id, prev_id);
+                        needsUnlearnSpellsPacket = IsUnlearnSpellsPacketNeededForSpell(prev_id);
+                        prev_activate = true;
+                    }
+                }
+            }
+        }
+    }
+
+    if (spell_id == 674 && m_canDualWield)
+        SetCanDualWield(false);
+
+    AutoUnequipOffhandIfNeed();
+
+    if (needsUnlearnSpellsPacket)
+        SendUnlearnSpells();
+
+    // remove from spell book if not replaced by lesser rank
+    if (!prev_activate)
+    {
+        WorldPacket data(SMSG_REMOVED_SPELL, 4);
+        data << uint32(spell_id);
+        SendDirectMessage(&data);
+    }
 }
 
 void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
@@ -20176,10 +20324,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 #endif
 
     SendInitialSpells();
-
-    data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);
-    data << uint32(0);                                      // count, for(count) uint32;
-    SendDirectMessage(&data);
+    SendUnlearnSpells();
 
     SendInitialActionButtons();
     m_reputationMgr->SendInitialReputations();
