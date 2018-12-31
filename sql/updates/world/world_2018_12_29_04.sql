@@ -167,5 +167,3 @@ UPDATE creature_formations SET dist = 2 WHERE memberGUID = 213231;
 UPDATE creature_formations SET dist = 2 WHERE memberGUID = 213233;
 
 UPDATE creature_template SET HealthModifier = 1.1 WHERE entry = 10238;
-
-replace into `creature_addon` (`entry`,`auras`) values('21250','36440');
