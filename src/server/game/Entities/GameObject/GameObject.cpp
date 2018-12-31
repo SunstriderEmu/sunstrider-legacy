@@ -2340,7 +2340,7 @@ uint32 GameObject::GetAutoCloseTime() const
         closeTime = 1;
         TC_LOG_ERROR("entities.gameobject", "Gameobject %u has an auto close time but is too low (%u is going to be rounded down to 0 after calculation). Using 1000ms instead.", GetGOInfo()->entry, autoCloseTime);
     }
-    return closeTime;
+    return closeTime * IN_MILLISECONDS;
     //TC:             return autoCloseTime;              // prior to 3.0.3, conversion was / 0x10000;
 }
 
