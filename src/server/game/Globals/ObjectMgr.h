@@ -108,6 +108,9 @@ enum eScriptFlags
     // PlaySound flags
     SF_PLAYSOUND_TARGET_PLAYER    = 0x1,
     SF_PLAYSOUND_DISTANCE_SOUND   = 0x2,
+    
+    // Orientation flags
+    SF_ORIENTATION_FACE_TARGET    = 0x1
 };
 
 
@@ -252,11 +255,48 @@ struct ScriptInfo
             int32  RemoveCorpse;    // dataint
         } Kill;
 
-        struct                      // SCRIPT_COMMAND_SMART_SET_DATA
+        struct                      // SCRIPT_COMMAND_SMART_SET_DATA (23) (sun custom)
         {
             uint32 DataID;          // datalong
             uint32 Value;           // datalong2
         } SmartSetData;
+
+        
+        struct                      // SCRIPT_COMMAND_ORIENTATION (30)
+        {
+            uint32 Flags;           // datalong
+            uint32 Unused1;         // datalong2
+            int32  Unused2;         // dataint
+
+            float Unused3;
+            float Unused4;
+            float Unused5;
+            float Orientation;
+        } Orientation;
+
+        struct                      // SCRIPT_COMMAND_EQUIP (31)
+        {
+            uint32 EquipmentID;     // datalong
+        } Equip;
+
+        struct                      // SCRIPT_COMMAND_MODEL (32)
+        {
+            uint32 ModelID;         // datalong
+        } Model;
+
+                                    // SCRIPT_COMMAND_CLOSE_GOSSIP (33)
+
+        struct                      // SCRIPT_COMMAND_PLAYMOVIE (34)
+        {
+            uint32 MovieID;         // datalong
+        } PlayMovie;
+
+        struct                       // SCRIPT_COMMAND_MOVEMENT (35)
+        {
+            uint32 MovementType;     // datalong
+            uint32 MovementDistance; // datalong2
+            int32  Path;             // dataint
+        } Movement;
     };
 
     std::string GetDebugInfo() const;

@@ -737,6 +737,69 @@ void Map::ScriptsProcess()
                     smartAI->SetData(step.script->SmartSetData.DataID, step.script->SmartSetData.Value);
                 }
             }
+             case SCRIPT_COMMAND_ORIENTATION:
+                // Source must be Unit.
+                if (Unit* sourceUnit = _GetScriptUnit(source, true, step.script))
+                {
+                    if (step.script->Orientation.Flags & SF_ORIENTATION_FACE_TARGET)
+                    {
+                        // Target must be Unit.
+                        Unit* targetUnit = _GetScriptUnit(target, false, step.script);
+                        if (!targetUnit)
+                            break;
+
+                        sourceUnit->SetFacingToObject(targetUnit);
+                    }
+                    else
+                        sourceUnit->SetFacingTo(step.script->Orientation.Orientation);
+                }
+                break;
+
+            case SCRIPT_COMMAND_EQUIP:
+                // Source must be Creature.
+                if (Creature* cSource = _GetScriptCreature(source, true, step.script))
+                    cSource->LoadEquipment(step.script->Equip.EquipmentID);
+                break;
+
+            case SCRIPT_COMMAND_MODEL:
+                // Source must be Creature.
+                if (Creature* cSource = _GetScriptCreature(source, true, step.script))
+                    cSource->SetDisplayId(step.script->Model.ModelID);
+                break;
+
+            case SCRIPT_COMMAND_CLOSE_GOSSIP:
+                // Source must be Player.
+                if (Player* player = _GetScriptPlayer(source, true, step.script))
+                    player->PlayerTalkClass->SendCloseGossip();
+                break;
+
+            case SCRIPT_COMMAND_PLAYMOVIE:
+                // Source must be Player.
+                if (Player* player = _GetScriptPlayer(source, true, step.script))
+                    player->SendMovieStart(step.script->PlayMovie.MovieID);
+                break;
+
+            case SCRIPT_COMMAND_MOVEMENT:
+                // Source must be Creature.
+                if (Creature* cSource = _GetScriptCreature(source, true, step.script))
+                {
+                    if (!cSource->IsAlive())
+                        return;
+
+                    cSource->GetMotionMaster()->MoveIdle();
+
+                    switch (step.script->Movement.MovementType)
+                    {
+                        case RANDOM_MOTION_TYPE:
+                            cSource->GetMotionMaster()->MoveRandom((float)step.script->Movement.MovementDistance);
+                            break;
+                        case WAYPOINT_MOTION_TYPE:
+                            cSource->GetMotionMaster()->MovePath(step.script->Movement.Path, false);
+                            break;
+                    }
+                }
+                break;
+
             break;
 
             default:
