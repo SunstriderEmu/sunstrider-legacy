@@ -1529,7 +1529,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                 if(e.action.teleport.useVisual)
                     if(Unit* u = target->ToUnit())
-                        me->CastSpell(u, 46614, TRIGGERED_FULL_MASK); //teleport visual
+                        me->CastSpell(u, 46614, true); //teleport visual
             }
 
 
