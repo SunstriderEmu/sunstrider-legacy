@@ -1263,7 +1263,10 @@ void ObjectMgr::LoadCreatures()
         {
             if(mapEntry && data.IsPatchEnabled()) //sun: only check for map enabled in this patch
                if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
-                    TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
+#ifndef LICH_KING
+                    if(mapId != 533) //Naxxramas is the only map (not 100% sure) that is shared on TLK and TBC but has different difficulties
+#endif
+                        TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
         } else
             data.spawnGroupData = &_spawnGroupDataStore[1]; // force compatibility group for transport spawns
 
@@ -3334,10 +3337,10 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->_flags & QUEST_FLAGS_DAILY)
         {
-            if(!(qinfo->_flags & QUEST_SPECIAL_FLAGS_REPEATABLE))
+            if(!(qinfo->_specialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
             {
                 TC_LOG_ERROR("sql.sql","Daily Quest %u not marked as repeatable in `SpecialFlags`, added.",qinfo->GetQuestId());
-                qinfo->_flags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
+                qinfo->_specialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
             }
         }
 
@@ -4872,7 +4875,7 @@ void ObjectMgr::LoadGossipText()
                 if (BroadcastText const* bcText = sObjectMgr->GetBroadcastText(gOption.BroadcastTextID))
                 {
                     if (bcText->MaleText[DEFAULT_LOCALE] != gOption.Text_0)
-                        TC_LOG_ERROR("sql.sql", "Row %u in table `gossip_text` has mismatch between text%u_0 and the corresponding MaleText in `broadcast_text` row %u", id, i, gOption.BroadcastTextID);
+                        TC_LOG_ERROR("sql.sql", "Row %u in table `gos sip_text` has mismatch between text%u_0 and the corresponding MaleText in `broadcast_text` row %u", id, i, gOption.BroadcastTextID);
                     if (bcText->FemaleText[DEFAULT_LOCALE] != gOption.Text_1)
                         TC_LOG_ERROR("sql.sql", "Row %u in table `gossip_text` has mismatch between text%u_1 and the corresponding FemaleText in `broadcast_text` row %u", id, i, gOption.BroadcastTextID);
                 }
