@@ -134,8 +134,8 @@ enum CreatureFlagsExtra : uint32
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL        = 0x00000040,       // creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER              = 0x00000080,       // trigger creature
     CREATURE_FLAG_EXTRA_DUNGEON_BOSS         = 0x00000100,       // (NYI, need instance_encounter system) creature is a dungeon boss (SET DYNAMICALLY, DO NOT ADD IN DB)
-    //0x200
-    //0x400
+    CREATURE_FLAG_SUMMON_GUARD               = 0x00000200,       // NYI: Creature will summon a guard if player is within its aggro range (even if creature doesn't attack per se). DB data for this is from MoP client.
+    CREATURE_FLAG_NO_CORPSE_UPON_DEATH       = 0x00000400,       // Corpse disappear immediately. DB data for this is from MoP client.
     //0x800
     //0x1000
     //0x2000

@@ -33,7 +33,7 @@ struct LootItem;
 struct LootStoreItem
 {
     uint32  itemid;                                         // id of the item
-    uint32  reference;                                      // referenced TemplateleId
+    uint32  reference;                                      // referenced TemplateId
     float   chance;                                         // chance to drop for both quest and non-quest items, chance to be used for refs
     uint16  lootmode;
     bool    needs_quest;                                    // quest drop (quest is required for item to drop)
