@@ -11,11 +11,12 @@
 
 enum GameEventState
 {
-    GAMEEVENT_NORMAL = 0,   // standard game events
-    GAMEEVENT_WORLD_INACTIVE,   // not yet started
-    GAMEEVENT_WORLD_CONDITIONS,  // condition matching phase
-    GAMEEVENT_WORLD_NEXTPHASE,   // conditions are met, now 'lenght' timer to start next event
-    GAMEEVENT_WORLD_FINISHED    // next events are started, unapply this one
+    GAMEEVENT_NORMAL           = 0,  // standard game events
+    GAMEEVENT_WORLD_INACTIVE   = 1,  // not yet started
+    GAMEEVENT_WORLD_CONDITIONS = 2,  // condition matching phase
+    GAMEEVENT_WORLD_NEXTPHASE  = 3,  // conditions are met, now 'lenght' timer to start next event
+    GAMEEVENT_WORLD_FINISHED   = 4,  // next events are started, unapply this one
+    GAMEEVENT_INTERNAL         = 5,  // never handled in update
 };
 
 //some events from DB for core usage

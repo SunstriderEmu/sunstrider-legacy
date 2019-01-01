@@ -16,34 +16,42 @@
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
     time_t currenttime = WorldGameTime::GetGameTime();
-    // if the state is conditions or nextphase, then the event should be active
-    if (mGameEvent[entry].state == GAMEEVENT_WORLD_CONDITIONS || mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE) {
-        return true;
-    }
-    // finished world events are inactive
-    else if (mGameEvent[entry].state == GAMEEVENT_WORLD_FINISHED) {
-        return false;
-    }
-    // if inactive world event, check the prerequisite events
-    else if (mGameEvent[entry].state == GAMEEVENT_WORLD_INACTIVE)
+
+
+    switch (mGameEvent[entry].state)
     {
-        for(auto itr : mGameEvent[entry].prerequisite_events)
+    default:
+    case GAMEEVENT_NORMAL:
+    {
+        time_t currenttime = WorldGameTime::GetGameTime();
+        // Get the event information
+        return mGameEvent[entry].start < currenttime
+            && currenttime < mGameEvent[entry].end
+            && (currenttime - mGameEvent[entry].start) % (mGameEvent[entry].occurence * MINUTE) < mGameEvent[entry].length * MINUTE;
+    }
+    // if the state is conditions or nextphase, then the event should be active
+    case GAMEEVENT_WORLD_CONDITIONS:
+    case GAMEEVENT_WORLD_NEXTPHASE:
+        return true;
+        // finished world events are inactive
+    case GAMEEVENT_WORLD_FINISHED:
+    case GAMEEVENT_INTERNAL:
+        return false;
+        // if inactive world event, check the prerequisite events
+    case GAMEEVENT_WORLD_INACTIVE:
+    {
+        time_t currenttime = WorldGameTime::GetGameTime();
+        for (std::set<uint16>::const_iterator itr = mGameEvent[entry].prerequisite_events.begin(); itr != mGameEvent[entry].prerequisite_events.end(); ++itr)
         {
-            if( (mGameEvent[itr].state != GAMEEVENT_WORLD_NEXTPHASE && mGameEvent[itr].state != GAMEEVENT_WORLD_FINISHED) ||   // if prereq not in nextphase or finished state, then can't start this one
-                mGameEvent[itr].nextstart > currenttime)               // if not in nextphase state for long enough, can't start this one
+            if ((mGameEvent[*itr].state != GAMEEVENT_WORLD_NEXTPHASE && mGameEvent[*itr].state != GAMEEVENT_WORLD_FINISHED) ||   // if prereq not in nextphase or finished state, then can't start this one
+                mGameEvent[*itr].nextstart > currenttime)               // if not in nextphase state for long enough, can't start this one
                 return false;
         }
         // all prerequisite events are met
         // but if there are no prerequisites, this can be only activated through gm command
         return !(mGameEvent[entry].prerequisite_events.empty());
     }
-
-    // Get the event information
-    if( mGameEvent[entry].start < currenttime && currenttime < mGameEvent[entry].end &&
-        ((currenttime - mGameEvent[entry].start) % (mGameEvent[entry].occurence * MINUTE)) < (mGameEvent[entry].length * MINUTE) )
-        return true;
-    else
-        return false;
+    }
 }
 
 uint32 GameEventMgr::NextCheck(uint16 entry) const
@@ -87,15 +95,16 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
     if ((event_id >= GAME_EVENT_WICKERMAN_FESTIVAL && event_id <= GAME_EVENT_HORSENAME_RAZOR_HILL) && !IsActiveEvent(GAME_EVENT_HALLOWS_END))
         return false;
 
-    if(mGameEvent[event_id].state == GAMEEVENT_NORMAL)
+    GameEventData &data = mGameEvent[event_id];
+    if (data.state == GAMEEVENT_NORMAL || data.state == GAMEEVENT_INTERNAL)
     {
         AddActiveEvent(event_id);
         ApplyNewEvent(event_id);
         if(overwrite)
         {
             mGameEvent[event_id].start = WorldGameTime::GetGameTime();
-            if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
-                mGameEvent[event_id].end = mGameEvent[event_id].start + mGameEvent[event_id].length;
+            if (data.end <= data.start)
+                data.end = data.start + data.length;
         }
 
         // When event is started, set its worldstate to current time
@@ -104,9 +113,9 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
     }
     else
     {
-        if( mGameEvent[event_id].state == GAMEEVENT_WORLD_INACTIVE )
+        if(data.state == GAMEEVENT_WORLD_INACTIVE )
             // set to conditions phase
-            mGameEvent[event_id].state = GAMEEVENT_WORLD_CONDITIONS;
+            data.state = GAMEEVENT_WORLD_CONDITIONS;
 
         // add to active events
         AddActiveEvent(event_id);
@@ -114,7 +123,7 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
         ApplyNewEvent(event_id);
 
         // check if can go to next state
-        bool conditions_met = CheckOneGameEventConditions(event_id);
+        bool const conditions_met = CheckOneGameEventConditions(event_id);
         // save to db
         SaveWorldEventStateToDB(event_id);
         // force game event update to set the update timer if conditions were met from a command
@@ -129,7 +138,8 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
 
 void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 {
-    bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
+    GameEventData &data = mGameEvent[event_id];
+    bool serverwide_evt = data.state != GAMEEVENT_NORMAL && data.state != GAMEEVENT_INTERNAL;
 
     RemoveActiveEvent(event_id);
     UnApplyEvent(event_id);
@@ -139,20 +149,20 @@ void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 
     if(overwrite && !serverwide_evt)
     {
-        mGameEvent[event_id].start = WorldGameTime::GetGameTime() - mGameEvent[event_id].length * MINUTE;
-        if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
-            mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
+        data.start = WorldGameTime::GetGameTime() - data.length * MINUTE;
+        if (data.end <= data.start)
+            data.end = data.start + data.length;
     }
     else if(serverwide_evt)
     {
         // if finished world event, then only gm command can stop it
-        if(overwrite || mGameEvent[event_id].state != GAMEEVENT_WORLD_FINISHED)
+        if (overwrite || data.state != GAMEEVENT_WORLD_FINISHED)
         {
             // reset conditions
-            mGameEvent[event_id].nextstart = 0;
-            mGameEvent[event_id].state = GAMEEVENT_WORLD_INACTIVE;
+            data.nextstart = 0;
+            data.state = GAMEEVENT_WORLD_INACTIVE;
             std::map<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
-            for(itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
+            for (itr = data.conditions.begin(); itr != data.conditions.end(); ++itr)
                 itr->second.done = 0;
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
             trans->PAppend("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
@@ -257,7 +267,7 @@ void GameEventMgr::LoadFromDB()
         mGameEvent.resize(max_event_id+1);
     }
 
-    //                                               0      1                           2                         3          4       5            6            7         8          9
+    //                                                   0      1                           2                         3          4       5            6            7         8          9
     QueryResult result = WorldDatabase.Query("SELECT entry, UNIX_TIMESTAMP(start_time), UNIX_TIMESTAMP(end_time), occurence, length, description, world_event, disabled, patch_min, patch_max FROM game_event");
     if( !result )
     {
@@ -288,7 +298,7 @@ void GameEventMgr::LoadFromDB()
         pGameEvent.occurence    = fields[3].GetUInt64();
         pGameEvent.length       = fields[4].GetUInt64();
         pGameEvent.description  = fields[5].GetString();
-        pGameEvent.state        = (GameEventState)(fields[6].GetUInt8());
+        pGameEvent.state        = fields[6].GetUInt8() ? GAMEEVENT_WORLD_INACTIVE : GAMEEVENT_NORMAL;
         pGameEvent.nextstart    = 0;
         uint8 disabled          = fields[7].GetUInt8();
         uint8 patch_min         = fields[8].GetUInt8();
@@ -308,7 +318,7 @@ void GameEventMgr::LoadFromDB()
             disable = true;
         }
 
-        if(pGameEvent.length == 0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
+        if(!disable && pGameEvent.length == 0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
             if (disable) // don't print error when it is not loaded for the current patch
                 TC_LOG_ERROR("sql.sql","`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
@@ -346,7 +356,7 @@ void GameEventMgr::LoadFromDB()
                 continue;
             }
 
-            if(mGameEvent[event_id].state != GAMEEVENT_NORMAL)
+            if (mGameEvent[event_id].state != GAMEEVENT_NORMAL && mGameEvent[event_id].state != GAMEEVENT_INTERNAL)
             {
                 mGameEvent[event_id].state = (GameEventState)(fields[1].GetUInt8());
                 mGameEvent[event_id].nextstart    = time_t(fields[2].GetUInt64());
@@ -384,7 +394,7 @@ void GameEventMgr::LoadFromDB()
             }
 
 
-            if(mGameEvent[event_id].state != GAMEEVENT_NORMAL)
+            if (mGameEvent[event_id].state != GAMEEVENT_NORMAL && mGameEvent[event_id].state != GAMEEVENT_INTERNAL)
             {
                 uint32 prerequisite_event = fields[1].GetUInt32();
                 if(prerequisite_event >= mGameEvent.size())
