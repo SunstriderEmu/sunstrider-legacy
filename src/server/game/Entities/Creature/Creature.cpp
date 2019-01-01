@@ -1565,6 +1565,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
         TC_LOG_ERROR("sql.sql","Creature (SpawnID : %u) not found in table `creature`, can't load. ", spawnId);
         return false;
     }
+    ASSERT(data->IsPatchEnabled());
     
     m_chosenTemplate = data->ChooseSpawnEntry();
     // Rare creatures in dungeons have 15% chance to spawn

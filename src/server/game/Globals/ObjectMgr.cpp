@@ -625,7 +625,7 @@ void ObjectMgr::LoadCreatureAddons()
             creatureAddon.emote = 0;
         }
 
-        if(_creatureDataStore.find(guid)==_creatureDataStore.end())
+        if (_creatureDataStore.find(guid) == _creatureDataStore.end())
             TC_LOG_ERROR("sql.sql","Creature (SpawnId: %u) does not exist but has a record in `creature_addon`",guid);
 
         //sun: check move flags
@@ -1185,8 +1185,9 @@ void ObjectMgr::LoadCreatures()
         CreatureTemplate const* cInfo = GetCreatureTemplate(templateId);
         if (!cInfo)
         {
+            /*disabled, we have tlk creatures in here
             TC_LOG_ERROR("sql.sql", "Table `creature_entry` has creature (SpawnId: %u) with not existing creature entry %u, skipped.", spawnId, templateId);
-            continue;
+            continue;*/
         }
 
         // -1 random, 0 no equipment,
@@ -1216,36 +1217,12 @@ void ObjectMgr::LoadCreatures()
             continue;
         }
 
-        uint8 patch_min = fields[19].GetInt8();
-        uint8 patch_max = fields[20].GetInt8();
-
-        bool existsInPatch = true;
-
-        if ((patch_min > patch_max) || (patch_max > WOW_PATCH_MAX))
-        {
-            TC_LOG_ERROR("sql.sql", "Table `creature` spawnId %u has invalid values patch_min=%u, patch_max=%u.", spawnId, patch_min, patch_max);
-            patch_min = WOW_PATCH_MIN;
-            patch_max = WOW_PATCH_MAX;
-        }
-
-        if (sWorld->GetWowPatch() < patch_min || sWorld->GetWowPatch() > patch_max)
-            existsInPatch = false;
-
-        uint32 mapId = fields[1].GetUInt16();
-        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
-        if (!mapEntry)
-        {
-            if(existsInPatch)
-                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", spawnId, mapId);
-            //continue;
-        }
         CreatureData& data = _creatureDataStore[spawnId];
-
         data.ids = spawnEntryItr->second;
-        data.spawnMask       = fields[2].GetUInt8();
-
+        uint32 mapId          = fields[1].GetUInt16();
+        data.spawnMask        = fields[2].GetUInt8();
+        data.displayid        = fields[3].GetUInt32();
         data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
-        data.displayid        = fields[ 3].GetUInt32();
         data.spawntimesecs    = fields[ 8].GetUInt32();
         data.spawndist        = fields[ 9].GetFloat();
         data.currentwaypoint  = fields[10].GetUInt32();
@@ -1257,6 +1234,23 @@ void ObjectMgr::LoadCreatures()
         int32 const gameEvent = fields[16].GetInt32();
         data.poolId           = fields[17].GetUInt32(); //Old WR pool system
         uint32 const poolId   = fields[18].GetUInt32();
+        data.patch_min        = fields[19].GetInt8();
+        data.patch_max        = fields[20].GetInt8();
+
+        if ((data.patch_min > data.patch_max) || (data.patch_max > WOW_PATCH_MAX))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` spawnId %u has invalid values patch_min=%u, patch_max=%u.", spawnId, data.patch_min, data.patch_max);
+            data.patch_min = WOW_PATCH_MIN;
+            data.patch_max = WOW_PATCH_MAX;
+        }
+
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (!mapEntry)
+        {
+            if (data.IsPatchEnabled())
+                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u.", spawnId, mapId);
+            //continue;
+        }
 
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
         if (mapEntry && mapEntry->Instanceable())
@@ -1267,12 +1261,9 @@ void ObjectMgr::LoadCreatures()
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))
         {
-#ifdef LICH_KING
-            if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
-                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
-#else
-            //how to handle creatures with a TLK spawn masks here?
-#endif
+            if(mapEntry && data.IsPatchEnabled()) //sun: only check for map enabled in this patch
+               if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
+                    TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
         } else
             data.spawnGroupData = &_spawnGroupDataStore[1]; // force compatibility group for transport spawns
 
@@ -1314,7 +1305,7 @@ void ObjectMgr::LoadCreatures()
         }
 
         // Add to grid if not managed by the game event, pool system or patch version
-        if (gameEvent == 0 && poolId == 0 && existsInPatch)
+        if (gameEvent == 0 && poolId == 0 && data.IsPatchEnabled())
             AddCreatureToGrid(spawnId, &data);
         ++count;
 

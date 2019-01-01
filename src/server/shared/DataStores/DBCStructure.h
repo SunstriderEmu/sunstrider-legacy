@@ -1073,8 +1073,8 @@ struct SpellVisualEntry
  //uint32 StateDoneKit;
 #endif
  //uint32 ChannelKit;
- uint32 MissileName; //sun: renamed from TC 'hasMissile'. This is a reference to SpellVisualEffectName.dbc
- int32 MissileModel;
+ uint32 HasMissile;
+ int32 MissileModel; //This is a reference to SpellVisualEffectName.dbc when positive
  //uint32 MissilePathType;
  //uint32 MissileDestinationAttachment;
  //uint32 MissileSound;
