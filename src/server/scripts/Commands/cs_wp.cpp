@@ -119,7 +119,7 @@ public:
 
         if(show == "on")
         {
-            QueryResult result = WorldDatabase.PQuery( "SELECT point, position_x,position_y,position_z FROM waypoint_data WHERE id = '%u'", pathid);
+            QueryResult result = WorldDatabase.PQuery( "SELECT point, position_x,position_y,position_z,`max` FROM waypoint_data JOIN (SELECT MAX(POINT) AS `max` FROM waypoint_data  WHERE id = '%u') AS wd WHERE id = '%u' ", pathid, pathid);
 
             if(!result)
             {
@@ -170,10 +170,11 @@ public:
             do
             {
                 Field *fields = result->Fetch();
-                uint32 point    = fields[0].GetUInt32();
-                float x         = fields[1].GetFloat();
-                float y         = fields[2].GetFloat();
-                float z         = fields[3].GetFloat();
+                uint32 point      = fields[0].GetUInt32();
+                float x           = fields[1].GetFloat();
+                float y           = fields[2].GetFloat();
+                float z           = fields[3].GetFloat();
+                float lastPointId = fields[4].GetUInt32();
 
                 uint32 id = VISUAL_WAYPOINT;
 
@@ -206,7 +207,12 @@ public:
                 map->Add(wpCreature);
                 */
                 if (Creature* c = chr->SummonCreature(id, x, y, z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60000))
-                    c->SetLevel(std::min(255u, point+1)); //just a little help
+                {   //also show the point id using the mana
+                    c->DisableRegeneration(true);
+                    c->SetPowerType(POWER_MANA);
+                    c->SetMaxPower(POWER_MANA, lastPointId);
+                    c->SetPower(POWER_MANA, point);
+                }
             }
             while( result->NextRow() );
 
