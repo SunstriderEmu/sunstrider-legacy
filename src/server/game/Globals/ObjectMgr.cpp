@@ -1142,10 +1142,10 @@ void ObjectMgr::LoadCreatures()
 
     uint32 count = 0;
     //                                                0                1    2          3
-    QueryResult result = WorldDatabase.Query("SELECT creature.spawnID, map, spawnMask, modelid, "
-    //   4           5           6           7            8              9         10
+    QueryResult result = WorldDatabase.PQuery("SELECT creature.spawnID, map, spawnMask, modelid, "
+        //   4           5           6           7            8              9         10
         "position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, "
-    //   11         12       13            14          15                   16     17       18          19         20
+        //   11         12       13            14          15                   16     17       18          19         20
         "curhealth, curmana, MovementType, unit_flags, creature.ScriptName, event, pool_id, pool_entry, patch_min, patch_max "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.SpawnID = game_event_creature.guid "
@@ -1216,38 +1216,6 @@ void ObjectMgr::LoadCreatures()
             continue;
         }
 
-        uint32 mapId = fields[1].GetUInt16();
-        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
-        if (!mapEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", spawnId, mapId);
-            continue;
-        }
-        CreatureData& data = _creatureDataStore[spawnId];
-
-        data.ids = spawnEntryItr->second;
-        data.spawnMask       = fields[2].GetUInt8();
-
-        data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
-        data.displayid       = fields[ 3].GetUInt32();
-        data.spawntimesecs   = fields[ 8].GetUInt32();
-        data.spawndist       = fields[ 9].GetFloat();
-        data.currentwaypoint = fields[10].GetUInt32();
-        data.curhealth       = fields[11].GetUInt32();
-        data.curmana         = fields[12].GetUInt32();
-        data.movementType    = fields[13].GetUInt8();
-        data.unit_flags      = fields[14].GetUInt32();
-        data.scriptId        = GetScriptId(fields[15].GetString());
-        int32 gameEvent      = fields[16].GetInt32();
-        data.poolId          = fields[17].GetUInt32(); //Old WR pool system
-        //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
-        if(mapEntry->Instanceable())
-            data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
-        else
-            data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
-
-        uint32 poolId = fields[18].GetUInt32();
-
         uint8 patch_min = fields[19].GetInt8();
         uint8 patch_max = fields[20].GetInt8();
 
@@ -1260,14 +1228,51 @@ void ObjectMgr::LoadCreatures()
             patch_max = WOW_PATCH_MAX;
         }
 
-        if (!((sWorld->GetWowPatch() >= patch_min) && (sWorld->GetWowPatch() <= patch_max)))
+        if (sWorld->GetWowPatch() < patch_min || sWorld->GetWowPatch() > patch_max)
             existsInPatch = false;
+
+        uint32 mapId = fields[1].GetUInt16();
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (!mapEntry)
+        {
+            if(existsInPatch)
+                TC_LOG_ERROR("sql.sql", "Table `creature` has creature (SpawnId: %u) spawned on non existent map %u, skipped.", spawnId, mapId);
+            //continue;
+        }
+        CreatureData& data = _creatureDataStore[spawnId];
+
+        data.ids = spawnEntryItr->second;
+        data.spawnMask       = fields[2].GetUInt8();
+
+        data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
+        data.displayid        = fields[ 3].GetUInt32();
+        data.spawntimesecs    = fields[ 8].GetUInt32();
+        data.spawndist        = fields[ 9].GetFloat();
+        data.currentwaypoint  = fields[10].GetUInt32();
+        data.curhealth        = fields[11].GetUInt32();
+        data.curmana          = fields[12].GetUInt32();
+        data.movementType     = fields[13].GetUInt8();
+        data.unit_flags       = fields[14].GetUInt32();
+        data.scriptId         = GetScriptId(fields[15].GetString());
+        int32 const gameEvent = fields[16].GetInt32();
+        data.poolId           = fields[17].GetUInt32(); //Old WR pool system
+        uint32 const poolId   = fields[18].GetUInt32();
+
+        //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
+        if (mapEntry && mapEntry->Instanceable())
+            data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
+        else
+            data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
 
         // Skip spawnMask check for transport maps
         if (!IsTransportMap(data.spawnPoint.GetMapId()))
         {
+#ifdef LICH_KING
             if (data.spawnMask & ~spawnMasks[data.spawnPoint.GetMapId()])
                 TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) that have wrong spawn mask %u including unsupported difficulty modes for map (Id: %u).", spawnId, data.spawnMask, data.spawnPoint.GetMapId());
+#else
+            //how to handle creatures with a TLK spawn masks here?
+#endif
         } else
             data.spawnGroupData = &_spawnGroupDataStore[1]; // force compatibility group for transport spawns
 

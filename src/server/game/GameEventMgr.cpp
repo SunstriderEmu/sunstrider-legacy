@@ -407,22 +407,21 @@ void GameEventMgr::LoadFromDB()
     }
 
     mGameEventCreatureGuids.resize(mGameEvent.size()*2-1);
-    //                                   1                 2
-    result = WorldDatabase.Query("SELECT creature.spawnId, game_event_creature.event "
-        "FROM creature JOIN game_event_creature ON creature.spawnID = game_event_creature.guid");
+    //                                        1          2
+    result = WorldDatabase.PQuery("SELECT c.spawnId, game_event_creature.event "
+        "FROM creature c JOIN game_event_creature ON c.spawnID = game_event_creature.guid "
+        "WHERE c.patch_min >= %u and c.patch_max <= %u", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     count = 0;
-    if( !result )
-    {
-        TC_LOG_INFO("server.loading",">> Loaded %u creatures in game events", count );
-    }
+    if (!result)
+        TC_LOG_INFO("server.loading", ">> Loaded %u creatures in game events", count);
     else
     {
         do
         {
             Field *fields = result->Fetch();
 
-            ObjectGuid::LowType guid    = fields[0].GetUInt32();
+            ObjectGuid::LowType guid = fields[0].GetUInt32();
             int32 event_id = fields[1].GetInt32();
 
             int32 internal_event_id = mGameEvent.size() + event_id - 1;
