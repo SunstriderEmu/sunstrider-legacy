@@ -248,7 +248,7 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_corpseRemoveTime(0),
     m_respawnTime(0), 
     m_respawnDelay(25),
-    m_corpseDelay(60), 
+    m_corpseDelay(0), 
     m_respawnradius(0.0f),
     m_reactState(REACT_AGGRESSIVE), 
     m_defaultMovementType(IDLE_MOTION_TYPE), 
@@ -1091,8 +1091,10 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
     if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS && map->IsDungeon())
         m_respawnDelay = 0; // special value, prevents respawn for dungeon bosses unless overridden
 
-    switch (GetCreatureTemplate()->rank)
+    if(!(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_NO_CORPSE_UPON_DEATH))
     {
+        switch (GetCreatureTemplate()->rank)
+        {
         case CREATURE_ELITE_RARE:
             m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RARE);
             break;
@@ -1108,7 +1110,9 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
         default:
             m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_NORMAL);
             break;
-    }
+        }
+    } //else, keep at 0
+
     LoadCreatureAddon();
     InitCreatureAddon();
 
