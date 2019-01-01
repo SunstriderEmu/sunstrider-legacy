@@ -124,6 +124,7 @@ TC_GAME_API extern SpellCategoryStore                        sSpellsByCategorySt
 TC_GAME_API extern DBCStorage <SpellRadiusEntry>             sSpellRadiusStore;
 TC_GAME_API extern DBCStorage <SpellRangeEntry>              sSpellRangeStore;
 TC_GAME_API extern DBCStorage <SpellShapeshiftEntry>         sSpellShapeshiftStore;
+TC_GAME_API extern DBCStorage <SpellVisualEntry>             sSpellVisualStore;
 //TC_GAME_API extern DBCStorage <SpellEntry>                   sSpellStore;
 TC_GAME_API extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 TC_GAME_API extern DBCStorage <SummonPropertiesEntry>        sSummonPropertiesStore;

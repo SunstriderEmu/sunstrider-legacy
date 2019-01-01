@@ -4742,11 +4742,7 @@ void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
     uint32 ammoInventoryType = 0;
     uint32 ammoDisplayID = 0;
 
-    if (m_spellInfo->Id == 45248) {
-        ammoDisplayID = 33069;
-        ammoInventoryType = INVTYPE_THROWN;
-    }
-    else if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         Item *pItem = (m_caster->ToPlayer())->GetWeaponForAttack( RANGED_ATTACK );
         if(pItem)
@@ -4776,6 +4772,8 @@ void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
     }
     else if (m_caster->GetTypeId() == TYPEID_UNIT)
     {
+        uint32 nonRangedAmmoDisplayID = 0;
+        uint32 nonRangedAmmoInventoryType = 0;
         for (uint32 slot = WEAPON_SLOT_MAINHAND; slot <= WEAPON_SLOT_RANGED; ++slot)
         {
 #ifdef LICH_KING
@@ -4799,6 +4797,10 @@ void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
                         case ITEM_SUBCLASS_WEAPON_GUN:
                             ammoDisplayID = 5998;       // is this need fixing?
                             ammoInventoryType = INVTYPE_AMMO;
+                            break;
+                        default:
+                            nonRangedAmmoDisplayID = itemEntry->DisplayId;
+                            nonRangedAmmoInventoryType = itemEntry->InventoryType;
                             break;
                         }
 
@@ -4837,7 +4839,32 @@ void Spell::UpdateSpellCastDataAmmo(WorldPackets::Spells::SpellAmmo& ammo)
 
             if (ammoDisplayID)
                 break;
+
+            if (!nonRangedAmmoDisplayID && !nonRangedAmmoInventoryType)
+            {
+                //Example spells: 45248, 38374 // -- SELECT entry, SpellName1, description1, dbc.*, st.Speed FROM world.spell_template st JOIN dbc.db_spellvisual_8606 dbc ON dbc.ID = st.spellVisual WHERE dbc.MissileModel IN (-4, -5)
+                nonRangedAmmoDisplayID = m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + slot);
+                uint32 const equipInfo = m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot * 2);
+                ItemSubclassWeapon const subclass = ItemSubclassWeapon((equipInfo & ~ITEM_CLASS_WEAPON) >> 8);  //This field is ITEM_CLASS_WEAPON + (subclass << 8));
+                switch (subclass)
+                {
+                case ITEM_SUBCLASS_WEAPON_BOW:
+                case ITEM_SUBCLASS_WEAPON_GUN:
+                case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                    nonRangedAmmoInventoryType = INVTYPE_AMMO;
+                    break;
+                default:
+                    nonRangedAmmoInventoryType = INVTYPE_THROWN;
+                    break;
+                }
+            }
 #endif
+        }
+
+        if (!ammoDisplayID && !ammoInventoryType)
+        {
+            ammoDisplayID = nonRangedAmmoDisplayID;
+            ammoInventoryType = nonRangedAmmoInventoryType;
         }
     }
 

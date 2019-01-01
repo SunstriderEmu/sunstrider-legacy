@@ -1061,6 +1061,43 @@ struct SpellItemEnchantmentConditionEntry
     uint32  Value[5];
 };
 
+//TODO: check for TBC
+struct SpellVisualEntry
+{
+ //uint32 Id;
+ //uint32 PrecastKit;
+ //uint32 CastingKit;
+ //uint32 ImpactKit;
+ //uint32 StateKit;
+#ifdef LICH_KING
+ //uint32 StateDoneKit;
+#endif
+ //uint32 ChannelKit;
+ uint32 MissileName; //sun: renamed from TC 'hasMissile'. This is a reference to SpellVisualEffectName.dbc
+ int32 MissileModel;
+ //uint32 MissilePathType;
+ //uint32 MissileDestinationAttachment;
+ //uint32 MissileSound;
+ //uint32 AnimEventSoundID;
+ //uint32 Flags;
+ //uint32 CasterImpactKit;
+ //uint32 TargetImpactKit;
+ //int32 MissileAttachment;
+ //uint32 MissileFollowGroundHeight;
+ //uint32 MissileFollowGroundDropSpeed;
+ //uint32 MissileFollowGroundApprach;
+ //uint32 MissileFollowGroundFlags;
+ //uint32 MissileMotionId;
+ //uint32 MissileTargetingKit;
+ //uint32 InstantAreaKit;
+ //uint32 ImpactAreaKit;
+ //uint32 PersistentAreaKit;
+#ifdef LICH_KING
+ //DBCPosition3D MissileCastOffset;
+ //DBCPosition3D MissileImpactOffset;
+#endif
+};
+
 struct StableSlotPricesEntry
 {
     uint32 Slot;

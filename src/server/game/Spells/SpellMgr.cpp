@@ -3060,6 +3060,12 @@ void SpellMgr::LoadSpellInfoCustomAttributes()
 
         if (SpellMgr::IsBinaryMagicResistanceSpell(spellInfo))
             spellInfo->AttributesCu |= SPELL_ATTR0_CU_BINARY_SPELL;
+
+        if (spellInfo->Speed > 0.0f)
+            if (SpellVisualEntry const* spellVisual = sSpellVisualStore.LookupEntry(spellInfo->SpellVisual))
+                if (spellVisual->MissileName)
+                    if (spellVisual->MissileModel == -4 || spellVisual->MissileModel == -5)
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEEDS_AMMO_DATA;
     }
 
     // addition for binary spells, omit spells triggering other spells

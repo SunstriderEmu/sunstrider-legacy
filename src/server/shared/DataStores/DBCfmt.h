@@ -81,6 +81,11 @@ char constexpr SpellItemEnchantmentConditionfmt[]="nbbbbbxxxxxbbbbbbbbbbiiiiiXXX
 char constexpr SpellRadiusfmt[]="nfxf";
 char constexpr SpellRangefmt[]="nffixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char constexpr SpellShapeshiftfmt[]="nxxxxxxxxxxxxxxxxxxiixixxxxxxxxxxxx";
+#ifdef LICH_KING
+char constexpr SpellVisualfmt[] = "dxxxxxxiixxxxxxxxxxxxxxxxxxxxxxx"; 
+#else
+char constexpr SpellVisualfmt[] = "dxxxxxiixxxxxxxxxxxxxxxxx";
+#endif
 char constexpr StableSlotPricesfmt[] = "ni";
 char constexpr SummonPropertiesfmt[] = "niiiii";
 char constexpr TalentEntryfmt[]="niiiiiiiixxxxixxixxxi";

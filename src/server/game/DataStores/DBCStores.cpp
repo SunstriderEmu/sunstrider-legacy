@@ -132,6 +132,7 @@ DBCStorage <SpellFocusObjectEntry> sSpellFocusObjectStore(SpellFocusObjectfmt);
 DBCStorage <SpellRadiusEntry> sSpellRadiusStore(SpellRadiusfmt);
 DBCStorage <SpellRangeEntry> sSpellRangeStore(SpellRangefmt);
 DBCStorage <SpellShapeshiftEntry> sSpellShapeshiftStore(SpellShapeshiftfmt);
+DBCStorage <SpellVisualEntry> sSpellVisualStore(SpellVisualfmt);
 DBCStorage <StableSlotPricesEntry> sStableSlotPricesStore(StableSlotPricesfmt);
 DBCStorage <SummonPropertiesEntry> sSummonPropertiesStore(SummonPropertiesfmt);
 DBCStorage <TalentEntry> sTalentStore(TalentEntryfmt);
@@ -348,6 +349,7 @@ void LoadDBCStores(const std::string& dataPath)
     LOAD_DBC(sSpellRadiusStore, "SpellRadius.dbc");
     LOAD_DBC(sSpellRangeStore, "SpellRange.dbc");
     LOAD_DBC(sSpellShapeshiftStore, "SpellShapeshiftForm.dbc");
+    LOAD_DBC(sSpellVisualStore, "SpellVisual.dbc");
     LOAD_DBC(sStableSlotPricesStore, "StableSlotPrices.dbc");
     LOAD_DBC(sSummonPropertiesStore, "SummonProperties.dbc");
 
