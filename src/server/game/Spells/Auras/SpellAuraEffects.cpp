@@ -2161,59 +2161,17 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
         {
             if (i->GetId() == GetId())
             {
-                Battleground *bg = (m_target->ToPlayer())->GetBattleground();
-                if (!bg || !bg->IsArena())
-                {
-                    // default case - not in arena
-                    m_isPeriodic = false;
-                    if (GetTickNumber() == 1)
-                        i->SetAmount(_amount);
-
-                    (m_target->ToPlayer())->UpdateManaRegen();
-                    return;
-                }
-                //**********************************************/
-                // This feature uses only in arenas
-                //**********************************************/
-                // Here need increase mana regen per tick (6 second rule)
-                // on 0 tick -   0  (handled in 2 second)
-                // on 1 tick - 166% (handled in 4 second)
-                // on 2 tick - 133% (handled in 6 second)
-                // Not need update after 4 tick
-                if (GetTickNumber() > 4)
-                    return;
-                // Apply bonus for 1 - 4 tick
-                switch (GetTickNumber())
-                {
-                case 1:   // 0%
-                    i->SetAmount(0);
-                    break;
-                case 2:   // 166%
-                    i->SetAmount(_amount * 5 / 3);
-                    break;
-                case 3:   // 133%
-                    i->SetAmount(_amount * 4 / 3);
-                    break;
-                default:  // 100% - normal regen
+                // default case - not in arena
+                m_isPeriodic = false;
+                if (GetTickNumber() == 1)
                     i->SetAmount(_amount);
-                    break;
-                }
+
                 (m_target->ToPlayer())->UpdateManaRegen();
                 return;
             }
         }
         return;
     }
-    //        // Panda
-    //        case 19230: break;
-    //        // Master of Subtlety
-    //        case 31666: break;
-    //        // Gossip NPC Periodic - Talk
-    //        case 33208: break;
-    //        // Gossip NPC Periodic - Despawn
-    //        case 33209: break;
-    //        // Force of Nature
-    //        case 33831: break;
     // Aspect of the Viper
     case 34074:
     {
@@ -2237,112 +2195,6 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
         (m_target->ToPlayer())->UpdateManaRegen();
         return;
     }
-    //        // Steal Weapon
-    //        case 36207: break;
-    //        // Simon Game START timer, (DND)
-    //        case 39993: break;
-    //        // Harpooner's Mark
-    //        case 40084: break;
-    //        // Knockdown Fel Cannon: break; The Aggro Burst
-    //        case 40119: break;
-    //        // Old Mount Spell
-    //        case 40154: break;
-    //        // Magnetic Pull
-    //        case 40581: break;
-    //        // Ethereal Ring: break; The Bolt Burst
-    //        case 40801: break;
-    //        // Crystal Prison
-    //        case 40846: break;
-    //        // Copy Weapon
-    //        case 41054: break;
-    //        // Ethereal Ring Visual, Lightning Aura
-    //        case 41477: break;
-    //        // Ethereal Ring Visual, Lightning Aura (Fork)
-    //        case 41525: break;
-    //        // Ethereal Ring Visual, Lightning Jumper Aura
-    //        case 41567: break;
-    //        // No Man's Land
-    //        case 41955: break;
-    //        // Headless Horseman - Fire
-    //        case 42074: break;
-    //        // Headless Horseman - Visual - Large Fire
-    //        case 42075: break;
-    //        // Headless Horseman - Start Fire, Periodic Aura
-    //        case 42140: break;
-    //        // Ram Speed Boost
-    //        case 42152: break;
-    //        // Headless Horseman - Fires Out Victory Aura
-    //        case 42235: break;
-    //        // Pumpkin Life Cycle
-    //        case 42280: break;
-    //        // Brewfest Request Chick Chuck Mug Aura
-    //        case 42537: break;
-    //        // Squashling
-    //        case 42596: break;
-    //        // Headless Horseman Climax, Head: Periodic
-    //        case 42603: break;
-    //        // Fire Bomb
-    //        case 42621: break;
-    //        // Headless Horseman - Conflagrate, Periodic Aura
-    //        case 42637: break;
-    //        // Headless Horseman - Create Pumpkin Treats Aura
-    //        case 42774: break;
-    //        // Headless Horseman Climax - Summoning Rhyme Aura
-    //        case 42879: break;
-    //        // Tricky Treat
-    //        case 42919: break;
-    //        // Giddyup!
-    //        case 42924: break;
-    //        // Ram - Trot
-    //        case 42992: break;
-    //        // Ram - Canter
-    //        case 42993: break;
-    //        // Ram - Gallop
-    //        case 42994: break;
-    //        // Ram Level - Neutral
-    //        case 43310: break;
-    //        // Headless Horseman - Maniacal Laugh, Maniacal, Delayed 17
-    //        case 43884: break;
-    //        // Headless Horseman - Maniacal Laugh, Maniacal, other, Delayed 17
-    //        case 44000: break;
-    //        // Energy Feedback
-    //        case 44328: break;
-    //        // Romantic Picnic
-    //        case 45102: break;
-    //        // Romantic Picnic
-    //        case 45123: break;
-    //        // Looking for Love
-    //        case 45124: break;
-    //        // Kite - Lightning Strike Kite Aura
-    //        case 45197: break;
-    //        // Rocket Chicken
-    //        case 45202: break;
-    //        // Copy Offhand Weapon
-    //        case 45205: break;
-    //        // Upper Deck - Kite - Lightning Periodic Aura
-    //        case 45207: break;
-    //        // Kite -Sky  Lightning Strike Kite Aura
-    //        case 45251: break;
-    //        // Ribbon Pole Dancer Check Aura
-    //        case 45390: break;
-    //        // Holiday - Midsummer, Ribbon Pole Periodic Visual
-    //        case 45406: break;
-    //        // Parachute
-    //        case 45472: break;
-    //        // Alliance Flag, Extra Damage Debuff
-    //        case 45898: break;
-    //        // Horde Flag, Extra Damage Debuff
-    //        case 45899: break;
-    //        // Ahune - Summoning Rhyme Aura
-    //        case 45926: break;
-    //        // Ahune - Slippery Floor
-    //        case 45945: break;
-    //        // Ahune's Shield
-    //        case 45954: break;
-    //        // Nether Vapor Lightning
-    //        case 45960: break;
-    //        // Darkness
-    //        case 45996: break;
     // Summon Blood Elves Periodic
     case 46041:
     {
@@ -2352,38 +2204,6 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
         return;
     }
     break;
-    //        // Transform Visual Missile Periodic
-    //        case 46205: break;
-    //        // Find Opening Beam End
-    //        case 46333: break;
-    //        // Ice Spear Control Aura
-    //        case 46371: break;
-    //        // Hailstone Chill
-    //        case 46458: break;
-    //        // Hailstone Chill, Internal
-    //        case 46465: break;
-    //        // Chill, Internal Shifter
-    //        case 46549: break;
-    //        // Summon Ice Spear Knockback Delayer
-    //        case 46878: break;
-    //        // Burninate Effect
-    //        case 47214: break;
-    //        // Fizzcrank Practice Parachute
-    //        case 47228: break;
-    //        // Send Mug Control Aura
-    //        case 47369: break;
-    //        // Direbrew's Disarm (precast)
-    //        case 47407: break;
-    //        // Mole Machine Port Schedule
-    //        case 47489: break;
-    //        // Mole Machine Portal Schedule
-    //        case 49466: break;
-    //        // Drink Coffee
-    //        case 49472: break;
-    //        // Listening to Music
-    //        case 50493: break;
-    //        // Love Rocket Barrage
-    //        case 50530: break;
     default:
         break;
     }
