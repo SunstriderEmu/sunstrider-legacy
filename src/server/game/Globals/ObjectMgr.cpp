@@ -6629,7 +6629,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReve
 
     if(!result)
     {
-        TC_LOG_ERROR("sql.sql",">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table,table);
+        TC_LOG_ERROR("sql.sql",">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table.c_str(), table.c_str());
         
         return;
     }
@@ -6648,7 +6648,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReve
 
         if(_questTemplates.find(quest) == _questTemplates.end())
         {
-            TC_LOG_ERROR("sql.sql","Table `%s: Quest %u listed for entry %u does not exist.",table,quest,id);
+            TC_LOG_ERROR("sql.sql","Table `%s: Quest %u listed for entry %u does not exist.",table.c_str(), quest,id);
             continue;
         }
 
@@ -6664,7 +6664,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReve
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading",">> Loaded %u quest relations from %s", count,table);
+    TC_LOG_INFO("server.loading",">> Loaded %u quest relations from %s",count, table.c_str());
 }
 
 void ObjectMgr::LoadGameobjectQuestStarters()
