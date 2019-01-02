@@ -1567,6 +1567,7 @@ void GameObject::Use(Unit* user)
     // by default spell caster is user
     Unit* spellCaster = user;
     uint32 spellId = 0;
+    bool triggered = false;
 
     if (Player* playerUser = user->ToPlayer())
     {
@@ -1684,8 +1685,10 @@ void GameObject::Use(Unit* user)
                 {
                     TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetSpawnId());
                     GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
-                   // EventInform(info->goober.eventId, user);
+                    EventInform(info->goober.eventId, user);
                 }
+
+                GetMap()->ScriptsStart(sGameObjectScripts, GetSpawnId(), player, this); //old gameobject_scripts
 
                 // possible quest objective for active quests
                 if (info->goober.questId && sObjectMgr->GetQuestTemplate(info->goober.questId))
@@ -1695,25 +1698,27 @@ void GameObject::Use(Unit* user)
                         break;
                 }
 
+                //TC has KillCreditGO, TODO
                 // possible quest objective for active quests
                 player->CastedCreatureOrGO(info->entry, GetGUID(), 0);
             }
 
-            if (info->GetAutoCloseTime())
-            {
-                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
-                SetLootState(GO_ACTIVATED, user);
-                if (!info->goober.customAnim)
-                    SetGoState(GO_STATE_ACTIVE);
-                else
-                    SendCustomAnim(GetGoAnimProgress());
-            }
+            if (uint32 trapEntry = info->goober.linkedTrapId)
+                TriggeringLinkedGameObject(trapEntry, user);
 
-            //sun: note that this overwrites the cooldown decided by info->GetCooldown() at the beginning of this func. Is this normal?
+            SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+            SetLootState(GO_ACTIVATED, user);
+
+            if (info->goober.customAnim)
+                SendCustomAnim(GetGoAnimProgress()); 
+            else
+                SetGoState(GO_STATE_ACTIVE);
+
             m_cooldownTime = GetMap()->GetGameTimeMS() + info->GetAutoCloseTime();
 
             // cast this spell later if provided
             spellId = info->goober.spellId;
+            spellCaster = nullptr;
 
             break;
         }
@@ -1734,7 +1739,7 @@ void GameObject::Use(Unit* user)
             if (info->camera.eventID)
             {
                 GetMap()->ScriptsStart(sEventScripts, info->camera.eventID, player, this);
-                EventInform(info->camera.eventID/*, user*/);
+                EventInform(info->camera.eventID, user);
             }
 
             if (GetEntry() == 187578)
@@ -1846,30 +1851,41 @@ void GameObject::Use(Unit* user)
 
             AddUniqueUse(player);
 
+            if (info->summoningRitual.animSpell)
+            {
+                player->CastSpell(player, info->summoningRitual.animSpell, true);
+
+                // for this case, summoningRitual.spellId is always triggered
+                triggered = true;
+            }
+
             // full amount unique participants including original summoner
-            if(GetUniqueUseCount() < info->summoningRitual.reqParticipants)
+            if (GetUniqueUseCount() == info->summoningRitual.reqParticipants)
+            {
+
+                // in case summoning ritual caster is GO creator
+                spellCaster = caster;
+
+                if (!caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+                    return;
+
+                spellId = info->summoningRitual.spellId;
+
+                /*if (spellId == 18541) { // Doom guard
+                    if (Group* group = caster->ToPlayer()->GetGroup()) {
+                        if (Player* plrTarget = group->GetRandomMember())
+                            caster->CastSpell(plrTarget, 20625, TRIGGERED_FULL_MASK);
+                    }
+                }*/
+
+                // finish spell
+                caster->FinishSpell(CURRENT_CHANNELED_SPELL);
+
+                // can be deleted now
+                //if (!info->summoningRitual.ritualPersistent)
+                 SetLootState(GO_JUST_DEACTIVATED);
+            } else
                 return;
-
-            // in case summoning ritual caster is GO creator
-            spellCaster = caster;
-
-            if(!caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-                return;
-
-            spellId = info->summoningRitual.spellId;
-            
-            /*if (spellId == 18541) { // Doom guard
-                if (Group* group = caster->ToPlayer()->GetGroup()) {
-                    if (Player* plrTarget = group->GetRandomMember())
-                        caster->CastSpell(plrTarget, 20625, TRIGGERED_FULL_MASK);
-                }
-            }*/
-
-            // finish spell
-            caster->FinishSpell(CURRENT_CHANNELED_SPELL);
-
-            // can be deleted now
-            SetLootState(GO_JUST_DEACTIVATED);
 
             // go to end function to spell casting
             break;
@@ -2023,13 +2039,10 @@ void GameObject::Use(Unit* user)
         return;
     }
 
-    auto spell = new Spell(spellCaster, spellInfo, TRIGGERED_NONE);
-
-    // spell target is user of GO
-    SpellCastTargets targets;
-    targets.SetUnitTarget(user);
-
-    spell->prepare(targets);
+    if (spellCaster)
+        spellCaster->CastSpell(user, spellId, triggered);
+    else
+        CastSpell(user, spellId);
 }
 
 /*
@@ -2088,7 +2101,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, TriggerCastFlags trig
 }
 */
 
-void GameObject::EventInform(uint32 eventId)
+void GameObject::EventInform(uint32 eventId, WorldObject* invoker /*= nullptr*/)
 {
     if (!eventId)
         return;
@@ -2098,6 +2111,12 @@ void GameObject::EventInform(uint32 eventId)
 
     if (m_zoneScript)
         m_zoneScript->ProcessEvent(this, eventId);
+
+    /*TC
+    if (BattlegroundMap* bgMap = GetMap()->ToBattlegroundMap())
+        if (bgMap->GetBG())
+            bgMap->GetBG()->ProcessEvent(this, eventId, invoker);
+    */
 }
 
 uint32 GameObject::GetScriptId() const

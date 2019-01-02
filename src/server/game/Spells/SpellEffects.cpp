@@ -3512,6 +3512,12 @@ void Spell::SendLoot(ObjectGuid guid, LootType loottype)
                 player->GetName().c_str(), player->GetGUID().GetCounter(), gameObjTarget->GetEntry(), gameObjTarget->GetGUID().GetCounter());
             return;
         }
+        // special case, already has GossipHello inside so return and avoid calling twice
+        if (gameObjTarget->GetGoType() == GAMEOBJECT_TYPE_GOOBER)
+        {
+            gameObjTarget->Use(player);
+            return;
+        }
 
         player->PlayerTalkClass->ClearMenus();
         if (gameObjTarget->AI()->GossipHello(player))
@@ -3534,34 +3540,6 @@ void Spell::SendLoot(ObjectGuid guid, LootType loottype)
                 // triggering linked GO
                 if(uint32 trapEntry = gameObjTarget->GetGOInfo()->spellFocus.linkedTrapId)
                     gameObjTarget->TriggeringLinkedGameObject(trapEntry, player);
-                return;
-
-            case GAMEOBJECT_TYPE_GOOBER:
-                // goober_scripts can be triggered if the player don't have the quest
-                if (gameObjTarget->GetGOInfo()->goober.eventId)
-                    gameObjTarget->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
-
-                // cast goober spell
-                if (gameObjTarget->GetGOInfo()->goober.questId)
-                    ///Quest require to be active for GO using
-                    if(player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
-                        return;
-
-                gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
-
-                gameObjTarget->AddUniqueUse(player);
-                gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
-
-                //TODO? Objective counting called without spell check but with quest objective check
-                // if send spell id then this line will duplicate to spell casting call (double counting)
-                // So we or have this line and not required in quest_template have reqSpellIdN
-                // or must remove this line and required in DB have data in quest_template have reqSpellIdN for all quest using cases.
-                player->CastedCreatureOrGO(gameObjTarget->GetEntry(), gameObjTarget->GetGUID(), 0);
-
-                // triggering linked GO
-                if(uint32 trapEntry = gameObjTarget->GetGOInfo()->goober.linkedTrapId)
-                    gameObjTarget->TriggeringLinkedGameObject(trapEntry, player);
-
                 return;
 
             case GAMEOBJECT_TYPE_CHEST:

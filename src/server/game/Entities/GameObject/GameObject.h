@@ -707,11 +707,11 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void UpdateModelPosition();
 
-        void EventInform(uint32 eventId);
+        void EventInform(uint32 eventId, WorldObject* invoker = nullptr);
 
         // There's many places not ready for dynamic spawns. This allows them to live on for now.
         void SetRespawnCompatibilityMode(bool mode = true) { m_respawnCompatibilityMode = mode; }
-        bool GetRespawnCompatibilityMode() { return m_respawnCompatibilityMode; }
+        bool GetRespawnCompatibilityMode() const { return m_respawnCompatibilityMode; }
 
         uint32 GetScriptId() const;
         GameObjectAI* AI() const { return m_AI; }
