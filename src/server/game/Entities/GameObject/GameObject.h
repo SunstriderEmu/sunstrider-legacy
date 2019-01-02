@@ -95,7 +95,7 @@ struct TC_GAME_API GameObjectTemplate
             uint32 serverOnly;                              //2
             uint32 large;                                   //3
             uint32 floatOnWater;                            //4
-            uint32 questID;                                 //5
+            int32 questID;                                  //5
         } _generic;
         //6 GAMEOBJECT_TYPE_TRAP
         struct
@@ -144,7 +144,7 @@ struct TC_GAME_API GameObjectTemplate
         struct
         {
             uint32 lockId;                                  //0 -> Lock.dbc
-            uint32 questId;                                 //1
+            int32 questId;                                  //1
             uint32 eventId;                                 //2
             uint32 autoCloseTime;                           //3
             uint32 customAnim;                              //4
@@ -385,6 +385,7 @@ struct TC_GAME_API GameObjectTemplate
 
     std::string AIName;
     uint32 ScriptId;
+    uint32 patch;
     WorldPacket QueryData[TOTAL_LOCALES];
 };
 

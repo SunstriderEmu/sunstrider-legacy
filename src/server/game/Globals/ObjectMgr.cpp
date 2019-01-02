@@ -6094,10 +6094,10 @@ void ObjectMgr::LoadGameObjectTemplate()
 
     //                                                 0      1      2        3          4            5       6      7      8    9      10     11     12            14             16            18              20 
     QueryResult result = WorldDatabase.PQuery("SELECT entry, type, displayId, name, castBarCaption, faction, flags, size, data0, data1, data2, data3, data4, data5, data6, data7, data8, data9, data10, data11, data12, "
-    //                                          21               23             25              27                      30              32        33
-                                             "data13, data14, data15, data16, data17, data18, data19, data20, data21, data22, data23, AIName, ScriptName "
+    //                                          21               23             25              27                      30              32        33       34
+                                             "data13, data14, data15, data16, data17, data18, data19, data20, data21, data22, data23, AIName, ScriptName, patch "
     //
-                                             "FROM gameobject_template t1 WHERE patch = (SELECT max(patch) FROM gameobject_template t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
+                                             "FROM gameobject_template t1 WHERE patch = (SELECT max(patch) FROM gameobject_template t2 WHERE t1.entry = t2.entry AND patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -6130,6 +6130,7 @@ void ObjectMgr::LoadGameObjectTemplate()
 
         got.AIName = fields[32].GetString();
         got.ScriptId = GetScriptId(fields[33].GetCString());
+        got.patch = fields[34].GetUInt8();
 
         // Checks
         if (!got.AIName.empty() && !sGameObjectAIRegistry->HasItem(got.AIName))
@@ -6955,7 +6956,7 @@ void ObjectMgr::LoadGameObjectForQuests()
             }
             case GAMEOBJECT_TYPE_GOOBER:
             {
-                if(itr.second.goober.questId)                  //quests objects
+                if(itr.second.goober.questId > 0)                  //quests objects
                 {
                     _gameObjectForQuestStore.insert(itr.second.entry);
                     count++;

@@ -47,7 +47,7 @@ void TransportMgr::LoadTransportTemplates()
 {
     uint32 oldMSTime = GetMSTime();
     
-    QueryResult result = WorldDatabase.Query("SELECT entry FROM gameobject_template WHERE type = 15 ORDER BY entry ASC");
+    QueryResult result = WorldDatabase.PQuery("SELECT entry FROM gameobject_template t1 WHERE type = 15 AND patch = (SELECT max(patch) FROM gameobject_template t2 WHERE t1.entry = t2.entry && patch <= %u) ORDER BY entry ASC", sWorld->GetWowPatch());
 
     if (!result)
     {
@@ -112,10 +112,15 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     uint32 pathId = goInfo->moTransport.taxiPathId;
     if(!pathId)
     {
-        TC_LOG_ERROR("sql.sql","Gameobject %u is marked as transport but has no pathId",goInfo->entry);
+        TC_LOG_ERROR("sql.sql","Gameobject %u is marked as transport but has no pathId", goInfo->entry);
         return;
     }
     TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathId];
+    if (path.empty())
+    {
+        TC_LOG_ERROR("sql.sql", "Transport %u has unknown pathId %u", goInfo->entry, pathId);
+        return;
+    }
     std::vector<KeyFrame>& keyFrames = transport->keyFrames;
     Movement::PointsArray splinePath, allPoints;
     bool mapChange = false;
