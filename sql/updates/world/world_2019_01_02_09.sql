@@ -1,0 +1,1 @@
+UPDATE gameobject_template SET displayId = 39 WHERE NAME LIKE "Dummy TLK%";
