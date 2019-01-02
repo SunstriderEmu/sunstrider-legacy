@@ -1039,7 +1039,7 @@ void GameEventMgr::SpawnCreature(uint32 spawnId)
 {
     // Add to correct cell
     CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
-    if (data && sObjectMgr->AddCreatureToGrid(spawnId, data))
+    if (data && data->IsPatchEnabled() && sObjectMgr->AddCreatureToGrid(spawnId, data))
     {
         // Spawn if necessary (loaded grids only)
         Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->spawnPoint.GetMapId()));
@@ -1061,7 +1061,7 @@ void GameEventMgr::SpawnGameObject(uint32 spawnId)
 {
     // Add to correct cell
     GameObjectData const* data = sObjectMgr->GetGameObjectData(spawnId);
-    if (data && sObjectMgr->AddGameobjectToGrid(spawnId, data))
+    if (data && data->IsPatchEnabled() && sObjectMgr->AddGameobjectToGrid(spawnId, data))
     {
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed

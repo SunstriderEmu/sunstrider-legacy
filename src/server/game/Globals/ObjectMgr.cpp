@@ -1185,9 +1185,8 @@ void ObjectMgr::LoadCreatures()
         CreatureTemplate const* cInfo = GetCreatureTemplate(templateId);
         if (!cInfo)
         {
-            /*disabled, we have tlk creatures in here
             TC_LOG_ERROR("sql.sql", "Table `creature_entry` has creature (SpawnId: %u) with not existing creature entry %u, skipped.", spawnId, templateId);
-            continue;*/
+            continue;
         }
 
         // -1 random, 0 no equipment,
@@ -1392,28 +1391,12 @@ void ObjectMgr::LoadGameObjects()
         Field *fields = result->Fetch();
 
         ObjectGuid::LowType guid         = fields[0].GetUInt32();
-        uint32 entry        = fields[1].GetUInt32();
-
-        uint8 patch_min = fields[18].GetInt8();
-        uint8 patch_max = fields[19].GetInt8();
-        bool existsInPatch = true;
-
-        if ((patch_min > patch_max) || (patch_max > WOW_PATCH_MAX))
-        {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` GUID %u (entry %u) has invalid values patch_min=%u, patch_max=%u.", guid, entry, patch_min, patch_max);
-            patch_min = WOW_PATCH_MIN;
-            patch_max = WOW_PATCH_MAX;
-        }
-
-        if (!((sWorld->GetWowPatch() >= patch_min) && (sWorld->GetWowPatch() <= patch_max)))
-            existsInPatch = false;
+        uint32 entry                     = fields[1].GetUInt32();
 
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
         if (!gInfo)
         {
-            if (existsInPatch) // don't print error when it is not loaded for the current patch
-                TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
-
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
             continue;
         }
 
@@ -1440,12 +1423,6 @@ void ObjectMgr::LoadGameObjects()
 
         data.id             = entry;
         uint32 mapId = fields[2].GetUInt16();
-        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
-        if (!mapEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.spawnPoint.GetMapId());
-            continue;
-        }
         data.spawnPoint.WorldRelocate(mapId, fields[3].GetFloat(), fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat());
         data.rotation       = G3D::Quat(fields[ 7].GetFloat(), fields[ 8].GetFloat(), fields[ 9].GetFloat(), fields[10].GetFloat());
         data.spawntimesecs  = fields[11].GetInt32();
@@ -1453,14 +1430,32 @@ void ObjectMgr::LoadGameObjects()
         data.go_state       = fields[13].GetUInt8();
         data.ArtKit         = 0;
         data.spawnMask      = fields[14].GetUInt8();
-        int16 gameEvent     = fields[15].GetInt16();
+        int16 const gameEvent     = fields[15].GetInt16();
         data.ScriptId = GetScriptId(fields[16].GetString());
+        uint32 PoolId = fields[17].GetUInt32();
+        data.patch_min = fields[18].GetInt8();
+        data.patch_max = fields[19].GetInt8();
+
+        if ((data.patch_min > data.patch_max) || (data.patch_max > WOW_PATCH_MAX))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` spawnId %u has invalid values patch_min=%u, patch_max=%u.", guid, data.patch_min, data.patch_max);
+            data.patch_min = WOW_PATCH_MIN;
+            data.patch_max = WOW_PATCH_MAX;
+        }
+
+        MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+        if (!mapEntry)
+        {
+            if (data.IsPatchEnabled())
+                TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) spawned on non existent map %u.", guid, data.id, mapId);
+            //continue;
+        }
+
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
-        if (mapEntry->Instanceable())
+        if (mapEntry && mapEntry->Instanceable())
             data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
         else
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
-        uint32 PoolId = fields[17].GetUInt32();
 
         if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
         {
@@ -1511,7 +1506,7 @@ void ObjectMgr::LoadGameObjects()
         }
 #endif
 
-        if (gameEvent == 0 && PoolId == 0 && existsInPatch)                      // if not this is to be managed by GameEvent System, Pool system or Wow Patch
+        if (gameEvent == 0 && PoolId == 0 && data.IsPatchEnabled())                      // if not this is to be managed by GameEvent System, Pool system or Wow Patch
             AddGameobjectToGrid(guid, &data);
         ++count;
 

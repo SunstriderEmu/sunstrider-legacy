@@ -10,7 +10,6 @@
 #include "Duration.h"
 #include "Loot.h"
 #include "WorldPacket.h"
-#include "World.h"
 
 #include <list>
 #include <string>
@@ -416,10 +415,6 @@ struct CreatureData : public SpawnData
     uint8 movementType = 0;
     uint32 poolId = 0; //old windrunner link system
     uint32 unit_flags = 0;
-
-    uint32 patch_min = WOW_PATCH_MIN;
-    uint32 patch_max = WOW_PATCH_MAX;
-    inline bool IsPatchEnabled() const { return sWorld->GetWowPatch() >= patch_min && sWorld->GetWowPatch() <= patch_max; }
 };
 
 // from `creature_addon` table

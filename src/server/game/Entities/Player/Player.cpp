@@ -14580,14 +14580,14 @@ void Player::CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id 
         isCreature = true;
 
     uint32 addCastCount = 1;
-    for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
+    for (int i = 0; i < MAX_QUEST_LOG_SIZE; i++)
     {
         uint32 questid = GetQuestSlotQuestId(i);
         if(!questid)
             continue;
 
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
-        if ( !qInfo  )
+        if (!qInfo)
             continue;
 
         QuestStatusData& q_status = m_QuestStatus[questid];
@@ -14620,12 +14620,12 @@ void Player::CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id 
                     }
 
                     // other not this creature/GO related objectives
-                    if( reqTarget != entry )
+                    if (reqTarget != entry)
                         continue;
 
                     uint32 reqCastCount = qInfo->RequiredNpcOrGoCount[j];
                     uint32 curCastCount = q_status.CreatureOrGOCount[j];
-                    if ( curCastCount < reqCastCount )
+                    if (curCastCount < reqCastCount)
                     {
                         q_status.CreatureOrGOCount[j] = curCastCount + addCastCount;
                         m_QuestStatusSave[questid] = QUEST_DEFAULT_SAVE_TYPE;
@@ -14633,8 +14633,8 @@ void Player::CastedCreatureOrGO( uint32 entry, ObjectGuid guid, uint32 spell_id 
                         SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curCastCount, addCastCount);
                     }
 
-                    if ( CanCompleteQuest( questid ) )
-                        CompleteQuest( questid );
+                    if (CanCompleteQuest(questid))
+                        CompleteQuest(questid);
 
                     // same objective target can be in many active quests, but not in 2 objectives for single quest (code optimization).
                     break;

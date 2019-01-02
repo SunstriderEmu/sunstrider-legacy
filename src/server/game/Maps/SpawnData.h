@@ -3,6 +3,7 @@
 #define TRINITY_SPAWNDATA_H
 
 #include "Position.h"
+#include "World.h"
 
 enum SpawnObjectType
 {
@@ -51,6 +52,10 @@ struct SpawnData
     SpawnGroupTemplateData const* spawnGroupData = nullptr;
     uint32 scriptId = 0;
     bool dbData = true;
+
+    uint32 patch_min = WOW_PATCH_MIN;
+    uint32 patch_max = WOW_PATCH_MAX;
+    inline bool IsPatchEnabled() const { return sWorld->GetWowPatch() >= patch_min && sWorld->GetWowPatch() <= patch_max; }
 
     protected:
     SpawnData(SpawnObjectType t) : type(t) {}

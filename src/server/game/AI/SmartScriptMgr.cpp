@@ -94,6 +94,8 @@ void SmartAIMgr::LoadSmartAIFromDB()
         i.clear();  //Drop Existing SmartAI List
 
     PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMART_SCRIPTS);
+    stmt->setUInt32(0, sWorld->GetWowPatch());
+    stmt->setUInt32(1, sWorld->GetWowPatch());
     PreparedQueryResult result = WorldDatabase.Query(stmt);
 
     if (!result)
