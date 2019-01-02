@@ -1393,32 +1393,6 @@ void ObjectMgr::LoadGameObjects()
         ObjectGuid::LowType guid         = fields[0].GetUInt32();
         uint32 entry                     = fields[1].GetUInt32();
 
-        GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
-        if (!gInfo)
-        {
-            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
-            continue;
-        }
-
-        if (!gInfo->displayId)
-        {
-            switch (gInfo->type)
-            {
-            case GAMEOBJECT_TYPE_TRAP:
-            case GAMEOBJECT_TYPE_SPELL_FOCUS:
-                break;
-            default:
-                TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
-                break;
-            }
-        }
-
-        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
-        {
-            TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
-            continue;
-        }
-
         GameObjectData& data = _gameObjectDataStore[guid];
 
         data.id             = entry;
@@ -1451,13 +1425,39 @@ void ObjectMgr::LoadGameObjects()
             //continue;
         }
 
+        GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
+        if (data.IsPatchEnabled() && !gInfo)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (SpawnId: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+            continue;
+        }
+
+        if (gInfo && !gInfo->displayId)
+        {
+            switch (gInfo->type)
+            {
+            case GAMEOBJECT_TYPE_TRAP:
+            case GAMEOBJECT_TYPE_SPELL_FOCUS:
+                break;
+            default:
+                TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) doesn't have a displayId (%u), skip.", guid, entry, gInfo->type, gInfo->displayId);
+                break;
+            }
+        }
+
+        if (gInfo && gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+        {
+            TC_LOG_ERROR("sql.sql", "Gameobject (SpawnId: %u Entry %u GoType: %u) has an invalid displayId (%u), skip.", guid, entry, gInfo->type, gInfo->displayId);
+            continue;
+        }
+
         //sun: use legacy group by default for instances, else it would break a lot of existing scripts. This will be overriden by any entry in spawn_group table.
         if (mapEntry && mapEntry->Instanceable())
             data.spawnGroupData = &_spawnGroupDataStore[1]; //Legacy group
         else
             data.spawnGroupData = &_spawnGroupDataStore[0]; //Default group
 
-        if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
+        if (gInfo && data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
         {
             TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (SpawnId: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobject is marked as despawnable at action.", guid, data.id);
         }
