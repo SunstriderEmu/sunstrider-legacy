@@ -8019,7 +8019,7 @@ bool Unit::ApplyDiminishingToDuration(SpellInfo const* auraSpellInfo, bool trigg
         return true;
 
     //Hack to avoid incorrect diminishing on mind control
-    if (group == DIMINISHING_CHARM && caster == this)
+    if (group == DIMINISHING_MIND_CONTROL && caster == this)
         return true;
 
     int32 const limitDuration = auraSpellInfo->GetDiminishingReturnsLimitDuration(triggered);

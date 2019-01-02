@@ -2499,26 +2499,26 @@ enum DiminishingGroup : uint32
 {
     // Common Groups
     DIMINISHING_NONE                                  = 0,
-    DIMINISHING_CONTROLLED_STUN,                            // Player Controlled stuns
-    DIMINISHING_TRIGGER_STUN,                               // By aura proced stuns, usualy chance on hit talents
+    DIMINISHING_CONTROLLED_STUN,                          // Player Controlled stuns
+    DIMINISHING_STUN,                                     // By aura proced stuns, usualy chance on hit talents
     DIMINISHING_SLEEP,
-    DIMINISHING_CONTROLLED_ROOT,                            // Immobilizing effects from casted spells
-    DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
-    DIMINISHING_FEAR,                                       // Non-warlock fears
-    DIMINISHING_CHARM,
-    // Mage Specific
-    DIMINISHING_POLYMORPH,
-    // Rogue Specific
-    DIMINISHING_KIDNEYSHOT,                                 // Kidney Shot is not diminished with Cheap Shot
+    DIMINISHING_CONTROLLED_ROOT,                          // Immobilizing effects from casted spells
+    DIMINISHING_ROOT,                                     // Immobilizing effects from triggered spells like Frostbite
+    DIMINISHING_FEAR,                                     // Non-warlock fears
+    DIMINISHING_MIND_CONTROL,
     // Warlock Specific
-    DIMINISHING_DEATHCOIL,                                  // Death Coil Diminish only with another Death Coil
-    DIMINISHING_WARLOCK_FEAR,                               // Also with Sedduction
+    DIMINISHING_HORROR,                                   // Death Coil Diminish only with another Death Coil
     // Shared Class Specific
-    DIMINISHING_BLIND_CYCLONE,                              // From 2.3.0
-    DIMINISHING_DISARM,                                     // From 2.3.0
-    DIMINISHING_SILENCE,                                    // From 2.3.0
-    DIMINISHING_FREEZE,                                     // Hunter's Freezing Trap
-    DIMINISHING_KNOCKOUT,                                   // Also with Sap, all Knockout mechanics are here
+#ifdef LICH_KING
+    DIMINISHING_CYCLONE,
+    DIMINISHING_OPENING_STUN,                             // Cheap Shot and Pounce
+#else
+    DIMINISHING_BLIND_CYCLONE,                            // From 2.3.0
+    DIMINISHING_KIDNEY_SHOT,
+#endif
+    DIMINISHING_DISARM,                                   // From 2.3.0
+    DIMINISHING_SILENCE,                                  // From 2.3.0
+    DIMINISHING_DISORIENT,                                // Also with Sap, all Knockout mechanics are here
     DIMINISHING_BANISH,
     // Other
     // Don't Diminish, but limit duration to 10s

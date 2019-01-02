@@ -2139,7 +2139,7 @@ void AuraEffect::PeriodicDummyTick(AuraApplication* aurApp, Unit* caster, uint32
     SpellInfo const* spell = GetSpellInfo();
     switch (spell->Id)
     {
-        // Drink
+    // Drink
     case 430:
     case 431:
     case 432:
