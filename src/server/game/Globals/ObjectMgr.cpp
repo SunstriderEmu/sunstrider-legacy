@@ -6954,6 +6954,13 @@ void ObjectMgr::LoadGameObjectForQuests()
                 }
                 break;
             }
+            case GAMEOBJECT_TYPE_GENERIC:
+            {
+                if (itr.second._generic.questID > 0)            //quests objects
+                    break;
+
+                continue;
+            }
             case GAMEOBJECT_TYPE_GOOBER:
             {
                 if(itr.second.goober.questId > 0)                  //quests objects
