@@ -7,7 +7,7 @@ JOIN trinityworld.creature_template tc ON tc.entry = c.entry
 WHERE c.entry NOT IN (SELECT entry FROM world_2018_10_26.creature_entry)
 AND ct.modelid1 != tc.modelid1 OR ct.modelid2 != tc.modelid2 OR ct.modelid3 != tc.modelid3 OR ct.modelid4 != tc.modelid4
 GROUP BY c.entry
-*/
+*/ 
 UPDATE creature_template SET modelid1 = 308, modelid2 = 2444, modelid3 = NULL, modelid4 = NULL WHERE entry = 598;
 UPDATE creature_template SET modelid1 = 328, modelid2 = 4626, modelid3 = NULL, modelid4 = NULL WHERE entry = 721;
 UPDATE creature_template SET modelid1 = 2441, modelid2 = 556, modelid3 = NULL, modelid4 = NULL WHERE entry = 824;

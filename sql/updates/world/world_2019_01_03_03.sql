@@ -1,5 +1,5 @@
 -- Restore old sunstrider flags
- 
+  
 UPDATE creature_template SET flags_extra = 130 WHERE entry = 1;
 UPDATE creature_template SET flags_extra = 2 WHERE entry = 4;
 UPDATE creature_template SET flags_extra = 2 WHERE entry = 5;
@@ -8257,5 +8257,5 @@ UPDATE creature_template SET flags_extra = 2 WHERE entry = 91456;
 UPDATE creature_template SET flags_extra = 130 WHERE entry = 91535;
 UPDATE creature_template SET flags_extra = 2 WHERE entry = 91542;
 UPDATE creature_template SET flags_extra = 2 WHERE entry = 126310;
-UPDATE creature_template SET flags_extra = 2 WHERE entry = 126311;
+UPDATE creature_template SET flags_extra = 2 WHERE entry = 126311; 
 UPDATE creature_template SET flags_extra = 130 WHERE entry = 126837;

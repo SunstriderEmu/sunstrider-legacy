@@ -8,7 +8,7 @@ JOIN trinityworld.creature_template tc ON tc.entry = c.entry
 WHERE c.entry NOT IN (SELECT entry FROM world_2018_10_26.creature_entry)
 GROUP BY c.entry
 */
-
+ 
 UPDATE creature_template SET unit_flags = 0x0, minlevel = 10, maxlevel = 11, faction = 189, npcflag = 0x0, flags_extra = flags_extra | 0x0 WHERE entry = 119;
 UPDATE creature_template SET unit_flags = 0x0, minlevel = 10, maxlevel = 10, faction = 35, npcflag = 0x0, flags_extra = flags_extra | 0x2 WHERE entry = 358;
 UPDATE creature_template SET unit_flags = 0x0, minlevel = 18, maxlevel = 19, faction = 17, npcflag = 0x0, flags_extra = flags_extra | 0x0 WHERE entry = 450;
