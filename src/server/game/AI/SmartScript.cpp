@@ -1735,34 +1735,30 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!IsSmart())
                 break;
 
-            WorldObject* target = nullptr;
-
-            /*if (e.GetTargetType() == SMART_TARGET_CREATURE_RANGE || e.GetTargetType() == SMART_TARGET_CREATURE_GUID ||
-                e.GetTargetType() == SMART_TARGET_CREATURE_DISTANCE || e.GetTargetType() == SMART_TARGET_GAMEOBJECT_RANGE ||
-                e.GetTargetType() == SMART_TARGET_GAMEOBJECT_GUID || e.GetTargetType() == SMART_TARGET_GAMEOBJECT_DISTANCE ||
-                e.GetTargetType() == SMART_TARGET_CLOSEST_CREATURE || e.GetTargetType() == SMART_TARGET_CLOSEST_GAMEOBJECT ||
-                e.GetTargetType() == SMART_TARGET_OWNER_OR_SUMMONER || e.GetTargetType() == SMART_TARGET_ACTION_INVOKER ||
-                e.GetTargetType() == SMART_TARGET_CLOSEST_ENEMY || e.GetTargetType() == SMART_TARGET_CLOSEST_FRIENDLY)*/
+            if (e.GetTargetType() == SMART_TARGET_POSITION)
             {
-                // we want to move to random element
-                if (!targets.empty())
-                    target = Trinity::Containers::SelectRandomContainerElement(targets);
-            }
-
-            if (!target)
-            {                
                 G3D::Vector3 dest(e.target.x, e.target.y, e.target.z);
                 if (e.action.MoveToPos.transport)
                     if (TransportBase* trans = me->GetTransport())
                         trans->CalculatePassengerPosition(dest.x, dest.y, dest.z);
 
                 me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.action.MoveToPos.disablePathfinding == 0);
+                break;
             }
-            else {
+
+            WorldObject* target = nullptr;
+
+            // we want to move to random element
+            if (!targets.empty())
+                target = Trinity::Containers::SelectRandomContainerElement(targets);
+
+            if (target)
+            {
                 float x, y, z;
                 target->GetPosition(x, y, z);
                 if (e.action.MoveToPos.ContactDistance > 0)
                     target->GetContactPoint(me, x, y, z, e.action.MoveToPos.ContactDistance);
+
                 me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, x + e.target.x, y + e.target.y, z + e.target.z, e.action.MoveToPos.disablePathfinding == 0);
             }
             break;
