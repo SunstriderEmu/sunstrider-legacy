@@ -986,7 +986,7 @@ void ObjectMgr::LoadCreatureModelInfo()
 
     uint32 oldMSTime = GetMSTime();
 
-    QueryResult result = WorldDatabase.Query("SELECT modelid, bounding_radius, combat_reach, gender, modelid_other_gender FROM creature_model_info");
+    QueryResult result = WorldDatabase.PQuery("SELECT modelid, bounding_radius, combat_reach, gender, modelid_other_gender, MAX(patch) FROM creature_model_info WHERE patch <= %u GROUP BY modelid",  sWorld->GetWowPatch());
 
     if (!result)
     {
