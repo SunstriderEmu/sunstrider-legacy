@@ -822,16 +822,15 @@ void Group::Disband(bool hideDestroy)
             group->SendUpdate();
         else
         {
-#ifndef LICH_KING
-            data.Initialize(SMSG_GROUP_LIST, 24);
-            data << uint64(m_guid) << uint64(0) << uint64(0); //not sure about m_guid
-            player->SendDirectMessage(&data);
-#else
+#ifdef LICH_KING
             data.Initialize(SMSG_GROUP_LIST, 1 + 1 + 1 + 1 + 8 + 4 + 4 + 8);
             data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
             data << uint64(m_guid) << uint32(m_counter) << uint32(0) << uint64(0);
-            player->SendDirectMessage(&data);
+#else
+            data.Initialize(SMSG_GROUP_LIST, 24);
+            data << uint64(0) << uint64(0) << uint64(0); //not sure about m_guid
 #endif
+            player->SendDirectMessage(&data);
         }
 
         _homebindIfInstance(player);

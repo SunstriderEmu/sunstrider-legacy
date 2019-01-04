@@ -66,7 +66,7 @@ DELETE FROM smart_scripts WHERE entryorguid = @ENTRY AND source_type = 0;
 INSERT IGNORE INTO smart_scripts (entryorguid, source_type, id, link, event_type, event_phase_mask, event_chance, event_flags, event_param1, event_param2, event_param3, event_param4, action_type, action_param1, action_param2, action_param3, action_param4, action_param5, action_param6, target_type, target_flags, target_param1, target_param2, target_param3, target_x, target_y, target_z, target_o, comment) VALUES 
 (@ENTRY, 0, 0, 1, 0, 0, 100, 0, 4000, 4000, 10000, 10000, 11, 35204, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 'Daggerfen Assassin - In Combat - Cast "<a href="http://wowhead.com/spell=35204">Toxic Fumes</a>" '),
 (@ENTRY, 0, 1, 0, 61, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Daggerfen Assassin - In Combat - Say Line 0 '),
-(@ENTRY, 0, 2, 0, 25, 0, 100, 0, 0, 0, 0, 0, 11, 22766, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Daggerfen Assassin - On Reset - Cast "<a href="http://wowhead.com/spell=22766">Sneak</a>" ')
+(@ENTRY, 0, 2, 0, 25, 0, 100, 0, 0, 0, 0, 0, 11, 22766, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Daggerfen Assassin - On Reset - Cast "<a href="http://wowhead.com/spell=22766">Sneak</a>" ');
 DELETE FROM creature_text WHERE CreatureID = @ENTRY;
 INSERT IGNORE INTO creature_text (CreatureID, groupid, id, text, type, language, probability, emote, sound, comment) VALUES 
 (@ENTRY, 0, 0, "%s crushes a vial of green gas.", 16, 0, 100, 0, 0, "Daggerfen Assassin - ");
@@ -88,5 +88,5 @@ INSERT IGNORE INTO smart_scripts (entryorguid, source_type, id, link, event_type
 (@ENTRY, 0, 0, 0, 0, 0, 100, 1, 7500, 15000, 0, 0, 11, 35207, 0, 0, 0, 0, 0, 10, 1, 68586, 19174, 0, 0, 0, 0, 0, 'Daggerfen Servant - In Combat - Cast "<a href="http://wowhead.com/spell=35207">Bandage</a>" (No Repeat)');
 
 REPLACE INTO gossip_menu_option (MenuID, OptionID, OptionIcon, OptionText, OptionBroadcastTextID, OptionType, OptionNpcFlag, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, BoxBroadcastTextID, patch_min, patch_max) VALUES
-('9236', '0', '1', 'Show me your wares, Maktu.', NULL, '3', '128', NULL, NULL, '0', '0', NULL, NULL, '0', '10'),
+('9236', '0', '1', 'Show me your wares, Maktu.', NULL, '3', '128', NULL, NULL, '0', '0', NULL, NULL, '0', '10');
 
