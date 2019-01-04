@@ -168,6 +168,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void QuestAccept(Player* player, Quest const* quest) override;
         void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void OnGameEvent(bool start, uint16 eventId) override;
+        void OnTargetDodged(Unit* target) override;
 
 
         void SetDespawnTime(uint32 t)

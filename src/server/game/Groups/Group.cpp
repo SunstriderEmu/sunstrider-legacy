@@ -828,7 +828,7 @@ void Group::Disband(bool hideDestroy)
             data << uint64(m_guid) << uint32(m_counter) << uint32(0) << uint64(0);
 #else
             data.Initialize(SMSG_GROUP_LIST, 24);
-            data << uint64(0) << uint64(0) << uint64(0); //not sure about m_guid
+            data << uint64(0) << uint64(0) << uint64(0);
 #endif
             player->SendDirectMessage(&data);
         }

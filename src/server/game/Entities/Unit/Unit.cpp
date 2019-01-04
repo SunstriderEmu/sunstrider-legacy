@@ -9518,7 +9518,7 @@ void Unit::UpdateReactives( uint32 p_time )
                         ModifyAuraState(AURA_STATE_CRIT, false);
                     break;
                 case REACTIVE_HUNTER_CRIT:
-                    if ( GetClass() == CLASS_HUNTER && HasAuraState(AURA_STATE_HUNTER_CRIT_STRIKE) )
+                    if (GetClass() == CLASS_HUNTER && HasAuraState(AURA_STATE_HUNTER_CRIT_STRIKE))
                         ModifyAuraState(AURA_STATE_HUNTER_CRIT_STRIKE, false);
                     break;
                 case REACTIVE_OVERPOWER:
@@ -14508,6 +14508,18 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
                 {
                     ToPlayer()->AddComboPoints(procTarget, 1);
                     StartReactiveTimer(REACTIVE_OVERPOWER);
+                }
+                if (hitMask & PROC_HIT_DODGE)
+                {
+                    if (GetTypeId() == TYPEID_PLAYER && GetClass() == CLASS_WARRIOR)
+                    {
+                        ToPlayer()->AddComboPoints(procTarget, 1);
+                        StartReactiveTimer(REACTIVE_OVERPOWER);
+                    }
+                    else if (GetTypeId() == TYPEID_UNIT)
+                    {
+                        ToCreature()->AI()->OnTargetDodged(procTarget);
+                    }
                 }
                 else if ((hitMask & PROC_HIT_CRITICAL))
                 {

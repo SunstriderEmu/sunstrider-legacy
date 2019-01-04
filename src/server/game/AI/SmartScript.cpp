@@ -3767,6 +3767,14 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, GetLastInvoker());
             break;
         }
+        case SMART_EVENT_ON_TARGET_DODGE:
+        {
+            if (!unit)
+                return;
+
+            ProcessAction(e, unit);
+            break;
+        }
         case SMART_EVENT_GAME_EVENT_START:
         case SMART_EVENT_GAME_EVENT_END:
         {
