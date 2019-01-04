@@ -7,6 +7,6 @@ VALUES ('7945', '1872752', '0', '10');
 -- Add gossip action to Timothy Daniels
 REPLACE INTO gossip_menu (MenuID, TextID, patch_min, patch_max)
 VALUES ('9239', '9239', '0', '10');
-REPLACE INTO gossip_menu_option (MenuID, OptionID, OptionIcon, OptionText, OptionBroadcastTextID, OptionType, OptionNpcFlag, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, BoxBroadcastTextID, patch_min, patch_max)
-VALUES ('9238', '0', '1', 'Let me browse your reagents and poison supplies.', NULL, '3', '128', '9239', NULL, '0', '0', NULL, NULL, '0', '10');
-VALUES ('9238', '1', '0', 'Specialist, eh? Just what kind of specialist are you, anyway?', NULL, '1', '1', '9239', NULL, '0', '0', NULL, NULL, '0', '10');
+REPLACE INTO gossip_menu_option (MenuID, OptionID, OptionIcon, OptionText, OptionBroadcastTextID, OptionType, OptionNpcFlag, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, BoxBroadcastTextID, patch_min, patch_max) VALUES
+('9238', '0', '1', 'Let me browse your reagents and poison supplies.', NULL, '3', '128', NULL, NULL, '0', '0', NULL, NULL, '0', '10'),
+('9238', '1', '0', 'Specialist, eh? Just what kind of specialist are you, anyway?', NULL, '1', '1', '9239', NULL, '0', '0', NULL, NULL, '0', '10');
