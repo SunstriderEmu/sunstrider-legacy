@@ -997,9 +997,6 @@ void ObjectMgr::LoadCreatureModelInfo()
     _creatureModelStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
-    // List of model FileDataIDs that the client treats as invisible stalker
-    uint32 trigggerCreatureModelFileID[5] = { 124640, 124641, 124642, 343863, 439302 };
-
     do
     {
         Field* fields = result->Fetch();
@@ -7329,7 +7326,7 @@ void ObjectMgr::LoadTrainers()
     _trainers.clear();
 
     std::unordered_map<int32, std::vector<Trainer::TrainerSpell>> spellsByTrainer;
-    if (QueryResult trainerSpellsResult = WorldDatabase.PQuery("SELECT TrainerId, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel FROM trainer_spell WHERE ((%u >= patch_min) && (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch()))
+    if (QueryResult trainerSpellsResult = WorldDatabase.PQuery("SELECT TrainerId, SpellId, MoneyCost, ReqSkillLine, ReqSkillRank, ReqAbility1, ReqAbility2, ReqAbility3, ReqLevel FROM trainer_spell WHERE ((%u >= patch_min) AND (%u <= patch_max))", sWorld->GetWowPatch(), sWorld->GetWowPatch()))
     {
         do
         {
