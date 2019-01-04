@@ -13613,6 +13613,8 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     if (quest->GetRewHonorableKills())
         RewardHonor(nullptr, 0, quest->CalculateHonorGain(GetQuestLevel(quest)));
 
+    RewardReputation(quest);
+
     // title reward
     if(quest->GetCharTitleId())
     {
@@ -13662,8 +13664,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     if (quest->GetQuestCompleteScript() != 0)
         GetMap()->ScriptsStart(sQuestEndScripts, quest->GetQuestCompleteScript(), questGiver, this);
-
-    RewardReputation(quest);
 
     // make full db save
     SaveToDB(false);
