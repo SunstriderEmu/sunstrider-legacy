@@ -2921,7 +2921,6 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 38637:                         // Nether Exhaustion (red)
         case 38638:                         // Nether Exhaustion (green)
         case 38639:                         // Nether Exhaustion (blue)
-        case 31589: // Mage Slow
             return false;
     }
 
@@ -3144,12 +3143,13 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
             break;
         case SPELL_AURA_MOD_ATTACKSPEED:            // some buffs have negative bp, check both target and bp
         case SPELL_AURA_MOD_MELEE_HASTE:
+        case SPELL_AURA_HASTE_RANGED:
         case SPELL_AURA_MOD_RESISTANCE_PCT:
         case SPELL_AURA_MOD_RATING:
         case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
-            if (!_isPositiveTarget(spellInfo, effIndex) && bp < 0)
+            if (!_isPositiveTarget(spellInfo, effIndex) || bp < 0)
                 return false;
             break;
         case SPELL_AURA_MOD_DAMAGE_TAKEN:           // dependent from basepoint sign (positive -> negative)

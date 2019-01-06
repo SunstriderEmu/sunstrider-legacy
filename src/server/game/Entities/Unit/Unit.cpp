@@ -10918,6 +10918,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
 {
+    //Sun: Don't use for creatures, they use bad creatures types (for ex: Fire totem for Ice totem 18975)
     switch (GetRace())
     {
 #ifdef LICH_KING

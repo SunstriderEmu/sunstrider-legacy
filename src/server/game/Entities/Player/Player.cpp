@@ -14365,16 +14365,16 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
 }
 
 //not used in Trinityd, function for external script library
-void Player::GroupEventHappens( uint32 questId, WorldObject const* pEventObject )
+void Player::GroupEventHappens(uint32 questId, WorldObject const* pEventObject)
 {
-    if( Group *pGroup = GetGroup() )
+    if (Group *pGroup = GetGroup())
     {
         for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player *pGroupGuy = itr->GetSource();
 
             // for any leave or dead (with not released body) group member at appropriate distance
-            if( pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse() )
+            if (pGroupGuy && pGroupGuy->IsAtGroupRewardDistance(pEventObject) && !pGroupGuy->GetCorpse())
                 pGroupGuy->AreaExploredOrEventHappens(questId);
         }
     }
@@ -14384,10 +14384,10 @@ void Player::GroupEventHappens( uint32 questId, WorldObject const* pEventObject 
 
 void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
 {
-    for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
+    for (int i = 0; i < MAX_QUEST_LOG_SIZE; i++)
     {
         uint32 questid = GetQuestSlotQuestId(i);
-        if ( questid == 0 )
+        if (questid == 0)
             continue;
 
         QuestStatusData& q_status = m_QuestStatus[questid];
@@ -14402,11 +14402,11 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
         for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; j++)
         {
             uint32 reqitem = qInfo->RequiredItemId[j];
-            if ( reqitem == entry )
+            if (reqitem == entry)
             {
                 uint32 reqitemcount = qInfo->RequiredItemCount[j];
                 uint32 curitemcount = q_status.ItemCount[j];
-                if ( curitemcount < reqitemcount )
+                if (curitemcount < reqitemcount)
                 {
                     uint32 additemcount = (curitemcount + count <= reqitemcount ? count : reqitemcount - curitemcount);
                     q_status.ItemCount[j] += additemcount;
