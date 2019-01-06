@@ -205,8 +205,9 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when a player completes a quest and is rewarded, opt is the selected item's index or 0
         virtual void QuestReward(Player* /*player*/, Quest const* /*quest*/, uint32 /*opt*/) { }
 
-        // (sun) Called when target dodged a melee hit
-        virtual void OnTargetDodged(Unit* target) { }
+        // (sun) Called when a target was hit in melee.
+        // hitMask: ProcFlagsHit
+        virtual void OnMeleeProcHit(Unit* target, uint32 hitMask) { }
 
         /// == Waypoints system =============================
 

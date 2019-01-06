@@ -14451,6 +14451,9 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
     // For melee/ranged based attack need update skills and set some Aura states if victim present
     if (typeMask & MELEE_BASED_TRIGGER_MASK && procTarget)
     {
+        if (GetTypeId() == TYPEID_UNIT)
+            ToCreature()->AI()->OnMeleeProcHit(procTarget, hitMask);
+
         // Update skills here for players
         if (GetTypeId() == TYPEID_PLAYER)
         {
@@ -14516,10 +14519,6 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
                     {
                         ToPlayer()->AddComboPoints(procTarget, 1);
                         StartReactiveTimer(REACTIVE_OVERPOWER);
-                    }
-                    else if (GetTypeId() == TYPEID_UNIT)
-                    {
-                        ToCreature()->AI()->OnTargetDodged(procTarget);
                     }
                 }
                 else if ((hitMask & PROC_HIT_CRITICAL))

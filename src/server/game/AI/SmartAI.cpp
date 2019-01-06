@@ -906,9 +906,9 @@ void SmartAI::OnGameEvent(bool start, uint16 eventId)
     GetScript()->ProcessEventsFor(start ? SMART_EVENT_GAME_EVENT_START : SMART_EVENT_GAME_EVENT_END, nullptr, eventId);
 }
 
-void SmartAI::OnTargetDodged(Unit* target)
+void SmartAI::OnMeleeProcHit(Unit* target, uint32 hitMask)
 {
-    GetScript()->ProcessEventsFor(SMART_EVENT_ON_TARGET_DODGE, target);
+    GetScript()->ProcessEventsFor(SMART_EVENT_ON_MELEE_PROC_HIT, target, hitMask);
 }
 
 void SmartAI::OnSpellClick(Unit* clicker, bool& result)

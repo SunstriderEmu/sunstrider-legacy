@@ -3767,9 +3767,12 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, GetLastInvoker());
             break;
         }
-        case SMART_EVENT_ON_TARGET_DODGE:
+        case SMART_EVENT_ON_MELEE_PROC_HIT:
         {
             if (!unit)
+                return;
+
+            if (!(e.event.meleeProcHit.hitMask & var0))
                 return;
 
             ProcessAction(e, unit);
