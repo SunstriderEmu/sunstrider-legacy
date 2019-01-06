@@ -1405,7 +1405,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         if (me->_CanCreatureAttack(victim) == CAN_ATTACK_RESULT_OK)
                         {
-                            me->AI()->AttackStart(victim);
+                            me->EngageWithTarget(victim);
                             break; //found a valid target, no need to continue
                         }
                     }
