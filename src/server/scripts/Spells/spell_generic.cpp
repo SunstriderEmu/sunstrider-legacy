@@ -19,9 +19,7 @@ public:
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_CANNIBALIZE_TRIGGERED))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_CANNIBALIZE_TRIGGERED });
         }
 
         SpellCastResult CheckIfCorpseNear()

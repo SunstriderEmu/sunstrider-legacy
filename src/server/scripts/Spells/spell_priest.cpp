@@ -41,9 +41,7 @@ public:
 
         bool Validate(SpellInfo const* /*spellInfo*/) override
         {
-            if (!sSpellMgr->GetSpellInfo(SPELL_MANA_LEECH))
-                return false;
-            return true;
+            return ValidateSpellInfo({ SPELL_MANA_LEECH });
         }
 
         void HandleAfterCast()
