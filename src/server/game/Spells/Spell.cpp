@@ -5855,7 +5855,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 else if (m_spellInfo->Id == 19938)          // Awaken Peon
                 {
                     Unit *unit = m_targets.GetUnitTarget();
-                    if(!unit || !unit->HasAura(1774))
+                    if(!unit || !unit->HasAura(17743)) //Peon Sleeping
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 else if (m_spellInfo->Id == 44997) { // Converting Sentry
