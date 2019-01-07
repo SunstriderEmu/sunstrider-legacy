@@ -248,8 +248,6 @@ void Guild::BankEventLogEntry::WritePacket(WorldPacket& data) const
             break;
         default:
             data << uint32(m_itemOrMoney);
-            //older code has also stack here for GUILD_BANK_LOG_WITHDRAW_MONEY, GUILD_BANK_LOG_REPAIR_MONEY, GUILD_BANK_LOG_MOVE_ITEM2, GUILD_BANK_LOG_UNK1 and GUILD_BANK_LOG_BUY_SLOT
-            //I'm assuming this was wrong but keeping this comment here
     }
 
     data << uint32(WorldGameTime::GetGameTime() - m_timestamp);

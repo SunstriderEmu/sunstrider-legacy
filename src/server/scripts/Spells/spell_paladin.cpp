@@ -775,6 +775,52 @@ class spell_pal_righteous_defense : public SpellScript
     }
 };
 
+// 20186 - Judgement of Wisdom
+class spell_pal_judgement_of_wisdom_mana : public AuraScript
+{
+    PrepareAuraScript(spell_pal_judgement_of_wisdom_mana);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_PALADIN_JUDGEMENT_OF_WISDOM_MANA });
+    }
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        return eventInfo.GetProcTarget()->GetPowerType() == POWER_MANA;
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        //Default action will cast at wrong target
+        PreventDefaultAction();
+
+        Unit* caster = eventInfo.GetProcTarget();
+        CastSpellExtraArgs args(aurEff);
+        args.OriginalCaster = GetCasterGUID();
+#ifdef LICH_KING
+        SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(SPELL_PALADIN_JUDGEMENT_OF_WISDOM_MANA);
+        uint32 triggeredSpellId = spellInfo->Id;
+
+        int32 const amount = CalculatePct(static_cast<int32>(caster->GetCreateMana()), spellInfo->Effects[EFFECT_0].CalcValue());
+        args.AddSpellBP0(amount);
+#else
+        uint32 triggeredSpellId = GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell;
+#endif
+        caster->CastSpell(nullptr, triggeredSpellId, args);
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_pal_judgement_of_wisdom_mana::CheckProc);
+#ifdef LICH_KING
+        OnEffectProc += AuraEffectProcFn(spell_pal_judgement_of_wisdom_mana::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+#else
+        OnEffectProc += AuraEffectProcFn(spell_pal_judgement_of_wisdom_mana::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+#endif
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
     new spell_pal_judgement_of_light_heal();
@@ -790,4 +836,5 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_item_healing_discount();
     new spell_pal_eye_for_an_eye();
     RegisterSpellScript(spell_pal_righteous_defense);
+    RegisterAuraScript(spell_pal_judgement_of_wisdom_mana);
 }
