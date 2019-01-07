@@ -554,7 +554,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             if( SpellFamilyFlags & 0x4000A000200LL )
                 return SPELL_SPECIFIC_SEAL;
 
-            if (SpellFamilyFlags & 0x10000100LL)
+            if (SpellFamilyFlags & 0x10000180LL)
                 return SPELL_SPECIFIC_BLESSING;
 
             if ((SpellFamilyFlags & 0x00000820180400LL) && (HasAttribute(SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2)))
