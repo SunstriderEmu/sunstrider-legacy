@@ -420,7 +420,7 @@ void GameEventMgr::LoadFromDB()
     //                                        1          2
     result = WorldDatabase.PQuery("SELECT c.spawnId, game_event_creature.event "
         "FROM creature c JOIN game_event_creature ON c.spawnID = game_event_creature.guid "
-        "WHERE c.patch_min >= %u and c.patch_max <= %u", sWorld->GetWowPatch(), sWorld->GetWowPatch());
+        "WHERE %u >= c.patch_min AND %u <= c.patch_max", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     count = 0;
     if (!result)
@@ -1535,9 +1535,6 @@ bool GameEventMgr::AddCreatureToEvent(uint32 spawnId, int16 event_id, Map* map /
     auto& crelist = mGameEventCreatureGuids[internal_event_id];
     crelist.push_back(spawnId);
 
-    //Save in db
-    WorldDatabase.PQuery("REPLACE INTO game_event_creature (guid, event) VALUES (%u,%i)", spawnId, event_id);
-
     //Spawn/Despawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
     if(map && data)
@@ -1603,9 +1600,6 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 spawnId, Map* map /* = nullptr
     }
     auto& crelist = mGameEventCreatureGuids[internal_event_id];
     crelist.remove(spawnId);
-
-    //Remove from DB
-    WorldDatabase.PQuery("DELETE FROM game_event_creature WHERE guid = %u;", spawnId);
 
     //Respawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
