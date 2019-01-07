@@ -2243,19 +2243,6 @@ void Spell::EffectDummy(uint32 i)
                 _unitCaster->CastSpell(unitTarget, 10444, { SPELLVALUE_BASE_POINT0, EffectBasePoints0 });
                 return;
             }
-            // Flametongue Totem Proc
-            if(m_spellInfo->SpellFamilyFlags &0x0000000400000000LL && _unitCaster)
-            {
-                if(m_caster->GetTypeId()!=TYPEID_PLAYER)
-                    return;
-
-                float wspeed = _unitCaster->GetAttackTime(BASE_ATTACK)/1000.0f;
-                if (wspeed > 4.0) wspeed = 4.0f;
-                if (wspeed < 1.3) wspeed = 1.3f;
-                int32 EffectBasePoints0 = uint32(damage*wspeed/100.f);
-                _unitCaster->CastSpell(unitTarget, 16368, { SPELLVALUE_BASE_POINT0, EffectBasePoints0 });
-                return;
-            }
 
             break;
     }

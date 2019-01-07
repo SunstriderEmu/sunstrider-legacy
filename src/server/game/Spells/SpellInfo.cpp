@@ -2921,6 +2921,11 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 38637:                         // Nether Exhaustion (red)
         case 38638:                         // Nether Exhaustion (green)
         case 38639:                         // Nether Exhaustion (blue)
+        case 8253:  //flametongue totem proc
+        case 8248:  //''
+        case 10523: //''
+        case 16389: //''
+        case 25555: //''
             return false;
     }
 

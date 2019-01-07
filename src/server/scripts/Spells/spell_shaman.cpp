@@ -33,6 +33,7 @@ enum ShamanSpells
     SPELL_SHAMAN_CHAIN_LIGHTNING_OVERLOAD_R1    = 45297,
     SPELL_SHAMAN_LIGHTNING_SHIELD_DAMAGE_R1     = 26364,
     SPELL_SHAMAN_SHAMANISTIC_RAGE_PROC          = 30824,
+    SPELL_SHAMAN_FLAMETONGUE_ATTACK_TOTEM       = 16368,
 };
 
 //TODO: should this be moved to DB?
@@ -538,6 +539,34 @@ public:
     }
 };
 
+// -8253 Flametongue totem proc
+class spell_sha_flametongue_totem_proc : public SpellScript
+{
+    PrepareSpellScript(spell_sha_flametongue_totem_proc);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_SHAMAN_FLAMETONGUE_ATTACK_TOTEM });
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& damage)
+    {
+        //sun: tooltip of totem summon has damage: basePoint/77 to basePoint/25. That's 19.4 to 59.7 for rank 5.
+        //I didn't find any good sources for damage so I'll suppose those are the lower and upper bounds
+        //Let's go with 1.3 speed is lower bound and 3.5 is upper bound
+        float wspeed = GetCaster()->GetAttackTime(BASE_ATTACK) / 1000.0f;
+        wspeed = std::clamp(wspeed, 1.3f, 3.5f);
+        damage = 18.181 * (wspeed - 1.3) + 20; //result between 20 and 60
+     
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_SHAMAN_FLAMETONGUE_ATTACK_TOTEM, { SPELLVALUE_BASE_POINT0, damage });
+    }
+
+    void Register() override
+    {
+        OnEffectLaunchTarget += SpellEffectFn(spell_sha_flametongue_totem_proc::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sham_imprvd_weapon_totems();
@@ -549,4 +578,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earth_shield();
     new spell_sha_nature_guardian();
     new spell_sha_shamanistic_rage();
+    RegisterSpellScript(spell_sha_flametongue_totem_proc);
 }
