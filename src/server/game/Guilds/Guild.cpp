@@ -230,12 +230,20 @@ void Guild::BankEventLogEntry::WritePacket(WorldPacket& data) const
         case GUILD_BANK_LOG_DEPOSIT_ITEM:
         case GUILD_BANK_LOG_WITHDRAW_ITEM:
             data << uint32(m_itemOrMoney);
+#ifdef LICH_KING
             data << uint32(m_itemStackCount);
+#else
+            data << uint8(m_itemStackCount);
+#endif
             break;
         case GUILD_BANK_LOG_MOVE_ITEM:
         case GUILD_BANK_LOG_MOVE_ITEM2:
             data << uint32(m_itemOrMoney);
+#ifdef LICH_KING
             data << uint32(m_itemStackCount);
+#else
+            data << uint8(m_itemStackCount);
+#endif
             data << uint8(m_destTabId);
             break;
         default:
