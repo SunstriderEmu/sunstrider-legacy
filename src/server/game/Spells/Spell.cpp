@@ -5458,6 +5458,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
         if (castResult != SPELL_CAST_OK)
             return castResult;
         
+        if(m_spellInfo->HasAnyAura())
         {
 #ifdef LICH_KING
             this wont work with aura scaling;
