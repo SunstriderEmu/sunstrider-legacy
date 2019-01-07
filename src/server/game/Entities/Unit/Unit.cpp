@@ -2750,7 +2750,7 @@ float Unit::MeleeSpellMissChance(const Unit* victim, WeaponAttackType attType, i
         missChance -= victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
 
     // cmangos: For elemental melee auto-attacks: full resist outcome converted into miss chance (original research on combat logs)
-    if (attType != RANGED_ATTACK && !spellId)
+    if (attType != RANGED_ATTACK && !spellId && GetMeleeDamageSchoolMask() & SPELL_SCHOOL_MASK_MAGIC)
     {
         const float resistance = Unit::CalculateAverageResistReduction(this, GetMeleeDamageSchoolMask(), victim) * 100;
         if (const uint32 uindex = uint32(resistance * 100))
