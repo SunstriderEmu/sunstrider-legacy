@@ -555,15 +555,24 @@ class spell_sha_flametongue_totem_proc : public SpellScript
         //I didn't find any good sources for damage so I'll suppose those are the lower and upper bounds
         //Let's go with 1.3 speed is lower bound and 3.5 is upper bound
         float wspeed = GetCaster()->GetAttackTime(BASE_ATTACK) / 1000.0f;
-        wspeed = std::clamp(wspeed, 1.3f, 3.5f);
-        damage = 18.181 * (wspeed - 1.3) + 20; //result between 20 and 60
+        float const minSpeed = 1.3f;
+        float const maxSpeed = 3.5f;
+        wspeed = std::clamp(wspeed, minSpeed, maxSpeed);
+        float minBound = damage / 25.0f;
+        float maxBound = damage / 77.0f;
+        float rope = (maxBound - minBound) / (maxSpeed - minSpeed);
+        uint32 triggerDamage = rope * (wspeed - 1.3) + minBound; //result between 20 and 60 for rank 5
      
-        GetCaster()->CastSpell(GetHitUnit(), SPELL_SHAMAN_FLAMETONGUE_ATTACK_TOTEM, { SPELLVALUE_BASE_POINT0, damage });
+        CastSpellExtraArgs args(TRIGGERED_FULL_MASK); //this spell shouldn't proc other spells
+        args.AddSpellBP0(triggerDamage);
+        GetCaster()->CastSpell(GetHitUnit(), SPELL_SHAMAN_FLAMETONGUE_ATTACK_TOTEM, args);
     }
 
     void Register() override
     {
-        OnEffectLaunchTarget += SpellEffectFn(spell_sha_flametongue_totem_proc::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_sha_flametongue_totem_proc::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
     }
 };
 
