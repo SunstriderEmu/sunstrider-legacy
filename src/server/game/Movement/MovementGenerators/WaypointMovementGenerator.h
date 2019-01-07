@@ -84,7 +84,7 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         /* 
         repeating: path will use its default value, either WP_PATH_TYPE_LOOP or any value specified in waypoint_info table. Using this argument will override the default value.
         smoothSpline: EXPERIMENTAL. will calculate path to further points to allow using smooth splines. This has better visuals (for flying creatures only) but can lead to more imprecise positions, plus it has bad visual when pausing the waypoint 
-                      Server lag seems to incrase imprecisions for this one.
+                      Server lag seems to increase imprecisions for this one.
         */
         explicit WaypointMovementGenerator(Movement::PointsArray& points, Optional<bool> repeating = {}, bool smoothSpline = false);
         explicit WaypointMovementGenerator(WaypointPath& path, Optional<bool> repeating = {}, bool smoothSpline = false);
@@ -95,9 +95,9 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         MovementGeneratorType GetMovementGeneratorType() const override;
 
         void UnitSpeedChanged() override { AddFlag(MOVEMENTGENERATOR_FLAG_SPEED_UPDATE_PENDING); }
-
         void Pause(uint32 timer = 0) override;
         void Resume(uint32 overrideTimer = 0) override;
+        bool GetResetPosition(Unit*, float& x, float& y, float& z) override;
 
         bool DoInitialize(Creature*);
         void DoFinalize(Creature* owner, bool active, bool movementInform);
@@ -105,9 +105,6 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         bool DoUpdate(Creature*, uint32 diff);
         void DoDeactivate(Creature*);
 
-        // Load path (from Creature::GetWaypointPathId) and start it
-        bool LoadPath(Creature*);
-        
         WaypointPathType GetPathType() const { return path_type; }
         //return true if argument is correct
         bool SetPathType(WaypointPathType type);
@@ -116,12 +113,13 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         //return true if argument is correct
         bool SetDirection(WaypointPathDirection dir);
 
-        bool GetResetPosition(Unit*, float& x, float& y, float& z) override;
-
         bool GetCurrentDestinationPoint(Creature* creature, Position& pos) const;
 
     private:
         WaypointMovementGenerator(float fake);
+
+        // Load path (from Creature::GetWaypointPathId) and start it
+        bool LoadPath(Creature*);
 
         void MovementInform(Creature*, uint32 DBNodeId);
 
@@ -167,7 +165,6 @@ class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGenerator
         uint32 _splineId;
         // true when creature has reached the start node in path (it has to travel from its current position to first point)
         uint32 _reachedFirstNode; 
-        bool _done;
         bool _useSmoothSpline;
 };
 
