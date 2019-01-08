@@ -57,7 +57,7 @@ namespace MMAP
 
     char const* MAP_VERSION_MAGIC = "v1.8";
 
-    TerrainBuilder::TerrainBuilder(bool skipLiquid, bool quick) : m_skipLiquid (skipLiquid), m_quick(quick)
+    TerrainBuilder::TerrainBuilder(bool skipLiquid, bool quick) : m_skipLiquid(skipLiquid), m_quick(quick)
     { }
 
     TerrainBuilder::~TerrainBuilder() { }
