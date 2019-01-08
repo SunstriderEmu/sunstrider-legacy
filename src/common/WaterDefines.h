@@ -3,31 +3,40 @@
 #define SUNSTRIDER_WATER_DEFINES_H
 
 /*
-Some data around Liquid types
+Sun: Some data and observations around Liquid types:
 
-On BC Map water and WMO waters use the same types. Values are indexes off LiquidType DBC. 99,9% of places use values between 1 and 4, but there are some special waters with spells, listed in LiquidType
+On TBC the WMO files references either the first 4 LiquidTypes, or the next 4 one non existing, or sometimes both, this doesn't seem consistent.
+Those next 4 are the fake types in the enum below.
+On TLK, WMO files use (others) correctly existing liquid types.
 
-Example values on BC :
-1 (water) : Shattrath
-2 (ocean) : any ?
-3 (lava) : Iron Forge and Lava Dunegon
-4 (slime) : Undercity and "World\\wmo\\Outland\\Shadowmoon\\Slagpit\\Shadowmoon_Slagpit01.wmo"
+Also note that Liquid Type entries reference a base liquid type which is different between TBC and TLK. The TBC types are enumerated in BCLiquidTypeType.
+For TLK, they are the same as for map (AdtLiquidType)
 
-There are also some infos here: http://www.pxr.dk/wowdev/wiki/index.php?title=WMO/v17#MLIQ_chunk
-Most of it isn't for BC though
+There are also some infos on the file structure here: https://web.archive.org/web/20130114171623/http://www.pxr.dk/wowdev/wiki/index.php?title=WMO/v17
+Although I didn't use any for this implementation.
 
-MAP_LIQUID_VALUES are not client files values but values stored by the extractors
+MAP_LIQUID_* are not client files values but values stored by the extractors
+
+Other note, dark water isn't actually a liquid type, but any liquid type 
 */
 
 enum LiquidType : uint32
 {
-    LIQUID_TYPE_NO_WATER = 0,
-    LIQUID_TYPE_WATER = 1,
-    LIQUID_TYPE_OCEAN = 2,
-    LIQUID_TYPE_MAGMA = 3,
-    LIQUID_TYPE_SLIME = 4,
+    LIQUID_TYPE_NO_WATER  = 0,
+    LIQUID_TYPE_WATER     = 1,
+    LIQUID_TYPE_OCEAN     = 2,
+    LIQUID_TYPE_MAGMA     = 3,
+    LIQUID_TYPE_SLIME     = 4,
 
-    //those next ones are only present in area table liquid overrides and are associated with spells
+#ifndef LICH_KING
+    //those "fake types" are 4 referenced in WMOs but not in LiquidType.dbc
+    LIQUID_TYPE_WMO_WATER = 5, //ex: Stormwind
+    LIQUID_TYPE_WMO_OCEAN = 6, //Guessed: there is no wmo with this type on tbc
+    LIQUID_TYPE_WMO_LAVA  = 7, //ex: Blackrock, Onyxia's lair
+    LIQUID_TYPE_WMO_SLIME = 8, //ex: Stratholme, Undeadziggurat, Naxx
+#endif
+
+    //those next ones are existing in LiquidType.dbc but not referenced in any wmo/map. They are however present in area table liquid overrides and are associated with spells
     LIQUID_TYPE_NAXXRAMAS_SLIME  = 21,
     LIQUID_TYPE_COILFANG_WATER   = 41,
     LIQUID_TYPE_HYJAL_PAST_WATER = 61,

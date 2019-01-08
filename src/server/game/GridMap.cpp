@@ -612,7 +612,7 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
         if (LiquidTypeEntry const* liquidEntry = sLiquidTypeStore.LookupEntry(_liquidEntry[idx]))
         {
             entry = liquidEntry->Id;
-            //typeMask &= MAP_LIQUID_TYPE_DARK_WATER;
+            //typeMask &= MAP_LIQUID_TYPE_DARK_WATER; sun: moved below
             uint32 liqTypeIdx = liquidEntry->GetType();
             if (entry < LIQUID_TYPE_NAXXRAMAS_SLIME) //LIQUID_TYPE_NAXXRAMAS_SLIME = first non basic liquid type ?
             {
@@ -637,6 +637,7 @@ ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiqui
                     if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(overrideLiquid))
                     {
                         entry = overrideLiquid;
+                        typeMask &= MAP_LIQUID_TYPE_DARK_WATER; //sun: moved here. Only keep dark water type from the map liquid flags, and add this overrided liquid type for the rest
                         liqTypeIdx = liq->GetType();
                     }
                 }

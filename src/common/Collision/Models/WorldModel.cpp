@@ -436,19 +436,19 @@ namespace VMAP
     LiquidType GroupModel::GetLiquidType() const
     {
         if (iLiquid)
-#ifdef LICH_KING
-            return LiquidType(iLiquid->GetType() - 4);
-#else
-            return LiquidType(iLiquid->GetType() > LIQUID_TYPE_SLIME ? iLiquid->GetType() - 4 : iLiquid->GetType()); //not sure this is ok. WMO seems to have values with +4 but... not all of them? IronForge does, SSC does not. But is SSC supposed to be fishable?
+        {
+#ifndef LICH_KING
+            //those types do not exists in LiquidType.dbc, use basic types instead
+            switch (iLiquid->GetType())
+            {
+                case LIQUID_TYPE_WMO_WATER:  return LIQUID_TYPE_WATER;
+                case LIQUID_TYPE_WMO_OCEAN:  return LIQUID_TYPE_OCEAN;
+                case LIQUID_TYPE_WMO_LAVA:   return LIQUID_TYPE_MAGMA;
+                case LIQUID_TYPE_WMO_SLIME:  return LIQUID_TYPE_SLIME;
+            }
 #endif
-
-        return LIQUID_TYPE_NO_WATER;
-    }
-
-    LiquidType GroupModel::GetWMOLiquidType() const
-    {
-        if (iLiquid)
             return iLiquid->GetType();
+        }
 
         return LIQUID_TYPE_NO_WATER;
     }

@@ -71,7 +71,6 @@ namespace VMAP
             bool IsUnderObject(const G3D::Vector3& pos, const G3D::Vector3& up, bool isM2, float* outDist = NULL, float* inDist = NULL) const; // Use client triangles orientation. You can see bot->top through the floor.
             bool GetLiquidLevel(const G3D::Vector3 &pos, float &liqHeight) const;
             LiquidType GetLiquidType() const;
-            LiquidType GetWMOLiquidType() const;
             bool writeToFile(FILE* wf);
             bool readFromFile(FILE* rf);
             const G3D::AABox& GetBound() const { return iBound; }

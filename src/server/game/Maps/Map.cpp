@@ -2150,12 +2150,20 @@ void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFul
 
         if (liquidType && liquidType < LIQUID_TYPE_NAXXRAMAS_SLIME && areaEntry)
         {
-            uint32 overrideLiquid = areaEntry->LiquidTypeOverride[liquidFlagType];
+#ifdef LICH_KING
+            uint32 overrideLiquid = areaEntry->LiquidTypeOverride[liquidEntry->Type];
+#else
+            uint32 overrideLiquid = areaEntry->LiquidTypeOverride[0]; //next fields are never set on BC, and it seems the override per type logic is not the same (since there are multiple overrides that replace different types while being always at the first override position)
+#endif
             if (!overrideLiquid && areaEntry->zone)
             {
                 AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(areaEntry->zone);
                 if (zoneEntry)
-                    overrideLiquid = zoneEntry->LiquidTypeOverride[liquidFlagType];
+#ifdef LICH_KING
+                    overrideLiquid = zoneEntry->LiquidTypeOverride[liquidEntry->Type];
+#else
+                    overrideLiquid = zoneEntry->LiquidTypeOverride[0];
+#endif
             }
 
             if (LiquidTypeEntry const* overrideData = sLiquidTypeStore.LookupEntry(overrideLiquid))
