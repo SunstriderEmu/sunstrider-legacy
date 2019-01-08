@@ -929,7 +929,6 @@ class TC_GAME_API ObjectMgr
         void LoadGossipMenu();
         //load both gossip_menu_option and gossip_menu_option_generic
         void LoadGossipMenuItems();
-        void LoadCreatureGossip();
         void LoadVendors();
         void LoadTrainers();
         void LoadCreatureDefaultTrainers();
@@ -1182,24 +1181,6 @@ class TC_GAME_API ObjectMgr
             return _gossipMenuItemsStore.equal_range(uiMenuId);
         }
 
-        uint32 GetNpcGossipMenu(ObjectGuid::LowType guid) const
-        {
-            auto iter = m_mCacheNpcMenuIdMap.find(guid);
-            if(iter == m_mCacheNpcMenuIdMap.end())
-                return 0;
-
-            return iter->second;
-        }
-
-        uint32 GetGameobjectGossipMenu(ObjectGuid::LowType guid) const
-        {
-            auto iter = m_mCacheGoMenuIdMap.find(guid);
-            if(iter == m_mCacheGoMenuIdMap.end())
-                return 0;
-
-            return iter->second;
-        }
-
         Trainer::Trainer const* GetTrainer(uint32 creatureId) const;
 
         VendorItemData const* GetNpcVendorItemList(uint32 entry) const
@@ -1373,8 +1354,6 @@ class TC_GAME_API ObjectMgr
         GossipMenusContainer _gossipMenusStore;
         GossipMenuItemsContainer _gossipMenuItemsStore;
         PointOfInterestContainer _pointsOfInterestStore;
-        CacheGoTextIdMap m_mCacheGoMenuIdMap;
-        CacheNpcTextIdMap m_mCacheNpcMenuIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
         std::unordered_map<uint32, Trainer::Trainer> _trainers;
         std::unordered_map<uint32, uint32> _creatureDefaultTrainers;

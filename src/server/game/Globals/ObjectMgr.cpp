@@ -7556,51 +7556,6 @@ void ObjectMgr::LoadVendors()
     
 }
 
-void ObjectMgr::LoadCreatureGossip()
-{
-    m_mCacheNpcMenuIdMap.clear();
-
-    QueryResult result = WorldDatabase.Query("SELECT npc_guid, menu_id FROM creature_gossip");
-    if( !result )
-    {
-        TC_LOG_ERROR("server.loading",">> Loaded `creature_gossip`, table is empty!");
-        
-        return;
-    }
-
-    uint32 count = 0;
-    ObjectGuid::LowType guid;
-    uint32 menuid;
-    do
-    {
-        Field* fields = result->Fetch();
-
-        guid   = fields[0].GetUInt32();
-        menuid = fields[1].GetUInt32();
-
-        if (!GetCreatureData(guid))
-        {
-            TC_LOG_ERROR("sql.sql","Table `creature_gossip` have not existed creature (SpawnId: %u) entry, ignore. ",guid);
-            continue;
-        }
-
-        GossipMenusMapBounds bounds = sObjectMgr->GetGossipMenusMapBounds(menuid);
-        /// if there are none.
-        if (bounds.first == bounds.second)
-        {
-            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (SpawnId: %u) have wrong menuid (%u), ignore. ", guid, menuid);
-            continue;
-        }
-
-        m_mCacheNpcMenuIdMap[guid] = menuid ;
-        ++count;
-
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded %d creature gossips", count );
-    
-}
-
 void ObjectMgr::LoadGossipMenu()
 {
     uint32 oldMSTime = GetMSTime();
