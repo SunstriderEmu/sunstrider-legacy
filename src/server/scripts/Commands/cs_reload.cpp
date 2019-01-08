@@ -37,7 +37,6 @@ public:
             { "command",                     SEC_ADMINISTRATOR, true, &HandleReloadCommandCommand,                 "" },
             { "conditions",                  SEC_ADMINISTRATOR, true, &HandleReloadConditions,                     "" },
             { "config",                      SEC_ADMINISTRATOR, true, &HandleReloadConfigCommand,                  "" },
-            { "creature_gossip",             SEC_ADMINISTRATOR, true, &HandleReloadCreatureGossipCommand,          "" },
             { "creature_questender",         SEC_ADMINISTRATOR, true, &HandleReloadCreatureQuestEndersCommand,     "" },
             { "creature_loot_template",      SEC_ADMINISTRATOR, true, &HandleReloadLootTemplatesCreatureCommand,   "" },
             { "creature_movement_override",  SEC_ADMINISTRATOR, true, &HandleReloadCreatureMovementOverrideCommand,"" },
@@ -176,7 +175,6 @@ public:
 
     static bool HandleReloadAllNpcCommand(ChatHandler* handler, char const* /*args*/)
     {
-        HandleReloadCreatureGossipCommand(handler, "a");
         HandleReloadGossipMenuOptionCommand(handler, "a");
         HandleReloadTrainerCommand(handler, "a");
         HandleReloadNpcVendorCommand(handler, "a");
@@ -467,14 +465,6 @@ public:
         sObjectMgr->LoadGossipText();
         sObjectMgr->LoadGossipTextLocales();
         handler->SendGlobalGMSysMessage("DB tables `gossip_text` and `locales_gossip_text` reloaded.");
-        return true;
-    }
-
-    static bool HandleReloadCreatureGossipCommand(ChatHandler* handler, char const* args)
-    {
-        TC_LOG_INFO("command", "Re-Loading `creature_gossip` Table!");
-        sObjectMgr->LoadCreatureGossip();
-        handler->SendGlobalGMSysMessage("DB table `creature_gossip` reloaded.");
         return true;
     }
 
