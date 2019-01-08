@@ -485,8 +485,8 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if (_precomputedPath.size() <= 1)
         return false;
 
+    creature->UpdateMovementFlags(false, Position(_precomputedPath[1])); //Set movement flags for first point. We should set flying depending on first point and not current position!
     Movement::MoveSplineInit init(creature);
-    creature->UpdateMovementFlags(); //restore disable gravity if needed
 
     //Set move type. Path is ended at move type change in the filling of _precomputedPath up there so this is valid for the whole spline array. 
     //This is true but for WP_PATH_DIRECTION_RANDOM where move_type of the first point only will be used because whatever

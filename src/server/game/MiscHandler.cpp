@@ -351,7 +351,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     uint8 reason = 0; //reason but... seems at least on BC, they all show "You can't logout now."
     if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
         reason = 1;
-    else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
+    else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR) || GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING)) // is jumping or falling
         reason = 3;
     else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
         reason = 0xC;  //not right id, need to get the correct value

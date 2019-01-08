@@ -16,6 +16,7 @@
 #include "Mail.h"
 #include "Config.h"
 #include "Pet.h"
+#include "SmartEnum.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -1668,7 +1669,11 @@ public:
         handler->PSendSysMessage("Target (%u) moveflags = 0x%s", 
             target->GetGUID().GetCounter(), 
             stream.str().c_str());
-
+         /* Needs to have data generated like for UnitFlags for this to work
+        for (MovementFlags flag : EnumUtils::Iterate<MovementFlags>())
+            if (target->GetUnitMovementFlags() & flag)
+                handler->PSendSysMessage("* %s (0x%X)", EnumUtils::ToTitle(flag), flag);
+        */
         return true;
     }
 

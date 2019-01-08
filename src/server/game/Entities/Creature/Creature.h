@@ -647,8 +647,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         Add flying movement flags if creature can fly is in air and not flying.
         Also set creature as swimming if in water
         Won't update if current position is very close to the last one when updating. Force update with argument 'force'
+        forPosition: check for given position instead
         */
-        void UpdateMovementFlags(bool force = false);
+        void UpdateMovementFlags(bool force = false, Optional<Position> forPosition = {});
 
         bool UpdateStats(Stats stat) override;
         bool UpdateAllStats() override;

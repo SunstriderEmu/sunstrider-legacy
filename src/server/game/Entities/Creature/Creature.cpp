@@ -3314,9 +3314,13 @@ void Creature::_SetCanFly(bool enable, bool updateMovementFlags /* = true */)
         UpdateMovementFlags();
 }
 
-void Creature::UpdateMovementFlags(bool force /* = false */)
+void Creature::UpdateMovementFlags(bool force /* = false */, Optional<Position> forPosition /*= {}*/)
 {
-    if (!force && GetExactDistSq(m_lastMovementFlagsPosition) < 2.5f*2.5f)
+    bool givenPosition = forPosition.is_initialized();
+    if (!givenPosition)
+        forPosition = GetPosition();
+
+    if (!force && forPosition->GetExactDistSq(m_lastMovementFlagsPosition) < 2.5f*2.5f)
         return;
 
     // Do not update movement flags if creature is controlled by a player (charm/vehicle)
@@ -3324,12 +3328,12 @@ void Creature::UpdateMovementFlags(bool force /* = false */)
         return;
 
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
-    float ground = GetFloorZ();
+    float ground = givenPosition ? GetMapHeight(POSITION_GET_X_Y_Z(forPosition)) : GetFloorZ();
 
 #ifdef LICH_KING
-    bool isInAir = (G3D::fuzzyGt(GetPositionZ(), ground + (canHover ? GetFloatValue(UNIT_FIELD_HOVERHEIGHT) : 0.0f) + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
+    bool isInAir = (G3D::fuzzyGt(forPosition->GetPositionZ(), ground + (canHover ? GetFloatValue(UNIT_FIELD_HOVERHEIGHT) : 0.0f) + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
 #else
-    bool isInAir = (G3D::fuzzyGt(GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
+    bool isInAir = (G3D::fuzzyGt(forPosition->GetPositionZ(), ground + GROUND_HEIGHT_TOLERANCE) || G3D::fuzzyLt(forPosition->GetPositionZ(), ground - GROUND_HEIGHT_TOLERANCE)); // Can be underground too, prevent the falling
 #endif
 
     if (CanFly() && isInAir && !IsFalling())
@@ -3354,7 +3358,8 @@ void Creature::UpdateMovementFlags(bool force /* = false */)
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     SetSwim(CanSwim() && IsInWater());
-    m_lastMovementFlagsPosition = GetPosition();
+    if(!givenPosition)
+        m_lastMovementFlagsPosition = GetPosition();
 }
 
 bool Creature::IsInEvadeMode() const 

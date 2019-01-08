@@ -204,7 +204,7 @@ namespace Movement
 #endif
         args.walk = unit->HasUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
-        args.flags.flying = unit->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY);
+        args.flags.flying = unit->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) || unit->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
     }
 
     void MoveSplineInit::SetFacing(const Unit* target)
