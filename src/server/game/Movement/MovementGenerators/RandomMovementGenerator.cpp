@@ -50,6 +50,8 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
     float distance = frand(0.f, 1.f) * _wanderDistance;
     float angle = frand(0.f, 1.f) * float(M_PI) * 2.f;
     owner->MovePositionToFirstCollision(position, distance, angle);
+    if (owner->IsFlying())
+        position.m_positionZ = position.m_positionZ + owner->GetCollisionHeight(); //sun: flying creature have a lower animation, this does prevent them from going into the ground
 
     if (!_path)
     {
