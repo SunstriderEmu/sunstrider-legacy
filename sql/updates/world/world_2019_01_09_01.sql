@@ -1,0 +1,2 @@
+-- Remove spell 674
+update `recups_data` set `command` = 'learn 8737;learn 196;learn 1180;learn 15590;learn 198;learn 199;learn 227;learn 197;learn 8071;learn 5394;learn 3599' where `classe` = '7' and `faction` = '0' and `phase` = '3' and `command` = 'learn 8737;learn 196;learn 1180;learn 15590;learn 674;learn 198;learn 199;learn 227;learn 197;learn 8071;learn 5394;learn 3599' and `metier` = '0' and `stuff` = '-1' and `tier` = '0'
