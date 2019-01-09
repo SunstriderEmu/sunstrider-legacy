@@ -38,11 +38,7 @@ REPLACE INTO creature_addon (spawnID, patch, path_id, mount, bytes0, bytes1, byt
 (64205,	0,	12949730,	0,	512,	0,	4097,	0,	0,	'(null)');
 
 DELETE FROM creature_entry WHERE spawnID = 64209;
-DELETE FROM creature_entry WHERE spawnID = 64203 AND entry = 18117;
-DELETE FROM creature_entry WHERE spawnID = 64204 AND entry = 18118;
-DELETE FROM creature_entry WHERE spawnID = 64159 AND entry = 18118;
-DELETE FROM creature_entry WHERE spawnID = 64163 AND entry = 18118;
-INSERT INTO creature_entry (spawnID, entry) VALUES
+INSERT IGNORE INTO creature_entry (spawnID, entry) VALUES
 (64203, 18117),
 (64204, 18118),
 (64159, 18118),

@@ -87,14 +87,7 @@ INSERT IGNORE INTO smart_scripts (entryorguid, source_type, id, link, event_type
 (@ENTRY, 0, 8, 0, 2, 0, 100, 1, 11, 20, 0, 0, 11, 33962, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Overlord Gorefist - Between 11-20% HP - Cast "<a href="http://wowhead.com/spell=33962">Toughen</a>" (No Repeat)'),
 (@ENTRY, 0, 9, 0, 2, 0, 100, 1, 0, 10, 0, 0, 11, 33962, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Overlord Gorefist - Between 0-10% HP - Cast "<a href="http://wowhead.com/spell=33962">Toughen</a>" (No Repeat)');
 
-DELETE FROM creature_entry WHERE spawnID = 64248 AND entry = 18120;
-DELETE FROM creature_entry WHERE spawnID = 64231 AND entry = 18121;
-DELETE FROM creature_entry WHERE spawnID = 64251 AND entry = 18120;
-DELETE FROM creature_entry WHERE spawnID = 64228 AND entry = 18121;
-DELETE FROM creature_entry WHERE spawnID = 64227 AND entry = 18121;
-DELETE FROM creature_entry WHERE spawnID = 64226 AND entry = 18121;
-DELETE FROM creature_entry WHERE spawnID = 64258 AND entry = 18120;
-INSERT INTO creature_entry (spawnID, entry) VALUES
+INSERT IGNORE INTO creature_entry (spawnID, entry) VALUES
 (64248, 18120),
 (64231, 18121),
 (64251, 18120),
