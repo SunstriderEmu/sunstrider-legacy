@@ -25,13 +25,13 @@ INSERT INTO creature_entry (spawnID, entry, equipment_id) VALUES
 (1311720,	20294,	-1),
 (1311721,	20295,	-1),
 (1311722,	20294,	-1);
-INSERT INTO creature (spawnID, map, spawnMask, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, pool_id, ScriptName, patch_min, patch_max) VALUES
-(1311717,	530,	1,	0,	0,	404.949,	8328.56,	24.2113,	4.65812,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10),
-(1311718,	530,	1,	0,	0,	418.403,	8348.02,	22.8904,	0.566198,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10),
-(1311719,	530,	1,	0,	0,	420.775,	8372.79,	22.1903,	1.19137,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
-(1311720,	530,	1,	0,	0,	403.299,	8379.79,	22.4293,	1.99719,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
-(1311721,	530,	1,	0,	0,	378.706,	8360.39,	19.2899,	3.81775,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
-(1311722,	530,	1,	0,	0,	377.285,	8345.83,	21.815,	4.62671,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10);
+INSERT INTO creature (spawnID, map, spawnMask, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, curhealth, curmana, MovementType, unit_flags, pool_id, ScriptName, patch_min, patch_max) VALUES
+(1311717,	530,	1,	0,	404.949,	8328.56,	24.2113,	4.65812,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10),
+(1311718,	530,	1,	0,	418.403,	8348.02,	22.8904,	0.566198,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10),
+(1311719,	530,	1,	0,	420.775,	8372.79,	22.1903,	1.19137,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
+(1311720,	530,	1,	0,	403.299,	8379.79,	22.4293,	1.99719,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
+(1311721,	530,	1,	0,	378.706,	8360.39,	19.2899,	3.81775,	300,	5,	0,	5527,	0,	0,	0,	0,	'',	0,	10),
+(1311722,	530,	1,	0,	377.285,	8345.83,	21.815,	4.62671,	300,	5,	0,	5341,	0,	0,	0,	0,	'',	0,	10);
 
 -- Update Terrorclaw position
 UPDATE creature SET position_x=397.131, position_y=8352.3, position_z=22.7498, orientation=3.88311 WHERE spawnID = 86747;
