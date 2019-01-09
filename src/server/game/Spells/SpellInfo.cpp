@@ -2839,11 +2839,6 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
     if (spellInfo->HasAttribute(SPELL_ATTR0_AURA_IS_DEBUFF))
         return false;
 
-    if (spellInfo->HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
-        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL) //sun: exclude trigger spells from this check, needed for spells such as 10
-        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE))
-        return false;
-
     visited.insert({ spellInfo->Id, effIndex });
 
     switch (spellInfo->Id)
@@ -2871,6 +2866,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 1462:                                          // Beast Lore
         case 30877:                                         // Tag Murloc
         case 38044:                                         // Surge
+        case 36554:                                         // Shadowstep
             return true;
         case 1852:                                          // Silenced (GM)
         case 46392:                                         // Focused Assault
@@ -2928,6 +2924,11 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case 25555: //''
             return false;
     }
+
+    if (spellInfo->HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
+        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL) //sun: exclude trigger spells from this check, needed for spells such as 10
+        && !spellInfo->HasAura(SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE))
+        return false;
 
     switch (spellInfo->SpellFamilyName)
     {
