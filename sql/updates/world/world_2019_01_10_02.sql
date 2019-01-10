@@ -1,0 +1,1 @@
+REPLACE INTO spell_script_names VALUES (28734, "spell_mana_tap");

@@ -428,6 +428,30 @@ class spell_opening : public SpellScript
     }
 };
 
+// 28734 - Mana tap (BE racial)
+class spell_mana_tap : public SpellScript
+{
+    PrepareSpellScript(spell_mana_tap);
+
+    SpellCastResult CheckCast()
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetExplTargetUnit();
+        if (!caster || !target)
+            return SPELL_FAILED_BAD_TARGETS;
+
+        if (target->GetPowerType() != POWER_MANA || target->GetMaxPower(POWER_MANA) == 0) //npc without mana have POWER_MANA as type
+            return SPELL_FAILED_BAD_TARGETS;
+
+        return SPELL_CAST_OK;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_mana_tap::CheckCast);
+    }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -439,4 +463,5 @@ void AddSC_generic_spell_scripts()
     RegisterAuraScript(spell_gen_creature_permanent_feign_death);
     RegisterSpellScript(spell_gen_elune_candle);
     RegisterSpellScript(spell_opening);
+    RegisterSpellScript(spell_mana_tap);
 }
