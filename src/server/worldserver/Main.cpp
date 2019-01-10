@@ -249,7 +249,8 @@ extern int main(int argc, char **argv)
     // Start the databases
     if (!StartDB())
     {
-        return 1;
+        sWorld->StopNow(1);
+        goto shutdown; //properly stop threads
     }
 
     // Set server offline (not connectable)
@@ -257,106 +258,111 @@ extern int main(int argc, char **argv)
 
     LoadRealmInfo(*ioContext);
 
-    sScriptMgr->SetScriptLoader(AddScripts);
-    std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
     {
-        sScriptMgr->Unload();
-        sScriptReloadMgr->Unload();
-    });
-    // Initialize the World
-    sWorld->SetInitialWorldSettings();
-
-    std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)
-    {
-        // unload battleground templates before different singletons destroyed
-        sBattlegroundMgr->DeleteAllBattlegrounds();
-
-        sInstanceSaveMgr->Unload();
-        sOutdoorPvPMgr->Die();                     // unload it before MapManager
-        sMapMgr->UnloadAll();                      // unload all grids (including locked in memory)
-    });
-
-    // Start the Remote Access port (acceptor) if enabled
-    AsyncAcceptor* raAcceptor = nullptr;
-    if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
-        raAcceptor = StartRaSocketAcceptor(*ioContext);
-
-    // Start soap serving thread if enabled
-    std::shared_ptr<std::thread> soapThread;
-    if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
-    {
-        soapThread.reset(new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878))),
-            [](std::thread* thr)
+        sScriptMgr->SetScriptLoader(AddScripts);
+        std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
         {
-            thr->join();
-            delete thr;
+            sScriptMgr->Unload();
+            sScriptReloadMgr->Unload();
         });
-    }
+        // Initialize the World
+        sWorld->SetInitialWorldSettings();
 
-    // Launch the worldserver listener socket
-    uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
-    std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
+        std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)
+        {
+            // unload battleground templates before different singletons destroyed
+            sBattlegroundMgr->DeleteAllBattlegrounds();
 
-    int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
+            sInstanceSaveMgr->Unload();
+            sOutdoorPvPMgr->Die();                     // unload it before MapManager
+            sMapMgr->UnloadAll();                      // unload all grids (including locked in memory)
+        });
 
-    if (networkThreads <= 0)
-    {
-        TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
-        return 1;
-    }
+        // Start the Remote Access port (acceptor) if enabled
+        AsyncAcceptor* raAcceptor = nullptr;
+        if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
+            raAcceptor = StartRaSocketAcceptor(*ioContext);
 
-    if (!sWorldSocketMgr.StartWorldNetwork(*ioContext, worldListener, worldPort, networkThreads))
-    {
-        TC_LOG_ERROR("server.worldserver", "Failed to initialize network");
-        return 1;
-    }
+        // Start soap serving thread if enabled
+        std::shared_ptr<std::thread> soapThread;
+        if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
+        {
+            soapThread.reset(new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878))),
+                [](std::thread* thr)
+            {
+                thr->join();
+                delete thr;
+            });
+        }
 
-    std::shared_ptr<void> sWorldSocketMgrHandle(nullptr, [](void*)
-    {
-        sWorld->KickAll();              // save and kick all players
-        sWorld->UpdateSessions(1);      // real players unload required UpdateSessions call
+        // Launch the worldserver listener socket
+        uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
+        std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-        sWorldSocketMgr.StopNetwork();
+        int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
 
-        ///- Clean database before leaving
-        ClearOnlineAccounts();
-    });
+        if (networkThreads <= 0)
+        {
+            TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
+            sWorld->StopNow(1);
+            goto shutdown; //properly stop threads
+        }
 
-    // Launch CliRunnable thread
-    std::shared_ptr<std::thread> cliThread;
+        if (!sWorldSocketMgr.StartWorldNetwork(*ioContext, worldListener, worldPort, networkThreads))
+        {
+            TC_LOG_ERROR("server.worldserver", "Failed to initialize network");
+            sWorld->StopNow(1);
+            goto shutdown; //properly stop threads
+        }
+
+        std::shared_ptr<void> sWorldSocketMgrHandle(nullptr, [](void*)
+        {
+            sWorld->KickAll();              // save and kick all players
+            sWorld->UpdateSessions(1);      // real players unload required UpdateSessions call
+
+            sWorldSocketMgr.StopNetwork();
+
+            ///- Clean database before leaving
+            ClearOnlineAccounts();
+        });
+
+        // Launch CliRunnable thread
+        std::shared_ptr<std::thread> cliThread;
 #ifdef _WIN32
-    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)) // need disable console in service mode
+        if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)) // need disable console in service mode
 #else
-    if (sConfigMgr->GetBoolDefault("Console.Enable", true))
+        if (sConfigMgr->GetBoolDefault("Console.Enable", true))
 #endif
-    {
-        cliThread.reset(new std::thread(CliThread), &ShutdownCLIThread);
+        {
+            cliThread.reset(new std::thread(CliThread), &ShutdownCLIThread);
+        }
+
+        TC_LOG_INFO("server.worldserver", "Start listening on %s:%u", worldListener.c_str(), worldPort);
+
+        //    sScriptMgr->OnNetworkStart();
+
+
+
+        // Set server online (allow connecting now)
+        LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_VERSION_MISMATCH, realmID);
+
+        // Start the freeze check callback cycle in 5 seconds (cycle itself is 1 sec)
+        std::shared_ptr<FreezeDetector> freezeDetector;
+        if (int coreStuckTime = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
+        {
+            freezeDetector = std::make_shared<FreezeDetector>(*ioContext, coreStuckTime * 1000);
+            FreezeDetector::Start(freezeDetector);
+            TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
+        }
+
+        TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
+
+        //  sScriptMgr->OnStartup();
+
+        WorldUpdateLoop();
     }
 
-    TC_LOG_INFO("server.worldserver", "Start listening on %s:%u", worldListener.c_str(), worldPort);
-
-    //    sScriptMgr->OnNetworkStart();
-
-
-
-    // Set server online (allow connecting now)
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_VERSION_MISMATCH, realmID);
-
-    // Start the freeze check callback cycle in 5 seconds (cycle itself is 1 sec)
-    std::shared_ptr<FreezeDetector> freezeDetector;
-    if (int coreStuckTime = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
-    {
-        freezeDetector = std::make_shared<FreezeDetector>(*ioContext, coreStuckTime * 1000);
-        FreezeDetector::Start(freezeDetector);
-        TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
-    }
-
-    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
-
-  //  sScriptMgr->OnStartup();
-
-    WorldUpdateLoop();
-
+shutdown:
     // Shutdown starts here
     threadPool.reset();
 
