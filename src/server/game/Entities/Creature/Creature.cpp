@@ -1395,10 +1395,14 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     std::ostringstream ss;
     ss << "INSERT INTO creature (spawnId,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id, patch_min, patch_max) VALUES ("
         << m_spawnId << ","
-        << mapid <<","
-        << (uint32)spawnMask << ","
-        << displayId <<","
-        << GetCurrentEquipmentId() <<","
+        << mapid << ","
+        << (uint32)spawnMask << ",";
+        if (displayId)
+            ss << displayId << ",";
+        else
+            ss << "NULL" << ",";
+
+        ss << GetCurrentEquipmentId() <<","
         << data.spawnPoint.GetPositionX() << ","
         << data.spawnPoint.GetPositionY() << ","
         << data.spawnPoint.GetPositionZ() << ","
