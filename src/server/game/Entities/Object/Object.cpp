@@ -3193,10 +3193,10 @@ SpellMissInfo WorldObject::MagicSpellHitResult(Unit *pVictim, SpellInfo const *s
     if (!pVictim->IsAlive() && pVictim->GetTypeId() != TYPEID_PLAYER)
         return SPELL_MISS_NONE;
         
-    // Always 1% resist chance. Send this as SPELL_MISS_MISS (note that this is not BC blizzlike, this was changed in WotLK).
+    // Always 1% incompressible resist chance
     uint32 rand = urand(0, 9999);
     if (rand > 9900)
-        return SPELL_MISS_MISS;
+        return SPELL_MISS_RESIST;
 
     SpellSchoolMask schoolMask = spell->GetSchoolMask();
 
