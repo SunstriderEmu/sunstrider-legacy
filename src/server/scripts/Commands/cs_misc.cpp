@@ -1278,8 +1278,8 @@ public:
         float x, y, z;
         motionMaster->GetDestination(x, y, z);
 
-        std::vector<MovementGeneratorInformation> list = unit->GetMotionMaster()->GetMovementGeneratorsInformation();
-        for (MovementGeneratorInformation info : list)
+        std::vector<MovementGeneratorInformation> const list = unit->GetMotionMaster()->GetMovementGeneratorsInformation();
+        for (MovementGeneratorInformation const& info : list)
         {
             switch (info.Type)
             {

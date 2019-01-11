@@ -38,7 +38,7 @@ inline void MovementGeneratorPointerDeleter(MovementGenerator* a)
         delete a;
 }
 
-void MovementGeneratorDeleter::operator()(MovementGenerator * a)
+void MovementGeneratorDeleter::operator()(MovementGenerator* a)
 {
     MovementGeneratorPointerDeleter(a);
 }
@@ -97,7 +97,7 @@ uint32 MotionMaster::Size() const
 }
 
 
-std::vector<MovementGeneratorInformation> MotionMaster::GetMovementGeneratorsInformation() const
+std::vector<MovementGeneratorInformation> const MotionMaster::GetMovementGeneratorsInformation() const
 {
     std::vector<MovementGeneratorInformation> list;
 
