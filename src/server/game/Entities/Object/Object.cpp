@@ -465,12 +465,7 @@ void Object::SetFloatValue( uint16 index, float value )
 void Object::SetByteValue( uint16 index, uint8 offset, uint8 value )
 {
     ASSERT( index < m_valuesCount || PrintIndexError( index , true ) );
-
-    if(offset > 3)
-    {
-        TC_LOG_ERROR("misc","Object::SetByteValue: wrong offset %u", offset);
-        return;
-    }
+    ASSERT(offset < 4);
 
     if(uint8(m_uint32Values[ index ] >> (offset * 8)) != value)
     {
@@ -485,12 +480,7 @@ void Object::SetByteValue( uint16 index, uint8 offset, uint8 value )
 void Object::SetUInt16Value( uint16 index, uint8 offset, uint16 value )
 {
     ASSERT( index < m_valuesCount || PrintIndexError( index , true ) );
-
-    if(offset > 1)
-    {
-        TC_LOG_ERROR("misc","Object::SetUInt16Value: wrong offset %u", offset);
-        return;
-    }
+    ASSERT(offset < 2);
 
     if(uint8(m_uint32Values[ index ] >> (offset * 16)) != value)
     {
@@ -644,21 +634,16 @@ void Object::ToggleFlag( uint16 index, uint32 flag)
         SetFlag(index, flag);
 }
 
-bool Object::HasFlag( uint16 index, uint32 flag ) const
+bool Object::HasFlag(uint16 index, uint32 flag) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-    return (m_uint32Values[ index ] & flag) != 0;
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    return (m_uint32Values[index] & flag) != 0;
 }
 
 void Object::SetByteFlag( uint16 index, uint8 offset, uint8 newFlag )
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , true ) );
-
-    if(offset > 3)
-    {
-        TC_LOG_ERROR("misc","Object::SetByteFlag: wrong offset %u", offset);
-        return;
-    }
+    ASSERT(index < m_valuesCount || PrintIndexError(index, true));
+    ASSERT(offset < 4);
 
     if(!(uint8(m_uint32Values[ index ] >> (offset * 8)) & newFlag))
     {
@@ -672,12 +657,7 @@ void Object::SetByteFlag( uint16 index, uint8 offset, uint8 newFlag )
 void Object::RemoveByteFlag( uint16 index, uint8 offset, uint8 oldFlag )
 {
     ASSERT( index < m_valuesCount || PrintIndexError( index , true ) );
-
-    if(offset > 3)
-    {
-        TC_LOG_ERROR("FIXME","Object::RemoveByteFlag: wrong offset %u", offset);
-        return;
-    }
+    ASSERT(offset < 4);
 
     if(uint8(m_uint32Values[ index ] >> (offset * 8)) & oldFlag)
     {

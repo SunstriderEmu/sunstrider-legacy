@@ -3156,6 +3156,9 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, uint8 effIndex, std::unor
         case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+#ifdef LICH_KING
+        case SPELL_AURA_MOD_SPEED_SLOW_ALL:
+#endif
             if (!_isPositiveTarget(spellInfo, effIndex) || bp < 0)
                 return false;
             break;
