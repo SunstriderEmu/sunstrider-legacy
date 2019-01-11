@@ -341,8 +341,6 @@ extern int main(int argc, char **argv)
 
         //    sScriptMgr->OnNetworkStart();
 
-
-
         // Set server online (allow connecting now)
         LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_VERSION_MISMATCH, realmID);
 

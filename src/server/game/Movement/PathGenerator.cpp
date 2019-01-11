@@ -25,7 +25,7 @@ PathGenerator::PathGenerator(const Unit* owner) :
     //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUID().GetCounter());
 }
 
-PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options) :
+PathGenerator::PathGenerator(Position const startPos, uint32 mapId, uint32 instanceId, uint32 options) :
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH), _straightLine(false),
     _endPosition(G3D::Vector3::zero()), _sourceUnit(nullptr), _navMesh(nullptr), _navMeshQuery(nullptr),
@@ -237,7 +237,9 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = _sourceUnit->GetBaseMap()->GetLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_ALL_LIQUIDS, nullptr, _sourceUnit->GetCollisionHeight());
+                Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
+                ZLiquidStatus status = map->GetLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_ALL_LIQUIDS, nullptr, _sourceUnit ? _sourceUnit->GetCollisionHeight() : DEFAULT_COLLISION_HEIGHT);
+
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -258,7 +260,8 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
 
         bool buildShortcut = false;
         G3D::Vector3 const& p = (distToStartPoly > 7.0f) ? startPos : endPos;
-        if (_sourceUnit->GetBaseMap()->IsInWater(p.x, p.y, p.z)) //sun: replaced IsUnderWater by IsInWater
+        Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
+        if (map->IsInWater(p.x, p.y, p.z)) //sun: replaced IsUnderWater by IsInWater
         {
             TC_LOG_DEBUG("maps", "++ BuildPolyPath :: underWater case\n");
             if (SourceCanSwim())

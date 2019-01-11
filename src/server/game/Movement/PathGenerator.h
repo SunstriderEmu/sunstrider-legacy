@@ -50,7 +50,7 @@ class TC_GAME_API PathGenerator
 {
     public:
         explicit PathGenerator(Unit const* owner);
-        explicit PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options);
+        explicit PathGenerator(Position const startPos, uint32 mapId, uint32 instanceId = 0, uint32 options = PATHFIND_OPTION_CANWALK);
         ~PathGenerator();
 
         /* Calculate the path from owner to given destination
