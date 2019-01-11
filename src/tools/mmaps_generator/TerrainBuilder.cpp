@@ -663,8 +663,8 @@ namespace MMAP
                 std::vector<GroupModel> groupModels;
                 worldModel->getGroupModels(groupModels);
 
-                // all M2s need to have triangle indices reversed
-                bool isM2 = instance.name.find(".m2") != std::string::npos || instance.name.find(".M2") != std::string::npos;
+                // all M2s need to have triangle indices reversed / sun: added mdx
+                bool isM2 = instance.name.find(".mdx") != instance.name.npos || instance.name.find(".m2") != instance.name.npos || instance.name.find(".M2") != instance.name.npos;
 
                 // transform data
                 float scale = instance.iScale;
@@ -707,10 +707,20 @@ namespace MMAP
                         // convert liquid type to NavTerrain
 #ifdef LICH_KING
                         switch (liquid->GetType() & 3) 
-                        //this is needed on LK because wmo get liquid type such as : 13 14 17 19 20. On BC we got classic water types (1 to 4)
+                        {
+                        case 0:
+                        case 1:
+                            type = NAV_WATER;
+                            break;
+                        case 2:
+                            type = NAV_MAGMA;
+                            break;
+                        case 3:
+                            type = NAV_SLIME;
+                            break;
+                        }
 #else
                         switch (liquid->GetType())
-#endif
                         {
                         case LIQUID_TYPE_WATER:
                         case LIQUID_TYPE_OCEAN:
@@ -723,6 +733,7 @@ namespace MMAP
                             type = NAV_SLIME;
                             break;
                         }
+#endif
 
                         // indexing is weird...
                         // after a lot of trial and error, this is what works:
@@ -802,8 +813,7 @@ namespace MMAP
                 std::vector<GroupModel> groupModels;
                 worldModel->getGroupModels(groupModels);
 
-                // all M2s need to have triangle indices reversed
-                //sun: added mdx... probably wrong but this somehow fixes the logic :/ probably indirectly
+                // all M2s need to have triangle indices reversed / sun: added mdxq
                 bool isM2 = instance.name.find(".mdx") != instance.name.npos || instance.name.find(".m2") != instance.name.npos || instance.name.find(".M2") != instance.name.npos;
 
                 // transform data

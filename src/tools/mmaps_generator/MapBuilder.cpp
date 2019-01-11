@@ -1167,8 +1167,8 @@ namespace MMAP
         std::vector<GroupModel> groupModels;
         m.getGroupModels(groupModels);
 
-        // all M2s need to have triangle indices reversed
-        bool isM2 = model.find(".m2") != model.npos || model.find(".M2") != model.npos;
+        // all M2s need to have triangle indices reversed / sun: added mdx
+        bool isM2 = model.find(".mdx") != model.npos || model.find(".m2") != model.npos || model.find(".M2") != model.npos;
 
         for (std::vector<GroupModel>::iterator it = groupModels.begin(); it != groupModels.end(); ++it)
         {
