@@ -7,8 +7,6 @@
 
 class WorldObject;
 
-#define HEROIC(n,h) (HeroicMode ? h : n)
-
 template<typename First, typename Second, typename... Rest>
 inline First const& RAND(First const& first, Second const& second, Rest const&... rest)
 {

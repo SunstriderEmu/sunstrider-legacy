@@ -133,9 +133,9 @@ public:
         if (!*args)
             return false;
 
-        int32 stat = atoi((char*)args);
+        int32 stat_ = atoi((char*)args);
 
-        if (stat <= 0)
+        if (stat_ <= 0)
         {
             handler->SendSysMessage(LANG_BAD_VALUE);
             handler->SetSentErrorMessage(true);
@@ -150,9 +150,9 @@ public:
             return false;
         }
 
-        handler->PSendSysMessage("You change %s of %s to %i.", statName.c_str(), chr->GetName().c_str(), stat);
+        handler->PSendSysMessage("You change %s of %s to %i.", statName.c_str(), chr->GetName().c_str(), stat_);
 
-        chr->HandleStatFlatModifier(modStat, BASE_VALUE, float(stat), true);
+        chr->HandleStatFlatModifier(modStat, BASE_VALUE, float(stat_), true);
         chr->UpdateStatBuffMod(stat);
 
         return true;
