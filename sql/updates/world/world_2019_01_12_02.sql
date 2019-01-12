@@ -2,7 +2,7 @@
 
 -- Warriors
 -- 7700 = 6792 * 1,133686
-UPDATE creature_template SET ArmorModifier = 1.133686 WHERE entry IN (
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry IN (
     18831, -- HKM
     19044, -- Gruul
     17257, -- Magtheridon
@@ -28,9 +28,9 @@ UPDATE creature_template SET ArmorModifier = 1.133686 WHERE entry IN (
 
 -- Paladins
 -- 7700 = 5474 * 1.406649
-UPDATE creature_template SET ArmorModifier = 1.406649 WHERE entry = 23574; -- Akil'zon
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 23574; -- Akil'zon
 -- 6200 = 5474 * 1.1326269
-UPDATE creature_template SET ArmorModifier = 1.1326269 WHERE entry IN (
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry IN (
     24239, -- Malacrass
     21214, -- Karathress
     21212, -- Vashj
@@ -51,10 +51,10 @@ UPDATE creature_template SET ArmorModifier = 1.1326269 WHERE entry IN (
     25165 -- Sacrolash
 );
 -- 8800 = 5474 * 1.607599
-UPDATE creature_template SET ArmorModifier = 1.607599 WHERE entry = 19516; -- Void Reaver
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 19516; -- Void Reaver
 
 UPDATE creature_template SET ArmorModifier = 0 WHERE entry = 23418; -- RoS 1
 
-UPDATE creature_template SET ArmorModifier = 0.9975498 WHERE entry = 25799; -- Shadowsword Fury Mage
-UPDATE creature_template SET ArmorModifier = 1.001551 WHERE entry = 25798; -- Shadowsword Fury Mage
-UPDATE creature_template SET ArmorModifier = 0.959232 WHERE entry = 25772; -- Void Sentinel
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 25799; -- Shadowsword Fury Mage
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 25798; -- Shadowsword Fury Mage
+UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 25772; -- Void Sentinel
