@@ -50,8 +50,8 @@ UPDATE creature_template SET ArmorModifier = 1 WHERE entry IN (
     25166, -- Alythess
     25165 -- Sacrolash
 );
--- 8800 = 5474 * 1.607599
-UPDATE creature_template SET ArmorModifier = 1 WHERE entry = 19516; -- Void Reaver
+-- 8800 = 6193 * 1.42
+UPDATE creature_template SET ArmorModifier = 1.42 WHERE entry = 19516; -- Void Reaver
 
 UPDATE creature_template SET ArmorModifier = 0 WHERE entry = 23418; -- RoS 1
 
