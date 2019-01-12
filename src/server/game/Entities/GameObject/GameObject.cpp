@@ -163,6 +163,11 @@ std::string GameObject::GetAIName() const
     return sObjectMgr->GetGameObjectTemplate(GetEntry())->AIName;
 }
 
+GameObject* GameObject::GetLinkedTrap()
+{
+    return ObjectAccessor::GetGameObject(*this, m_linkedTrap);
+}
+
 void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target) const
 {
     if (!target)
@@ -466,7 +471,6 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
     if (spawnid)
         m_spawnId = spawnid;
 
-    /*TC
     if (uint32 linkedEntry = GetGOInfo()->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject();
@@ -475,9 +479,7 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
             SetLinkedTrap(linkedGO);
             map->AddToMap(linkedGO);
         }
-        else
-            delete linkedGO;
-    }*/
+    }
 
     return true;
 }

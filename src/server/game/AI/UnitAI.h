@@ -155,7 +155,7 @@ class TC_GAME_API UnitAI
 
         //Cast spell by Id, return SpellCastResult
 
-        //TC uint32 DoCast(uint32 spellId);
+        uint32 DoCast(uint32 spellId);
         uint32 DoCast(Unit* victim, uint32 spellId, CastSpellExtraArgs const& args = {});
         uint32 DoCastSelf(uint32 spellId, CastSpellExtraArgs const& args = {}) { return DoCast(me, spellId, args); }
         uint32 DoCastVictim(uint32 spellId, CastSpellExtraArgs const& args = {});

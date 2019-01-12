@@ -652,6 +652,9 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         ObjectGuid::LowType lootingGroupLowGUID;
 
+        GameObject* GetLinkedTrap();
+        void SetLinkedTrap(GameObject* linkedTrap) { m_linkedTrap = linkedTrap->GetGUID(); }
+
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id) const override;
         bool ActivateToQuest(Player *pTarget) const;
@@ -772,6 +775,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32 m_lootRecipientGroup;
         uint16 m_LootMode;                                  // bitmask, default LOOT_MODE_DEFAULT, determines what loot will be lootable
         uint32 m_lootGenerationTime;
+
+        ObjectGuid m_linkedTrap;
     private:
 		void RemoveFromOwner();
 

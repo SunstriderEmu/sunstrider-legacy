@@ -1296,7 +1296,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool IsValidPos(uint16 pos) { return IsBankPos(pos >> 8, pos & 255); }
         bool IsValidPos(uint8 bag, uint8 slot) const;
         bool HasBankBagSlot(uint8 slot) const;
-        bool HasItemCount(uint32 item, uint32 count, bool inBankAlso = false) const;
+        bool HasItemCount(uint32 item, uint32 count = 1, bool inBankAlso = false) const;
         uint32 GetEmptyBagSlotsCount() const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;
         bool CanNoReagentCast(SpellInfo const* spellInfo) const;
@@ -1519,7 +1519,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void GroupEventHappens(uint32 questId, WorldObject const* pEventObject);
         void ItemAddedQuestCheck(uint32 entry, uint32 count);
         void ItemRemovedQuestCheck(uint32 entry, uint32 count);
-        void KilledMonsterCredit(uint32 entry, ObjectGuid guid, uint32 questId = 0);
+        void KilledMonsterCredit(uint32 entry, ObjectGuid guid = ObjectGuid::Empty, uint32 questId = 0);
         void ActivatedGO(uint32 entry, ObjectGuid guid);
         void CastedCreatureOrGO(uint32 entry, ObjectGuid guid, uint32 spell_id);
         void TalkedToCreature(uint32 entry, ObjectGuid guid);

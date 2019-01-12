@@ -250,6 +250,9 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     //Returns friendly unit with the most amount of hp missing from max hp
     Unit* DoSelectLowestHpFriendly(float range, uint32 MinHPDiff = 1);
 
+    //Returns friendly unit with hp pct below specified and with specified entry
+    Unit* DoSelectBelowHpPctFriendlyWithEntry(uint32 entry, float range, uint8 hpPct = 1, bool excludeSelf = true);
+
     //Returns a list of friendly CC'd units within range
     std::list<Creature*> DoFindFriendlyCC(float range);
 
@@ -262,6 +265,9 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     // return true for heroic mode. i.e.
     bool IsHeroic() const { return _isHeroic; }
 
+    //TC compat
+    inline void SetCombatMovement(bool allowMovement) { SetCombatMovementAllowed(allowMovement); };
+
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellInfo const* SelectSpell(Unit* Target, SpellSchoolMask School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
@@ -273,10 +279,25 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     bool EnterEvadeIfOutOfCombatArea();
     virtual bool CheckEvadeIfOutOfCombatArea() const { return false; }
 
+    template <class T>
+    inline T const& DUNGEON_MODE(T const& normal5, T const& heroic10) const
+    {
+        switch (_difficulty)
+        {
+        case DUNGEON_DIFFICULTY_NORMAL:
+            return normal5;
+        case DUNGEON_DIFFICULTY_HEROIC:
+            return heroic10;
+        default:
+            break;
+        }
+
+        return heroic10;
+    }
+
 private:
     uint32 _evadeCheckCooldown;
     bool _isHeroic;
-
 };
 
 class TC_GAME_API BossAI : public ScriptedAI

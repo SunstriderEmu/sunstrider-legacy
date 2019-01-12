@@ -36,14 +36,6 @@ enum eEscortState
 struct TC_GAME_API EscortAI : public ScriptedAI
 {
     public:
-
-        // Pure Virtual Functions
-        virtual void WaypointReached(uint32, uint32) override = 0;
-
-        void JustEngagedWith(Unit*) override = 0;
-
-        void Reset() override = 0;
-
         // CreatureAI functions
 		EscortAI(Creature *c);
 

@@ -1,4 +1,5 @@
 #include "UnitAI.h"
+#include "SpellMgr.h"
 #include "Spell.h"
 
 void UnitAI::AttackStart(Unit *victim)
@@ -280,57 +281,15 @@ bool FarthestTargetSelector::operator()(Unit const* target) const
     return true;
 }
 
-/* TC
 uint32 UnitAI::DoCast(uint32 spellId)
 {
-    Unit* target = nullptr;
-
-    switch (AISpellInfo[spellId].target)
-    {
-    default:
-    case AITARGET_SELF:
-        target = me;
-        break;
-    case AITARGET_VICTIM:
-        target = me->GetVictim();
-        break;
-    case AITARGET_ENEMY:
-    {
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
-        {
-            bool playerOnly = spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS);
-            target = SelectTarget(SELECT_TARGET_RANDOM, 0, spellInfo->GetMaxRange(false), playerOnly);
-        }
-        break;
-    }
-    case AITARGET_ALLY:
-        target = me;
-        break;
-    case AITARGET_BUFF:
-        target = me;
-        break;
-    case AITARGET_DEBUFF:
-    {
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
-        {
-            bool playerOnly = spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS);
-            float range = spellInfo->GetMaxRange(false);
-
-            DefaultTargetSelector targetSelector(me, range, playerOnly, true, -(int32)spellId);
-            if (!(spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_VICTIM)
-                && targetSelector(me->GetVictim()))
-                target = me->GetVictim();
-            else
-                target = SelectTarget(SELECT_TARGET_RANDOM, 0, targetSelector);
-        }
-        break;
-    }
-    }
+    Unit* target = me->GetVictim();
 
     if (target)
-        me->CastSpell(target, spellId, false);
+        return me->CastSpell(target, spellId, false);
+
+    return SPELL_FAILED_BAD_TARGETS;
 }
-*/
 
 uint32 UnitAI::DoCast(Unit* victim, uint32 spellId, CastSpellExtraArgs const& args)
 {

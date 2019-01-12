@@ -10,6 +10,7 @@
 #include "Containers.h"
 #include "InstanceScript.h"
 #include "GameTime.h"
+#include "TemporarySummon.h"
 
  // Spell summary for ScriptedAI::SelectSpell
 struct TSpellSummary
@@ -608,6 +609,15 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
     Cell::VisitGridObjects(me, searcher, range);
     return pUnit;
+}
+
+Unit* ScriptedAI::DoSelectBelowHpPctFriendlyWithEntry(uint32 entry, float range, uint8 minHPDiff, bool excludeSelf)
+{
+	Unit* unit = nullptr;
+	Trinity::FriendlyBelowHpPctEntryInRange u_check(me, entry, range, minHPDiff, excludeSelf);
+	Trinity::UnitLastSearcher<Trinity::FriendlyBelowHpPctEntryInRange> searcher(me, unit, u_check);
+	Cell::VisitAllObjects(me, searcher, range);
+	return unit;
 }
 
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)

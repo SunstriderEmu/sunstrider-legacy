@@ -59,6 +59,10 @@ class TC_GAME_API CreatureAI : public UnitAI
     protected:
         Creature *me;
 
+        Creature* DoSummon(uint32 entry, Position const& pos, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        Creature* DoSummon(uint32 entry, WorldObject* obj, float radius = 5.0f, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        Creature* DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius = 5.0f, uint32 despawnTime = 30000, TempSummonType summonType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+
     public:
         enum EvadeReason
         {
@@ -92,6 +96,16 @@ class TC_GAME_API CreatureAI : public UnitAI
 
         // Called when the creature kills a unit
         virtual void KilledUnit(Unit *) {}
+
+        bool HealthBelowPct(uint32 pct) const
+        {
+            return me->HealthBelowPct(pct);
+        }
+
+        bool HealthAbovePct(uint32 pct) const
+        {
+            return me->HealthAbovePct(pct);
+        }
 
         // Called when the creature summon successfully other creature
         virtual void JustSummoned(Creature* ) {}
