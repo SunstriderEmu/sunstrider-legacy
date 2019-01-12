@@ -265,6 +265,7 @@ public:
 };
 
 // 31801 - Seal of Vengeance
+// TLK 53736 - Seal of Corruption
 template <uint32 DoTSpellId, uint32 DamageSpellId>
 class spell_pal_seal_of_vengeance : public SpellScriptLoader
 {
@@ -289,7 +290,7 @@ class spell_pal_seal_of_vengeance : public SpellScriptLoader
             When an auto-attack lands (does not dodge/parry/miss) that can proc a seal the of the following things happen independently of each other (see 2 roll system).
 
             1) A "hidden strike" which uses melee combat mechanics occurs. If it lands it refreshes/stacks SoV DoT. Only white swings can trigger a refresh or stack. (This hidden strike mechanic can also proc things like berserking..)
-            2) A weapon damage based proc will occur if you used a special (CS/DS/judge) or if you have a 5 stack (from auto attacks). This attack can not be avoided.
+            2) TLK: A weapon damage based proc will occur if you used a special (CS/DS/judge) or if you have a 5 stack (from auto attacks). This attack can not be avoided.
 
             Remember #2 happens regardless of #1 landing, it just requires the initial attack (autos, cs, etc) to land.
 
@@ -313,6 +314,7 @@ class spell_pal_seal_of_vengeance : public SpellScriptLoader
                 eventInfo.GetActor()->CastSpell(eventInfo.GetProcTarget(), DoTSpell, CastSpellExtraArgs(TRIGGERED_DONT_RESET_PERIODIC_TIMER).SetTriggeringAura(aurEff));
             }
 
+#ifdef LICH_KING
             //spell also does additional damage if we reached max stacks
             void HandleSeal(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
             {
@@ -339,11 +341,14 @@ class spell_pal_seal_of_vengeance : public SpellScriptLoader
                 args.AddSpellBP0(amount);
                 caster->CastSpell(target, DamageSpell, args);
             }
+#endif
 
             void Register() override
             {
                 OnEffectProc += AuraEffectProcFn(spell_pal_seal_of_vengeance_AuraScript::HandleApplyDoT, EFFECT_0, SPELL_AURA_DUMMY);
+#ifdef LICH_KING
                 OnEffectProc += AuraEffectProcFn(spell_pal_seal_of_vengeance_AuraScript::HandleSeal, EFFECT_0, SPELL_AURA_DUMMY);
+#endif
             }
         };
 
