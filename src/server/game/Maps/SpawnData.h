@@ -48,6 +48,7 @@ struct SpawnData
     WorldLocation spawnPoint;
     uint32 phaseMask = 0;
     int32 spawntimesecs = 0;
+    int32 spawntimesecs_max = 0; //if defined, roll between spawntimesecs and spawntimesecs_max
     uint8 spawnMask = 0;
     SpawnGroupTemplateData const* spawnGroupData = nullptr;
     uint32 scriptId = 0;

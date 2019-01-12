@@ -1140,9 +1140,9 @@ void ObjectMgr::LoadCreatures()
     uint32 count = 0;
     //                                                0                1    2          3
     QueryResult result = WorldDatabase.PQuery("SELECT creature.spawnID, map, spawnMask, modelid, "
-        //   4           5           6           7            8              9         10
-        "position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint, "
-        //   11         12       13            14          15                   16     17       18          19         20
+        //   4           5           6           7            8                9               10            11
+        "position_x, position_y, position_z, orientation, spawntimesecs, spawntimesecs_max, spawndist, currentwaypoint, "
+        //   12        13         14          15                 16          17      18         19         20         21
         "curhealth, curmana, MovementType, unit_flags, creature.ScriptName, event, pool_id, pool_entry, patch_min, patch_max "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.SpawnID = game_event_creature.guid "
@@ -1220,18 +1220,19 @@ void ObjectMgr::LoadCreatures()
         data.displayid        = fields[3].GetUInt32();
         data.spawnPoint.WorldRelocate(mapId, fields[4].GetFloat(), fields[5].GetFloat(), fields[6].GetFloat(), fields[7].GetFloat());
         data.spawntimesecs    = fields[ 8].GetUInt32();
-        data.spawndist        = fields[ 9].GetFloat();
-        data.currentwaypoint  = fields[10].GetUInt32();
-        data.curhealth        = fields[11].GetUInt32();
-        data.curmana          = fields[12].GetUInt32();
-        data.movementType     = fields[13].GetUInt8();
-        data.unit_flags       = fields[14].GetUInt32();
-        data.scriptId         = GetScriptId(fields[15].GetString());
-        int32 const gameEvent = fields[16].GetInt32();
-        data.poolId           = fields[17].GetUInt32(); //Old WR pool system
-        uint32 const poolId   = fields[18].GetUInt32();
-        data.patch_min        = fields[19].GetInt8();
-        data.patch_max        = fields[20].GetInt8();
+        data.spawntimesecs_max= fields[ 9].GetUInt32();
+        data.spawndist        = fields[10].GetFloat();
+        data.currentwaypoint  = fields[11].GetUInt32();
+        data.curhealth        = fields[12].GetUInt32();
+        data.curmana          = fields[13].GetUInt32();
+        data.movementType     = fields[14].GetUInt8();
+        data.unit_flags       = fields[15].GetUInt32();
+        data.scriptId         = GetScriptId(fields[16].GetString());
+        int32 const gameEvent = fields[17].GetInt32();
+        data.poolId           = fields[18].GetUInt32(); //Old WR pool system
+        uint32 const poolId   = fields[19].GetUInt32();
+        data.patch_min        = fields[20].GetInt8();
+        data.patch_max        = fields[21].GetInt8();
 
         if ((data.patch_min > data.patch_max) || (data.patch_max > WOW_PATCH_MAX))
         {

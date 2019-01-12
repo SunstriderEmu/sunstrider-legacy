@@ -1589,7 +1589,7 @@ bool Creature::LoadFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDup
     m_respawnCompatibilityMode = ((data->spawnGroupData->flags & SPAWNGROUP_FLAG_COMPATIBILITY_MODE) != 0);
     m_creatureData = data;
     m_respawnradius = data->spawndist;
-    m_respawnDelay = data->spawntimesecs;
+    m_respawnDelay = data->spawntimesecs_max ? urand(data->spawntimesecs, data->spawntimesecs_max) : data->spawntimesecs;
 
     // Is the creature script objecting to us spawning? If yes, delay by a little bit (then re-check in ::Update)
     if (!m_respawnTime && !map->IsSpawnGroupActive(data->spawnGroupData->groupId))
