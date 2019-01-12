@@ -142,6 +142,65 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
     return Trinity::Containers::MapGetValuePtr(_gameObjectTemplateStore, entry);
 }
 
+void ObjectMgr::RestoreDeletedItems()
+{
+    QueryResult result = CharacterDatabase.Query("SELECT id, player_guid, item_entry, stack_count FROM character_deleted_items");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Restored 0 prevously deleted items.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 id = fields[0].GetUInt32();
+        uint32 memberGuidlow = fields[1].GetUInt32();
+        uint32 itemEntry = fields[2].GetUInt32();
+        uint32 stackCount = fields[3].GetUInt32();
+
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
+
+        ObjectGuid memberGuid = ObjectGuid(HighGuid::Player, memberGuidlow);
+        Player* player = ObjectAccessor::FindConnectedPlayer(memberGuid);
+
+        if (proto)
+        {
+            Item* restoredItem = Item::CreateItem(itemEntry, stackCount ? stackCount : 1, player);
+            if (restoredItem)
+            {
+                // begin
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+                // save new item before send
+                restoredItem->SaveToDB(trans);
+
+                // subject
+                std::string subject = proto->Name1;
+
+                // text
+                MailDraft draft(subject, "We recovered a lost item in the twisting nether and noted that it was yours.$B$BPlease find said object enclosed.");
+                draft.AddItem(restoredItem);
+                draft.SendMailTo(trans, MailReceiver(player), MailSender(MAIL_NORMAL, memberGuid), MAIL_CHECK_MASK_NONE, 30 * DAY);
+
+                // delete from table
+                trans->PAppend("DELETE FROM character_deleted_items WHERE id = %u", id);
+
+                CharacterDatabase.CommitTransaction(trans);
+
+                count++;
+            }
+        }
+
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Restored %u previously deleted items to players.", count);
+}
+
 void ObjectMgr::LoadCreatureLocales()
 {
     uint32 oldMSTime = GetMSTime();

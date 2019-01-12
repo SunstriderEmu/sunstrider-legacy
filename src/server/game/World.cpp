@@ -1374,6 +1374,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DB_PING_INTERVAL] = sConfigMgr->GetIntDefault("MaxPingTime", 5);
 
     m_configs[CONFIG_CACHE_DATA_QUERIES] = sConfigMgr->GetBoolDefault("CacheDataQueries", true);
+
+    m_configs[CONFIG_RESTORE_DELETED_ITEMS] = sConfigMgr->GetBoolDefault("Progression.RestoreDeletedItems", true);
 }
 
 /// Get Server Patch
@@ -1957,6 +1959,12 @@ void World::SetInitialWorldSettings()
     #ifdef PLAYERBOT
     sPlayerbotAIConfig.Initialize();
     #endif
+
+    if (sWorld->getBoolConfig(CONFIG_RESTORE_DELETED_ITEMS))
+    {
+        TC_LOG_INFO("server.loading", "Restoring deleted items to players ...");
+        sObjectMgr->RestoreDeletedItems();
+    }
 
     TC_LOG_INFO("server.loading", "");
     TC_LOG_INFO("server.loading", "==========================================================");

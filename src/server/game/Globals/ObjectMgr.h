@@ -1219,6 +1219,8 @@ class TC_GAME_API ObjectMgr
         void LoadFactionChangeQuests();
         void LoadFactionChangeReputGeneric();
 
+        void RestoreDeletedItems();
+
         bool IsTransportMap(uint32 mapId) const { return _transportMaps.count(mapId); }
 
 #ifndef LICH_KING

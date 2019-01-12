@@ -1062,6 +1062,12 @@ Guild.EventLogRecordsCount = 100
 
 CacheDataQueries = 1
 
+###################################################################################################################
+#
+# PROGRESSION CONFIG
+#    NOTE: Generally not applicable to database-set progression fields, except for the WowPatch which
+#          defines which data is loaded from the database.
+#
 #
 #   WowPatch
 #        Description: Set patch
@@ -1080,6 +1086,15 @@ CacheDataQueries = 1
 #
 
 WowPatch = 4
+
+#
+#    Progression.RestoreDeletedItems
+#        Whether to automatically restore items which were previously deleted because no item template with
+#        this entry existed on that content patch. Players will receive the item in the mail once it has been
+#        added to the game.
+# Default: 1
+
+Progression.RestoreDeletedItems = 1
 
 #
 ###################################################################################################################
