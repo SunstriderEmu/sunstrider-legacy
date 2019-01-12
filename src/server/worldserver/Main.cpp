@@ -358,6 +358,9 @@ extern int main(int argc, char **argv)
         //  sScriptMgr->OnStartup();
 
         WorldUpdateLoop();
+
+        // set server offline
+        LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realmID);
     }
 
 shutdown:
@@ -367,9 +370,6 @@ shutdown:
     sLog->SetSynchronous();
 
     //  sScriptMgr->OnShutdown();
-
-    // set server offline
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realmID);
 
     TC_LOG_INFO("server.worldserver", "Halting process...");
 
