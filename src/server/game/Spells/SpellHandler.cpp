@@ -40,11 +40,12 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
 bool WorldSession::_HandleUseItemOpcode(uint8 bagIndex, uint8 slot, uint8 spell_count, uint8 cast_count, ObjectGuid item_guid, SpellCastTargets targets)
 {
-    Player* pUser = _player;
-
     // ignore for remote control state
-    if (GetClientControl().GetActiveMover() != pUser)
+    Unit* mover = GetClientControl().GetActiveMover();
+    if (mover && mover != _player)
         return false;
+
+    Player* pUser = _player;
 
     Item* pItem = pUser->GetUseableItemByPos(bagIndex, slot);
     if (!pItem)
@@ -296,7 +297,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
     // ignore for remote control state (for player case)
     Unit* mover = GetClientControl().GetActiveMover();
-    if (!mover || (mover != _player && mover->GetTypeId() == TYPEID_PLAYER))
+    if (mover && mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
     {
         recvPacket.rfinish(); // prevent spam at ignore packet
         return;
@@ -492,7 +493,7 @@ void WorldSession::HandleCancelChanneling(WorldPacket & recvData)
     _player->InterruptNonMeleeSpells(false, spellId, false);
 }
 
-void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
+void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
 {
     // ignore for remote control state
     if (GetClientControl().GetActiveMover() != _player)
