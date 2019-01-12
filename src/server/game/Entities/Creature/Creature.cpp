@@ -625,7 +625,8 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData* data)
     SetUInt32Value(UNIT_DYNAMIC_FLAGS, dynamicflags);
 
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
+    //sun: level + 3 for world bosses. This is verified for armor as bosses listed armor are the lvl 73 values instead of the 70.
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(IsWorldBoss() ? GetLevel() + 3 : GetLevel(), cInfo->unit_class);
     float armor = (float)stats->GenerateArmor(cInfo); /// @todo Why is this treated as uint32 when it's a float?
     SetStatFlatModifier(UNIT_MOD_ARMOR,             BASE_VALUE, armor);
     SetStatFlatModifier(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY-1])); //shifted by 1 because SPELL_SCHOOL_NORMAL is not in array

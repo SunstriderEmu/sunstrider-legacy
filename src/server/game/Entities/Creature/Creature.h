@@ -295,6 +295,11 @@ struct CreatureTemplate
         return canTameExotic || !IsExotic();
     }
 
+    bool IsWorldBoss() const
+    {
+        return rank == CREATURE_ELITE_WORLDBOSS || type_flags & CREATURE_TYPE_FLAG_BOSS_MOB;
+    }
+
     void InitializeQueryData();
     WorldPacket BuildQueryData(LocaleConstant loc) const;
 };
@@ -610,7 +615,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
             if(IsPet())
                 return false;
 
-            return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB);
+            return GetCreatureTemplate()->IsWorldBoss();
         }
         bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
 
