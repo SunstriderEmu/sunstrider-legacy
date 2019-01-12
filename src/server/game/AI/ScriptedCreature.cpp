@@ -146,6 +146,7 @@ ScriptedAI::ScriptedAI(Creature* creature) : CreatureAI(creature),
     _evadeCheckCooldown(2500)
 {
     _isHeroic = me->GetMap()->IsHeroic();
+    _difficulty = Difficulty(me->GetMap()->GetSpawnMode());
 }
 
 void ScriptedAI::AttackStart(Unit* who, bool melee)
