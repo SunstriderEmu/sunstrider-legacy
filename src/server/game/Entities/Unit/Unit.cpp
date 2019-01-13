@@ -14451,7 +14451,8 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* procTarget, uint32 typeMa
     if (typeMask & MELEE_BASED_TRIGGER_MASK && procTarget)
     {
         if (GetTypeId() == TYPEID_UNIT)
-            ToCreature()->AI()->OnMeleeProcHit(procTarget, hitMask);
+            if (CreatureAI* ai = ToCreature()->AI())
+                ai->OnMeleeProcHit(procTarget, hitMask);
 
         // Update skills here for players
         if (GetTypeId() == TYPEID_PLAYER)
