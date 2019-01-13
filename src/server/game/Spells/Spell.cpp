@@ -2711,9 +2711,10 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
             spellDamageInfo = std::make_unique<DamageInfo>(damageInfo, SPELL_DIRECT_DAMAGE, spell->m_attackType, hitMask);
             procSpellType |= PROC_SPELL_TYPE_DAMAGE;
 
+            /*Sun: TC has this but this is already triggered below... Not sure what is the intent here, probably an error.
             if (caster->GetTypeId() == TYPEID_PLAYER && !spell->m_spellInfo->HasAttribute(SPELL_ATTR0_STOP_ATTACK_TARGET) && !spell->m_spellInfo->HasAttribute(SPELL_ATTR4_CANT_TRIGGER_ITEM_SPELLS) &&
                 (spell->m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE || spell->m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_RANGED))
-                caster->ToPlayer()->CastItemCombatSpell(*spellDamageInfo);
+                caster->ToPlayer()->CastItemCombatSpell(*spellDamageInfo);*/
         }
 
         // HACK Shadow Word: Death - deals damage equal to damage done to caster if victim is not killed
