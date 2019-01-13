@@ -1982,43 +1982,6 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,45182, true);
                     return;
                 }
-                case 5938:                                  // Shiv
-                {
-                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    Player *pCaster = (m_caster->ToPlayer());
-
-                    Item *item = pCaster->GetWeaponForAttack(OFF_ATTACK);
-                    if(!item)
-                        return;
-
-                    // apply poison
-                    if (uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
-                    {
-                        if(SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id))
-                        {
-                            for (int s=0;s<3;s++)
-                            {
-                                if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
-                                    continue;
-
-                                SpellInfo const* combatEntry = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
-                                if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
-                                    continue;
-
-                                CastSpellExtraArgs args;
-                                args.TriggerFlags = TRIGGERED_FULL_MASK;
-                                args.SetCastItem(item);
-                                m_caster->CastSpell(unitTarget, combatEntry->Id, args);
-                            }
-                        }
-                    }
-
-                    //dmg + combo point effect
-                    m_caster->CastSpell(unitTarget, 5940, true);
-                    return;
-                }
             }
             break;
         case SPELLFAMILY_HUNTER:

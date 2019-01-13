@@ -197,10 +197,40 @@ public:
     }
 };
 
+// 5938 - Shiv
+//Shiv has a hack in Player::CastItemCombatSpell to allow 100% proc chance
+class spell_rog_shiv : public SpellScript
+{
+    PrepareSpellScript(spell_rog_shiv);
+
+    bool Load() override
+    {
+        return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+    }
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_ROGUE_SHIV_TRIGGERED });
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*damage*/)
+    {
+        Unit* caster = GetCaster();
+        if (Unit* unitTarget = GetHitUnit())
+            caster->CastSpell(unitTarget, SPELL_ROGUE_SHIV_TRIGGERED, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_rog_shiv::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_preparation();
     new spell_rog_blade_flurry();
     new spell_rog_deadly_throw_interrupt();
     new spell_rog_quick_recovery();
+    RegisterSpellScript(spell_rog_shiv);
 }
