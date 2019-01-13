@@ -3724,7 +3724,7 @@ void Spell::_cast(bool skipCheck /*= false*/)
 
     if (Unit* caster = m_caster->ToUnit())
         if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
-            if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, caster->GetMinionGUID()))
+            if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, caster->GetPetGUID()))
                 pet->DespawnOrUnsummon();
 
     PrepareTriggersExecutedOnHit();
