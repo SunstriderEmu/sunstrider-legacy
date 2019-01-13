@@ -4,8 +4,8 @@
 
 void PassiveAI::UpdateAI(const uint32)
 {
-    if(me->IsInCombat())
-        EnterEvadeMode();
+    if (me->IsEngaged() && !me->IsInCombat())
+        EnterEvadeMode(EVADE_REASON_NO_HOSTILES);
 }
 
 void PossessedAI::AttackStart(Unit *target)
