@@ -556,18 +556,231 @@ public:
         return true;
     }
     
-    // SMART_EVENT_WAYPOINT_START SMART_EVENT_WAYPOINT_REACHED SMART_EVENT_WAYPOINT_PAUSED SMART_EVENT_WAYPOINT_RESUMED 
-    // SMART_EVENT_WAYPOINT_STOPPED SMART_EVENT_WAYPOINT_ENDED 
-    // SMART_ACTION_WP_START SMART_ACTION_START_CLOSEST_WAYPOINT
+    static std::optional<uint32> FindMapForCreature(uint32 npcID)
+    {
+        static std::unordered_map<uint32 /*npcID*/, uint32 /*map*/> staticMaps;
+        if (staticMaps.empty())
+        {
+            staticMaps[17077] = 530;
+            staticMaps[19685] = 530;
+            staticMaps[20129] = 1;
+            staticMaps[17393] = 530;
+            staticMaps[3694]  = 1;
+            staticMaps[13716] = 349;
+            staticMaps[17405] = 530;
+            staticMaps[14353] = 429;
+            staticMaps[21768] = 530;
+            staticMaps[17379] = 530;
+            staticMaps[17418] = 530;
+            staticMaps[17318] = 530;
+            staticMaps[17391] = 530;
+            staticMaps[17404] = 530;
+            staticMaps[17417] = 530;
+            staticMaps[18154] = 530;
+            staticMaps[19604] = 530;
+            staticMaps[19616] = 530;
+            staticMaps[21181] = 530;
+            staticMaps[20802] = 530;
+            staticMaps[21409] = 530;
+            staticMaps[21410] = 530;
+            staticMaps[21867] = 530;
+            staticMaps[22507] = 530;
+            staticMaps[20438] = 530;
+            staticMaps[20439] = 530;
+        }
+
+        auto itr = staticMaps.find(npcID);
+        if (itr != staticMaps.end())
+            return std::optional<uint32>(itr->second);
+
+        CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
+        for (auto itr : allCreatures)
+        {
+            CreatureData const& creData = itr.second;
+            if (creData.GetFirstSpawnEntry() != npcID) //not actually correct but there are very few creatures using several entries
+                continue;
+
+            return  std::optional<uint32>(creData.spawnPoint.GetMapId());
+        }
+        return std::optional<uint32>();
+    }
+
     static bool HandleFixPathSmartCommand(ChatHandler* handler, char const* args)
     {
         uint32 modified = 0;
 
         std::ofstream outfileSQL("rework_path_smart.sql", std::ofstream::out);
 
-        SmartWaypointMgr::SmartWaypointStore store = sSmartWaypointMgr->GetWaypointStore();
+        struct PathList
+        {
+            uint32 waypointID;
+            uint32 entry;
+            int32 entryorguid;
+            uint8 sourceType;
+        };
+        //1 - list paths
+        static std::unordered_map<uint32 /*npcID*/, uint32 /*map*/> staticMatch;
+        if (staticMatch.empty())
+        {
+            staticMatch[57109] = 16700;
+            staticMatch[57110] = 16700;
+            staticMatch[57319] = 16831;
+            staticMatch[57357] = 16842;
+            staticMatch[57568] = 16842;
+            staticMatch[57569] = 16842;
+            staticMatch[62864] = 17845;
+            staticMatch[68118] = 17845; //not right npc but right map
+            staticMatch[68121] = 17845; //not right npc but right map
+            staticMatch[68865] = 17845; //not right npc but right map
+            staticMatch[68868] = 17845; //not right npc but right map
+            staticMatch[143540] = 14354; 
+            staticMatch[287080] = 14354; 
+            staticMatch[310238] = 16700; 
+            staticMatch[311588] = 17845; //not right npc but right map
+            staticMatch[430620] = 14354;
+            staticMatch[1366600] = 17845; //not right npc but right map
+            staticMatch[10000000] = 0;
+            staticMatch[10000001] = 0;
+            staticMatch[10000002] = 0;
+            staticMatch[10000003] = 0;  
+            staticMatch[10000004] = 0;  
+            staticMatch[12345678] = 0;
+            staticMatch[16777215] = 0; //not right npc but right map
+        }
 
-        handler->SendSysMessage("NYI");
+        for (auto storePath : sSmartWaypointMgr->GetWaypointStore())
+        {
+            uint32 entry = storePath.first;
+            uint32 creatureID = entry;
+            WaypointPath const& original_path = storePath.second;
+
+            auto itr = staticMatch.find(entry);
+            if (itr != staticMatch.end())
+            {
+                creatureID = itr->second;
+                if (!creatureID)
+                    continue;
+            }
+
+            CreatureTemplate const* info = sObjectMgr->GetCreatureTemplate(creatureID);
+            if (!info)
+                info = sObjectMgr->GetCreatureTemplate(creatureID / 100);
+            if (!info)
+            {
+                handler->PSendSysMessage("Could not find creature for entry %u", creatureID);
+                return true;
+            }
+
+            CreatureMovementData const& movementData = info->Movement;
+            if (movementData.IsFlightAllowed())
+                continue;
+
+            std::optional<uint32> _mapID = FindMapForCreature(info->Entry);
+            if (!_mapID.has_value())
+            {
+                //spawned via script?
+                handler->PSendSysMessage("Could not find map for npc %u, need fix", info->Entry);
+                return true;
+            }
+
+            Map const* map = sMapMgr->CreateBaseMap(*_mapID);
+            if (!map)
+                continue;
+
+            WaypointPath path;
+            if (original_path.nodes.size() == 1)
+                continue;
+
+            //step 1: Fill path with mmaps points
+            FillPathUsingMMaps(path, &original_path, map, WP_PATH_TYPE_ONCE);
+
+            //step 2: discard many many points
+            DiscardUnnecessaryPoints(path, WP_PATH_TYPE_ONCE);
+
+            //step3: write ids
+            uint32 id = original_path.nodes[0].id; //reuse same first id
+            for (auto& itr : path.nodes)
+                itr.id = id++;
+
+            //step4: Write results to file
+            bool changed = path.nodes.size() > original_path.nodes.size();
+            //if path was changed, write new path
+            if (changed)
+            {
+                modified++;
+                outfileSQL << "DELETE FROM `waypoints` WHERE `entry` = " << entry << ";" << std::endl;
+                outfileSQL << "INSERT INTO `waypoints` (`entry`, `pointid`, `position_x`, `position_y`, `position_z`, `point_comment`) VALUES " << std::endl;
+                for (auto itr2 = path.nodes.begin(); itr2 != path.nodes.end(); itr2++)
+                {
+                    outfileSQL << "(" << entry << ", " << itr2->id << ", " << itr2->x << ", " << itr2->y << ", " << itr2->z << ", ";
+
+                    if (itr2->temp)
+                    {
+                        uint32 originalID = uint32(itr2->temp - 1);
+                        auto result = WorldDatabase.PQuery("SELECT point_comment FROM waypoints WHERE entry = %u AND pointid = %u", entry, originalID);
+                        if (!result)
+                        {
+                            handler->PSendSysMessage("Path %u point %u not found???????", entry, originalID);
+                            return true;
+                        }
+                        std::string comment;
+                        if (originalID != itr2->id)
+                            comment += "original id: " + std::to_string(originalID) + " / ";
+                        comment += result->Fetch()[0].GetString();
+                        outfileSQL << "'" << comment.c_str() << "')";
+                    }
+                    else
+                        outfileSQL << "'autogenerated with `.mmap fixpath`')";
+
+                    if (std::next(itr2) != path.nodes.end())
+                        outfileSQL << ",";
+                    else
+                        outfileSQL << ";";
+
+                    outfileSQL << std::endl;
+                }
+                //list entryorguid using this path
+                struct SmartUser
+                {
+                    int32 entryorguid;
+                    uint8 sourceType;
+                };
+                std::vector<SmartUser> users;
+                auto result = WorldDatabase.PQuery("SELECT DISTINCT entryorguid, source_type FROM smart_scripts WHERE action_type = 53 AND action_param2 = %u", entry);
+                if (result)
+                {
+                    do
+                    {
+                        Field* fields = result->Fetch();
+                        SmartUser user;
+                        user.entryorguid = fields[0].GetInt32();
+                        user.sourceType = fields[1].GetUInt8();
+                        users.push_back(user);
+                    } while (result->NextRow());
+                }
+
+                for (SmartUser const& user : users)
+                {
+                    for (auto itr2 = path.nodes.rbegin(); itr2 != path.nodes.rend(); itr2++) //iterate in reverse, want to affect higher ids first
+                    {
+                        if (itr2->temp)
+                        {
+                            uint32 originalID = uint32(itr2->temp - 1);
+                            if (originalID == itr2->id)
+                                continue;
+
+                            //SMART_EVENT_WAYPOINT_REACHED
+                            outfileSQL << "UPDATE smart_scripts SET event_param1 = " << itr2->id << " WHERE entryorguid = " << user.entryorguid << " AND source_type = " << uint32(user.sourceType) << " AND event_type IN (40, 56, 57, 58) AND event_param1 = " << originalID << " AND event_param2 IN (0, " << entry << ");" << std::endl;
+                            if(user.sourceType == 9)
+                                outfileSQL << "UPDATE smart_scripts SET event_param1 = " << itr2->id << " WHERE entryorguid = " << user.entryorguid / 100 << " AND source_type = 0 AND event_type IN (40, 56, 57, 58) AND event_param1 = " << originalID << " AND event_param2 IN (0, " << entry << ");" << std::endl;
+                        }
+                    }
+                }
+            }
+        }
+
+        outfileSQL.close();
+        handler->PSendSysMessage("Finished %u", modified);
         return true;
     }
 
@@ -577,35 +790,12 @@ public:
 
         std::ofstream outfileSQL("rework_path_escort.sql", std::ofstream::out);
 
-        static std::unordered_map<uint32 /*npcID*/, uint32 /*map*/> staticMaps;
-        staticMaps[17077] = 530;
-        staticMaps[19685] = 530;
-        staticMaps[20129] = 1;
-
-        auto FindMap = [&](uint32 npcID)
-        {
-            auto itr = staticMaps.find(npcID);
-            if (itr != staticMaps.end())
-                return std::optional<uint32>(itr->second);
-
-            CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
-            for (auto itr : allCreatures)
-            {
-                CreatureData const& creData = itr.second;
-                if (creData.GetFirstSpawnEntry() != npcID) //not actually correct but there are very few creatures using several entries
-                    continue;
-
-                return  std::optional<uint32>(creData.spawnPoint.GetMapId());
-            }
-            return std::optional<uint32>();
-        };
-
         SystemMgr::ScriptWaypointStore store = sScriptSystemMgr->GetWaypointStore();
         for (auto itr : store)
         {
             uint32 entry = itr.first;
             WaypointPath const& original_path = itr.second;
-            std::optional<uint32> _mapID = FindMap(entry);
+            std::optional<uint32> _mapID = FindMapForCreature(entry);
             if (!_mapID.has_value())
             {
                 //spawned via script?
@@ -635,8 +825,6 @@ public:
             //step4: Write results to file
 
             bool changed = path.nodes.size() > original_path.nodes.size();
-            bool warn = path.nodes.size() > original_path.nodes.size() * 2;
-
             //if path was changed, write new path
             if (changed)
             {
@@ -661,10 +849,10 @@ public:
                         if(originalID != itr2->id)
                             comment += "original id: " + std::to_string(originalID) + " / ";
                         comment += result->Fetch()[0].GetString();
-                        outfileSQL << ", '" << comment.c_str() << "')";
+                        outfileSQL << "'" << comment.c_str() << "')";
                     }
                     else
-                        outfileSQL << ", 'autogenerated with `.mmap fixpath`')";
+                        outfileSQL << "'autogenerated with `.mmap fixpath`')";
 
                     if (std::next(itr2) != path.nodes.end())
                         outfileSQL << ",";
