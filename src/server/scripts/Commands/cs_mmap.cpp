@@ -7,6 +7,8 @@
 #include "WaypointManager.h"
 #include "WaypointMovementGenerator.h"
 #include "MapManager.h"
+#include "ScriptSystem.h"
+#include "SmartScriptMgr.h"
 #include <fstream>
 
 class mmaps_commandscript : public CommandScript
@@ -305,6 +307,107 @@ public:
         return true;
     }
 
+    static void FillPathUsingMMaps(WaypointPath& path, WaypointPath const* original_path, Map const* map, WaypointPathType pathType)
+    {
+        bool lastPoint = false;
+        for (auto itr = original_path->nodes.begin(); itr != original_path->nodes.end(); itr++)
+        {
+            WaypointNode newNode = *itr;
+            newNode.temp = newNode.id + 1; //Mark this point as original and non removable
+            path.nodes.push_back(newNode);
+            auto nextItr = std::next(itr);
+            if (nextItr == original_path->nodes.end())
+            {
+                if (pathType == WP_PATH_TYPE_LOOP)
+                {
+                    nextItr = original_path->nodes.begin();
+                    lastPoint = true;
+                }
+                else
+                    break;
+            }
+
+            G3D::Vector3 start = G3D::Vector3(itr->x, itr->y, itr->z);
+            G3D::Vector3 end = G3D::Vector3(nextItr->x, nextItr->y, nextItr->z);
+            G3D::Vector3 diff = end - start;
+
+            PathGenerator pathGenerator(Position(start.x, start.y, start.z), map->GetId());
+            pathGenerator.SetPathLengthLimit(diff.length() * 2);
+            bool success = pathGenerator.CalculatePath(end.x, end.y, end.z, true, false);
+            if (success)
+                if (pathGenerator.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE | PATHFIND_NOT_USING_PATH))
+                    success = false;
+
+            if (success)
+            {
+                Movement::PointsArray points = pathGenerator.GetPath();
+                points.erase(points.begin());
+                points.pop_back();
+                for (auto point : points)
+                {
+                    WaypointNode intermediateNode(0, point);
+                    intermediateNode.moveType = newNode.moveType;
+                    path.nodes.push_back(intermediateNode);
+                }
+            }
+
+            if (lastPoint)
+                break;
+        }
+    }
+
+    static void DiscardUnnecessaryPoints(WaypointPath& path, WaypointPathType pathType)
+    {
+        float const MAX_GROUND_DIST = 1.5f;
+        bool lastPoint = false;
+        WaypointNode lastNode = *(path.nodes.begin());
+        for (auto itr = ++path.nodes.begin(); itr != path.nodes.end();) //start at node 2
+        {
+            WaypointNode& currentNode = *itr;
+            if (currentNode.temp) //point is original and non removable
+                goto prepare_next_loop;
+
+            {
+                WaypointNode const& previousNode = lastNode;
+                auto nextItr = std::next(itr);
+                if (nextItr == path.nodes.end())
+                {
+                    if (pathType == WP_PATH_TYPE_LOOP)
+                    {
+                        nextItr = path.nodes.begin();
+                        lastPoint = true;
+                    }
+                    else
+                        break;
+                }
+
+                WaypointNode const& nextNode = *nextItr;
+
+                G3D::Vector3 start(previousNode.x, previousNode.y, previousNode.z);
+                G3D::Vector3 delta = G3D::Vector3(nextNode.x, nextNode.y, nextNode.z) - start;
+                G3D::Vector3 deltaCurrent = G3D::Vector3(currentNode.x, currentNode.y, currentNode.z) - start;
+                G3D::Vector3 pointCurrent = G3D::Vector3(currentNode.x, currentNode.y, currentNode.z);
+
+                //approximative
+                G3D::Vector3 pointLine = start + delta * (deltaCurrent.length() / delta.length());
+                if ((pointCurrent - pointLine).length() < MAX_GROUND_DIST)
+                {
+                    itr = path.nodes.erase(itr);
+                    //then last node is still the same
+                    continue;
+                }
+            }
+
+            if (lastPoint)
+                break;
+
+            //prepare next loop
+        prepare_next_loop:
+            lastNode = currentNode;
+            itr++;
+        }
+    }
+
     /*
     Will try to insert point between path nodes whenever needed. Generate files in the working directory.
     Adapt scripts after that:
@@ -314,14 +417,14 @@ public:
     static bool HandleFixPathCommand(ChatHandler* handler, char const* args)
     { 
         CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
-        float const MAX_CHECK_DIST = 3.0f;
-        float const MAX_GROUND_DIST = MAX_CHECK_DIST / 2;
         uint32 const DEBUG_LIMIT = 0; // stop after DEBUG_LIMIT modified if set
         uint32 const DEBUG_PATH_ID = 0; // only do this path if set 
         uint32 modified = 0;
 
         std::ofstream outfile("rework_path.txt", std::ofstream::out);
         std::ofstream outfileSQL("rework_path.sql", std::ofstream::out);
+
+        std::vector<uint32> alreadyDone;
 
         for (auto itr : allCreatures)
         {
@@ -364,115 +467,32 @@ public:
                 continue;
             }
 
+            if (std::find(alreadyDone.begin(), alreadyDone.end(), pathID) != alreadyDone.end())
+            {
+                outfileSQL << "UPDATE `creature_addon` SET `path_id` = '" << pathID << "' WHERE `spawnID` = " << spawnID << ";" << std::endl << std::endl;
+                continue;
+            }
+
             Map const* map = sMapMgr->CreateBaseMap(creData.spawnPoint.GetMapId());
             if (!map)
                 continue;
 
             WaypointPath path;
-            bool lastPoint = false;
             if (original_path->nodes.size() == 1)
                 continue;
 
-            for (auto itr = original_path->nodes.begin(); itr != original_path->nodes.end(); itr++)
-            {
-                WaypointNode newNode = *itr;
-                newNode.eventChance = newNode.id + 1; //Mark this point as original and non removable
-                path.nodes.push_back(newNode);
-                auto nextItr = std::next(itr);
-                if (nextItr == original_path->nodes.end())
-                {
-                    if (original_path->pathType == WP_PATH_TYPE_LOOP)
-                    {
-                        nextItr = original_path->nodes.begin();
-                        lastPoint = true;
-                    }
-                    else
-                        break;
-                }
-
-                G3D::Vector3 start = G3D::Vector3(itr->x, itr->y, itr->z);
-                G3D::Vector3 end = G3D::Vector3(nextItr->x, nextItr->y, nextItr->z);
-                G3D::Vector3 diff = end - start;
-
-                PathGenerator pathGenerator(Position(start.x, start.y, start.z), map->GetId());
-                pathGenerator.SetPathLengthLimit(diff.length() * 2);
-                bool success = pathGenerator.CalculatePath(end.x, end.y, end.z, true, false);
-                if (success)
-                    if (pathGenerator.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE | PATHFIND_NOT_USING_PATH))
-                        success = false;
-
-                if (success)
-                {
-                    Movement::PointsArray points = pathGenerator.GetPath();
-                    points.erase(points.begin());
-                    points.pop_back();
-                    for (auto point : points)
-                    {
-                        WaypointNode intermediateNode(0, point);
-                        intermediateNode.eventChance = 0;
-                        intermediateNode.moveType = newNode.moveType;
-                        path.nodes.push_back(intermediateNode);
-                    }
-                }
-
-                if (lastPoint)
-                    break;
-            }
-
+            //step 1: Fill path with mmaps points
+            FillPathUsingMMaps(path, original_path, map, WaypointPathType(original_path->pathType));
+            
             //step 2: discard many many points
-            lastPoint = false;
-            WaypointNode lastNode = *(path.nodes.begin());
-            for (auto itr = ++path.nodes.begin(); itr != path.nodes.end();) //start at node 2
-            {
-                WaypointNode& currentNode = *itr;
-                if (currentNode.eventChance) //point is original and non removable
-                    goto prepare_next_loop;
-
-                {
-                    WaypointNode const& previousNode = lastNode;
-                    auto nextItr = std::next(itr);
-                    if (nextItr == path.nodes.end())
-                    {
-                        if (original_path->pathType == WP_PATH_TYPE_LOOP)
-                        {
-                            nextItr = path.nodes.begin();
-                            lastPoint = true;
-                        }
-                        else
-                            break;
-                    }
-
-                    WaypointNode const& nextNode = *nextItr;
-
-                    G3D::Vector3 start(previousNode.x, previousNode.y, previousNode.z);
-                    G3D::Vector3 delta = G3D::Vector3(nextNode.x, nextNode.y, nextNode.z) - start;
-                    G3D::Vector3 deltaCurrent = G3D::Vector3(currentNode.x, currentNode.y, currentNode.z) - start;
-                    G3D::Vector3 pointCurrent = G3D::Vector3(currentNode.x, currentNode.y, currentNode.z);
-
-                    //approximative
-                    G3D::Vector3 pointLine = start + delta * (deltaCurrent.length() / delta.length());
-                    if ((pointCurrent - pointLine).length() < MAX_GROUND_DIST)
-                    {
-                        itr = path.nodes.erase(itr);
-                        //then last node is still the same
-                        continue;
-                    }
-                }
-
-                if (lastPoint)
-                    break;
-
-                //prepare next loop
-            prepare_next_loop:
-                lastNode = currentNode;
-                itr++;
-            }
-
+            DiscardUnnecessaryPoints(path, WaypointPathType(original_path->pathType));
+         
             //step3: write ids
-            uint32 id = 1;
+            uint32 id = original_path->nodes[0].id; //reuse same first id
             for (auto& itr : path.nodes)
                 itr.id = id++;
 
+            //step4: Write results to file
             bool changed = path.nodes.size() > original_path->nodes.size();
             bool warn = path.nodes.size() > original_path->nodes.size()*2;
 
@@ -480,6 +500,8 @@ public:
             if (changed)
             {
                 modified++;
+                alreadyDone.push_back(pathID);
+
                 outfileSQL << "DELETE FROM `waypoint_data` WHERE `id` = " << pathID << ";" << std::endl;
                 outfile << "PATH: " << pathID << ", SPAWN: " << spawnID;
                 if (warn)
@@ -498,10 +520,22 @@ public:
                     else
                         outfileSQL << "NULL";
 
-                    if (itr2->eventChance)
+                    if (itr2->temp)
                     {
-                        outfile << " (original id:" << uint32(itr2->eventChance - 1) << ")";
-                        outfileSQL << ", 'original id:" << uint32(itr2->eventChance - 1) << "')";
+                        uint32 originalID = uint32(itr2->temp - 1);
+                        outfile << " (original id:" << originalID << ")";
+
+                        auto result = WorldDatabase.PQuery("SELECT comment FROM waypoint_data WHERE id = %u AND point = %u", pathID, originalID);
+                        if (!result)
+                        {
+                            handler->PSendSysMessage("Path %u point %u not found???????", pathID, originalID);
+                            return true;
+                        }
+                        std::string comment;
+                        if (originalID != itr2->id)
+                            comment += "original id: " + std::to_string(originalID) + " / ";
+                        comment += result->Fetch()[0].GetString();
+                        outfileSQL << ", '" << comment.c_str() << "')";
                     }
                     else
                         outfileSQL << ", 'autogenerated with `.mmap fixpath`')";
@@ -521,16 +555,128 @@ public:
         handler->PSendSysMessage("Finished %u", modified);
         return true;
     }
-
+    
+    // SMART_EVENT_WAYPOINT_START SMART_EVENT_WAYPOINT_REACHED SMART_EVENT_WAYPOINT_PAUSED SMART_EVENT_WAYPOINT_RESUMED 
+    // SMART_EVENT_WAYPOINT_STOPPED SMART_EVENT_WAYPOINT_ENDED 
+    // SMART_ACTION_WP_START SMART_ACTION_START_CLOSEST_WAYPOINT
     static bool HandleFixPathSmartCommand(ChatHandler* handler, char const* args)
     {
+        uint32 modified = 0;
+
+        std::ofstream outfileSQL("rework_path_smart.sql", std::ofstream::out);
+
+        SmartWaypointMgr::SmartWaypointStore store = sSmartWaypointMgr->GetWaypointStore();
+
         handler->SendSysMessage("NYI");
         return true;
     }
 
     static bool HandleFixPathEscortCommand(ChatHandler* handler, char const* args)
     {
-        handler->SendSysMessage("NYI");
+        uint32 modified = 0;
+
+        std::ofstream outfileSQL("rework_path_escort.sql", std::ofstream::out);
+
+        static std::unordered_map<uint32 /*npcID*/, uint32 /*map*/> staticMaps;
+        staticMaps[17077] = 530;
+        staticMaps[19685] = 530;
+        staticMaps[20129] = 1;
+
+        auto FindMap = [&](uint32 npcID)
+        {
+            auto itr = staticMaps.find(npcID);
+            if (itr != staticMaps.end())
+                return std::optional<uint32>(itr->second);
+
+            CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
+            for (auto itr : allCreatures)
+            {
+                CreatureData const& creData = itr.second;
+                if (creData.GetFirstSpawnEntry() != npcID) //not actually correct but there are very few creatures using several entries
+                    continue;
+
+                return  std::optional<uint32>(creData.spawnPoint.GetMapId());
+            }
+            return std::optional<uint32>();
+        };
+
+        SystemMgr::ScriptWaypointStore store = sScriptSystemMgr->GetWaypointStore();
+        for (auto itr : store)
+        {
+            uint32 entry = itr.first;
+            WaypointPath const& original_path = itr.second;
+            std::optional<uint32> _mapID = FindMap(entry);
+            if (!_mapID.has_value())
+            {
+                //spawned via script?
+                handler->PSendSysMessage("Could not find map for npc %u, need fix", entry);
+                return true;
+            }
+
+            Map const* map = sMapMgr->CreateBaseMap(*_mapID);
+            if (!map)
+                continue;
+
+            WaypointPath path;
+            if (original_path.nodes.size() == 1)
+                continue;
+
+            //step 1: Fill path with mmaps points
+            FillPathUsingMMaps(path, &original_path, map, WP_PATH_TYPE_ONCE);
+
+            //step 2: discard many many points
+            DiscardUnnecessaryPoints(path, WP_PATH_TYPE_ONCE);
+
+            //step3: write ids
+            uint32 id = original_path.nodes[0].id; //reuse same first id
+            for (auto& itr : path.nodes)
+                itr.id = id++;
+
+            //step4: Write results to file
+
+            bool changed = path.nodes.size() > original_path.nodes.size();
+            bool warn = path.nodes.size() > original_path.nodes.size() * 2;
+
+            //if path was changed, write new path
+            if (changed)
+            {
+                modified++;
+                outfileSQL << "DELETE FROM `script_waypoint` WHERE `entry` = " << entry << ";" << std::endl;
+                outfileSQL << "INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `waittime`, `point_comment`) VALUES " << std::endl;
+                auto itr2 = path.nodes.begin();
+                for (; itr2 != path.nodes.end(); itr2++)
+                {
+                    outfileSQL << "(" << entry << ", " << itr2->id << ", " << itr2->x << ", " << itr2->y << ", " << itr2->z << ", " << itr2->delay << ", ";
+
+                    if (itr2->temp)
+                    {
+                        uint32 originalID = uint32(itr2->temp - 1);
+                        auto result = WorldDatabase.PQuery("SELECT point_comment FROM script_waypoint WHERE entry = %u AND pointid = %u", entry, originalID);
+                        if (!result)
+                        {
+                            handler->PSendSysMessage("Path %u point %u not found???????", entry, originalID);
+                            return true;
+                        }
+                        std::string comment;
+                        if(originalID != itr2->id)
+                            comment += "original id: " + std::to_string(originalID) + " / ";
+                        comment += result->Fetch()[0].GetString();
+                        outfileSQL << ", '" << comment.c_str() << "')";
+                    }
+                    else
+                        outfileSQL << ", 'autogenerated with `.mmap fixpath`')";
+
+                    if (std::next(itr2) != path.nodes.end())
+                        outfileSQL << ",";
+                    else
+                        outfileSQL << ";";
+
+                    outfileSQL << std::endl;
+                }
+            }
+        }
+        outfileSQL.close();
+        handler->PSendSysMessage("Finished %u", modified);
         return true;
     }
 };

@@ -1721,10 +1721,13 @@ class TC_GAME_API SmartWaypointMgr
         }
 
         void LoadFromDB();
-        WaypointPath const* GetPath(uint32 id);
+
+        typedef std::unordered_map<uint32, WaypointPath> SmartWaypointStore;
+        WaypointPath const* GetPath(uint32 id) const;
+        SmartWaypointStore const& GetWaypointStore() const { return _waypointStore; }
 
     private:
-        std::unordered_map<uint32, WaypointPath> _waypointStore;
+        SmartWaypointStore _waypointStore;
 };
 
 // all events for a single entry

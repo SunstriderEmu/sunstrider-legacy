@@ -16,7 +16,7 @@
 #include "WaypointDefines.h"
 
 //from waypoints table
-WaypointPath const* SmartWaypointMgr::GetPath(uint32 id)
+WaypointPath const* SmartWaypointMgr::GetPath(uint32 id) const
 {
     auto itr = _waypointStore.find(id);
     if (itr != _waypointStore.end())

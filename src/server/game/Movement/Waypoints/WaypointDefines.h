@@ -47,6 +47,7 @@ struct WaypointNode
     uint32 eventId = 0;
     uint32 moveType = WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG;
     uint8 eventChance = 0;
+    uint32 temp = 0; //for mmaps commands, remove me later
 };
 
 typedef std::vector<WaypointNode*> WaypointPathNodes;
