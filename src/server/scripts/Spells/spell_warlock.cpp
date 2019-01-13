@@ -16,6 +16,8 @@ enum WarlockSpells
     SPELL_WARLOCK_LIFE_TAP_ENERGIZE          = 31818,
     SPELL_WARLOCK_LIFE_TAP_ENERGIZE_2        = 32553,
     SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL = 31117,
+    SPELL_WARLOCK_ENSLAVE_DEMON              = 20882,
+    SPELL_WARLOCK_INFERNO_EFFECT             = 22703,
 };
 
 enum WarlockSpellIcons
@@ -543,6 +545,48 @@ class spell_warl_shadow_vulnerability : public AuraScript
     }
 };
 
+// 1122 - Inferno
+class spell_warl_inferno : public SpellScript
+{
+    PrepareSpellScript(spell_warl_inferno);
+
+    bool Validate(SpellInfo const* /*spell*/) override
+    {
+        return ValidateSpellInfo({ SPELL_WARLOCK_ENSLAVE_DEMON, SPELL_WARLOCK_INFERNO_EFFECT });
+    }
+
+    void HandleSummon(SpellEffIndex effIndex, int32& /*damage*/)
+    {
+        PreventHitDefaultEffect(effIndex);
+        
+        Position pos = GetSpell()->GetSpellDestination(effIndex)._position;
+        uint32 entry = GetSpellInfo()->Effects[effIndex].MiscValue;
+        SpellInfo const* enslaveSpellInfo = sSpellMgr->GetSpellInfo(SPELL_WARLOCK_ENSLAVE_DEMON); //use duration of enslave, as specified in tooltip with "under the command of the caster for $20882d"
+        ASSERT(enslaveSpellInfo);
+        TempSummon* summon = GetCaster()->SummonCreature(entry, pos, TEMPSUMMON_TIMED_DESPAWN, enslaveSpellInfo->GetDuration()); 
+        if (!summon)
+            return;
+
+        GetSpell()->ExecuteLogEffectSummonObject(effIndex, summon);
+
+        //Cata patchnote: "Inferno will no longer replace your current minion."
+        //Unsummon any current minion (else the enslave spell will fail anyway)
+        if (Creature* pet = GetCaster()->GetMap()->GetCreature(GetCaster()->GetPetGUID()))
+            pet->DespawnOrUnsummon();
+
+        CastSpellExtraArgs args(true);
+        args.ForceHitResult = SPELL_MISS_NONE; //can't miss
+        GetCaster()->CastSpell(summon, SPELL_WARLOCK_ENSLAVE_DEMON, args);
+        summon->CastSpell(summon, SPELL_WARLOCK_INFERNO_EFFECT, true); // Inferno effect. Should be delayed to match animation?
+        summon->SetReactState(REACT_AGGRESSIVE);
+    }
+
+    void Register() override
+    {
+        OnEffectHit += SpellEffectFn(spell_warl_inferno::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     RegisterAuraScript(spell_warl_curse_of_agony);
@@ -558,4 +602,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_t4_2p_bonus<SPELL_WARLOCK_SHADOWFLAME>("spell_warl_t4_2p_bonus_fire");
     new spell_warl_life_tap();
     new spell_unstable_affliction();
+    RegisterSpellScript(spell_warl_inferno);
 }

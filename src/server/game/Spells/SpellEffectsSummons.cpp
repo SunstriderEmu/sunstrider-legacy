@@ -277,12 +277,6 @@ void Spell::EffectSummonType(uint32 effIndex)
             //lolhack section 3
             switch (entry)
             {
-                case 89: // Inferno summon
-                {
-                    // Enslave demon effect, without mana cost and cooldown
-                    m_caster->CastSpell(summon, 20882, TRIGGERED_FULL_MASK);          // FIXME: enslave does not scale with level, level 62+ minions cannot be enslaved
-                    summon->CastSpell(summon, 22703, true); // Inferno effect
-                } break;
                 case 23369: // Whirling Blade (no idea what this is for)
                 {
                     if (_unitCaster && _unitCaster->GetVictim())
