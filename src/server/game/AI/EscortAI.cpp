@@ -1,5 +1,6 @@
 #include "EscortAI.h"
 #include "MovementGenerator.h"
+#include "ScriptSystem.h"
 
 enum Points
 {
@@ -273,7 +274,7 @@ void EscortAI::AddWaypoint(uint32 id, float x, float y, float z, float orientati
 
 void EscortAI::FillPointMovementListForCreature()
 {
-    /*WaypointPath const* path = sScriptSystemMgr->GetPath(me->GetEntry());
+    WaypointPath const* path = sScriptSystemMgr->GetPath(me->GetEntry());
     if (!path)
         return;
 
@@ -286,36 +287,6 @@ void EscortAI::FillPointMovementListForCreature()
 
         _path.nodes.push_back(std::move(node));
     }
-    */ 
-    _path.nodes.clear();
-    uint32 entry = me->GetEntry();
-    if (entry == 0)
-        return;
-
-    QueryResult result = WorldDatabase.PQuery("SELECT pointid, location_x, location_y, location_z, waittime FROM escort_waypoints WHERE entry = '%u' ORDER BY pointid", entry);
-
-    if (!result)
-    {
-        TC_LOG_ERROR("scripts", "SD2 ERROR: EscortAI: Attempt to GetWaypointListFromDB for creature entry %u, but no record found in DB !", entry);
-        return;
-    }
-
-    do
-    {
-        Field* fields = result->Fetch();
-        WaypointNode node;
-        node.id =  fields[0].GetUInt16();
-        node.x = fields[1].GetFloat();
-        node.y = fields[2].GetFloat();
-        node.z = fields[3].GetFloat();
-        node.delay = fields[4].GetUInt32();
-
-        Trinity::NormalizeMapCoord(node.x);
-        Trinity::NormalizeMapCoord(node.y);
-        node.moveType = _running ? WAYPOINT_MOVE_TYPE_RUN : WAYPOINT_MOVE_TYPE_WALK;
-
-        _path.nodes.push_back(std::move(node));
-    } while (result->NextRow());
 }
 
 void EscortAI::SetRun(bool on)

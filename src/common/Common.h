@@ -207,30 +207,15 @@ typedef std::vector<std::string> StringVector;
 #define M_PI            3.14159265358979323846f
 #endif
 
-#define MAX_QUERY_LEN 32*1024
+#ifndef M_PI_4
+#define M_PI_4 0.785398163397448309616
+#endif
 
-//! Optional helper class to wrap optional values within.
-template <typename T>
-using Optional = boost::optional<T>;
+#define MAX_QUERY_LEN 32*1024
 
 namespace Trinity
 {
     using std::make_unique;
-}
-
-//! Hash implementation for std::pair to allow using pairs in unordered_set or as key for unordered_map
-//! Individual types used in pair must be hashable by boost::hash
-namespace std
-{
-    template<class K, class V>
-    struct hash<std::pair<K, V>>
-    {
-    public:
-        size_t operator()(std::pair<K, V> const& key) const
-        {
-            return boost::hash_value(key);
-        }
-    };
 }
 
 enum ClientBuild : uint32

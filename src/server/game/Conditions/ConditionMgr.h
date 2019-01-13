@@ -4,6 +4,7 @@
 #define TRINITY_CONDITIONMGR_H
 
 #include "Define.h"
+#include "Hash.h"
 #include <list>
 #include <map>
 #include <string>

@@ -24,6 +24,7 @@
 #include "WaterDefines.h"
 #include "ModelIgnoreFlags.h"
 #include "Common.h"
+#include "Optional.h"
 
 //===========================================================
 

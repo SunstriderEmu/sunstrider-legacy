@@ -15,6 +15,7 @@
 #include "SpawnData.h"
 #include "Transaction.h"
 #include "SharedDefines.h"
+#include "Optional.h"
 
 #include <bitset>
 #include <list>

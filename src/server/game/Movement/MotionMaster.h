@@ -10,6 +10,7 @@
 #include "ObjectDefines.h"
 #include "Spline/MoveSpline.h"
 #include "MovementDefines.h"
+#include "Optional.h"
 #include <deque>
 #include <functional>
 #include <set>

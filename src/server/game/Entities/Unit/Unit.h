@@ -18,6 +18,8 @@
 #include "SpellInfo.h"
 #include "ItemTemplate.h"
 #include "UnitDefines.h"
+#include "Optional.h"
+
 struct AbstractFollower;
 class UnitAI;
 class SpellCastTargets;

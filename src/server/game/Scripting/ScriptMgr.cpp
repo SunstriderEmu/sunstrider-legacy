@@ -14,6 +14,7 @@
 #include "SmartAI.h"
 #include "OutdoorPvPMgr.h"
 #include "Chat.h"
+#include "ScriptSystem.h"
 #ifdef TESTS
 #include "TestCase.h"
 #endif
@@ -950,73 +951,6 @@ std::unordered_map<int32, StringTextData> TextMap;
 
 void LoadOverridenSQLData();
 
-// -------------------
-void ScriptMgr::LoadDatabase()
-{
-    //***Preform all DB queries here***
-    QueryResult result;
-
-    // Drop Existing Text Map, only done once and we are ready to add data from multiple sources.
-    TextMap.clear();
-
-    // Load OLDScript Text
-    TC_LOG_INFO("server.loading","TSCR: Loading Script Texts...");
-    LoadTrinityStrings(WorldDatabase,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
-
-    // Gather Additional data from Script Texts
-    result = WorldDatabase.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
-
-    TC_LOG_INFO("server.loading","TSCR: Loading Script Texts additional data...");
-    if (result)
-    {
-        uint32 count = 0;
-
-        do
-        {
-            Field* fields = result->Fetch();
-            StringTextData temp;
-
-            int32 i             = fields[0].GetInt32();
-            temp.SoundId        = fields[1].GetInt32();
-            temp.Type           = fields[2].GetInt8();
-            temp.Language       = fields[3].GetInt8();
-            temp.Emote          = fields[4].GetInt16();
-
-            if (i >= 0)
-            {
-                error_db_log("TSCR: Entry %i in table `script_texts` is not a negative value.",i);
-                continue;
-            }
-
-            if (i > TEXT_SOURCE_RANGE || i <= TEXT_SOURCE_RANGE*2)
-            {
-                error_db_log("TSCR: Entry %i in table `script_texts` is out of accepted entry range for table.",i);
-                continue;
-            }
-
-            if (temp.SoundId)
-            {
-                if (!GetSoundEntriesStore()->LookupEntry(temp.SoundId))
-                    error_db_log("TSCR: Entry %i in table `script_texts` has soundId %u but sound does not exist.",i,temp.SoundId);
-            }
-
-            if (!GetLanguageDescByID(temp.Language))
-                error_db_log("TSCR: Entry %i in table `script_texts` using Language %u but Language does not exist.",i,temp.Language);
-
-            if (temp.Type >= CHAT_TYPE_END)
-                error_db_log("TSCR: Entry %i in table `script_texts` has Type %u but this Chat Type does not exist.",i,temp.Type);
-
-            TextMap[i] = temp;
-            ++count;
-        } while (result->NextRow());
-
-        TC_LOG_INFO("server.loading","\n>> TSCR: Loaded %u additional Script Texts data.", count);
-    }else
-    {
-        TC_LOG_INFO("server.loading","\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
-    }
-}
-
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptStoreType
 #define SCR_REG_ITR(T) ScriptRegistry<T>::ScriptStoreIteratorType
@@ -1814,6 +1748,77 @@ SpellScriptLoader::SpellScriptLoader(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<SpellScriptLoader>::Instance()->AddScript(this);
+}
+
+void ScriptMgr::LoadDatabase()
+{
+    sScriptSystemMgr->LoadScriptWaypoints();
+    //TCsScriptSystemMgr->LoadScriptSplineChains();
+
+
+    //***Preform all DB queries here***
+    QueryResult result;
+
+    // Drop Existing Text Map, only done once and we are ready to add data from multiple sources.
+    TextMap.clear();
+
+    // Load OLDScript Text
+    TC_LOG_INFO("server.loading", "TSCR: Loading Script Texts...");
+    LoadTrinityStrings(WorldDatabase, "script_texts", TEXT_SOURCE_RANGE, 1 + (TEXT_SOURCE_RANGE * 2));
+
+    // Gather Additional data from Script Texts
+    result = WorldDatabase.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
+
+    TC_LOG_INFO("server.loading", "TSCR: Loading Script Texts additional data...");
+    if (result)
+    {
+        uint32 count = 0;
+
+        do
+        {
+            Field* fields = result->Fetch();
+            StringTextData temp;
+
+            int32 i = fields[0].GetInt32();
+            temp.SoundId = fields[1].GetInt32();
+            temp.Type = fields[2].GetInt8();
+            temp.Language = fields[3].GetInt8();
+            temp.Emote = fields[4].GetInt16();
+
+            if (i >= 0)
+            {
+                error_db_log("TSCR: Entry %i in table `script_texts` is not a negative value.", i);
+                continue;
+            }
+
+            if (i > TEXT_SOURCE_RANGE || i <= TEXT_SOURCE_RANGE * 2)
+            {
+                error_db_log("TSCR: Entry %i in table `script_texts` is out of accepted entry range for table.", i);
+                continue;
+            }
+
+            if (temp.SoundId)
+            {
+                if (!GetSoundEntriesStore()->LookupEntry(temp.SoundId))
+                    error_db_log("TSCR: Entry %i in table `script_texts` has soundId %u but sound does not exist.", i, temp.SoundId);
+            }
+
+            if (!GetLanguageDescByID(temp.Language))
+                error_db_log("TSCR: Entry %i in table `script_texts` using Language %u but Language does not exist.", i, temp.Language);
+
+            if (temp.Type >= CHAT_TYPE_END)
+                error_db_log("TSCR: Entry %i in table `script_texts` has Type %u but this Chat Type does not exist.", i, temp.Type);
+
+            TextMap[i] = temp;
+            ++count;
+        } while (result->NextRow());
+
+        TC_LOG_INFO("server.loading", "\n>> TSCR: Loaded %u additional Script Texts data.", count);
+    }
+    else
+    {
+        TC_LOG_INFO("server.loading", "\n>> Loaded 0 additional Script Texts data. DB table `script_texts` is empty.");
+    }
 }
 
 void ScriptMgr::FillSpellSummary()

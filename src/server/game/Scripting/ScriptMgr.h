@@ -428,12 +428,12 @@ class TC_GAME_API ScriptMgr
         }
 
         void Initialize(char const* cfg_file);
-        void LoadDatabase();
 
         /* Add given script to m_script list if the script is used in database. DO NOT use script afterwards as this function may delete it.
           Pointer script* will be freed upon ScriptMgr deletion, or immediately if registering failed
         **/
         void FillSpellSummary();
+        void LoadDatabase();
 
         void IncreaseScriptCount() { ++_scriptCount; }
         void DecreaseScriptCount() { --_scriptCount; }
