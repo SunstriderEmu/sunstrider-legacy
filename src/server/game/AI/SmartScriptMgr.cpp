@@ -34,7 +34,7 @@ void SmartWaypointMgr::LoadFromDB()
 
     if (!result)
     {
-        TC_LOG_INFO("FIXME",">> Loaded 0 SmartAI Waypoint Paths. DB table `waypoints` is empty.");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 SmartAI Waypoint Paths. DB table `waypoints` is empty.");
 
         return;
     }
