@@ -1299,7 +1299,7 @@ void Guardian::UpdateMaxHealth()
     UnitMods unitMod = UNIT_MOD_HEALTH;
     float stamina = GetStat(STAT_STAMINA) - GetCreateStat(STAT_STAMINA);
 
-        float multiplicator;
+    float multiplicator;
     switch (GetEntry())
     {
         case ENTRY_IMP:         multiplicator = 8.4f;   break;
