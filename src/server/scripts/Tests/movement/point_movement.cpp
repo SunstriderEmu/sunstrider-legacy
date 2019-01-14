@@ -28,7 +28,8 @@ public:
     {
         c = SpawnCreature();
         TestAI* testAI = new TestAI(c);
-        c->SetAI(testAI);
+        c->PushAI(testAI);
+        WaitNextUpdate();
         Position targetPosition = c->GetPosition();
         targetPosition.MoveInFront(targetPosition, 10.0f);
         c->GetMotionMaster()->MovePoint(POINT_ID, targetPosition);

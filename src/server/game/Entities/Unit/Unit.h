@@ -13,12 +13,14 @@
 #include "Movement/MotionMaster.h"
 #include "DBCStructure.h"
 #include "Util.h"
-#include <list>
 #include "SpellDefines.h"
 #include "SpellInfo.h"
 #include "ItemTemplate.h"
 #include "UnitDefines.h"
 #include "Optional.h"
+
+#include <list>
+#include <stack>
 
 struct AbstractFollower;
 class UnitAI;
@@ -850,8 +852,14 @@ class TC_GAME_API Unit : public WorldObject
         bool IsAIEnabled() const { return (i_AI != nullptr); }
         void AIUpdateTick(uint32 diff);
         UnitAI* GetAI() const { return i_AI.get(); }
-        void SetAI(UnitAI* newAI);
         void ScheduleAIChange();
+        void PushAI(UnitAI* newAI);
+        bool PopAI();
+    protected:
+        void SetAI(UnitAI* newAI);
+        UnitAI* GetTopAI() const { return i_AIs.empty() ? nullptr : i_AIs.top().get(); }
+        void RefreshAI();
+    public:
 
         virtual bool IsAffectedByDiminishingReturns() const { return (GetCharmerOrOwnerPlayerOrPlayerItself() != nullptr); }
         DiminishingLevels GetDiminishing(DiminishingGroup group) const;
@@ -2027,9 +2035,9 @@ class TC_GAME_API Unit : public WorldObject
 
         void UpdateCharmAI();
         void RestoreDisabledAI();
-        std::unique_ptr<UnitAI> i_AI;
-        std::unique_ptr<UnitAI> i_disabledAI;
-        std::unique_ptr<UnitAI> i_lockedAILifetimeExtension; // yes, this lifetime extension is terrible
+        typedef std::stack<std::shared_ptr<UnitAI>> UnitAIStack;
+        UnitAIStack i_AIs;
+        std::shared_ptr<UnitAI> i_AI;
         bool m_aiLocked;
 
         std::unordered_set<AbstractFollower*> m_followingMe;
