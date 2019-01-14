@@ -1015,7 +1015,7 @@ public:
             {
                 std::stringstream ss;
                 ss << "  Member " << std::setw(6) << c->GetSpawnId();
-                ss << " | angle " << std::setprecision(3) << fInfo->followAngle << " dist " << fInfo->followDist << " ai " << fInfo->groupAI << " - " << c->GetName();
+                ss << " | angle " << std::setprecision(3) << fInfo->followAngle << " (" << fInfo->followAngle * (180.0f / M_PI) << "°) dist " << fInfo->followDist << " ai " << fInfo->groupAI << " - " << c->GetName();
                 handler->SendSysMessage(ss.str().c_str());
             }
         });
