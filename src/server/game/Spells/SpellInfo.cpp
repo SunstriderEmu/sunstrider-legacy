@@ -953,7 +953,11 @@ void SpellInfo::_LoadSpellDiminishInfo()
             if (SpellFamilyFlags & 0x00040000000LL)
                 return DIMINISHING_FEAR;
             // Curses/etc
-            if ((SpellFamilyFlags & 0x80000000) || (SpellFamilyFlags & 0x20000000000))
+            if (
+#ifdef LICH_KING
+                (SpellFamilyFlags & 0x80000000) || //Curse of Recklessness
+#endif
+                (SpellFamilyFlags & 0x20000000000))
                 return DIMINISHING_LIMITONLY;
             break;
         }
