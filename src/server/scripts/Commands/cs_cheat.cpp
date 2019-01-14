@@ -206,7 +206,7 @@ public:
     static bool HandleCritCheatCommand(ChatHandler* handler, char const* args)
     {
         Player* chr = handler->GetSelectedPlayerOrSelf();
-        if (chr == nullptr)
+        if (!chr)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -244,7 +244,7 @@ public:
     static bool HandleHitCheatCommand(ChatHandler* handler, char const* args)
     {
         Player* chr = handler->GetSelectedPlayerOrSelf();
-        if (chr == nullptr)
+        if (!chr)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -253,7 +253,7 @@ public:
 
         std::string argstr = (char*)args;
         if (!*args)
-            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_HIT)) ? "off" : "0";
+            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_HIT)) ? "off" : "0"; //Default to SPELL_MISS_NONE
 
         if (argstr == "off")
         {
@@ -263,7 +263,7 @@ public:
         }
         else
         {
-            int32 _missInfo = atoi((char*)args);
+            int32 _missInfo = atoi(argstr.c_str());
             if (_missInfo < SPELL_MISS_NONE || _missInfo >= SPELL_MISS_TOTAL)
             {
                 handler->PSendSysMessage("Invalid missInfo %i", _missInfo);
