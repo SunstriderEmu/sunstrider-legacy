@@ -556,7 +556,7 @@ public:
         return true;
     }
     
-    static std::optional<uint32> FindMapForCreature(uint32 npcID)
+    static Optional<uint32> FindMapForCreature(uint32 npcID)
     {
         static std::unordered_map<uint32 /*npcID*/, uint32 /*map*/> staticMaps;
         if (staticMaps.empty())
@@ -591,7 +591,7 @@ public:
 
         auto itr = staticMaps.find(npcID);
         if (itr != staticMaps.end())
-            return std::optional<uint32>(itr->second);
+            return Optional<uint32>(itr->second);
 
         CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
         for (auto itr : allCreatures)
@@ -600,9 +600,9 @@ public:
             if (creData.GetFirstSpawnEntry() != npcID) //not actually correct but there are very few creatures using several entries
                 continue;
 
-            return  std::optional<uint32>(creData.spawnPoint.GetMapId());
+            return Optional<uint32>(creData.spawnPoint.GetMapId());
         }
-        return std::optional<uint32>();
+        return Optional<uint32>();
     }
 
     static bool HandleFixPathSmartCommand(ChatHandler* handler, char const* args)
@@ -675,8 +675,8 @@ public:
             if (movementData.IsFlightAllowed())
                 continue;
 
-            std::optional<uint32> _mapID = FindMapForCreature(info->Entry);
-            if (!_mapID.has_value())
+            Optional<uint32> _mapID = FindMapForCreature(info->Entry);
+            if (!_mapID.is_initialized())
             {
                 //spawned via script?
                 handler->PSendSysMessage("Could not find map for npc %u, need fix", info->Entry);
@@ -795,8 +795,8 @@ public:
         {
             uint32 entry = itr.first;
             WaypointPath const& original_path = itr.second;
-            std::optional<uint32> _mapID = FindMapForCreature(entry);
-            if (!_mapID.has_value())
+            Optional<uint32> _mapID = FindMapForCreature(entry);
+            if (!_mapID.is_initialized())
             {
                 //spawned via script?
                 handler->PSendSysMessage("Could not find map for npc %u, need fix", entry);
