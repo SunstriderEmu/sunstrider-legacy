@@ -23,10 +23,12 @@ CHANGEME Tell us what should happen instead.
 2. Step 2
 3. Step 3
 
+BE VERY SPECIFIC HERE. Even if the problem seems general, do tell which spells did you use, on what creature, in which conditions. (Very often the problem is only happening in a specific context)
+
 **rev. hash/commit:** 
 
 CHANGEME
-If you're testing on the public server, do a `.server info` in game and copy the first line.  
+If you're testing on the public server, do a `.server info` in game and copy/screenshot the first line.  
 If compiling the server yourself, copy the first line of the `worldserver` output.  
 For example: Sunstrider rev. 0000000000 2000-01-09 11:31:41 +0100 (my branch) (Win64, RelWithDebInfo, Static) (worldserver)
 
