@@ -17,6 +17,8 @@ public:
             { "power",          SEC_GAMEMASTER3,  false, &HandlePowerCheatCommand,              "" },
             { "taxi",           SEC_GAMEMASTER3,  false, &HandleTaxiCheatCommand,               "" },
             { "explore",        SEC_GAMEMASTER3,  false, &HandleExploreCheatCommand,            "" },
+            { "crit",           SEC_GAMEMASTER3,  false, &HandleCritCheatCommand,               "" },
+            { "hit",            SEC_GAMEMASTER3,  false, &HandleHitCheatCommand,                "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -166,7 +168,7 @@ public:
     {
         ARGS_CHECK
 
-            int flag = atoi((char*)args);
+        int flag = atoi((char*)args);
 
         Player *chr = handler->GetSelectedPlayerOrSelf();
         if (chr == nullptr)
@@ -198,6 +200,85 @@ public:
         }
 
         return true;
+    }
+
+
+    static bool HandleCritCheatCommand(ChatHandler* handler, char const* args)
+    {
+        Player* chr = handler->GetSelectedPlayerOrSelf();
+        if (chr == nullptr)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_CRIT)) ? "off" : "on";
+
+        if (argstr == "off")
+        {
+            handler->GetSession()->GetPlayer()->SetCommandStatusOff(CHEAT_CRIT);
+            handler->SendSysMessage("Crit Cheat is OFF. You have normal crit chances.");
+            chr->UpdateAllCritPercentages();
+            chr->UpdateAllSpellCritChances();
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            handler->GetSession()->GetPlayer()->SetCommandStatusOn(CHEAT_CRIT);
+
+            for (uint32 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
+                chr->SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + i, 200.0f);
+
+            for(uint32 i = PLAYER_CRIT_PERCENTAGE; i <= PLAYER_OFFHAND_CRIT_PERCENTAGE; i++)
+                chr->SetStatFloatValue(i, 200.0f);
+
+            handler->SendSysMessage("Crit Cheat is ON. You have improved crit chances.");
+            return true;
+        }
+        return false;
+    }
+    
+    static bool HandleHitCheatCommand(ChatHandler* handler, char const* args)
+    {
+        Player* chr = handler->GetSelectedPlayerOrSelf();
+        if (chr == nullptr)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_HIT)) ? "off" : "0";
+
+        if (argstr == "off")
+        {
+            handler->GetSession()->GetPlayer()->SetCommandStatusOff(CHEAT_HIT);
+            handler->SendSysMessage("Hit Cheat is OFF.");
+            return true;
+        }
+        else
+        {
+            int32 _missInfo = atoi((char*)args);
+            if (_missInfo < SPELL_MISS_NONE || _missInfo >= SPELL_MISS_TOTAL)
+            {
+                handler->PSendSysMessage("Invalid missInfo %i", _missInfo);
+                handler->SetSentErrorMessage(true);
+                return false;
+            }
+
+            SpellMissInfo missInfo = SpellMissInfo(_missInfo);
+            chr->ForceSpellHitResultOverride(missInfo);
+
+            handler->GetSession()->GetPlayer()->SetCommandStatusOn(CHEAT_HIT);
+            handler->SendSysMessage("Hit Cheat is ON.");
+            return true;
+        }
+        return false;
     }
 };
 

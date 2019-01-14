@@ -1,0 +1,2 @@
+REPLACE INTO command (name, security, help) VALUES ("cheat hit", 1, 'Syntax: .cheat hit [missInfoIndex/off]\r\n Spell will always hit with specified missInfo. If none is specified, will use SPELL_MISS_NONE.');
+REPLACE INTO command (name, security, help) VALUES ("cheat crit", 1, 'Syntax: .cheat crit [on/off]\r\n Boost critical scores, will always crit if possible.');

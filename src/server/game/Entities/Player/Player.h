@@ -1044,7 +1044,9 @@ enum PlayerCommandStates
     CHEAT_CASTTIME  = 0x02,
     CHEAT_COOLDOWN  = 0x04,
     CHEAT_POWER     = 0x08,
-    CHEAT_WATERWALK = 0x10
+    CHEAT_WATERWALK = 0x10,
+    CHEAT_CRIT      = 0x20,
+    CHEAT_HIT       = 0x40,
 };
 
 struct SpamReport
