@@ -1597,53 +1597,6 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     caster->SummonCreature(17870, 0, 0, 0, caster->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0);
                     return;
                 }
-                // Flame Quills
-                case 34229:
-                {
-                    if (!caster)
-                        return;
-                    // cast 24 spells 34269-34289, 34314-34316
-                    for (uint32 spell_id = 34269; spell_id != 34290; ++spell_id)
-                        caster->CastSpell(target, spell_id, TRIGGERED_FULL_MASK);
-                    for (uint32 spell_id = 34314; spell_id != 34317; ++spell_id)
-                        caster->CastSpell(target, spell_id, TRIGGERED_FULL_MASK);
-                    return;
-                }
-                // Eye of Grillok
-                case 38495:
-                {
-                    target->CastSpell(target, 38530, TRIGGERED_FULL_MASK);
-                    return;
-                }
-                // Absorb Eye of Grillok (Zezzak's Shard)
-                case 38554:
-                {
-                    if (!caster)
-                        return;
-
-                    if (target->GetTypeId() != TYPEID_UNIT)
-                        return;
-
-                    caster->CastSpell(caster, 38495, TRIGGERED_FULL_MASK);
-
-                    Creature* creatureTarget = target->ToCreature();
-
-                    creatureTarget->SetDeathState(JUST_DIED);
-                    creatureTarget->RemoveCorpse();
-                    creatureTarget->SetHealth(0);       // just for nice GM-mode view
-                    return;
-                }
-                // Inferno
-                case 39346:
-                {
-                    CastSpellExtraArgs args;
-                    args.TriggerFlags = TRIGGERED_FULL_MASK;
-                    args.AddSpellBP0(int32(GetAmount()));
-                    args.SetTriggeringAura(this);
-                    target->CastSpell(target, 31969, args);
-
-                    return;
-                }
                 // Shadow Inferno
                 case 39645:
                 {
@@ -1654,109 +1607,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     target->CastSpell(target, 39646, args);
                     return;
                 }
-                // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
-                case 39857: triggerSpellId = 39856; break;
-                    // Prismatic Shield
-                case 40879:
-                {
-                    switch (rand() % 6)
-                    {
-                    case 0: triggerSpellId = 40880; break;
-                    case 1: triggerSpellId = 40882; break;
-                    case 2: triggerSpellId = 40883; break;
-                    case 3: triggerSpellId = 40891; break;
-                    case 4: triggerSpellId = 40896; break;
-                    case 5: triggerSpellId = 40897; break;
-                    }
-                }break;
-                // Aura of Desire
-                case 41350:
-                {
-                    Unit::AuraEffectList const& mMod = target->GetAuraEffectsByType(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT);
-                    for (auto i : mMod)
-                    {
-                        if (i->GetId() == 41350)
-                        {
-                            i->SetAmount(GetAmount() - 5);
-                            break;
-                        }
-                    }
-                }break;
-                //                    // Dementia
-                case 41404:
-                {
-                    triggerSpellId = (rand() % 2) ? 41406 : 41409;
-                }break;
-                // Personalized Weather
-                case 46736: triggerSpellId = 46737; break;
-                case 29528: triggerSpellId = 28713; break;
-                // Feed Captured Animal
-                case 29917: triggerSpellId = 29916; break;
-                // Extract Gas
-                case 30427:
-                {
-                    if (!caster)
-                        return;
-
-                    // move loot to player inventory and despawn target
-                    if (caster->GetTypeId() == TYPEID_PLAYER &&
-                        target->GetTypeId() == TYPEID_UNIT &&
-                        (target->ToCreature())->GetCreatureTemplate()->type == CREATURE_TYPE_GAS_CLOUD)
-                    {
-                        Player* player = caster->ToPlayer();
-                        Creature* creature = target->ToCreature();
-                        // missing lootid has been reported on startup - just return
-                        if (!creature->GetCreatureTemplate()->SkinLootId)
-                        {
-                            return;
-                        }
-                        Loot *loot = &creature->loot;
-                        loot->clear();
-                        loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, player, true);
-                        for (uint8 i = 0; i < loot->items.size(); i++)
-                        {
-                            LootItem *item = loot->LootItemInSlot(i, player);
-                            ItemPosCountVec dest;
-                            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
-                            if (msg == EQUIP_ERR_OK)
-                            {
-                                Item * newitem = player->StoreNewItem(dest, item->itemid, true, item->randomPropertyId);
-
-                                player->SendNewItem(newitem, uint32(item->count), false, false, true);
-                            }
-                            else
-                                player->SendEquipError(msg, nullptr, nullptr);
-                        }
-                        creature->SetDeathState(JUST_DIED);
-                        creature->RemoveCorpse();
-                        creature->SetHealth(0);         // just for nice GM-mode view
-                    }
-                    return;
-                    break;
-                }
-                // Nitrous Boost
-                case 27746:
-                {
-                    if (target->GetPower(POWER_MANA) >= 10)
-                    {
-                        target->ModifyPower(POWER_MANA, -10);
-                        // target->SendEnergizeSpellLog(target, (uint32) 27746, -10, POWER_MANA); // DEBUG, problem with -10
-                    }
-                    else
-                    {
-                        target->RemoveAurasDueToSpell(27746);
-                        return;
-                    }
-                } break;
-                // Brood Affliction: Bronze
-                case 23170:
-                {
-                    target->CastSpell(target, 23171, this);
-                    return;
-                }
-                // Thaumaturgy Channel
-                case 9712: triggerSpellId = 21029; break;
-                    // Firestone Passive (1-5 ranks)
+                // Firestone Passive (1-5 ranks)
                 case 758:
                 case 17945:
                 case 17947:
@@ -1855,7 +1706,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                     caster->CastSpell(nullptr, triggerSpellId, args);
                     return;
                 }
-                case 46680:
+                // Shadow Spike 
+                case 46680: 
                     if (!caster)
                         return;
                     if (caster->ToCreature())
@@ -1869,6 +1721,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
                                 target->CastSpell(victim, triggerSpellId, args);
                             }
                     return;
+                // Armageddon
                 case 45921:
                     if (!caster)
                         return;
@@ -1894,6 +1747,164 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
         {
             switch (GetSpellInfo()->Id)
             {
+                // Aura of Desire
+                case 41350:
+                {
+                    Unit::AuraEffectList const& mMod = target->GetAuraEffectsByType(SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT);
+                    for (auto i : mMod)
+                    {
+                        if (i->GetId() == 41350)
+                        {
+                            i->SetAmount(GetAmount() - 5);
+                            break;
+                        }
+                    }
+                }break;
+                // Dementia
+                case 41404:
+                {
+                    triggerSpellId = (rand() % 2) ? 41406 : 41409;
+                }break;
+                // Personalized Weather
+                case 46736: 
+                    triggerSpellId = 46737; 
+                    break;
+                case 29528: 
+                    triggerSpellId = 28713;
+                    break;
+                // Feed Captured Animal
+                case 29917: 
+                    triggerSpellId = 29916; 
+                    break;
+                // Nitrous Boost
+                case 27746:
+                {
+                    if (target->GetPower(POWER_MANA) >= 10)
+                    {
+                        target->ModifyPower(POWER_MANA, -10);
+                        // target->SendEnergizeSpellLog(target, (uint32) 27746, -10, POWER_MANA); // DEBUG, problem with -10
+                    }
+                    else
+                    {
+                        target->RemoveAurasDueToSpell(27746);
+                        return;
+                    }
+                } break;
+                // Brood Affliction: Bronze
+                case 23170:
+                {
+                    target->CastSpell(target, 23171, this);
+                    return;
+                }
+                // Thaumaturgy Channel
+                case 9712: 
+                    triggerSpellId = 21029; 
+                    break;
+                // Tear of Azzinoth Summon Channel - it's not really supposed to do anything,and this only prevents the console spam
+                case 39857:
+                    triggerSpellId = 39856; 
+                    break;
+                // Prismatic Shield
+                case 40879:
+                {
+                    switch (rand() % 6)
+                    {
+                    case 0: triggerSpellId = 40880; break;
+                    case 1: triggerSpellId = 40882; break;
+                    case 2: triggerSpellId = 40883; break;
+                    case 3: triggerSpellId = 40891; break;
+                    case 4: triggerSpellId = 40896; break;
+                    case 5: triggerSpellId = 40897; break;
+                    }
+                }break;
+                // Absorb Eye of Grillok (Zezzak's Shard)
+                case 38554:
+                {
+                    if (!caster)
+                        return;
+
+                    if (target->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    caster->CastSpell(caster, 38495, TRIGGERED_FULL_MASK);
+
+                    Creature* creatureTarget = target->ToCreature();
+
+                    creatureTarget->SetDeathState(JUST_DIED);
+                    creatureTarget->RemoveCorpse();
+                    creatureTarget->SetHealth(0);       // just for nice GM-mode view
+                    return;
+                }
+                // Inferno
+                case 39346:
+                {
+                    CastSpellExtraArgs args;
+                    args.TriggerFlags = TRIGGERED_FULL_MASK;
+                    args.AddSpellBP0(int32(GetAmount()));
+                    args.SetTriggeringAura(this);
+                    target->CastSpell(target, 31969, args);
+
+                    return;
+                }
+                // Eye of Grillok
+                case 38495:
+                {
+                    target->CastSpell(target, 38530, TRIGGERED_FULL_MASK);
+                    return;
+                }
+                // Flame Quills
+                case 34229:
+                {
+                    if (!caster)
+                        return;
+                    // cast 24 spells 34269-34289, 34314-34316
+                    for (uint32 spell_id = 34269; spell_id != 34290; ++spell_id)
+                        caster->CastSpell(target, spell_id, TRIGGERED_FULL_MASK);
+                    for (uint32 spell_id = 34314; spell_id != 34317; ++spell_id)
+                        caster->CastSpell(target, spell_id, TRIGGERED_FULL_MASK);
+                    return;
+                }
+                // Extract Gas
+                case 30427:
+                {
+                    if (!caster)
+                        return;
+
+                    // move loot to player inventory and despawn target
+                    if (caster->GetTypeId() == TYPEID_PLAYER &&
+                        target->GetTypeId() == TYPEID_UNIT &&
+                        (target->ToCreature())->GetCreatureTemplate()->type == CREATURE_TYPE_GAS_CLOUD)
+                    {
+                        Player* player = caster->ToPlayer();
+                        Creature* creature = target->ToCreature();
+                        // missing lootid has been reported on startup - just return
+                        if (!creature->GetCreatureTemplate()->SkinLootId)
+                            return;
+
+                        Loot *loot = &creature->loot;
+                        loot->clear();
+                        loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, player, true);
+                        for (uint8 i = 0; i < loot->items.size(); i++)
+                        {
+                            LootItem *item = loot->LootItemInSlot(i, player);
+                            ItemPosCountVec dest;
+                            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item->itemid, item->count);
+                            if (msg == EQUIP_ERR_OK)
+                            {
+                                Item * newitem = player->StoreNewItem(dest, item->itemid, true, item->randomPropertyId);
+
+                                player->SendNewItem(newitem, uint32(item->count), false, false, true);
+                            }
+                            else
+                                player->SendEquipError(msg, nullptr, nullptr);
+                        }
+                        creature->SetDeathState(JUST_DIED);
+                        creature->RemoveCorpse();
+                        creature->SetHealth(0);         // just for nice GM-mode view
+                    }
+                    return;
+                    break;
+                }
                 // Restoration (bg buff)
                 case 23493:
                 {
