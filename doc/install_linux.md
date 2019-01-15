@@ -125,5 +125,6 @@ password are the usernames.
 Just run both the **worldserver** and the **authserver** in the `<root_install_folder>/bin` folder.  
 
 Sunstrider also has some generic systemd scripts that you can use, see [this directory][restarterscripts].
+
 [restarterscripts]:
 https://github.com/ValorenWoW/sunstrider-core/tree/master/contrib/sunstrider
