@@ -1496,7 +1496,7 @@ void WorldObject::AddObjectToRemoveList()
 
 float WorldObject::GetVisibilityRange() const
 {
-    if (IsVisibilityOverride() && !ToPlayer())
+    if (IsVisibilityOverriden() && !ToPlayer())
         return *m_visibilityDistanceOverride;
     else if (IsFarVisible() && !ToPlayer())
         return MAX_VISIBILITY_DISTANCE;
@@ -1536,7 +1536,7 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     {
         if (ToPlayer())
         {
-            if (target && target->IsVisibilityOverride() && !target->ToPlayer())
+            if (target && target->IsVisibilityOverriden() && !target->ToPlayer())
                 return *target->m_visibilityDistanceOverride;
             else if (target && target->IsFarVisible() && !target->ToPlayer())
                 return MAX_VISIBILITY_DISTANCE;
