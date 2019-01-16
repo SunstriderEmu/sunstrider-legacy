@@ -2539,7 +2539,7 @@ void ObjectMgr::LoadPetLevelInfo()
     // Loading levels data
     {
         //                                                0               1      2   3     4    5    6    7     8    9      10       11
-        QueryResult result  = WorldDatabase.Query("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor, min_dmg, max_dmg FROM pet_levelstats");
+        QueryResult result  = WorldDatabase.PQuery("SELECT creature_entry, level, hp, mana, str, agi, sta, inte, spi, armor, min_dmg, max_dmg FROM pet_levelstats t1 WHERE patch = (SELECT max(patch) FROM pet_levelstats t2 WHERE t1.creature_entry = t2.creature_entry && patch <= %u)", sWorld->GetWowPatch());
 
         uint32 count = 0;
 

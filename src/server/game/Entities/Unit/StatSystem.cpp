@@ -1195,7 +1195,7 @@ bool Guardian::UpdateStats(Stats stat)
         value += ownersBonus;
     } else
 #endif
-        if (stat == STAT_STAMINA)
+    if (stat == STAT_STAMINA)
     {
         //1 stamina gives 0.45 stamina untalented (erroneously reported as 0.3 stamina in the Hunter's stamina tooltip), or 0.63 stamina with 2/2 Wild Hunt (LK))s
         float mod = 0.45f;
