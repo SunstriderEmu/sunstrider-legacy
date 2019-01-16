@@ -2322,7 +2322,7 @@ int32 SpellEffectInfo::CalcValue(WorldObject const* caster/*= nullptr*/, int32 c
     if (caster)
         casterUnit = caster->ToUnit();
 
-    if (casterUnit  && basePointsPerLevel)
+    if (casterUnit && basePointsPerLevel)
     {
         //Cap caster level with MaxLevel (upper) and BaseLevel (lower), then get the difference between that level and the spell level
         int32 level = int32(casterUnit->GetLevel());
