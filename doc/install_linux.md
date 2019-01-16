@@ -13,7 +13,7 @@
 
 5. sudo apt-get install clang-7 make cmake libmariadb-dev mariadb-server mariadb-client libmariadbclient-dev openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev 
 
-6. If you plan to use the option `USE_GPERFTOOLS` you'll also need packages `libgoogle-perftools-dev google-perftools`.
+6. If you plan to use the option `USE_GPERFTOOLS` you'll also need packages `libgoogle-perftools-dev google-perftools`
 
 [mariadbrepository]:
 https://downloads.mariadb.org/mariadb/repositories/
