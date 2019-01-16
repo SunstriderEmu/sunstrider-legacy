@@ -14,6 +14,8 @@
 #include <list>
 #include <string>
 
+enum class VisibilityDistanceType : uint8;
+
 class SpellInfo;
 
 class CreatureAI;
@@ -432,6 +434,7 @@ struct CreatureAddon
     uint32 bytes2;
     uint32 emote;
     uint32 move_flags;
+    VisibilityDistanceType visibilityDistanceType;
     std::vector<uint32> auras;
 };
 

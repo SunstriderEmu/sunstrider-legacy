@@ -2733,6 +2733,10 @@ bool Creature::InitCreatureAddon(bool reload)
     if (m_creatureInfoAddon->move_flags != 0)
         SetUnitMovementFlags(m_creatureInfoAddon->move_flags);
 
+    // Check if visibility distance different
+    if (m_creatureInfoAddon->visibilityDistanceType != VisibilityDistanceType::Normal)
+        SetVisibilityDistanceOverride(m_creatureInfoAddon->visibilityDistanceType);
+
     //Load Path
     if (m_creatureInfoAddon->path_id != 0)
         _waypointPathId = m_creatureInfoAddon->path_id;

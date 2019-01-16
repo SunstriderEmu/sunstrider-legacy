@@ -368,6 +368,7 @@ struct TC_GAME_API GameObjectTemplate
     bool IsDespawnAtAction() const;
     bool IsUsableMounted() const;
     bool IsIgnoringLOSChecks() const;
+    bool IsLargeGameObject() const;
     uint32 GetLootId() const;
     // despawn at uses amount
     uint32 GetCharges() const;                               

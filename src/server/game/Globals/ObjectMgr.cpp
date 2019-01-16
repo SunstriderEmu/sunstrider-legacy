@@ -612,8 +612,8 @@ void ObjectMgr::LoadCreatureAddons()
 {
     uint32 oldMSTime = GetMSTime();
 
-    //                                                0       1        2      3       4       5      6          7
-    QueryResult result = WorldDatabase.PQuery("SELECT spawnID, path_id, mount, bytes1, bytes2, emote, moveflags, auras "
+    //                                                0        1        2      3       4       5      6          7                       8
+    QueryResult result = WorldDatabase.PQuery("SELECT spawnID, path_id, mount, bytes1, bytes2, emote, moveflags, visibilityDistanceType, auras "
                                               "FROM creature_addon t1 WHERE patch=(SELECT max(patch) FROM creature_addon t2 WHERE t1.spawnID = t2.spawnID && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
@@ -650,8 +650,9 @@ void ObjectMgr::LoadCreatureAddons()
         creatureAddon.bytes2  = fields[4].GetUInt32();
         creatureAddon.emote   = fields[5].GetUInt32();
         creatureAddon.move_flags = fields[6].GetUInt32();
+        creatureAddon.visibilityDistanceType = VisibilityDistanceType(fields[7].GetUInt8());
 
-        Tokenizer tokens(fields[7].GetString(), ' ');
+        Tokenizer tokens(fields[8].GetString(), ' ');
         uint8 i = 0;
         creatureAddon.auras.resize(tokens.size());
         for (auto token : tokens)
@@ -694,6 +695,13 @@ void ObjectMgr::LoadCreatureAddons()
             creatureAddon.move_flags = creatureAddon.move_flags & ~MOVEMENTFLAG_SPLINE_ENABLED;
         }
 
+        if (creatureAddon.visibilityDistanceType >= VisibilityDistanceType::Max)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has invalid visibilityDistanceType (%u) defined in `creature_addon`.",
+                guid, AsUnderlyingType(creatureAddon.visibilityDistanceType));
+            creatureAddon.visibilityDistanceType = VisibilityDistanceType::Normal;
+        }
+
         ++count;
     }
     while (result->NextRow());
@@ -710,8 +718,8 @@ void ObjectMgr::LoadCreatureTemplateAddons()
 {
     uint32 oldMSTime = GetMSTime();
 
-    //                                                0       1       2      3       4       5        6         7
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, path_id, mount, bytes1, bytes2, emote, moveflags, auras "
+    //                                                0      1       2      3       4       5        6         7                       8
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, path_id, mount, bytes1, bytes2, emote, moveflags, visibilityDistanceType, auras "
                                               "FROM creature_template_addon t1 WHERE patch=(SELECT max(patch) FROM creature_template_addon t2 WHERE t1.entry = t2.entry && patch <= %u)", sWorld->GetWowPatch());
 
     if (!result)
@@ -741,8 +749,9 @@ void ObjectMgr::LoadCreatureTemplateAddons()
         creatureAddon.bytes2  = fields[4].GetUInt32();
         creatureAddon.emote   = fields[5].GetUInt32();
         creatureAddon.move_flags = fields[6].GetUInt32();
+        creatureAddon.visibilityDistanceType = VisibilityDistanceType(fields[7].GetUInt8());
 
-        Tokenizer tokens(fields[7].GetString(), ' ');
+        Tokenizer tokens(fields[8].GetString(), ' ');
         uint8 i = 0;
         creatureAddon.auras.resize(tokens.size());
         for (auto token : tokens)
@@ -780,6 +789,13 @@ void ObjectMgr::LoadCreatureTemplateAddons()
         {
             TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) have invalid flag MOVEMENTFLAG_SPLINE_ENABLED in moveflags, removed", entry);
             creatureAddon.move_flags = creatureAddon.move_flags & ~MOVEMENTFLAG_SPLINE_ENABLED;
+        }
+
+        if (creatureAddon.visibilityDistanceType >= VisibilityDistanceType::Max)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid visibilityDistanceType (%u) defined in `creature_template_addon`.",
+                entry, AsUnderlyingType(creatureAddon.visibilityDistanceType));
+            creatureAddon.visibilityDistanceType = VisibilityDistanceType::Normal;
         }
 
         ++count;

@@ -103,29 +103,45 @@ enum TempSummonType
     TEMPSUMMON_MANUAL_DESPAWN              = 8              // despawns when UnSummon() is called
 };
 
-#define CONTACT_DISTANCE            0.5f
-#define INTERACTION_DISTANCE        5.0f
-#define ATTACK_DISTANCE             5.0f
-#define INSPECT_DISTANCE            28.0f
-#define MAX_SEARCHER_DISTANCE       150.0f // sunwell: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
-#define MAX_VISIBILITY_DISTANCE     250.0f      // max distance for visible object show, limited in 333 yards
-#define VISIBILITY_INC_FOR_GOBJECTS 30.0f // sunwell
-#define VISIBILITY_COMPENSATION     15.0f // increase searchers
-#define SPELL_SEARCHER_COMPENSATION 30.0f // increase searchers size in case we have large npc near cell border
-#define VISIBILITY_DIST_WINTERGRASP 175.0f // LK
-#define SIGHT_RANGE_UNIT            50.0f
-#define TRADE_DISTANCE              11.11f
+enum class VisibilityDistanceType : uint8
+{
+    Normal = 0,
+    Tiny = 1,
+    Small = 2,
+    Large = 3,
+    Gigantic = 4,
+    Infinite = 5,
 
-#define DEFAULT_VISIBILITY_DISTANCE 90.0f       // default visible distance, 90 yards on continents
-#define DEFAULT_VISIBILITY_INSTANCE 120.0f      // default visible distance in instances, 120 yards
-#define DEFAULT_VISIBILITY_BGARENAS 180.0f      // default visible distance in BG/Arenas, 180 yards
+    Max
+};
 
-#define DEFAULT_PLAYER_BOUNDING_RADIUS   0.388999998569489f      // player size, also currently used (correctly?) for any non Unit world objects
-#define MAX_STEALTH_DETECT_RANGE    45.0f
-#define DEFAULT_PLAYER_COMBAT_REACH 1.5f
-#define MIN_MELEE_REACH             2.0f
-#define NOMINAL_MELEE_RANGE         5.0f
-#define MELEE_RANGE                 (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
+#define CONTACT_DISTANCE                0.5f
+#define INTERACTION_DISTANCE            5.0f
+#define ATTACK_DISTANCE                 5.0f
+#define INSPECT_DISTANCE                28.0f
+#define MAX_SEARCHER_DISTANCE           150.0f // sunwell: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
+#define MAX_VISIBILITY_DISTANCE         250.0f      // max distance for visible object show, limited in 333 yards
+#define VISIBILITY_INC_FOR_GOBJECTS     30.0f // sunwell
+#define VISIBILITY_COMPENSATION         15.0f // increase searchers
+#define SPELL_SEARCHER_COMPENSATION     30.0f // increase searchers size in case we have large npc near cell border
+#define VISIBILITY_DIST_WINTERGRASP     175.0f // LK
+#define VISIBILITY_DISTANCE_GIGANTIC    400.0f
+#define VISIBILITY_DISTANCE_LARGE       200.0f
+#define VISIBILITY_DISTANCE_NORMAL      100.0f
+#define VISIBILITY_DISTANCE_SMALL       50.0f
+#define VISIBILITY_DISTANCE_TINY        25.0f
+#define TRADE_DISTANCE                  11.11f
+
+#define DEFAULT_VISIBILITY_DISTANCE     VISIBILITY_DISTANCE_NORMAL // default visible distance, 90 yards on continents
+#define DEFAULT_VISIBILITY_INSTANCE     120.0f      // default visible distance in instances, 120 yards
+#define DEFAULT_VISIBILITY_BGARENAS     180.0f      // default visible distance in BG/Arenas, 180 yards
+
+#define DEFAULT_PLAYER_BOUNDING_RADIUS  0.388999998569489f      // player size, also currently used (correctly?) for any non Unit world objects
+#define MAX_STEALTH_DETECT_RANGE        45.0f
+#define DEFAULT_PLAYER_COMBAT_REACH     1.5f
+#define MIN_MELEE_REACH                 2.0f
+#define NOMINAL_MELEE_RANGE             5.0f
+#define MELEE_RANGE                     (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
 
 #endif
 

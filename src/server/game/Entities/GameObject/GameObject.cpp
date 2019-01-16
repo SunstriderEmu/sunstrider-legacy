@@ -471,6 +471,10 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map *map, u
     if (spawnid)
         m_spawnId = spawnid;
 
+    // Check if GameObject is Large
+    if (goinfo->IsLargeGameObject())
+        SetVisibilityDistanceOverride(VisibilityDistanceType::Large);
+
     if (uint32 linkedEntry = GetGOInfo()->GetLinkedGameObjectEntry())
     {
         GameObject* linkedGO = new GameObject();
@@ -2526,5 +2530,21 @@ uint32 GameObjectTemplate::GetEventScriptId() const
     case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
     case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
     default: return 0;
+    }
+}
+
+bool GameObjectTemplate::IsLargeGameObject() const
+{
+    switch (type)
+    {
+    case GAMEOBJECT_TYPE_BUTTON: return button.large != 0;
+    case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.large != 0;
+    case GAMEOBJECT_TYPE_GENERIC: return _generic.large != 0;
+    case GAMEOBJECT_TYPE_TRAP: return trap.large != 0;
+    case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.large != 0;
+    case GAMEOBJECT_TYPE_GOOBER: return goober.large != 0;
+    case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.large != 0;
+    case GAMEOBJECT_TYPE_CAPTURE_POINT: return capturePoint.large != 0;
+    default: return false;
     }
 }

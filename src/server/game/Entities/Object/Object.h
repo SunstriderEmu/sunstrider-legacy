@@ -10,6 +10,7 @@
 #include "Map.h"
 #include "ModelIgnoreFlags.h"
 #include "ObjectGuid.h"
+#include "Optional.h"
 #include "UpdateMask.h"
 #include "SharedDefines.h"
 #include "SpellDefines.h"
@@ -637,6 +638,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void SetKeepActive(bool isActiveObject);
         bool IsFarVisible() const { return m_isFarVisible; }
         void SetFarVisible(bool on);
+        bool IsVisibilityOverride() const { return m_visibilityDistanceOverride.is_initialized(); }
+        void SetVisibilityDistanceOverride(VisibilityDistanceType type);
         void SetWorldObject(bool apply);
 		bool IsPermanentWorldObject() const { return m_isWorldObject; }
 		bool IsWorldObject() const;
@@ -722,6 +725,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         bool m_isActive;
         bool m_isFarVisible;
+        Optional<float> m_visibilityDistanceOverride;
 
 		//these functions are used mostly for Relocate() and Corpse/Player specific stuff...
 		//use them ONLY in LoadFromDB()/Create() funcs and nowhere else!
