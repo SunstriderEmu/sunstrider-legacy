@@ -13,9 +13,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - sourceline: 'ppa:mhier/libboost-latest'
     packages:
-      - g++-6
       - libssl-dev
       - libmariadb-client-lgpl-dev
       - libreadline6-dev
