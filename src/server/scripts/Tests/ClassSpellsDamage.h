@@ -457,6 +457,7 @@ namespace ClassSpellsDamage
             INTERCEPT_RNK_5 = 105,
             PUMMEL_RNK_2 = 50,
             SLAM_RNK_6 = 140,
+            BLOODTHIRST_RNK_6 = 45,
             // Protection
             REVENGE_RNK_8_MIN = 414,
             REVENGE_RNK_8_MAX = 506,

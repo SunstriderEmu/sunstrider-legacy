@@ -4116,7 +4116,8 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
     // not sure for it's correctness
     if (apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
-    else {
+    else 
+    {
         if (m_target->HasAuraType(GetAuraType()))
             return;
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
@@ -4133,10 +4134,9 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
         {
             WeaponAttackType const attackType = Player::GetAttackBySlot(EQUIPMENT_SLOT_MAINHAND);
 #ifdef LICH_KING
-            HandleOffHand  & ranged
+            Handle OffHand & ranged
 #endif
-
-                player->ApplyItemDependentAuras(item, !apply);
+            player->ApplyItemDependentAuras(item, !apply);
             if (attackType != MAX_ATTACK)
             {
                 player->_ApplyWeaponDamage(EQUIPMENT_SLOT_MAINHAND, item->GetTemplate(), /*NULL,*/ !apply);

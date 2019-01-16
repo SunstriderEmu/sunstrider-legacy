@@ -292,6 +292,41 @@ class spell_warr_deep_wounds_aura : public AuraScript
     }
 };
 
+// -23881 - Bloodthirst
+class spell_warr_bloodthirst : public SpellScript
+{
+    PrepareSpellScript(spell_warr_bloodthirst);
+
+    void HandleDamage(SpellEffIndex /*effIndex*/, int32& /*damage*/)
+    {
+        uint32 APbonus = GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK);
+        if (Unit* victim = GetHitUnit())
+            APbonus += victim->GetTotalAuraModifier(SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS);
+
+        SetEffectValue(CalculatePct(APbonus, GetEffectValue()));
+    }
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*damage*/)
+    {
+#ifdef LICH_KING
+        uint32 spellId = SPELL_WARRIOR_BLOODTHIRST;
+#else
+        uint32 spellId = sSpellMgr->GetSpellWithRank(SPELL_WARRIOR_BLOODTHIRST, GetSpell()->GetSpellInfo()->GetRank());
+#endif
+        GetCaster()->CastSpell(GetCaster(), spellId, true);
+    }
+
+    void Register() override
+    {
+        OnEffectLaunchTarget += SpellEffectFn(spell_warr_bloodthirst::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+#ifdef LICH_KING
+        OnEffectHit += SpellEffectFn(spell_warr_bloodthirst::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+#else
+        OnEffectHit += SpellEffectFn(spell_warr_bloodthirst::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+#endif
+    }
+};
+
 void AddSC_warrior_spell_scripts()
 {
     new spell_warr_intimidating_shout();
@@ -300,4 +335,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_sweeping_strikes();
     RegisterSpellScript(spell_warr_deep_wounds);
     RegisterAuraScript(spell_warr_deep_wounds_aura);
+    RegisterSpellScript(spell_warr_bloodthirst);
 }

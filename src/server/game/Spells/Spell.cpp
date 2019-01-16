@@ -2737,25 +2737,6 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
             args.AddSpellBP0(damageInfo.damage * 33 / 100);
             spell->m_caster->CastSpell(spell->m_caster, 32220, args);
         }
-        // Bloodthirst
-        else if (spell->m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spell->m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
-        {
-            uint32 BTAura = 0;
-            switch (spell->m_spellInfo->Id)
-            {
-            case 23881: BTAura = 23885; break;
-            case 23892: BTAura = 23886; break;
-            case 23893: BTAura = 23887; break;
-            case 23894: BTAura = 23888; break;
-            case 25251: BTAura = 25252; break;
-            case 30335: BTAura = 30339; break;
-            default:
-                TC_LOG_ERROR("spells", "Spell::EffectSchoolDMG: Spell %u not handled in blood thirst Aura", spell->m_spellInfo->Id);
-                break;
-            }
-            if (BTAura)
-                spell->m_caster->CastSpell(spell->m_caster, BTAura, true);
-        }
 
 #ifdef TESTS
         if (Player* p = spell->m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())

@@ -482,13 +482,8 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
         }
         case SPELLFAMILY_WARRIOR:
         {
-            // Bloodthirst
-            if (m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
-            {
-                damage = uint32(damage * (_unitCaster->GetTotalAttackPowerValue(BASE_ATTACK, unitTarget)) / 100);
-            }
             // Shield Slam
-            else if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
+            if (m_spellInfo->SpellFamilyFlags & 0x100000000LL)
                 damage += int32(_unitCaster->GetShieldBlockValue());
             // Victory Rush
             else if (m_spellInfo->SpellFamilyFlags & 0x10000000000LL)
