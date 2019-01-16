@@ -2437,9 +2437,9 @@ enum ChatMsg : uint32
 enum ChatLinkColors : uint32
 {
     CHAT_LINK_COLOR_SPELL       = 0xff71d5ff,   // bright blue
+    CHAT_LINK_COLOR_TALENT      = 0xff4e96f7,   // blue
 #ifdef LICH_KING
     CHAT_LINK_COLOR_TRADE       = 0xffffd000,   // orange
-    CHAT_LINK_COLOR_TALENT      = 0xff4e96f7,   // blue
     CHAT_LINK_COLOR_ENCHANT     = 0xffffd000,   // orange
     CHAT_LINK_COLOR_ACHIEVEMENT = 0xffffff00,
     CHAT_LINK_COLOR_GLYPH       = 0xff66bbff,

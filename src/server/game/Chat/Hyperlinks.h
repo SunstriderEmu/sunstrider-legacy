@@ -72,12 +72,13 @@ struct QuestLinkData
     uint8 QuestLevel;
 };
 
-#ifdef LICH_KING
 struct TalentLinkData
 {
     TalentEntry const* Talent;
     uint8 Rank;
 };
+
+#ifdef LICH_KING
 
 struct TradeskillLinkData
 {
@@ -195,7 +196,6 @@ namespace LinkTags {
         static bool StoreTo(SpellInfo const*& val, char const* pos, size_t len);
     };
 
-#ifdef LICH_KING
     struct TC_GAME_API talent
     {
         using value_type = TalentLinkData const&;
@@ -203,6 +203,7 @@ namespace LinkTags {
         static bool StoreTo(TalentLinkData& val, char const* pos, size_t len);
     };
 
+#ifdef LICH_KING
     struct TC_GAME_API trade
     {
         using value_type = TradeskillLinkData const&;

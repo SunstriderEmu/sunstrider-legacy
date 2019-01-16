@@ -216,6 +216,22 @@ struct LinkValidator<LinkTags::spell>
     }
 };
 
+template <>
+struct LinkValidator<LinkTags::talent>
+{
+    static bool IsTextValid(TalentLinkData const& data, char const* pos, size_t len)
+    {
+        if (SpellInfo const* info = sSpellMgr->GetSpellInfo(data.Talent->RankID[data.Rank - 1]))
+            return LinkValidator<LinkTags::spell>::IsTextValid(info, pos, len);
+        return false;
+    }
+
+    static bool IsColorValid(TalentLinkData const&, HyperlinkColor c)
+    {
+        return c == CHAT_LINK_COLOR_TALENT;
+    }
+};
+
 #ifdef LICH_KING
 template <>
 struct LinkValidator<LinkTags::enchant>
@@ -275,22 +291,6 @@ struct LinkValidator<LinkTags::glyph>
 };
 
 template <>
-struct LinkValidator<LinkTags::talent>
-{
-    static bool IsTextValid(TalentLinkData const& data, char const* pos, size_t len)
-    {
-        if (SpellInfo const* info = sSpellMgr->GetSpellInfo(data.Talent->RankID[data.Rank-1]))
-            return LinkValidator<LinkTags::spell>::IsTextValid(info, pos, len);
-        return false;
-    }
-
-    static bool IsColorValid(TalentLinkData const&, HyperlinkColor c)
-    {
-        return c == CHAT_LINK_COLOR_TALENT;
-    }
-};
-
-template <>
 struct LinkValidator<LinkTags::trade>
 {
     static bool IsTextValid(TradeskillLinkData const& data, char const* pos, size_t len)
@@ -330,10 +330,10 @@ static bool ValidateLinkInfo(HyperlinkInfo const& info)
     TryValidateAs(achievement);
     TryValidateAs(enchant);
     TryValidateAs(glyph);
-    TryValidateAs(talent);
     TryValidateAs(trade);
 #endif
 
+    TryValidateAs(talent);
     TryValidateAs(area);
     TryValidateAs(areatrigger);
     TryValidateAs(creature);

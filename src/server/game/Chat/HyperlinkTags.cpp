@@ -125,7 +125,6 @@ bool Trinity::Hyperlinks::LinkTags::spell::StoreTo(SpellInfo const*& val, char c
     return !!(val = sSpellMgr->GetSpellInfo(spellId));
 }
 
-#ifdef LICH_KING
 bool Trinity::Hyperlinks::LinkTags::talent::StoreTo(TalentLinkData& val, char const* pos, size_t len)
 {
     HyperlinkDataTokenizer t(pos, len);
@@ -139,6 +138,7 @@ bool Trinity::Hyperlinks::LinkTags::talent::StoreTo(TalentLinkData& val, char co
     return true;
 }
 
+#ifdef LICH_KING
 bool Trinity::Hyperlinks::LinkTags::trade::StoreTo(TradeskillLinkData& val, char const* pos, size_t len)
 {
     HyperlinkDataTokenizer t(pos, len);
