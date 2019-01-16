@@ -393,9 +393,16 @@ public:
     {
         ObjectGuid::LowType lowguid = 0;
 
-        Creature* pCreature =  handler->GetSelectedCreature();
+        Creature* creature =  handler->GetSelectedCreature();
+        Player const* player = handler->GetSession()->GetPlayer();
+        if (!player)
+            return false;
 
-        if(!pCreature)
+        if (creature)
+        {
+            lowguid = creature->GetSpawnId();
+        }
+        else
         {
             // number or [name] Shift-click form |color|Hcreature:creature_guid|h[name]|h|r
             char* cId = handler->extractKeyFromLink((char*)args,"Hcreature");
@@ -403,72 +410,56 @@ public:
                 return false;
 
             lowguid = atoi(cId);
-
-            /* FIXME: impossible without entry
-            if(lowguid)
-                pCreature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(),MAKE_GUID(lowguid,HighGuid::Unit));
-            */
-
-            // Attempting creature load from DB data
-            if(!pCreature)
-            {
-                CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
-                if(!data)
-                {
-                    handler->PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
-                    handler->SetSentErrorMessage(true);
-                    return false;
-                }
-
-                uint32 map_id = data->spawnPoint.GetMapId();
-
-                if(handler->GetSession()->GetPlayer()->GetMapId() != map_id)
-                {
-                    handler->PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
-                    handler->SetSentErrorMessage(true);
-                    return false;
-                }
-            }
-            else
-            {
-                lowguid = pCreature->GetSpawnId();
-            }
         }
-        else
+
+        // Attempting creature load from DB data
+        CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
+        if (!data)
         {
-            lowguid = pCreature->GetSpawnId();
+            handler->PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
+            handler->SetSentErrorMessage(true);
+            return false;
         }
-        float x,y,z,o;
 
-        if(Transport* trans = handler->GetSession()->GetPlayer()->GetTransport())
+        if (player->GetMapId() != data->spawnPoint.GetMapId())
         {
-            x = handler->GetSession()->GetPlayer()->GetTransOffsetX();
-            y = handler->GetSession()->GetPlayer()->GetTransOffsetY();
-            z = handler->GetSession()->GetPlayer()->GetTransOffsetZ();
-            o = handler->GetSession()->GetPlayer()->GetTransOffsetO();
-        } else {
-            x = handler->GetSession()->GetPlayer()->GetPositionX();
-            y = handler->GetSession()->GetPlayer()->GetPositionY();
-            z = handler->GetSession()->GetPlayer()->GetPositionZ();
-            o = handler->GetSession()->GetPlayer()->GetOrientation();
+            handler->PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
+            handler->SetSentErrorMessage(true);
+            return false;
         }
 
-        if (pCreature)
+        float x, y, z, o;
+        if(Transport* trans = player->GetTransport())
         {
-            if(CreatureData const* data = sObjectMgr->GetCreatureData(pCreature->GetSpawnId()))
-                const_cast<CreatureData*>(data)->spawnPoint.Relocate(x, y, z, o);
-
-            pCreature->UpdatePosition(x, y, z, o);
-            pCreature->InitCreatureAddon(true);
-            pCreature->GetMotionMaster()->Initialize();
-            if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
-            {
-                pCreature->SetDeathState(JUST_DIED);
-                pCreature->Respawn();
-            }
+            x = player->GetTransOffsetX();
+            y = player->GetTransOffsetY();
+            z = player->GetTransOffsetZ();
+            o = player->GetTransOffsetO();
+        } 
+        else 
+        {
+            x = player->GetPositionX();
+            y = player->GetPositionY();
+            z = player->GetPositionZ();
+            o = player->GetOrientation();
         }
 
+        sObjectMgr->RemoveCreatureFromGrid(lowguid, data);
+        const_cast<CreatureData*>(data)->spawnPoint.Relocate(x, y, z, o);
+        sObjectMgr->AddCreatureToGrid(lowguid, data);
+
+        // update position in DB
         WorldDatabase.PExecute("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f', orientation = '%f' WHERE spawnID = '%u'", x, y, z, o, lowguid);
+
+        if (creature)
+        {
+            if (creature->IsAlive())
+                creature->SetDeathState(JUST_DIED);
+
+            creature->Respawn(true);
+            if (!creature->GetRespawnCompatibilityMode())
+                creature->AddObjectToRemoveList();
+        }
 
         handler->PSendSysMessage(LANG_COMMAND_CREATUREMOVED);
         return true;

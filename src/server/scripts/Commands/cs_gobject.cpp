@@ -20,10 +20,10 @@ public:
         {
             { "add",            SEC_GAMEMASTER3,     false, &HandleGameObjectAddCommand,       "" },
             { "delete",         SEC_GAMEMASTER3,     false, &HandleGameObjectDeleteCommand,    "" },
-            { "target",         SEC_GAMEMASTER2,     false, &HandleTargetObjectCommand,        "" },
-            { "turn",           SEC_GAMEMASTER3,     false, &HandleTurnObjectCommand,          "" },
-            { "move",           SEC_GAMEMASTER3,     false, &HandleMoveObjectCommand,          "" },
-            { "near",           SEC_GAMEMASTER3,     false, &HandleNearObjectCommand,          "" },
+            { "target",         SEC_GAMEMASTER2,     false, &HandleTargetGameObjectCommand,        "" },
+            { "turn",           SEC_GAMEMASTER3,     false, &HandleTurnGameObjectCommand,          "" },
+            { "move",           SEC_GAMEMASTER3,     false, &HandleGameObjectMoveCommand,          "" },
+            { "near",           SEC_GAMEMASTER3,     false, &HandleNearGameObjectCommand,          "" },
             { "activate",       SEC_GAMEMASTER2,     false, &HandleActivateObjectCommand,      "" },
             { "addtemp",        SEC_GAMEMASTER3,     false, &HandleTempGameObjectCommand,      "" },
             { "linkgameevent",  SEC_ADMINISTRATOR,   false, &HandleGobLinkGameEventCommand,    "" },
@@ -72,7 +72,7 @@ public:
 
 #define _CONCAT3_(A, B, C) "CONCAT( " A ", " B ", " C " )"
 
-    static bool HandleTargetObjectCommand(ChatHandler* handler, char const* args)
+    static bool HandleTargetGameObjectCommand(ChatHandler* handler, char const* args)
     {
         Player* pl = handler->GetSession()->GetPlayer();
         QueryResult result;
@@ -303,7 +303,7 @@ public:
     }
 
     //turn selected object
-    static bool HandleTurnObjectCommand(ChatHandler* handler, char const* args)
+    static bool HandleTurnGameObjectCommand(ChatHandler* handler, char const* args)
     {
         // number or [name] Shift-click form |color|Hgameobject:go_id|h[name]|h|r
         char* cId = handler->extractKeyFromLink((char*)args, "Hgameobject");
@@ -363,27 +363,26 @@ public:
     }
 
     //move selected object
-    static bool HandleMoveObjectCommand(ChatHandler* handler, char const* args)
+    static bool HandleGameObjectMoveCommand(ChatHandler* handler, char const* args)
     {
         // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
         char* cId = handler->extractKeyFromLink((char*)args, "Hgameobject");
         if (!cId)
             return false;
 
-        ObjectGuid::LowType lowguid = atoi(cId);
-        if (!lowguid)
+        ObjectGuid::LowType guidLow = atoi(cId);
+        if (!guidLow)
             return false;
 
         GameObject* obj = nullptr;
-        Player* player = handler->GetSession()->GetPlayer();
 
         // by DB guid
-        if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(lowguid))
-            obj = handler->GetObjectFromPlayerMapByDbGuid(lowguid);
+        if (GameObjectData const* go_data = sObjectMgr->GetGameObjectData(guidLow))
+            obj = handler->GetObjectFromPlayerMapByDbGuid(guidLow);
 
         if (!obj)
         {
-            handler->PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, lowguid);
+            handler->PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, guidLow);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -392,29 +391,20 @@ public:
         char* py = strtok(nullptr, " ");
         char* pz = strtok(nullptr, " ");
 
+        Player* player = handler->GetSession()->GetPlayer();
+        float x, y, z;
         if (!px)
         {
-            Player *chr = handler->GetSession()->GetPlayer();
-
-            Map* map = chr->GetMap();
-            map->RemoveFromMap(obj, false);
-
-            obj->Relocate(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), obj->GetOrientation());
-            obj->SetFloatValue(GAMEOBJECT_POS_X, chr->GetPositionX());
-            obj->SetFloatValue(GAMEOBJECT_POS_Y, chr->GetPositionY());
-            obj->SetFloatValue(GAMEOBJECT_POS_Z, chr->GetPositionZ());
-
-            obj->SetMap(map);
-            map->AddToMap(obj, true);
+            player->GetPosition(x, y, z);
         }
         else
         {
             if (!py || !pz)
                 return false;
 
-            float x = (float)atof(px);
-            float y = (float)atof(py);
-            float z = (float)atof(pz);
+            x = (float)atof(px);
+            y = (float)atof(py);
+            z = (float)atof(pz);
 
             if (!MapManager::IsValidMapCoord(obj->GetMapId(), x, y, z))
             {
@@ -422,28 +412,35 @@ public:
                 handler->SetSentErrorMessage(true);
                 return false;
             }
-
-            Map* map = player->GetMap();
-            map->RemoveFromMap(obj, false);
-
-            obj->Relocate(x, y, z, obj->GetOrientation());
-            obj->SetFloatValue(GAMEOBJECT_POS_X, x);
-            obj->SetFloatValue(GAMEOBJECT_POS_Y, y);
-            obj->SetFloatValue(GAMEOBJECT_POS_Z, z);
-
-            obj->SetMap(map);
-            map->AddToMap(obj, true);
         }
 
+        Map* map = player->GetMap();
+        obj->Relocate(x, y, z, obj->GetOrientation());
+
+        // update which cell has this gameobject registered for loading
+        sObjectMgr->RemoveGameobjectFromGrid(guidLow, obj->GetGameObjectData());
         obj->SaveToDB();
-        obj->Refresh();
+        sObjectMgr->AddGameobjectToGrid(guidLow, obj->GetGameObjectData());
+
+        // Generate a completely new spawn with new guid
+        // 3.3.5a client caches recently deleted objects and brings them back to life
+        // when CreateObject block for this guid is received again
+        // however it entirely skips parsing that block and only uses already known location
+        obj->Delete();
+
+        obj = new GameObject();
+        if (!obj->LoadFromDB(guidLow, map, true))
+        {
+            delete obj;
+            return false;
+        }
 
         handler->PSendSysMessage(LANG_COMMAND_MOVEOBJMESSAGE, obj->GetSpawnId());
 
         return true;
     }
 
-    static bool HandleNearObjectCommand(ChatHandler* handler, char const* args)
+    static bool HandleNearGameObjectCommand(ChatHandler* handler, char const* args)
     {
         float distance = (!*args) ? 10 : atol(args);
         uint32 count = 0;
