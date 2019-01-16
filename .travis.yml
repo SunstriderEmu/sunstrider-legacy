@@ -1,5 +1,5 @@
 sudo: false
-dist: trusty
+dist: xenial
 
 language: cpp
 compiler:
@@ -13,30 +13,32 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - sourceline: 'ppa:kzemek/boost'
+      - sourceline: 'ppa:mhier/libboost-latest'
     packages:
       - g++-6
       - libssl-dev
-      - libmariadbclient-dev 
+      - libmariadb-client-lgpl-dev
       - libreadline6-dev
       - zlib1g-dev
       - libbz2-dev
-      - libboost1.58-dev
-      - libboost-filesystem1.58-dev
-      - libboost-iostreams1.58-dev
-      - libboost-program-options1.58-dev
-      - libboost-regex1.58-dev
-      - libboost-system1.58-dev
-      - libboost-thread1.58-dev
+      #problem here: xenial uses boost 1.58 and we need 1.62. (xenial-backports does not use a more recent either)
+      - libboost-dev
+      - libboost-filesystem-dev
+      - libboost-iostreams-dev
+      - libboost-program-options-dev
+      - libboost-regex-dev
+      - libboost-system-dev
+      - libboost-thread-dev
       # For data archive
       - p7zip
       # For post run debug
       - gdb
       
 before_install:
+  - apt-cache policy libboost-dev
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
   - git tag -a -m "Travis build" init
-  # Some core dump info
+  # To get core dump infos
   - ulimit -c
   - ulimit -a -S
   - ulimit -a -H
