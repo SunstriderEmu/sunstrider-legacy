@@ -15,7 +15,7 @@
 
 #include <boost/math/special_functions/erf.hpp>
 
-#define MAP_TESTING_ID 13
+#define MAP_TESTING_ID 37
 
 TestCase::TestCase() :
     _callerLine(0),
@@ -52,6 +52,9 @@ Position TestCase::GetDefaultPositionForMap(uint32 mapId)
         break;
     case 13: //Test
         pos = Position(-223.97f, 0.23f, -423.2f);
+        break;
+    case 37: //Azshara Crater
+        pos = Position(564.0f, 1416.0f, -29.5f);
         break;
     case 209: //Zul'Farrak
         pos = Position(1228.0f, 827.0f, 9.0f);
