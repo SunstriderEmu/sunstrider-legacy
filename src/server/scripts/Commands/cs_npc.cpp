@@ -1258,8 +1258,8 @@ public:
                 break;
         }
         pCreature->SetWeapon(slot, proto->DisplayInfoID, (ItemSubclassWeapon)proto->SubClass, (InventoryType)proto->InventoryType);
- 
-        handler->PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT,itemID,proto->Name1.c_str(),slot);
+
+        handler->PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT, itemID, proto->Name1.c_str(), slot);
         return true;
     }
 

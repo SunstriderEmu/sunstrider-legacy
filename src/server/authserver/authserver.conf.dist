@@ -136,6 +136,15 @@ WrongPass.Logging = 0
 BanExpiryCheckInterval = 60
 
 #
+#    StrictVersionCheck
+#        Description: Prevent modified clients from connnecting
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+#
+
+StrictVersionCheck = 0
+
+#
 #    SourceDirectory
 #        Description: The path to your TrinityCore source directory.
 #                     If the path is left empty, the built-in CMAKE_SOURCE_DIR is used.
