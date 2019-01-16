@@ -9,4 +9,5 @@ REPLACE INTO spell_ranks VALUES (23885, 25252, 5);
 REPLACE INTO spell_ranks VALUES (23885, 30339, 6);
 
 -- Add bloodthirst to Impale talent
-UPDATE spell_affect SET SpellFamilyMask = SpellFamilyMask | 0x40000000000 WHERE entry IN (16493, 16494);
+UPDATE spell_affect SET SpellFamilyMask = SpellFamilyMask | 0x40000000000 WHERE entry IN (16493);
+DELETE FROM spell_affect WHERE entry = 16494;
