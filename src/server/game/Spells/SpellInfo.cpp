@@ -2105,10 +2105,13 @@ bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false *
     default:
     case 0:
         positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF0);
+        break;
     case 1:
         positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF1);
+        break;
     case 2:
         positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF2);
+        break;
     }
 
     //sun: dispel case: make it negative on hostile targets
