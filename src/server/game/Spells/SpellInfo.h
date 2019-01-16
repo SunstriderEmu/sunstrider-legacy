@@ -506,9 +506,9 @@ public:
     bool IsPrimaryProfessionFirstRank() const;
     bool IsAbilityLearnedWithProfession() const;
 
-    /** Some spells, such as dispells, can be positive or negative depending on target */
-    bool IsPositive() const;
-    /** Some effects, such as dispells, can be positive or negative depending on target */
+    /** Some spells, such as dispels, can be positive or negative depending on target */
+    bool IsPositive(bool hostileTarget = false) const;
+    /** Some effects, such as dispels, can be positive or negative depending on target */
     bool IsPositiveEffect(uint8 effIndex, bool hostileTarget = false) const;
 
     uint32 CalcCastTime(Spell* spell = nullptr) const;

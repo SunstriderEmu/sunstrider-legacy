@@ -2086,26 +2086,37 @@ bool SpellInfo::IsStackableOnOneSlotWithDifferentCasters() const
     return StackAmount > 1 && !IsChanneled() && !HasAttribute(SPELL_ATTR3_STACK_FOR_DIFF_CASTERS);
 }
 
-bool SpellInfo::IsPositive() const
+bool SpellInfo::IsPositive(bool hostileTarget /* = false*/) const
 {
-    return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE);
+    bool positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE);
+    //sun: dispel case: make it negative on hostile targets
+    if (positive && hostileTarget)
+        if (HasEffect(SPELL_EFFECT_DISPEL) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC))
+            positive = false;
+
+    return positive;
 }
 
 bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false */) const
 {
-    if(HasEffect(SPELL_EFFECT_DISPEL, effIndex) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC, effIndex))
-        return !hostileTarget;  // positive on friendly, negative on hostile
-
+    bool positive;
     switch (effIndex)
     {
-        default:
-        case 0:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF0);
-        case 1:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF1);
-        case 2:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF2);
+    default:
+    case 0:
+        positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF0);
+    case 1:
+        positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF1);
+    case 2:
+        positive = !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF2);
     }
+
+    //sun: dispel case: make it negative on hostile targets
+    if (hostileTarget && positive)
+        if (HasEffect(SPELL_EFFECT_DISPEL, effIndex) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC, effIndex))
+            return false;
+
+    return positive;
 }
 
 uint32 SpellInfo::GetDispelMask() const
