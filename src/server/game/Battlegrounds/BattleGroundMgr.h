@@ -68,7 +68,6 @@ class TC_GAME_API BattlegroundMgr
         //fromWhere is LK only
         void BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* plr, BattlegroundTypeId bgTypeId, uint8 fromWhere = 0);
         void BuildGroupJoinedBattlegroundPacket(WorldPacket* data, GroupJoinBattlegroundResult result);
-        void BuildUpdateWorldStatePacket(WorldPacket *data, uint32 field, uint32 value);
         //void BuildPvPLogDataPacket(WorldPacket *data, Battleground *bg);
         void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, uint8 queueSlot, uint8 statusId, uint32 time1, uint32 time2, uint8 arenaType, uint32 arenaFaction);
         void BuildPlaySoundPacket(WorldPacket *data, uint32 soundid);

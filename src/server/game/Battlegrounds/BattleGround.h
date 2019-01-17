@@ -384,8 +384,8 @@ class TC_GAME_API Battleground
         /* Packet Transfer */
         // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
-        void SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender = nullptr, bool self = true);
-        void SendPacketToAll(WorldPacket *packet);
+        void SendPacketToTeam(uint32 TeamID, WorldPacket const* packet, Player* sender = nullptr, bool self = true);
+        void SendPacketToAll(WorldPacket const* packet);
         void PlaySoundToTeam(uint32 SoundID, uint32 TeamID);
         void PlaySoundToAll(uint32 SoundID);
 
@@ -398,8 +398,7 @@ class TC_GAME_API Battleground
         void RewardMark(Player *plr,uint32 count);
         void SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count);
         void RewardQuest(Player *plr);
-        void UpdateWorldState(uint32 Field, uint32 Value);
-        void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player *Source);
+		void UpdateWorldState(uint32 variable, uint32 value);
         void EndBattleground(uint32 winner);
         void BlockMovement(Player *plr);
 

@@ -267,13 +267,6 @@ void BattlegroundMgr::BuildGroupJoinedBattlegroundPacket(WorldPacket* data, Grou
         ChatHandler::BuildChatPacket(*data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, nullptr, nullptr, Battleground::GetTrinityString(msg));
 }
 
-void BattlegroundMgr::BuildUpdateWorldStatePacket(WorldPacket *data, uint32 field, uint32 value)
-{
-    data->Initialize(SMSG_UPDATE_WORLD_STATE, 4+4); //LK OK
-    *data << uint32(field);
-    *data << uint32(value);
-}
-
 void BattlegroundMgr::BuildPlaySoundPacket(WorldPacket *data, uint32 soundid)
 {
     data->Initialize(SMSG_PLAY_SOUND, 4); //LK OK

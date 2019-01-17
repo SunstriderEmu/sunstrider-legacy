@@ -21,6 +21,7 @@
 #include "BattleGroundEY.h"
 #include "BattleGroundAB.h"
 #include "ReputationMgr.h"
+#include "WorldStatePackets.h"
 
 namespace Trinity
 {
@@ -365,7 +366,7 @@ Position const* Battleground::GetTeamStartPosition(TeamId teamId) const
     return &StartPosition[teamId];
 }
 
-void Battleground::SendPacketToAll(WorldPacket *packet)
+void Battleground::SendPacketToAll(WorldPacket const* packet)
 {
     for(auto & m_Player : m_Players)
     {
@@ -375,7 +376,7 @@ void Battleground::SendPacketToAll(WorldPacket *packet)
     }
 }
 
-void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender, bool self)
+void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket const* packet, Player* sender, bool self)
 {
     for(auto & m_Player : m_Players)
     {
@@ -481,18 +482,12 @@ void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
     }
 }
 
-void Battleground::UpdateWorldState(uint32 Field, uint32 Value)
+void Battleground::UpdateWorldState(uint32 variable, uint32 value)
 {
-    WorldPacket data;
-    sBattlegroundMgr->BuildUpdateWorldStatePacket(&data, Field, Value);
-    SendPacketToAll(&data);
-}
-
-void Battleground::UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player *Source)
-{
-    WorldPacket data;
-    sBattlegroundMgr->BuildUpdateWorldStatePacket(&data, Field, Value);
-    Source->SendDirectMessage(&data);
+	WorldPackets::WorldState::UpdateWorldState worldstate;
+	worldstate.VariableID = variable;
+	worldstate.Value = value;
+	SendPacketToAll(worldstate.Write());
 }
 
 void Battleground::EndBattleground(uint32 winner)

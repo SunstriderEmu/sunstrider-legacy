@@ -2115,7 +2115,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void CastItemCombatSpell(DamageInfo const& damageInfo, Item* item, ItemTemplate const* proto);
 
         void SendInitWorldStates(uint32 zoneid, uint32 areaid);
-        void SendUpdateWorldState(uint32 Field, uint32 Value);
+		void SendUpdateWorldState(uint32 variable, uint32 value) const;
         void SendDirectMessage(WorldPacket const* data) const;
 
         void SendAuraDurationsForTarget(Unit* target);

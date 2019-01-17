@@ -71,6 +71,7 @@
 #include "ReputationMgr.h"
 #include "Trainer.h"
 #include "PoolMgr.h"
+#include "WorldStatePackets.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -8655,12 +8656,12 @@ void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
     SendDirectMessage( &data );
 }
 
-void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
+void Player::SendUpdateWorldState(uint32 variable, uint32 value) const
 {
-    WorldPacket data(SMSG_UPDATE_WORLD_STATE, 8);
-    data << Field;
-    data << Value;
-    SendDirectMessage(&data);
+	WorldPackets::WorldState::UpdateWorldState worldstate;
+	worldstate.VariableID = variable;
+	worldstate.Value = value;
+	SendDirectMessage(worldstate.Write());
 }
 
 void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
