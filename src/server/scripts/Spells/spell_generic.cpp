@@ -452,6 +452,38 @@ class spell_mana_tap : public SpellScript
     }
 };
 
+
+// 35201 - Paralytic Poison 
+class aura_paralytic_poison : public AuraScript
+{
+    enum ParalyticPoisonSpells
+    {
+        SPELL_PARALYSIS = 35202,
+    };
+
+    PrepareAuraScript(aura_paralytic_poison);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_PARALYSIS });
+    }
+
+    void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+            return;
+
+        Unit* target = GetTarget();
+        target->CastSpell(target, SPELL_PARALYSIS, true);
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(aura_paralytic_poison::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_cannibalize();
@@ -464,4 +496,5 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_elune_candle);
     RegisterSpellScript(spell_opening);
     RegisterSpellScript(spell_mana_tap);
+    RegisterAuraScript(aura_paralytic_poison);
 }
