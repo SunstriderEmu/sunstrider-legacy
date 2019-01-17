@@ -703,11 +703,11 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
-                    if (GetAutoCloseTime() && GetMap()->GetGameTimeMS() >= m_cooldownTime)
+                    if (m_cooldownTime && GetMap()->GetGameTimeMS() >= m_cooldownTime)
                         ResetDoorOrButton();
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if(GetAutoCloseTime() && (m_cooldownTime < GetMap()->GetGameTimeMS()))
+					if (GetMap()->GetGameTimeMS() >= m_cooldownTime)
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                         SetLootState(GO_JUST_DEACTIVATED);
