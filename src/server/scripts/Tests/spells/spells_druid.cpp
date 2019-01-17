@@ -410,11 +410,6 @@ public:
 			uint32 const expectedMoonfireMaxDmg = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_MAX + moonfireDirectBonusSP;
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::MOONFIRE_RNK_12, expectedMoonfireMinDmg, expectedMoonfireMaxDmg, false);
 
-			// Direct Damage Crit
-			uint32 const expectedMoonfireMinCrit = expectedMoonfireMinDmg * 1.5f;
-			uint32 const expectedMoonfireMaxCrit = expectedMoonfireMaxDmg * 1.5f;
-			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::MOONFIRE_RNK_12, expectedMoonfireMinCrit, expectedMoonfireMaxCrit, true);
-
 			// DoT
             uint32 const moonfireTickAmount = 4;
             uint32 const moonfireTick = ClassSpellsDamage::Druid::MOONFIRE_RNK_12_TICK + moonfireDoTBonusSP / moonfireTickAmount;
@@ -459,11 +454,6 @@ public:
 			uint32 const expectedStarfireMinDmg = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MIN + starfireBonusSP;
 			uint32 const expectedStarfireMaxDmg = ClassSpellsDamage::Druid::STARFIRE_RNK_8_MAX + starfireBonusSP;
 			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireMinDmg, expectedStarfireMaxDmg, false);
-
-			// Crit damage
-			uint32 const expectedStarfireCritMinDmg = expectedStarfireMinDmg * 1.5f;
-			uint32 const expectedStarfireCritMaxDmg = expectedStarfireMaxDmg * 1.5f;
-			TEST_DIRECT_SPELL_DAMAGE(druid, creature, ClassSpells::Druid::STARFIRE_RNK_8, expectedStarfireCritMinDmg, expectedStarfireCritMaxDmg, true);
 		}
 	};
 
