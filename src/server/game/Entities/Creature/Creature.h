@@ -597,7 +597,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetImmuneToNPC(bool apply) override { Unit::SetImmuneToNPC(apply, HasReactState(REACT_PASSIVE)); }
 
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
-        bool CanResetTalents(Player* player) const;
+        bool CanResetTalents(Player* player, bool pet) const;
         bool IsOutOfThreatArea(Unit const* pVictim) const;
         bool IsImmunedToSpell(SpellInfo const* spellInfo, WorldObject const* caster) const override;
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index, WorldObject const* caster) const override;

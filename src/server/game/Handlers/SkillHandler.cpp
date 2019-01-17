@@ -54,7 +54,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
         return;
     }
 
-    if (!unit->CanResetTalents(_player))
+    if (!unit->CanResetTalents(_player, false))
         return;
 
     if(!(_player->ResetTalents()))

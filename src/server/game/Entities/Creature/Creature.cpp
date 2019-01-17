@@ -1234,13 +1234,13 @@ void Creature::InitializeReactState()
         SetReactState(REACT_AGGRESSIVE);
 }
 
-bool Creature::CanResetTalents(Player* player) const
+bool Creature::CanResetTalents(Player* player, bool pet) const
 {
     Trainer::Trainer const* trainer = sObjectMgr->GetTrainer(GetEntry());
     if (!trainer)
         return false;
 
-    return player->GetLevel() >= 10 && trainer->IsTrainerValidForPlayer(player) && trainer->GetTrainerType() == Trainer::Type::Class;
+	return player->GetLevel() >= 10 && trainer->IsTrainerValidForPlayer(player) && trainer->GetTrainerType() == (pet ? Trainer::Type::Pet : Trainer::Type::Class);
 }
 
 bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const

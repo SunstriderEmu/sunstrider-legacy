@@ -34,8 +34,11 @@ inline bool isNasty(char c)
 {
     if (c == '\t')
         return false;
-    if (c <= '\037') // ASCII control block
-        return true;
+
+	if (sWorld->GetDefaultDbcLocale() != LOCALE_zhCN)
+		if (c <= '\037') // ASCII control block
+	        return true;
+
     return false;
 }
 
