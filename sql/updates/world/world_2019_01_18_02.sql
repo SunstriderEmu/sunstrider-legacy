@@ -1,0 +1,1 @@
+DELETE FROM creature_addon WHERE spawnID = 1085374;
