@@ -829,8 +829,8 @@ public:
             if (changed)
             {
                 modified++;
-                outfileSQL << "DELETE FROM `script_waypoint` WHERE `entry` = " << entry << ";" << std::endl;
-                outfileSQL << "INSERT INTO `script_waypoint` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `waittime`, `point_comment`) VALUES " << std::endl;
+                outfileSQL << "DELETE FROM `escort_waypoints` WHERE `entry` = " << entry << ";" << std::endl;
+                outfileSQL << "INSERT INTO `escort_waypoints` (`entry`, `pointid`, `location_x`, `location_y`, `location_z`, `waittime`, `point_comment`) VALUES " << std::endl;
                 auto itr2 = path.nodes.begin();
                 for (; itr2 != path.nodes.end(); itr2++)
                 {
@@ -839,7 +839,7 @@ public:
                     if (itr2->temp)
                     {
                         uint32 originalID = uint32(itr2->temp - 1);
-                        auto result = WorldDatabase.PQuery("SELECT point_comment FROM script_waypoint WHERE entry = %u AND pointid = %u", entry, originalID);
+                        auto result = WorldDatabase.PQuery("SELECT point_comment FROM escort_waypoints WHERE entry = %u AND pointid = %u", entry, originalID);
                         if (!result)
                         {
                             handler->PSendSysMessage("Path %u point %u not found???????", entry, originalID);
