@@ -191,35 +191,38 @@ void Map::ScriptsProcess()
                 else
                     source = _GetScriptCreatureSourceOrTarget(source, target, step.script);
 
-                Unit* sourceUnit = source->ToUnit();
-                //datalong 0=normal say, 1=whisper, 2=yell, 3=emote text
-                switch (step.script->Talk.ChatType)
-                {
-                case CHAT_TYPE_SAY:
-                    sourceUnit->Say(step.script->Talk.TextID, target);
-                    break;
-                case CHAT_TYPE_YELL:
-                    sourceUnit->Yell(step.script->Talk.TextID, target);
-                    break;
-                case CHAT_TYPE_TEXT_EMOTE:
-                case CHAT_TYPE_BOSS_EMOTE:
-                    sourceUnit->TextEmote(step.script->Talk.TextID, target, step.script->Talk.ChatType == CHAT_TYPE_BOSS_EMOTE);
-                    break;
-                case CHAT_TYPE_WHISPER:
-                case CHAT_TYPE_BOSS_WHISPER:
-                {
-                    Player* receiver = target ? target->ToPlayer() : nullptr;
-                    if (!receiver)
-                        TC_LOG_ERROR("scripts", "%s attempt to whisper to non-player unit, skipping.", step.script->GetDebugInfo().c_str());
-                    else
-                        sourceUnit->Whisper(step.script->Talk.TextID, receiver, step.script->Talk.ChatType == CHAT_TYPE_BOSS_WHISPER);
-                    break;
-                }
-                case CHAT_MSG_RAID_BOSS_WHISPER:  //Not yet handled 
-                default:
-                    break;                              // must be already checked at load
-                }
-                break;
+				if (source)
+				{
+					Unit* sourceUnit = source->ToUnit();
+					//datalong 0=normal say, 1=whisper, 2=yell, 3=emote text
+					switch (step.script->Talk.ChatType)
+					{
+					case CHAT_TYPE_SAY:
+						sourceUnit->Say(step.script->Talk.TextID, target);
+						break;
+					case CHAT_TYPE_YELL:
+						sourceUnit->Yell(step.script->Talk.TextID, target);
+						break;
+					case CHAT_TYPE_TEXT_EMOTE:
+					case CHAT_TYPE_BOSS_EMOTE:
+						sourceUnit->TextEmote(step.script->Talk.TextID, target, step.script->Talk.ChatType == CHAT_TYPE_BOSS_EMOTE);
+						break;
+					case CHAT_TYPE_WHISPER:
+					case CHAT_TYPE_BOSS_WHISPER:
+					{
+						Player* receiver = target ? target->ToPlayer() : nullptr;
+						if (!receiver)
+							TC_LOG_ERROR("scripts", "%s attempt to whisper to non-player unit, skipping.", step.script->GetDebugInfo().c_str());
+						else
+							sourceUnit->Whisper(step.script->Talk.TextID, receiver, step.script->Talk.ChatType == CHAT_TYPE_BOSS_WHISPER);
+						break;
+					}
+					case CHAT_MSG_RAID_BOSS_WHISPER:  //Not yet handled 
+					default:
+						break;                              // must be already checked at load
+					}
+				}
+				break;
             }
 
             case SCRIPT_COMMAND_EMOTE:
