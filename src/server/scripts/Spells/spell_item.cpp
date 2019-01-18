@@ -520,41 +520,20 @@ class spell_item_alchemists_stone : public AuraScript
 
 
 // 37657 - Lightning Capacitor 
-// Item apply aura 37657 which procs 18350 on self 
-// (if you rewrite this, spell_item_lightning_capacitor and and spell_item_lightning_capacitor_aura could be merged into spell_item_lightning_capacitor_aura)
+// Item apply aura 37657 (which procs 18350 on self, dunno what that last one does)
+// Note: according to this: http://wowwiki.wikia.com/wiki/Talk:The_Lightning_Capacitor
+// The bolt shouldn't have any spell power bonus > "It does no longer gain any spelldamage bonusses"
+// This is handled in spell_template_override
 class spell_item_lightning_capacitor_aura : public AuraScript
 {
-    PrepareAuraScript(spell_item_lightning_capacitor_aura);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        //prevent lightning capacitor from proccing on self
-        if (Spell const* spell = eventInfo.GetProcSpell())
-        {
-            if(spell->IsTriggered())
-                return false;
-        }
-
-        return true;
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_item_lightning_capacitor_aura::CheckProc);
-    }
-};
-
-// 18350 - Lightning capacitor dummy spell 
-class spell_item_lightning_capacitor : public SpellScript
-{
-    PrepareSpellScript(spell_item_lightning_capacitor);
-
     enum Spells
     {
         SPELL_LIGHTNING_CAPACITOR = 37657,
-        SPELL_ELECTRICAL_CHARGE = 37658,
-        SPELL_LIGHTNING_BOLT    = 37661,
+        SPELL_ELECTRICAL_CHARGE   = 37658,
+        SPELL_LIGHTNING_BOLT      = 37661,
     };
+
+    PrepareAuraScript(spell_item_lightning_capacitor_aura);
 
     bool Validate(SpellInfo const* /*spellInfo*/) override
     {
@@ -566,11 +545,24 @@ class spell_item_lightning_capacitor : public SpellScript
             });
     }
 
-    void HandleDummy(SpellEffIndex /*effIndex*/, int32& /*dmg*/)
+    bool CheckProc(ProcEventInfo& eventInfo)
     {
+        //prevent lightning capacitor from proccing on self
+        if (Spell const* spell = eventInfo.GetProcSpell())
+        {
+            if(spell->GetSpellInfo()->Id == SPELL_LIGHTNING_BOLT)
+                return false;
+        }
+
+        return true;
+    }
+
+    void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        uint32 const releaseCount = aurEff->GetAmount();
         Unit* caster = GetCaster();
-        Unit* target = GetHitUnit();
-        uint32 releaseCount = sSpellMgr->AssertSpellInfo(SPELL_LIGHTNING_CAPACITOR)->Effects[EFFECT_0].CalcValue(caster);
+        Unit* target = eventInfo.GetProcTarget();
+        
         if (!target || releaseCount < 1)
             return;
 
@@ -590,7 +582,8 @@ class spell_item_lightning_capacitor : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_item_lightning_capacitor::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        DoCheckProc += AuraCheckProcFn(spell_item_lightning_capacitor_aura::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_item_lightning_capacitor_aura::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
     }
 };
 
@@ -612,5 +605,4 @@ void AddSC_item_spell_scripts()
     RegisterAuraScript(spell_item_mana_drain);
     RegisterAuraScript(spell_item_alchemists_stone);
     RegisterAuraScript(spell_item_lightning_capacitor_aura);
-    RegisterSpellScript(spell_item_lightning_capacitor);
 }
