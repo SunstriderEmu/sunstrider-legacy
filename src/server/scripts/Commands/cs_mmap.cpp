@@ -358,7 +358,7 @@ public:
 
     static void DiscardUnnecessaryPoints(WaypointPath& path, WaypointPathType pathType)
     {
-        float const MAX_GROUND_DIST = 1.5f;
+        float const MAX_GROUND_DIST = 1.0f;
         bool lastPoint = false;
         WaypointNode lastNode = *(path.nodes.begin());
         for (auto itr = ++path.nodes.begin(); itr != path.nodes.end();) //start at node 2
@@ -489,8 +489,8 @@ public:
          
             //step3: write ids
             uint32 id = original_path->nodes[0].id; //reuse same first id
-            for (auto& itr : path.nodes)
-                itr.id = id++;
+            for (auto& itr2 : path.nodes)
+				itr2.id = id++;
 
             //step4: Write results to file
             bool changed = path.nodes.size() > original_path->nodes.size();
@@ -594,9 +594,9 @@ public:
             return Optional<uint32>(itr->second);
 
         CreatureDataContainer const& allCreatures = sObjectMgr->GetAllCreatureData();
-        for (auto itr : allCreatures)
+        for (auto itr2 : allCreatures)
         {
-            CreatureData const& creData = itr.second;
+            CreatureData const& creData = itr2.second;
             if (creData.GetFirstSpawnEntry() != npcID) //not actually correct but there are very few creatures using several entries
                 continue;
 
@@ -699,8 +699,8 @@ public:
 
             //step3: write ids
             uint32 id = original_path.nodes[0].id; //reuse same first id
-            for (auto& itr : path.nodes)
-                itr.id = id++;
+            for (auto& itr2 : path.nodes)
+				itr2.id = id++;
 
             //step4: Write results to file
             bool changed = path.nodes.size() > original_path.nodes.size();
@@ -819,8 +819,8 @@ public:
 
             //step3: write ids
             uint32 id = original_path.nodes[0].id; //reuse same first id
-            for (auto& itr : path.nodes)
-                itr.id = id++;
+            for (auto& itr2 : path.nodes)
+				itr2.id = id++;
 
             //step4: Write results to file
 
