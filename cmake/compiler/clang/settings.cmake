@@ -66,10 +66,6 @@ target_compile_options(trinity-compile-option-interface
     -Wno-deprecated-register
     -Wno-switch)
 
-target_compile_definitions(trinity-compile-option-interface
-  INTERFACE
-    -DDEBUG=1)
-	
 if (BUILD_SHARED_LIBS)
   # -fPIC is needed to allow static linking in shared libs.
   target_compile_options(trinity-compile-option-interface
