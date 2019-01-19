@@ -10234,7 +10234,8 @@ void Unit::SetStunned(bool apply)
     }
     else
     {
-        AttackStop(); //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. 
+        if(!IsControlledByPlayer()) //sun: don't update for pets
+            AttackStop(); //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. 
 
         if (IsAlive() && GetVictim())
             SetTarget(EnsureVictim()->GetGUID());
@@ -10323,7 +10324,8 @@ void Unit::SetFeared(bool apply)
     }
     else
     {
-        AttackStop();  //sun: This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
+        if (!IsControlledByPlayer()) //sun: don't update for pets
+            AttackStop();  //sun: This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
 
         if (IsAlive())
         {
@@ -10346,7 +10348,8 @@ void Unit::SetConfused(bool apply)
     }
     else
     {
-        AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
+        if (!IsControlledByPlayer()) //sun: don't update for pets
+            AttackStop();  //This will reupdate current victim. patch 2.4.3 : When a stun wears off, the creature that was stunned will prefer the last target with the highest threat, versus the current target. I'm not sure this should apply to fear but this seems logical.
 
         if (IsAlive())
         {

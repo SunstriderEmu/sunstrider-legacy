@@ -373,7 +373,7 @@ void PetAI::UpdateAI(const uint32 diff)
             return;
         }
 
-        if( _needToStop() )
+        if (_needToStop())
         {
             //TC_LOG_DEBUG("entities.pet","Pet AI stopped attacking [guid=%u]", i_pet.GetGUID().GetCounter());
             _stopAttack();
