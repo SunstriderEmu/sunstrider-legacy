@@ -659,10 +659,12 @@ public:
         }
 
         // Arena teams
-        if (factionChange) {
+        if (factionChange) 
+        {
             result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUID().GetCounter());
 
-            if (result) {
+            if (result) 
+            {
                 //handler->SendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
                 handler->SendSysMessage("You must leave your arena team(s) to perform faction change.");
                 handler->SetSentErrorMessage(true);
@@ -682,11 +684,13 @@ public:
         WorldLocation loc;
         uint32 area_id = 0;
         if (factionChange) {
-            if (Player::TeamForRace(t_race) == ALLIANCE) {
+            if (Player::TeamForRace(t_race) == ALLIANCE) 
+            {
                 loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
                 area_id = 1519; // Stormwind
             }
-            else {
+            else 
+            {
                 loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
                 area_id = 1637; // Orgrimmar
             }
@@ -720,7 +724,8 @@ public:
         for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) 
         {
             uint16 tspell = spell_itr->first;
-            if (tspell) {
+            if (tspell) 
+            {
                 if (!spell_itr->second)               // don't care about passive spells or loading case
                     plr->AddSpell(tspell, spell_itr->second);
                 else                                            // but send in normal spell in game learn case
@@ -731,7 +736,8 @@ public:
         // Reset current quests
         for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; slot++) 
         {
-            if (uint32 quest = plr->GetQuestSlotQuestId(slot)) {
+            if (uint32 quest = plr->GetQuestSlotQuestId(slot)) 
+            {
                 plr->TakeQuestSourceItem(quest, true);
 
                 plr->SetQuestStatus(quest, QUEST_STATUS_NONE);
@@ -750,14 +756,18 @@ public:
                 if (!title_alliance || !title_horde)
                     continue;
 
-                if (dest_team == TEAM_ALLIANCE) {
-                    if (plr->HasTitle(title_horde)) {
+                if (dest_team == TEAM_ALLIANCE) 
+                {
+                    if (plr->HasTitle(title_horde)) 
+                    {
                         plr->RemoveTitle(title_horde);
                         plr->SetTitle(title_alliance);
                     }
                 }
-                else {
-                    if (plr->HasTitle(title_alliance)) {
+                else 
+                {
+                    if (plr->HasTitle(title_alliance)) 
+                    {
                         plr->RemoveTitle(title_alliance);
                         plr->SetTitle(title_horde);
                     }
@@ -769,7 +779,8 @@ public:
         result = WorldDatabase.PQuery("SELECT faction_from, faction_to FROM player_factionchange_reputations WHERE race_from = %u AND race_to = %u", m_race, t_race);
         if (result) 
         {
-            do {
+            do 
+            {
                 Field* _fields = result->Fetch();
 
                 uint32 from = _fields[0].GetUInt32();
@@ -789,11 +800,13 @@ public:
 
         if (factionChange) 
         {
-            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_reput_generic.begin(); it != sObjectMgr->factionchange_reput_generic.end(); ++it) {
+            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_reput_generic.begin(); it != sObjectMgr->factionchange_reput_generic.end(); ++it) 
+            {
                 uint32 faction_alliance = it->first;
                 uint32 faction_horde = it->second;
 
-                if (dest_team == TEAM_ALLIANCE) {
+                if (dest_team == TEAM_ALLIANCE) 
+                {
                     if (faction_alliance == 0)
                         plr->GetReputationMgr().DropFactionReputation(faction_horde);
                     else if (faction_horde == 0)
@@ -801,7 +814,8 @@ public:
                     else
                         plr->GetReputationMgr().SwapFactionReputation(faction_alliance, faction_horde);
                 }
-                else {
+                else 
+                {
                     if (faction_horde == 0)
                         plr->GetReputationMgr().DropFactionReputation(faction_alliance);
                     else if (faction_alliance == 0)
@@ -815,29 +829,38 @@ public:
         // Spells
         if (factionChange) 
         {
-            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_spells.begin(); it != sObjectMgr->factionchange_spells.end(); ++it) {
+            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_spells.begin(); it != sObjectMgr->factionchange_spells.end(); ++it) 
+            {
                 uint32 spell_alliance = it->first;
                 uint32 spell_horde = it->second;
 
-                if (dest_team == TEAM_ALLIANCE) {
-                    if (spell_alliance == 0) {
+                if (dest_team == TEAM_ALLIANCE) 
+                {
+                    if (spell_alliance == 0) 
+                    {
                         if (plr->HasSpell(spell_horde))
                             plr->RemoveSpell(spell_horde);
                     }
-                    else {
-                        if (plr->HasSpell(spell_horde)) {
+                    else 
+                    {
+                        if (plr->HasSpell(spell_horde)) 
+                        {
                             plr->RemoveSpell(spell_horde);
                             plr->LearnSpell(spell_alliance, false);
                         }
                     }
                 }
-                else {
-                    if (spell_horde == 0) {
+                else 
+                {
+                    if (spell_horde == 0) 
+                    {
                         if (plr->HasSpell(spell_alliance))
                             plr->RemoveSpell(spell_alliance);
                     }
-                    else {
-                        if (plr->HasSpell(spell_alliance)) {
+                    else 
+                    {
+                        if (plr->HasSpell(spell_alliance)) 
+                        {
                             plr->RemoveSpell(spell_alliance);
                             plr->LearnSpell(spell_horde, false);
                         }
@@ -851,8 +874,10 @@ public:
         if (plr->GetClass() == CLASS_PRIEST)
         {
             result = WorldDatabase.PQuery("SELECT spell1, spell2 FROM player_factionchange_spells_priest_specific WHERE race1 IN (0,%u) AND race2 IN (0,%u) ORDER BY race1,race2", m_race, t_race); //order by is here to handle non race specific spells first
-            if (result) {
-                do {
+            if (result) 
+            {
+                do 
+                {
                     Field* _fields = result->Fetch();
 
                     uint32 from = _fields[0].GetUInt32();
@@ -871,19 +896,24 @@ public:
         // Items
         if (factionChange) 
         {
-            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_items.begin(); it != sObjectMgr->factionchange_items.end(); ++it) {
+            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_items.begin(); it != sObjectMgr->factionchange_items.end(); ++it) 
+            {
                 uint32 item_alliance = it->first;
                 uint32 item_horde = it->second;
 
-                if (dest_team == TEAM_ALLIANCE) {
-                    if (item_alliance == 0) {
+                if (dest_team == TEAM_ALLIANCE) 
+                {
+                    if (item_alliance == 0) 
+                    {
                         uint32 count = plr->GetItemCount(item_horde, true);
                         if (count != 0)
                             plr->DestroyItemCount(item_horde, count, true, false, true);
                     }
-                    else {
+                    else 
+                    {
                         uint32 count = plr->GetItemCount(item_horde, true);
-                        if (count != 0) {
+                        if (count != 0) 
+                        {
                             plr->DestroyItemCount(item_horde, count, true, false, true);
                             ItemPosCountVec dest;
                             uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_alliance, count);
@@ -905,21 +935,26 @@ public:
                     }
                 }
                 else {
-                    if (item_horde == 0) {
+                    if (item_horde == 0) 
+                    {
                         uint32 count = plr->GetItemCount(item_alliance, true);
                         if (count != 0)
                             plr->DestroyItemCount(item_alliance, count, true, false, true);
                     }
-                    else {
+                    else 
+                    {
                         uint32 count = plr->GetItemCount(item_alliance, true);
-                        if (count != 0) {
+                        if (count != 0) 
+                        {
                             plr->DestroyItemCount(item_alliance, count, true, false, true);
                             ItemPosCountVec dest;
                             uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item_horde, count);
                             if (msg == EQUIP_ERR_OK)
                                 plr->StoreNewItem(dest, item_horde, count, true);
-                            else {
-                                if (Item* newItem = Item::CreateItem(item_horde, count, plr)) {
+                            else 
+                            {
+                                if (Item* newItem = Item::CreateItem(item_horde, count, plr)) 
+                                {
                                     newItem->SaveToDB(trans);
 
                                     MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
@@ -940,27 +975,33 @@ public:
         result = WorldDatabase.PQuery("SELECT item1, item2 FROM player_factionchange_items_race_specific WHERE race1 = %u AND race2 = %u", m_race, t_race);
         if (result) 
         {
-            do {
+            do 
+            {
                 Field* _fields = result->Fetch();
 
                 uint32 from = _fields[0].GetUInt32();
                 uint32 to = _fields[1].GetUInt32();
 
-                if (to == 0) {
+                if (to == 0) 
+                {
                     uint32 count = plr->GetItemCount(from, true);
                     if (count != 0)
                         plr->DestroyItemCount(from, count, true, false, true);
                 }
-                else {
+                else 
+                {
                     uint32 count = plr->GetItemCount(from, true);
-                    if (count != 0) {
+                    if (count != 0) 
+                    {
                         plr->DestroyItemCount(from, count, true, false, true);
                         ItemPosCountVec dest;
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, to, count, true);
-                        else {
-                            if (Item* newItem = Item::CreateItem(to, count, plr)) {
+                        else 
+                        {
+                            if (Item* newItem = Item::CreateItem(to, count, plr)) 
+                            {
                                 SQLTransaction trans_ = CharacterDatabase.BeginTransaction();
                                 newItem->SaveToDB(trans_);
 
@@ -982,27 +1023,33 @@ public:
         result = WorldDatabase.PQuery("SELECT item2, item1 FROM player_factionchange_items_race_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
         if (result) 
         {
-            do {
+            do 
+            {
                 Field* _fields = result->Fetch();
 
                 uint32 from = _fields[0].GetUInt32();
                 uint32 to = _fields[1].GetUInt32();
 
-                if (to == 0) {
+                if (to == 0) 
+                {
                     uint32 count = plr->GetItemCount(from, true);
                     if (count != 0)
                         plr->DestroyItemCount(from, count, true, false, true);
                 }
-                else {
+                else 
+                {
                     uint32 count = plr->GetItemCount(from, true);
-                    if (count != 0) {
+                    if (count != 0) 
+                    {
                         plr->DestroyItemCount(from, count, true, false, true);
                         ItemPosCountVec dest;
                         uint8 msg = plr->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, to, count);
                         if (msg == EQUIP_ERR_OK)
                             plr->StoreNewItem(dest, to, count, true);
-                        else {
-                            if (Item* newItem = Item::CreateItem(to, count, plr)) {
+                        else 
+                        {
+                            if (Item* newItem = Item::CreateItem(to, count, plr)) 
+                            {
                                 newItem->SaveToDB(trans);
 
                                 MailSender sender(MAIL_NORMAL, plr->GetGUID().GetCounter(), MAIL_STATIONERY_GM);
@@ -1023,9 +1070,11 @@ public:
         plr->RemoveAllAuras();
 
         // Remove instance tag
-        for (uint8 i = 0; i < MAX_DIFFICULTY; i++) {
+        for (uint8 i = 0; i < MAX_DIFFICULTY; i++) 
+        {
             Player::BoundInstancesMap &binds = plr->GetBoundInstances(Difficulty(i));
-            for (auto itr = binds.begin(); itr != binds.end(); ) {
+            for (auto itr = binds.begin(); itr != binds.end(); ) 
+            {
                 if (itr->first != plr->GetMapId())
                     plr->UnbindInstance(itr, Difficulty(i));
                 else
@@ -1033,7 +1082,8 @@ public:
             }
         }
 
-        if (handler->GetSession()->GetSecurity() <= SEC_PLAYER) {
+        if (handler->GetSession()->GetSecurity() <= SEC_PLAYER) 
+        {
             LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(nullptr), account_id);
             //  trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
         }

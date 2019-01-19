@@ -445,7 +445,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
             ROLLBACK(DUMP_FILE_BROKEN);
         }
 
-        DumpTableType type;
+        DumpTableType type = DTT_CHARACTER;
         uint8 i;
         for(i = 0; i < DUMP_TABLE_COUNT; i++)
         {
@@ -458,7 +458,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
         if (i == DUMP_TABLE_COUNT)
         {
-            TC_LOG_ERROR("FIXME","LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
+            TC_LOG_ERROR("misc","LoadPlayerDump: Unknown table: '%s'!", tn.c_str());
             ROLLBACK(DUMP_FILE_BROKEN);
         }
 

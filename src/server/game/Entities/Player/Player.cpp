@@ -3719,9 +3719,11 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     bool cur_dependent = itr->second->dependent;
 
     // removing
-    WorldPacket data(SMSG_REMOVED_SPELL, 4);
-    data << uint16(spell_id);
-    SendDirectMessage(&data);
+    {
+        WorldPacket data(SMSG_REMOVED_SPELL, 4);
+        data << uint16(spell_id);
+        SendDirectMessage(&data);
+    }
 
     if (disabled)
     {
@@ -3748,7 +3750,7 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
 
     // free talent points
     uint32 talentCosts = GetTalentSpellCost(spell_id);
-    if(talentCosts > 0)
+    if(talentCosts > 0 && giveTalentPoints)
     {
         if(talentCosts < m_usedTalentCount)
             m_usedTalentCount -= talentCosts;
@@ -14245,8 +14247,6 @@ bool Player::CanShareQuest(uint32 quest_id) const
 
 void Player::SetQuestStatus(uint32 questId, QuestStatus status, bool update /*= true*/)
 {
-    uint32 zone = 0, area = 0;
-
     if(Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
     {
         if (status == QUEST_STATUS_NONE || status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE)

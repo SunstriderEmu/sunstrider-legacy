@@ -1816,25 +1816,25 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
             break;
-        case 41913: //Illidan SPELL_SHADOWFIEND_PASSIVE
+        case 41913: // Illidan SPELL_SHADOWFIEND_PASSIVE
             spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
             break;
         case 37770:
             spellInfo->Effect[0] = 2;
             break;
-        case 31344:  //SPELL_HOWL_OF_AZGALOR
+        case 31344: // SPELL_HOWL_OF_AZGALOR
             spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_100_YARDS;//100yards instead of 50000?!
             break;
-        case 31298: //anatheron SPELL_SLEEP
+        case 31298: // anatheron SPELL_SLEEP
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
             break;
-        case 42821: //Headless horseman SPELL_WISP_BLUE
-        case 42818: //Headless horseman SPELL_WISP_FLIGHT_PORT
+        case 42821: // Headless horseman SPELL_WISP_BLUE
+        case 42818: // Headless horseman SPELL_WISP_FLIGHT_PORT
             //that's hack but there are no info about range of this spells in dbc
             spellInfo->rangeIndex = 6; //100 yards
             break;
-        case 42380: //Headless horseman SPELL_CONFLAGRATION
+        case 42380: // Headless horseman SPELL_CONFLAGRATION
             spellInfo->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE_PERCENT;
             spellInfo->EffectBasePoints[0] = 10;
             spellInfo->EffectBaseDice[0] = 10;
@@ -1887,9 +1887,9 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 41376: // Spite
         case 39992: // Needle Spine
-        case 29576: //Multi-Shot
-        case 40816: //Saber Lash
-        case 37790: //Spread Shot
+        case 29576: // Multi-Shot
+        case 40816: // Saber Lash
+        case 37790: // Spread Shot
         //case 46771: //Flame Sear
         //case 45248: //Shadow Blades
         case 41303: // Soul Drain
@@ -1902,19 +1902,22 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
             [[fallthrough]];
         case 42005: // Bloodboil
-        case 38296: //Spitfire Totem
-        case 37676: //Insidious Whisper
-        case 45641: //Fire Bloom
+        case 38296: // Spitfire Totem
+        case 37676: // Insidious Whisper
+        case 45641: // Fire Bloom
             spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
             spellInfo->MaxAffectedTargets = 5;
             break;
-        case 40827: //Sinful Beam
-        case 40859: //Sinister Beam
-        case 40860: //Vile Beam
-        case 40861: //Wicked Beam
+        case 40827: // Sinful Beam
+        case 40859: // Sinister Beam
+        case 40860: // Vile Beam
+        case 40861: // Wicked Beam
             spellInfo->MaxAffectedTargets = 10;
             break;
-        case 8122: case 8124: case 10888: case 10890: // Psychic Scream
+        case 8122: 
+        case 8124: 
+        case 10888: 
+        case 10890: // Psychic Scream
         case 12494: // Frostbite
             spellInfo->Attributes |= SPELL_ATTR0_HEARTBEAT_RESIST_CHECK;
             break;
@@ -1972,7 +1975,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 40322: // Spirit Shield
             spellInfo->AttributesEx &= ~SPELL_ATTR1_CANT_BE_REFLECTED;
             break;
-        case 33666:     // Sonic Boom (Murmur)
+        case 33666: // Sonic Boom (Murmur)
         case 38795:
             spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_10_YARDS;
             spellInfo->EffectRadiusIndex[1] = EFFECT_RADIUS_10_YARDS;

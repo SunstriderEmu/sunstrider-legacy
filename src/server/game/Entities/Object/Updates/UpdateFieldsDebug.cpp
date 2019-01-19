@@ -1329,7 +1329,6 @@ void UpdateFieldsDebug::FillSnapshotValues(WorldObject* target, WorldSession::Sn
     uint32 valuesCount = target->GetValuesCount();
     values.clear();
     values.resize(valuesCount);
-    TypeID type = TypeID(target->GetTypeId());
     for (uint32 i = 0; i < valuesCount; i++)
         values[i] = target->GetUInt32Value(i);
 }

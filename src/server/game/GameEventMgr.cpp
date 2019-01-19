@@ -17,13 +17,11 @@ bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
     time_t currenttime = WorldGameTime::GetGameTime();
 
-
     switch (mGameEvent[entry].state)
     {
     default:
     case GAMEEVENT_NORMAL:
     {
-        time_t currenttime = WorldGameTime::GetGameTime();
         // Get the event information
         return mGameEvent[entry].start < currenttime
             && currenttime < mGameEvent[entry].end
@@ -785,7 +783,7 @@ void GameEventMgr::LoadFromDB()
         TC_LOG_INFO("server.loading", ">> Loaded %u battleground holidays in game events", count );
     }
 
-
+    count = 0;
     TC_LOG_INFO("server.loading", "Loading Game Event Seasonal Quest Relations...");
     {
         uint32 oldMSTime = GetMSTime();
@@ -797,7 +795,6 @@ void GameEventMgr::LoadFromDB()
             TC_LOG_INFO("server.loading", ">> Loaded 0 seasonal quests additions in game events. DB table `game_event_seasonal_questrelation` is empty.");
         else
         {
-            uint32 count = 0;
             do
             {
                 Field* fields = result->Fetch();

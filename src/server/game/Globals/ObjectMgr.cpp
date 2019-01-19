@@ -3471,7 +3471,7 @@ void ObjectMgr::LoadQuests()
             if(int32 skill_id =  SkillByQuestSort(-int32(qinfo->_zoneOrSort)))
             {
                 // skill is positive value in SkillOrClass
-                if(qinfo->_requiredSkillId != skill_id )
+                if (qinfo->_requiredSkillId != skill_id)
                 {
                     TC_LOG_ERROR("sql.sql","Quest %u has `_zoneOrSort` = %i (skill sort case) but `SkillOrClass` does not have a corresponding value (%i).",
                         qinfo->GetQuestId(),qinfo->_zoneOrSort,skill_id);

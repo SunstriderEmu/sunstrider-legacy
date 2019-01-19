@@ -499,7 +499,7 @@ CMSG_FORCE_TURN_RATE_CHANGE_ACK
 */
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 {
-    uint32 opcode = recvData.GetOpcode();
+    //uint32 opcode = recvData.GetOpcode();
    // TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), opcode, opcode);
 
     ObjectGuid guid;
@@ -822,7 +822,6 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
 #endif
     recvData >> timeSkipped;
 
-    Unit* mover = _clientControl.GetAllowedActiveMover();
     if (!_clientControl.IsAllowedToMove(guid, true))
         return;
 
@@ -1016,7 +1015,9 @@ void PlayerMovementPendingChange::Resolve(PlayerMovementPendingChange const& cha
 void PlayerMovementPendingChange::_HandleMovementFlagChangeToggleAck(WorldSession* /*session*/, Unit* mover, MovementInfo& movementInfo, bool validate)
 {
     MovementFlags  mFlag  = MOVEMENTFLAG_NONE;
+#ifdef LICH_KING
     MovementFlags2 mFlag2 = MOVEMENTFLAG2_NONE;
+#endif
 
     switch (movementChangeType)
     {

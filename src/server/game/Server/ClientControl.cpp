@@ -382,8 +382,8 @@ void ClientControl::DisallowTakeControl(Unit* target)
             // Also restore control to first other unit we can control
             if (!_allowedClientControl.empty())
             {
-                if (Unit* mover = ObjectAccessor::GetUnit(*_owner->GetPlayer(), *(_allowedClientControl.begin())))
-                    UpdateTakeControl(mover, true);
+                if (Unit* allowed = ObjectAccessor::GetUnit(*_owner->GetPlayer(), *(_allowedClientControl.begin())))
+                    UpdateTakeControl(allowed, true);
             }
         }
     }

@@ -2835,7 +2835,6 @@ void Creature::AllLootRemovedFromCorpse()
         return;
             
     float decayRate = sWorld->GetRate(RATE_CORPSE_DECAY_LOOTED);
-    CreatureTemplate const *cinfo = GetCreatureTemplate();
 
     // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
     if (loot.loot_type == LOOT_SKINNING)
