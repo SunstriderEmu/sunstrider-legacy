@@ -1,0 +1,4 @@
+DELETE FROM creature_text WHERE CreatureId = 476;
+insert into `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) values('476','0','0','You no take candle!','12','0','100','0','0','0','16658','0','Kobold Geomancer - Random Say on Aggro');
+insert into `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) values('476','0','1','Yiieeeee! Me run!','12','0','100','0','0','0','1864','0','Kobold Geomancer');
+insert into `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) values('476','0','2','No kill me! No kill me!','12','0','100','0','0','0','1863','0','Kobold Geomancer');
