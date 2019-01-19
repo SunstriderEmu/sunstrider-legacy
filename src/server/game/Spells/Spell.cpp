@@ -2445,7 +2445,8 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint8 effMask)
         int32 _duration = 0;
         for (auto i = m_hitTriggerSpells.begin(); i != m_hitTriggerSpells.end(); ++i)
         {
-            if (CanExecuteTriggersOnHit(effMask, i->triggeredByAura) && roll_chance_i(i->chance))
+            bool cheatProc = m_caster && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->ToPlayer()->GetCommandStatus(CHEAT_PROC);
+            if (CanExecuteTriggersOnHit(effMask, i->triggeredByAura) && (cheatProc || roll_chance_i(i->chance)))
             {
                 m_caster->CastSpell(unit, i->triggeredSpell->Id, true);
                 TC_LOG_DEBUG("spells", "Spell %d triggered spell %d by SPELL_AURA_ADD_TARGET_TRIGGER aura", m_spellInfo->Id, i->triggeredSpell->Id);

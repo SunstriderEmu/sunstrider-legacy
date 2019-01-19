@@ -19,6 +19,7 @@ public:
             { "explore",        SEC_GAMEMASTER3,  false, &HandleExploreCheatCommand,            "" },
             { "crit",           SEC_GAMEMASTER3,  false, &HandleCritCheatCommand,               "" },
             { "hit",            SEC_GAMEMASTER3,  false, &HandleHitCheatCommand,                "" },
+            { "proc",           SEC_GAMEMASTER3,  false, &HandleProcCheatCommand,               "" },
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -171,7 +172,7 @@ public:
         int flag = atoi((char*)args);
 
         Player *chr = handler->GetSelectedPlayerOrSelf();
-        if (chr == nullptr)
+        if (!chr)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -201,7 +202,6 @@ public:
 
         return true;
     }
-
 
     static bool HandleCritCheatCommand(ChatHandler* handler, char const* args)
     {
@@ -276,6 +276,38 @@ public:
 
             handler->GetSession()->GetPlayer()->SetCommandStatusOn(CHEAT_HIT);
             handler->SendSysMessage("Hit Cheat is ON.");
+            return true;
+        }
+        return false;
+    }
+
+    static bool HandleProcCheatCommand(ChatHandler* handler, char const* args)
+    {
+        Player* chr = handler->GetSelectedPlayerOrSelf();
+        if (!chr)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        std::string argstr = (char*)args;
+        if (!*args)
+            argstr = (handler->GetSession()->GetPlayer()->GetCommandStatus(CHEAT_PROC)) ? "off" : "on";
+
+        if (argstr == "off")
+        {
+            handler->GetSession()->GetPlayer()->SetCommandStatusOff(CHEAT_PROC);
+            handler->SendSysMessage("Proc Cheat is OFF. You have normal proc chances.");
+            chr->UpdateAllCritPercentages();
+            chr->UpdateAllSpellCritChances();
+            return true;
+        }
+        else if (argstr == "on")
+        {
+            handler->GetSession()->GetPlayer()->SetCommandStatusOn(CHEAT_PROC);
+
+            handler->SendSysMessage("Proc Cheat is ON. You have 100% proc chances on every spells.");
             return true;
         }
         return false;

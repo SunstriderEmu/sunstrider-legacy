@@ -1046,7 +1046,8 @@ uint8 Aura::GetProcEffectMask(AuraApplication* aurApp, ProcEventInfo& eventInfo,
         }
     }
 
-    if (roll_chance_f(CalcProcChance(*procEntry, eventInfo)))
+    bool cheatProc = target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->GetCommandStatus(CHEAT_PROC);
+    if (cheatProc || roll_chance_f(CalcProcChance(*procEntry, eventInfo)))
         return procEffectMask;
 
     return 0;

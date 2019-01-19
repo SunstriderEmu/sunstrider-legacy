@@ -1047,6 +1047,7 @@ enum PlayerCommandStates
     CHEAT_WATERWALK = 0x10,
     CHEAT_CRIT      = 0x20,
     CHEAT_HIT       = 0x40,
+    CHEAT_PROC      = 0x80, //always 100% proc chance
 };
 
 struct SpamReport
