@@ -2,6 +2,7 @@
 #include "Language.h"
 #include "Transport.h"
 #include "MapManager.h"
+#include "TicketMgr.h"
 
 using namespace Trinity::ChatCommands;
 class go_commandscript : public CommandScript
@@ -39,41 +40,24 @@ public:
         return commandTable;
     }
 
-    static bool HandleGoTicketCommand(ChatHandler* handler, char const* args)
+    static bool HandleGoTicketCommand(ChatHandler* handler, uint32 ticketId)
     {
-        ARGS_CHECK
-
-            char *cstrticket_id = strtok((char*)args, " ");
-
-        if (!cstrticket_id)
-            return false;
-
-        uint64 ticket_id = atoi(cstrticket_id);
-        if (!ticket_id)
-            return false;
-
-        GM_Ticket *ticket = sObjectMgr->GetGMTicket(ticket_id);
+        GmTicket* ticket = sTicketMgr->GetTicket(ticketId);
         if (!ticket)
         {
             handler->SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
             return true;
         }
 
-        float x, y, z;
-        int mapid;
+        Player* player = handler->GetSession()->GetPlayer();
 
-        x = ticket->pos_x;
-        y = ticket->pos_y;
-        z = ticket->pos_z;
-        mapid = ticket->map;
-
-        Player* _player = handler->GetSession()->GetPlayer();
-        if (_player->IsInFlight())
-            _player->FinishTaxiFlight();
+        // stop flight if need
+        if (player->IsInFlight())
+            player->FinishTaxiFlight();
         else
-            _player->SaveRecallPosition();
+            player->SaveRecallPosition(); // save only in non-flight case
 
-        _player->TeleportTo(mapid, x, y, z, 1, 0);
+        ticket->TeleportTo(player);
         return true;
     }
 

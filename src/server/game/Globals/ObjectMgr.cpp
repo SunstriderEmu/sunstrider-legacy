@@ -108,7 +108,6 @@ ObjectMgr::ObjectMgr() :
     _mailid(1),
     _auctionId(1),
     maxSpellId(0),
-    _GMticketid(0),
     DBCLocaleIndex(LOCALE_enUS)
 {
     for (uint8 i = 0; i < MAX_CLASSES; ++i)
@@ -8001,129 +8000,6 @@ bool LoadTrinityStrings(DatabaseWorkerPool<WorldDatabaseConnection>& db, char co
 
     // for scripting localized strings allowed use _only_ negative entries
     return sObjectMgr->LoadTrinityStrings(db,table,end_value,start_value);
-}
-
-uint64 ObjectMgr::GenerateGMTicketId()
-{
-  return ++_GMticketid;
-}
-
-void ObjectMgr::LoadGMTickets()
-{
-  m_GMTicketList.clear();
-
-  QueryResult result = CharacterDatabase.Query( "SELECT `guid`, `playerGuid`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment` FROM `gm_tickets`" );
-
-  if(!result)
-  {
-    TC_LOG_INFO("server.loading"," \n>> GM Tickets table is empty, no tickets were loaded.\n" );
-    
-    return;
-  }
-
-  uint16 count = 0;
-  GM_Ticket *ticket;
-  do
-  {
-    Field *fields = result->Fetch();
-    ticket = new GM_Ticket;
-    ticket->guid = fields[0].GetUInt32();
-    ticket->playerGuid = ObjectGuid(HighGuid::Player, fields[1].GetUInt32());
-    ticket->message = fields[2].GetString();
-    ticket->createtime = fields[3].GetUInt32();
-    ticket->map = fields[4].GetUInt32();
-    ticket->pos_x = fields[5].GetFloat();
-    ticket->pos_y = fields[6].GetFloat();
-    ticket->pos_z = fields[7].GetFloat();
-    ticket->timestamp = fields[8].GetUInt32();
-    ticket->closed = fields[9].GetUInt32();
-    ticket->assignedToGM = ObjectGuid(HighGuid::Player, fields[10].GetUInt32());
-    ticket->comment = fields[11].GetString();
-    ++count;
-
-    m_GMTicketList.push_back(ticket);
-
-  } while( result->NextRow() );
-
-  result = CharacterDatabase.PQuery("SELECT MAX(`guid`) from `gm_tickets`");
-  _GMticketid = (*result)[0].GetUInt64(); 
-
-  TC_LOG_INFO("server.loading",">>> %u GM Tickets loaded from the database.", count);
-  
-}
-
-GM_Ticket* ObjectMgr::GetGMTicket(uint64 ticketGuid)
-{
-    for(GmTicketList::const_iterator i = m_GMTicketList.begin(); i != m_GMTicketList.end(); ++i)
-        if((*i) && (*i)->guid == ticketGuid) 
-            return (*i);
-
-    return nullptr;
-}
-
-GM_Ticket* ObjectMgr::GetGMTicketByPlayer(ObjectGuid playerGuid)
-{
-    for(GmTicketList::const_iterator i = m_GMTicketList.begin(); i != m_GMTicketList.end(); ++i)
-        if((*i) && (*i)->playerGuid == playerGuid && (*i)->closed == 0) 
-            return (*i);
-
-    return nullptr;        
-}
-
-void ObjectMgr::AddOrUpdateGMTicket(GM_Ticket &ticket, bool create)
-{
-  if(create)
-    m_GMTicketList.push_back(&ticket);
-
-  _AddOrUpdateGMTicket(ticket);    
-}
-
-void ObjectMgr::_AddOrUpdateGMTicket(GM_Ticket &ticket)
-{
-    std::string msg(ticket.message);
-    std::string comment(ticket.comment); 
-    CharacterDatabase.EscapeString(msg);
-    CharacterDatabase.EscapeString(comment);
-    std::ostringstream ss;
-    ss << "REPLACE INTO `gm_tickets` (`guid`, `playerGuid`, `message`, `createtime`, `map`, `posX`, `posY`, `posZ`, `timestamp`, `closed`, `assignedto`, `comment`) VALUES('";
-    ss << ticket.guid << "', '";
-    ss << ticket.playerGuid << "', '";
-    ss << msg << "', '" ;
-    ss << ticket.createtime << "', '";
-    ss << ticket.map << "', '";
-    ss << ticket.pos_x << "', '";
-    ss << ticket.pos_y << "', '";
-    ss << ticket.pos_z << "', '";
-    ss << ticket.timestamp << "', '";
-    ss << ticket.closed << "', '";
-    ss << ticket.assignedToGM << "', '";
-    ss << comment << "');";
-
-    CharacterDatabase.Execute(ss.str().c_str());
-}
-
-void ObjectMgr::RemoveGMTicket(GM_Ticket *ticket, int64 source, bool permanently)
-{
-  for(auto i = m_GMTicketList.begin(); i != m_GMTicketList.end(); ++i)
-    if((*i)->guid == ticket->guid) 
-    {
-      if(permanently)
-      {
-        CharacterDatabase.PExecute("DELETE FROM `gm_tickets` WHERE `guid` = '%u'", ticket->guid);
-        i = m_GMTicketList.erase(i);
-        ticket = nullptr;
-        return;
-      }
-      (*i)->closed = source;
-      _AddOrUpdateGMTicket(*(*i)); 
-    }
-}
-
-void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently)
-{
-  GM_Ticket *ticket = GetGMTicket(ticketGuid);
-  assert( ticket );
-  RemoveGMTicket(ticket, source, permanently);
 }
 
 void ObjectMgr::LoadItemExtendedCost()

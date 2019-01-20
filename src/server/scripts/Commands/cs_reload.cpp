@@ -10,6 +10,7 @@
 #include "ItemEnchantmentMgr.h"
 #include "WaypointDefines.h"
 #include "MapManager.h"
+#include "TicketMgr.h"
 
 class reload_commandscript : public CommandScript
 {
@@ -925,7 +926,7 @@ public:
 
     static bool HandleReloadGMTicketCommand(ChatHandler* handler, char const* /*args*/)
     {
-        sObjectMgr->LoadGMTickets();
+        sTicketMgr->LoadTickets();
         return true;
     }
 

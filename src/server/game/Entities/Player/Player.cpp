@@ -72,6 +72,7 @@
 #include "Trainer.h"
 #include "PoolMgr.h"
 #include "WorldStatePackets.h"
+#include "TicketMgr.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -4207,6 +4208,11 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
         if (Guild* guild = sGuildMgr->GetGuildById(guildId))
             guild->DeleteMember(trans, playerguid, false, false, true);
 
+    // close player ticket if any
+    GmTicket* ticket = sTicketMgr->GetTicketByPlayer(playerguid);
+    if (ticket)
+        sTicketMgr->CloseTicket(ticket->GetId(), playerguid);
+
     // remove from arena teams
     LeaveAllArenaTeams(playerguid);
 
@@ -4352,7 +4358,18 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
-            trans->PAppend("DELETE FROM gm_tickets WHERE playerGuid = '%u'", guid);
+            if (sWorld->getBoolConfig(CONFIG_DELETE_CHARACTER_TICKET_TRACE))
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_GM_TICKETS_ON_CHAR_DELETION);
+                stmt->setUInt32(0, guid);
+                trans->Append(stmt);
+            }
+            else
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_GM_TICKETS);
+                stmt->setUInt32(0, guid);
+                trans->Append(stmt);
+            }
 
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE_BY_OWNER);
             stmt->setUInt32(0, guid);

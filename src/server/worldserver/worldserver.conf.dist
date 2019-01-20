@@ -895,6 +895,24 @@ BeepAtStart = 1
 Server.LoginInfo = 0
 
 #
+#    AllowTickets
+#        Description: Allow/disallow sending new tickets.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+AllowTickets = 1
+
+#
+#    DeletedCharacterTicketTrace
+#        Description: Keep trace of tickets opened by deleted characters
+#                     gm_ticket.playerGuid will be 0, old GUID and character name
+#                     will be included in gm_ticket.comment
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+DeletedCharacterTicketTrace = 0
+
+#
 #    ArenaSpectator.Enable
 #        Enable Arena Spectator (only affects chat commands)
 #        Default: 1
@@ -1013,6 +1031,13 @@ AutoAnnounce.Enable = 1
 #
 
 WorldChannel.MinLevel = 10
+
+#
+#     LevelReq.Ticket
+#        Description: Level requirement for characters to be able to write tickets.
+#        Default:     1
+
+LevelReq.Ticket = 1
 
 #
 #    ClientCacheVersion

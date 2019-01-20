@@ -528,23 +528,6 @@ enum SkillRangeType
 
 SkillRangeType GetSkillRangeType(SkillRaceClassInfoEntry const* rcEntry);
 
-struct GM_Ticket
-{
-  uint64 guid;
-  ObjectGuid playerGuid;
-  float pos_x;
-  float pos_y;
-  float pos_z;
-  uint32 map;
-  std::string message;
-  uint64 createtime;
-  uint64 timestamp;
-  int64 closed; // 0 = Open, -1 = Console, playerGuid = player abandoned ticket, other = GM who closed it.
-  ObjectGuid assignedToGM;
-  std::string comment;
-};
-typedef std::list<GM_Ticket*> GmTicketList;
-
 enum PointOfInterestIcon
 {
 #ifdef LICH_KING
@@ -935,8 +918,6 @@ class TC_GAME_API ObjectMgr
 
         void InitializeQueriesData(QueryDataGroup mask);
 
-        void LoadGMTickets();
-
         /* (Re)Load spell_template from database, and apply some hardcoded changes with LoadSpellCustomAttr(). You still need to reload SpellInfo's with LoadSpellInfoStore if you want this data to be used.
         */
         void LoadSpellTemplates();
@@ -1196,15 +1177,6 @@ class TC_GAME_API ObjectMgr
         std::string const& GetScriptName(uint32 id) const;
         uint32 GetScriptId(std::string const& name);
 
-        GM_Ticket* GetGMTicket(uint64 ticketGuid);
-        GM_Ticket* GetGMTicketByPlayer(ObjectGuid playerGuid);
-        void AddOrUpdateGMTicket(GM_Ticket &ticket, bool create = false);
-        void _AddOrUpdateGMTicket(GM_Ticket &ticket);
-        void RemoveGMTicket(uint64 ticketGuid, int64 source = -1, bool permanently = false);
-        void RemoveGMTicket(GM_Ticket *ticket, int64 source = -1, bool permanently = false);
-        GmTicketList m_GMTicketList;
-        uint64 GenerateGMTicketId();
-
         typedef std::map<uint32, uint32> FactionChangeMap;
         
         FactionChangeMap factionchange_items;
@@ -1235,7 +1207,6 @@ class TC_GAME_API ObjectMgr
 		std::atomic<uint32> _mailid;
         uint32 _ItemTextId;
 		std::atomic<uint32> _hiPetNumber;
-        uint64 _GMticketid;
 
 		uint32 _creatureSpawnId;
 		uint32 _gameObjectSpawnId;

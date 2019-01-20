@@ -53,6 +53,7 @@
 #include "SmartAI.h"
 #include "SpellMgr.h"
 #include "TemporarySummon.h"
+#include "TicketMgr.h"
 #include "Transport.h"
 #include "TransportMgr.h"
 #include "UpdateTime.h"
@@ -1099,6 +1100,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfigMgr->GetIntDefault("Battleground.TimeLimit.Warsong", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfigMgr->GetIntDefault("Battleground.TimeLimit.Arena", 0);
 
+    ///- Read ticket system setting from the config file
+    m_configs[CONFIG_ALLOW_TICKETS] = sConfigMgr->GetBoolDefault("AllowTickets", true);
+    m_configs[CONFIG_DELETE_CHARACTER_TICKET_TRACE] = sConfigMgr->GetBoolDefault("DeletedCharacterTicketTrace", false);
+
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfigMgr->GetIntDefault("InstantLogout", SEC_GAMEMASTER1);
 
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfigMgr->GetIntDefault("GroupLeaderReconnectPeriod", 180);
@@ -1204,6 +1209,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_NUMTHREADS] = sConfigMgr->GetIntDefault("MapUpdate.Threads", 4);
 
     m_configs[CONFIG_WORLDCHANNEL_MINLEVEL] = sConfigMgr->GetIntDefault("WorldChannel.MinLevel", 10);
+    m_configs[CONFIG_TICKET_LEVEL_REQ] = sConfigMgr->GetIntDefault("LevelReq.Ticket", 1);
 
     m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.Enabled", false);
     m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20);
@@ -1800,9 +1806,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading Conditions...");
     sConditionMgr->LoadConditions();
 
-    TC_LOG_INFO("server.loading", "Loading GM tickets...");
-    sObjectMgr->LoadGMTickets();
-
     TC_LOG_INFO("server.loading", "Loading client addons...");
     AddonMgr::LoadFromDB();
 
@@ -1820,6 +1823,12 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadFactionChangeQuests();
     TC_LOG_INFO("server.loading","Loading faction change reputations (generic)...");
     sObjectMgr->LoadFactionChangeReputGeneric();
+
+    TC_LOG_INFO("server.loading", "Loading GM tickets...");
+    sTicketMgr->LoadTickets();
+
+    TC_LOG_INFO("server.loading", "Loading GM surveys...");
+    sTicketMgr->LoadSurveys();
 
     TC_LOG_INFO("server.loading", "Loading spell script names...");
     sObjectMgr->LoadSpellScriptNames();
