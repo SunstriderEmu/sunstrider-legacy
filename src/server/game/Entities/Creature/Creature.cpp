@@ -1453,8 +1453,8 @@ void Creature::UpdateLevelDependantStats()
             break;
     }
 
-    SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
-    SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
+    //sun: commented out. That's what SetCreateHeath if for. Creature::UpdateMaxHealth() has been updated accordingly. This was also breaking some guardians health such as water elemental
+    //SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
 
     // damage
     float basedamage = stats->GenerateBaseDamage(cInfo);

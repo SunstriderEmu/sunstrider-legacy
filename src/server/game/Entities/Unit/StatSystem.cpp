@@ -1026,7 +1026,8 @@ void Creature::UpdateArmor()
 
 void Creature::UpdateMaxHealth()
 {
-    float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
+    //sun: changed this from TC: UNIT_MOD_HEALTH does not include base health on sunstrider
+    float value = GetFlatModifierValue(UNIT_MOD_HEALTH, BASE_VALUE) + GetCreateHealth();
     SetMaxHealth((uint32)value);
 }
 

@@ -8139,71 +8139,6 @@ bool Unit::IsFFAPvP() const
 ########                         ########
 #######################################*/
 
-/*
-bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply)
-{
-    if(unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_END)
-    {
-        TC_LOG_ERROR("FIXME","ERROR in HandleStatModifier(): non existed UnitMods or wrong UnitModifierType!");
-        return false;
-    }
-
-    switch(modifierType)
-    {
-        case BASE_VALUE:
-        case TOTAL_VALUE:
-            m_auraModifiersGroup[unitMod][modifierType] += apply ? amount : -amount;
-            break;
-        case BASE_PCT:
-        case TOTAL_PCT:
-            ApplyPercentModFloatVar(m_auraModifiersGroup[unitMod][modifierType], amount, apply);
-            break;
-        default:
-            break;
-    }
-
-    if(!CanModifyStats())
-        return false;
-
-    switch(unitMod)
-    {
-        case UNIT_MOD_STAT_STRENGTH:
-        case UNIT_MOD_STAT_AGILITY:
-        case UNIT_MOD_STAT_STAMINA:
-        case UNIT_MOD_STAT_INTELLECT:
-        case UNIT_MOD_STAT_SPIRIT:         UpdateStats(GetStatByAuraGroup(unitMod));  break;
-
-        case UNIT_MOD_ARMOR:               UpdateArmor();           break;
-        case UNIT_MOD_HEALTH:              UpdateMaxHealth();       break;
-
-        case UNIT_MOD_MANA:
-        case UNIT_MOD_RAGE:
-        case UNIT_MOD_FOCUS:
-        case UNIT_MOD_ENERGY:
-        case UNIT_MOD_HAPPINESS:           UpdateMaxPower(GetPowerTypeByAuraGroup(unitMod));         break;
-
-        case UNIT_MOD_RESISTANCE_HOLY:
-        case UNIT_MOD_RESISTANCE_FIRE:
-        case UNIT_MOD_RESISTANCE_NATURE:
-        case UNIT_MOD_RESISTANCE_FROST:
-        case UNIT_MOD_RESISTANCE_SHADOW:
-        case UNIT_MOD_RESISTANCE_ARCANE:   UpdateResistances(GetSpellSchoolByAuraGroup(unitMod));      break;
-
-        case UNIT_MOD_ATTACK_POWER:        UpdateAttackPowerAndDamage();         break;
-        case UNIT_MOD_ATTACK_POWER_RANGED: UpdateAttackPowerAndDamage(true);     break;
-
-        case UNIT_MOD_DAMAGE_MAINHAND:     UpdateDamagePhysical(BASE_ATTACK);    break;
-        case UNIT_MOD_DAMAGE_OFFHAND:      UpdateDamagePhysical(OFF_ATTACK);     break;
-        case UNIT_MOD_DAMAGE_RANGED:       UpdateDamagePhysical(RANGED_ATTACK);  break;
-
-        default:
-            break;
-    }
-
-    return true;
-}
-*/
-
 bool Unit::CanUseAttackType(uint8 attacktype) const
 {
     switch (attacktype)
@@ -8220,22 +8155,6 @@ bool Unit::CanUseAttackType(uint8 attacktype) const
             return true;
     }
 }
-
-/*
-float Unit::GetAmount(UnitMods unitMod, UnitModifierType modifierType) const
-{
-    if( unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_END)
-    {
-        TC_LOG_ERROR("FIXME","ERROR: trial to access non existed modifier value from UnitMods!");
-        return 0.0f;
-    }
-
-    if(modifierType == TOTAL_PCT && m_auraModifiersGroup[unitMod][modifierType] <= 0.0f)
-        return 0.0f;
-
-    return m_auraModifiersGroup[unitMod][modifierType];
-}
-*/
 
 float Unit::GetTotalStatValue(Stats stat) const
 {
@@ -12374,8 +12293,8 @@ float Unit::ComputeCollisionHeight() const
             {
                 CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
                 CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelId);
-                float const collisionHeight = scaleMod * (mountModelData->MountHeight + modelData->CollisionHeight * modelData->Scale * displayInfo->scale * 0.5f);
-                return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+                float const _collisionHeight = scaleMod * (mountModelData->MountHeight + modelData->CollisionHeight * modelData->Scale * displayInfo->scale * 0.5f);
+                return _collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : _collisionHeight;
             }
         }
     }
@@ -12384,8 +12303,8 @@ float Unit::ComputeCollisionHeight() const
     CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
     CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelId);
 
-    float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->Scale * displayInfo->scale;
-    return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+    float const _collisionHeight = scaleMod * modelData->CollisionHeight * modelData->Scale * displayInfo->scale;
+    return _collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : _collisionHeight;
 }
 
 std::string Unit::GetDebugInfo() const
