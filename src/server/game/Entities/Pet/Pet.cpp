@@ -1261,12 +1261,6 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         {
             switch (GetEntry())
             {
-                case ENTRY_WATER_ELEMENTAL: // mage Water Elemental
-                {
-                    //40% damage bonus of mage's frost damage
-                    SetBonusDamage(int32(GetOwner()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST) * 0.4f)); //TC has 0.33f
-                    break;
-                }
                 case ENTRY_TREANT: //force of nature
                     if (!pInfo)
                         SetCreateHealth(30 + 30 * petlevel);
