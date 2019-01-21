@@ -1306,13 +1306,20 @@ void Guardian::UpdateMaxHealth()
     float multiplicator;
     switch (GetEntry())
     {
+#ifdef LICH_KING
         case ENTRY_IMP:         multiplicator = 8.4f;   break;
-        case ENTRY_VOIDWALKER:  multiplicator = 11.0f;  break;
         case ENTRY_SUCCUBUS:    multiplicator = 9.1f;   break;
         case ENTRY_FELHUNTER:   multiplicator = 9.5f;   break;
-        case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
-#ifdef LICH_KING
         case ENTRY_BLOODWORM:   multiplicator = 1.0f;   break;
+        case ENTRY_VOIDWALKER:  multiplicator = 11.0f;  break;
+        case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
+#else
+        //very approximate values... https://github.com/ValorenWoW/sunstrider-core/pull/164
+        case ENTRY_IMP:         multiplicator = 3.0f;   break;
+        case ENTRY_SUCCUBUS:    multiplicator = 6.0f;   break;
+        case ENTRY_FELHUNTER:   multiplicator = 11.0f;   break;
+        case ENTRY_VOIDWALKER:  multiplicator = 14.8f;  break;
+        case ENTRY_FELGUARD:    multiplicator = 12.0f;  break;
 #endif
         default:                multiplicator = 10.0f;  break;
     }
