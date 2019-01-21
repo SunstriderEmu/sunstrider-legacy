@@ -1453,7 +1453,7 @@ void Creature::UpdateLevelDependantStats()
             break;
     }
 
-    //sun: commented out. That's what SetCreateHeath if for. Creature::UpdateMaxHealth() has been updated accordingly. This was also breaking some guardians health such as water elemental
+    //sun: commented out. That's what SetCreateHeath is for. Creature::UpdateMaxHealth() has been updated accordingly. This was also breaking some guardians health such as water elemental
     //SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
 
     // damage

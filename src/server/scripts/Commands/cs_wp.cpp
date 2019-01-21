@@ -358,9 +358,9 @@ public:
                     handler->PSendSysMessage(LANG_WAYPOINT_NOTREMOVED, guid);
                     hasError = true;
 
-                    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
-                    stmt->setUInt32(0, guid);
-                    WorldDatabase.Execute(stmt);
+                    PreparedStatement* stmt2 = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
+                    stmt2->setUInt32(0, guid);
+                    WorldDatabase.Execute(stmt2);
                 }
                 else
                 {

@@ -755,7 +755,7 @@ public:
             damage = dmgInfo.GetDamage();
 
             uint32 absorb = dmgInfo.GetAbsorb();
-            uint32 resist = dmgInfo.GetResist();
+            //uint32 resist = dmgInfo.GetResist();
             Unit::DealDamageMods(target, damage, &absorb);
             Unit::DealDamage(attacker, target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
             handler->GetSession()->GetPlayer()->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, 0, schoolmask, dmgInfo.GetDamage(), dmgInfo.GetAbsorb(), dmgInfo.GetResist(), VICTIMSTATE_NORMAL, 0);

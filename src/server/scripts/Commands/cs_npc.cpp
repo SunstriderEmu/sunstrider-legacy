@@ -977,9 +977,7 @@ public:
 
     static bool HandleNpcFormationInfoCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
         Creature* creature = handler->GetSelectedCreature();
-
         if (!creature)
         {
             handler->PSendSysMessage(LANG_SELECT_CREATURE);

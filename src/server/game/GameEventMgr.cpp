@@ -31,14 +31,13 @@ bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
     case GAMEEVENT_WORLD_CONDITIONS:
     case GAMEEVENT_WORLD_NEXTPHASE:
         return true;
-        // finished world events are inactive
+    // finished world events are inactive
     case GAMEEVENT_WORLD_FINISHED:
     case GAMEEVENT_INTERNAL:
         return false;
-        // if inactive world event, check the prerequisite events
+    // if inactive world event, check the prerequisite events
     case GAMEEVENT_WORLD_INACTIVE:
     {
-        time_t currenttime = WorldGameTime::GetGameTime();
         for (std::set<uint16>::const_iterator itr = mGameEvent[entry].prerequisite_events.begin(); itr != mGameEvent[entry].prerequisite_events.end(); ++itr)
         {
             if ((mGameEvent[*itr].state != GAMEEVENT_WORLD_NEXTPHASE && mGameEvent[*itr].state != GAMEEVENT_WORLD_FINISHED) ||   // if prereq not in nextphase or finished state, then can't start this one
