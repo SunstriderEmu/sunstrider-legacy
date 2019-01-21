@@ -1198,9 +1198,9 @@ bool Guardian::UpdateStats(Stats stat)
 #endif
     if (stat == STAT_STAMINA)
     {
+#ifdef LICH_KING
         //1 stamina gives 0.45 stamina untalented (erroneously reported as 0.3 stamina in the Hunter's stamina tooltip), or 0.63 stamina with 2/2 Wild Hunt (LK))s
         float mod = 0.45f;
-#ifdef LICH_KING
         if (IsPet())
         {
             PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
@@ -1213,6 +1213,9 @@ bool Guardian::UpdateStats(Stats stat)
                 AddPct(mod, spellInfo->Effects[EFFECT_0].CalcValue());
             }
         }
+#else
+        //sun: Tooltips give 0.3. Could be that the TLK comment above is true for TBC but I'm going to suppose this error is because it changed on TLK.
+        float mod = 0.3f;
 #endif
         ownersBonus = float(owner->GetStat(stat)) * mod;
         value += ownersBonus;
