@@ -32,14 +32,14 @@ static_assert(sizeof(MmapTileHeader) == (sizeof(MmapTileHeader::mmapMagic) +
 
 enum NavTerrain
 {
-    NAV_EMPTY   = 0x00,
-    NAV_GROUND  = 0x01,
-    NAV_MAGMA   = 0x02,
-    NAV_SLIME   = 0x04,
-    NAV_WATER   = 0x08,
-    NAV_UNUSED1 = 0x10,
-    NAV_UNUSED2 = 0x20,
-    NAV_UNUSED3 = 0x40,
+    NAV_EMPTY        = 0x00,
+    NAV_GROUND       = 0x01,
+    NAV_MAGMA        = 0x02,
+    NAV_SLIME        = 0x04,
+    NAV_WATER        = 0x08,
+    NAV_UNUSED1      = 0x10,
+    NAV_UNUSED2      = 0x20,
+    NAV_UNUSED3      = 0x40,
     NAV_STEEP_SLOPES = 0x80, //sunstrider
     // we only have 8 bits
 };
