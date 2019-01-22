@@ -673,10 +673,10 @@ namespace MMAP
         // a value >= 3|6 allows npcs to walk over some fences
         // a value >= 4|8 allows npcs to walk over all fences
         config.walkableClimb = (int)floorf(agentMaxClimbModelTerrainTransition / config.ch); // For models
-        config.minRegionArea = rcSqr(60);
-        config.mergeRegionArea = rcSqr(50);
-        config.maxSimplificationError = 1.8f;           // eliminates most jagged edges (tiny polygons)
-        config.detailSampleDist = config.cs * 16;
+        config.minRegionArea = rcSqr(30); //nost value here: if changing that one, check blade's edge arena pillars again. TC has 60, apparently too high
+        config.mergeRegionArea = rcSqr(20);  //TC has 50
+        config.maxSimplificationError = 1.5f; // eliminates most jagged edges (tiny polygons)
+        config.detailSampleDist = config.cs * 16; 
         config.detailSampleMaxError = config.ch * 1;
         int inWaterGround = config.walkableHeight;
         int stepForGroundInheriteWater = (int)ceilf(30.0f / config.ch);
