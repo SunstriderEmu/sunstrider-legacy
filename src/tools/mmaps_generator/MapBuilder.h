@@ -82,7 +82,6 @@ namespace MMAP
                 bool skipJunkMaps        = true,
                 bool skipBattlegrounds   = false,
                 bool debugOutput         = false,
-                bool bigBaseUnit         = false,
                 int mapid                = -1,
                 bool quick               = false,
                 const char* offMeshFilePath = NULL);
@@ -154,7 +153,7 @@ namespace MMAP
             */
             bool m_quick;
 
-            bool m_bigBaseUnit;
+            //sun: removed //bool m_bigBaseUnit;
 
             int32 m_mapid;
 
