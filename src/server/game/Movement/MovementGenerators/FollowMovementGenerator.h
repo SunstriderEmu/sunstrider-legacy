@@ -31,8 +31,6 @@ class FollowMovementGenerator : public MovementGenerator, public AbstractFollowe
     private:
         static constexpr uint32 CHECK_INTERVAL = 500;
 
-        void UpdatePetSpeed(Unit* owner);
-
         float const _range;
         ChaseAngle const _angle;
 

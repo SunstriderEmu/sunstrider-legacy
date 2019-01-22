@@ -79,12 +79,10 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* owner, uint32 diff)
         destination.Relocate(_reference);
         owner->MovePositionToFirstWalkableCollision(destination, dest, 0.0f);
 
-        if (!_path)
-        {
-            _path = std::make_unique<PathGenerator>(owner);
-            _path->SetPathLengthLimit(10.0f);
-            _path->ExcludeSteepSlopes();
-        }
+        _path = std::make_unique<PathGenerator>(owner); //sun: new generator at each update, to update options and position
+        _path->SetPathLengthLimit(10.0f);
+        _path->ExcludeSteepSlopes();
+
         Transport* ownerTransport = owner->GetTransport();
         _path->SetTransport(ownerTransport);
 

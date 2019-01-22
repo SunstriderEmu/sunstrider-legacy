@@ -25,7 +25,7 @@ int PetAI::Permissible(const Creature *creature)
     return PERMIT_BASE_NO;
 }
 
-PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), _forceAttackBreakable(nullptr)
+PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LOOK), _forceAttackBreakable(nullptr), m_updateSpeedTimer(0), m_updateAlliesTimer(0)
 {
     if (!me->GetCharmInfo())
         throw InvalidAIException("Creature doesn't have a valid charm info");
@@ -555,9 +555,15 @@ void PetAI::UpdateAI(const uint32 diff)
     }
 
     // Update speed as needed to prevent dropping too far behind and despawning
-    me->UpdateSpeed(MOVE_RUN);
-    me->UpdateSpeed(MOVE_WALK);
-    me->UpdateSpeed(MOVE_FLIGHT);
+    if (m_updateSpeedTimer <= diff)
+    {
+        me->UpdateSpeed(MOVE_RUN);
+        me->UpdateSpeed(MOVE_WALK);
+        me->UpdateSpeed(MOVE_FLIGHT);
+        m_updateSpeedTimer = 1000;
+    }
+    else
+        m_updateSpeedTimer -= diff;
 }
 
 void PetAI::KilledUnit(Unit* victim)

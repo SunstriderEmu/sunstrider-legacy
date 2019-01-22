@@ -53,12 +53,9 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature* owner)
     if (owner->IsFlying())
         position.m_positionZ = position.m_positionZ + owner->GetCollisionHeight(); //sun: flying creature have a lower animation, this does prevent them from going into the ground
 
-    if (!_path)
-    {
-        _path = std::make_unique<PathGenerator>(owner);
-        _path->ExcludeSteepSlopes();
-        _path->SetPathLengthLimit(_wanderDistance * 1.5f);
-    }
+    _path = std::make_unique<PathGenerator>(owner);  //sun: new generator at each update, to update options and position
+    _path->ExcludeSteepSlopes();
+    _path->SetPathLengthLimit(_wanderDistance * 1.5f);
 
     bool result = _path->CalculatePath(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))

@@ -45,7 +45,6 @@ bool FollowMovementGenerator::Initialize(Unit* owner)
     AddFlag(MOVEMENTGENERATOR_FLAG_INITIALIZED);
 
     owner->StopMoving();
-    UpdatePetSpeed(owner);
     _path = nullptr;
     _lastTargetPosition.reset();
     return true;
@@ -105,8 +104,7 @@ bool FollowMovementGenerator::Update(Unit* owner, uint32 diff)
         _lastTargetPosition = target->GetPosition();
         if (owner->HasUnitState(UNIT_STATE_FOLLOW_MOVE) || !PositionOkay(owner, target, _range + FOLLOW_RANGE_TOLERANCE))
         {
-            if (!_path)
-                _path = std::make_unique<PathGenerator>(owner);
+            _path = std::make_unique<PathGenerator>(owner); //sun: new generator at each update, to update options and position
 
             Transport* targetTransport = target->GetTransport();
             // Creature will always use target mmaps
@@ -171,19 +169,5 @@ void FollowMovementGenerator::Finalize(Unit* owner, bool active, bool/* movement
 {
     AddFlag(MOVEMENTGENERATOR_FLAG_FINALIZED);
     if (active)
-    {
         owner->ClearUnitState(UNIT_STATE_FOLLOW_MOVE);
-        UpdatePetSpeed(owner);
-    }
-}
-
-void FollowMovementGenerator::UpdatePetSpeed(Unit* owner)
-{
-    if (Pet* oPet = owner->ToPet())
-        if (!GetTarget() || GetTarget()->GetGUID() == owner->GetOwnerGUID())
-        {
-            oPet->UpdateSpeed(MOVE_RUN);
-            oPet->UpdateSpeed(MOVE_WALK);
-            oPet->UpdateSpeed(MOVE_SWIM);
-        }
 }

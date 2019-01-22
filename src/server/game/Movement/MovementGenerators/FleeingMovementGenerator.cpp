@@ -50,12 +50,10 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
         return;
     }
 
-    if (!_path)
-    {
-        _path = std::make_unique<PathGenerator>(owner);
-        _path->SetPathLengthLimit(30.0f);
-        _path->ExcludeSteepSlopes();
-    }
+    _path = std::make_unique<PathGenerator>(owner);  //sun: new generator at each update, to update options and position
+    _path->SetPathLengthLimit(30.0f);
+    _path->ExcludeSteepSlopes();
+
     Transport* ownerTransport = owner->GetTransport();
     _path->SetTransport(ownerTransport);
 

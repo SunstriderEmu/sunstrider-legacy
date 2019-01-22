@@ -433,7 +433,7 @@ void Unit::Update(uint32 p_time)
     }
 
     // update abilities available only for fraction of time
-    UpdateReactives( p_time );
+    UpdateReactives(p_time);
 
     if (IsAlive())
     {
