@@ -359,7 +359,6 @@ Player::Player(WorldSession *session) :
     m_isXpBlocked = false;
 
     m_kickatnextupdate = false;
-    m_swdBackfireDmg = 0;
 
     m_ConditionErrorMsgId = 0;
 

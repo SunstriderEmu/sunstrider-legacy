@@ -1021,15 +1021,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
 
     Unit::DealDamageMods(target, damage, &absorb);
 
-    // Shadow Word: Death backfire damage hackfix
-    if (GetId() == 32409 && caster->ToPlayer())
-    {
-        damage = caster->ToPlayer()->m_swdBackfireDmg;
-        caster->ToPlayer()->m_swdBackfireDmg = 0;
-        absorb = 0;
-        resist = 0;
-    }
-
     SpellPeriodicAuraLogInfo pInfo(this, damage, absorb, resist, 0.0f);
     target->SendPeriodicAuraLog(&pInfo);
 

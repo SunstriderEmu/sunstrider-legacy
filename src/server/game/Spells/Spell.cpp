@@ -2719,19 +2719,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
                 caster->ToPlayer()->CastItemCombatSpell(*spellDamageInfo);*/
         }
 
-        // HACK Shadow Word: Death - deals damage equal to damage done to caster if victim is not killed
-        if (spell->m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && spell->m_spellInfo->SpellFamilyFlags & 0x0000000200000000LL &&
-            caster != spell->unitTarget && spell->unitTarget->IsAlive())
-        {
-            // Redirect damage to caster if victim alive
-            spell->m_caster->CastSpell(spell->m_caster, 32409, TRIGGERED_FULL_MASK);
-            if (spell->m_caster->ToPlayer())
-                spell->m_caster->ToPlayer()->m_swdBackfireDmg = spell->m_damage;
-            //breakcompile;   // Build damage packet directly here and fake spell damage
-            //caster->DealDamage(caster, uint32(m_damage), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_NORMAL, NULL, false);
-        }
         // Judgement of Blood
-        else if (spell->m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spell->m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && spell->m_spellInfo->SpellIconID == 153)
+        if (spell->m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spell->m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && spell->m_spellInfo->SpellIconID == 153)
         {
             CastSpellExtraArgs args;
             args.TriggerFlags = TRIGGERED_FULL_MASK;

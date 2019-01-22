@@ -2760,7 +2760,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
     public:
         bool m_kickatnextupdate;
-        uint32 m_swdBackfireDmg;
 };
 
 void AddItemsSetItem(Player*player,Item *item);

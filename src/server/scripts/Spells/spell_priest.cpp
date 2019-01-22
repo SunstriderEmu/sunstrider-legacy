@@ -646,6 +646,35 @@ class spell_pri_mind_control : public AuraScript
     }
 };
 
+class spell_pri_shadow_word_death : public SpellScript
+{
+    PrepareSpellScript(spell_pri_shadow_word_death);
+
+    void HandleDamage()
+    {
+        Unit* target = GetExplTargetUnit();
+        if (!target || !target->IsAlive())
+            return;
+
+        int32 damage = GetHitDamage();
+
+#ifdef LICH_KING
+        // Pain and Suffering reduces damage
+        if (AuraEffect* aurEff = GetCaster()->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
+            AddPct(damage, aurEff->GetAmount());
+#endif
+
+        CastSpellExtraArgs args(TRIGGERED_FULL_MASK);
+        args.AddSpellBP0(damage);
+        GetCaster()->CastSpell(GetCaster(), SPELL_PRIEST_SHADOW_WORD_DEATH, args);
+    }
+
+    void Register() override
+    {
+        AfterHit += SpellHitFn(spell_pri_shadow_word_death::HandleDamage);
+    }
+};
+
 void AddSC_priest_spell_scripts()
 {
     new spell_shadowfiend();
@@ -662,4 +691,5 @@ void AddSC_priest_spell_scripts()
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ALLY>("spell_pri_mass_dispel");
     new spell_pri_mass_dispel<TARGET_UNIT_DEST_AREA_ENEMY>("spell_pri_mass_dispel_enemies");
     RegisterAuraScript(spell_pri_mind_control);
+    RegisterSpellScript(spell_pri_shadow_word_death);
 }
