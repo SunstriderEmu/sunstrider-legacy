@@ -56,36 +56,25 @@ enum PaladinSpells
     SPELL_PALADIN_SEAL_OF_BLOOD_DAMAGE_PROC      = 31893,
     SPELL_PALADIN_SEAL_OF_BLOOD_SELF_DAMAGE      = 32221,
 
+    SPELL_PALADIN_SEAL_OF_COMMAND_R1             = 20375,
+    SPELL_PALADIN_SEAL_OF_COMMAND_JUDGEMENT_R1   = 20467,
 };
 
 // -20467 - Judgement of Command
-class spell_pal_judgement_of_command : public SpellScriptLoader
+class spell_pal_judgement_of_command : public SpellScript
 {
-public:
-    spell_pal_judgement_of_command() : SpellScriptLoader("spell_pal_judgement_of_command") { }
+    PrepareSpellScript(spell_pal_judgement_of_command);
 
-    class spell_pal_judgement_of_command_SpellScript : public SpellScript
+    void HandleDamage(SpellEffIndex /*effIndex*/, int32& damage)
     {
-        PrepareSpellScript(spell_pal_judgement_of_command_SpellScript);
+        if (Unit* target = GetHitUnit())
+            if (!target->HasUnitState(UNIT_STATE_STUNNED))
+                damage /= 2;
+    }
 
-        SpellCastResult CheckTarget()
-        {
-            if (GetHitUnit() && GetHitUnit()->HasUnitState(UNIT_STATE_STUNNED))
-                return SPELL_CAST_OK;
-
-            return SPELL_FAILED_DONT_REPORT;
-
-        }
-
-        void Register() override
-        {
-            OnCheckCast += SpellCheckCastFn(spell_pal_judgement_of_command_SpellScript::CheckTarget);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
+    void Register() override
     {
-        return new spell_pal_judgement_of_command_SpellScript();
+        OnEffectLaunchTarget += SpellEffectFn(spell_pal_judgement_of_command::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -826,10 +815,87 @@ class spell_pal_judgement_of_wisdom_mana : public AuraScript
     }
 };
 
+// 20271 - Judgement
+// 41467 - Judgement
+class spell_pal_judgement : public SpellScript
+{
+    PrepareSpellScript(spell_pal_judgement);
+
+    void HandleDummy(SpellEffIndex /*effIndex*/, int32& damage)
+    {
+        Unit* caster = GetCaster();
+        Unit* target = GetHitUnit();
+        if (!target || !caster)
+            return;
+
+        uint32 spellId = 0;
+
+        // all seals have aura dummy
+        Unit::AuraEffectList const& m_dummyAuras = caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+        for (auto m_dummyAura : m_dummyAuras)
+        {
+            SpellInfo const* spellInfo = m_dummyAura->GetSpellInfo();
+
+            // search seal (all seals have judgement's aura dummy spell id in 2 effect
+            if (!spellInfo || m_dummyAura->GetSpellInfo()->GetSpellSpecific() != SPELL_SPECIFIC_SEAL || m_dummyAura->GetEffIndex() != EFFECT_2)
+                continue;
+
+            // must be calculated base at raw base points in spell proto, GetModifier()->m_value for S.Righteousness modified by SPELLMOD_DAMAGE
+            spellId = m_dummyAura->GetSpellInfo()->Effects[2].BasePoints + 1;
+            if (spellId <= 1)
+                continue;
+
+            if (spellInfo->GetFirstRankSpell()->Id == SPELL_PALADIN_SEAL_OF_COMMAND_R1)
+                spellId = sSpellMgr->GetSpellWithRank(SPELL_PALADIN_SEAL_OF_COMMAND_JUDGEMENT_R1, GetSpellInfo()->GetRank());
+
+            // found, remove seal
+            caster->RemoveAurasDueToSpell(m_dummyAura->GetId());
+
+            // Sanctified Judgement
+            Unit::AuraEffectList const& m_auras = caster->GetAuraEffectsByType(SPELL_AURA_DUMMY);
+            for (auto m_aura : m_auras)
+            {
+                if (m_aura->GetSpellInfo()->SpellIconID == 205 && m_aura->GetSpellInfo()->Attributes == 0x01D0LL)
+                {
+                    int32 chance = m_aura->GetAmount();
+                    if (roll_chance_i(chance))
+                    {
+                        int32 mana = spellInfo->ManaCost;
+                        if (!mana)
+                            mana = spellInfo->ManaCostPercentage * caster->GetCreateMana() / 100;
+
+                        if (Player* modOwner = caster->GetSpellModOwner())
+                            modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_COST, mana);
+
+                        mana = int32(mana* 0.8f);
+                        CastSpellExtraArgs args;
+                        args.TriggerFlags = TRIGGERED_FULL_MASK;
+                        args.AddSpellBP0(int32(mana));
+                        args.SetTriggeringAura(m_aura);
+                        caster->CastSpell(caster, 31930, args);
+                    }
+                    break;
+                }
+            }
+
+            break;
+        }
+
+        if(spellId)
+            caster->CastSpell(target, spellId, true);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_pal_judgement::HandleDummy, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+    }
+};
+
 void AddSC_paladin_spell_scripts()
 {
+    RegisterSpellScript(spell_pal_judgement);
     new spell_pal_judgement_of_light_heal();
-    new spell_pal_judgement_of_command();
+    RegisterSpellScript(spell_pal_judgement_of_command);
     new spell_pal_spiritual_attunement();
     new spell_pal_item_t6_trinket();
     new spell_pal_t3_6p_bonus();
