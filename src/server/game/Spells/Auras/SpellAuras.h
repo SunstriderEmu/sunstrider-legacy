@@ -165,8 +165,6 @@ public:
 
     //compat TC
     float GetCritChance() const { return 0.0f; }
-    //compat TC
-    bool  CanApplyResilience() const { return false; }
 
     bool HasMoreThanOneEffectForType(AuraType auraType) const;
     bool IsPermanent() const { return GetMaxDuration() == -1; }
@@ -208,6 +206,8 @@ public:
     void SetStackAmount(int32 amount);
     bool ModStackAmount(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT, bool resetPeriodicTimer = true);
 
+    bool  CanApplyResilience() const { return _casterInfo.ApplyResilience; }
+    void  SetCanApplyResilience(bool val) { _casterInfo.ApplyResilience = val; }
     uint8 GetCasterLevel() const { return _casterInfo.Level; }
     float GetDonePct() const { return _casterInfo.BonusDonePct; }
     void  SetDonePct(float val) { _casterInfo.BonusDonePct = val; }

@@ -1004,6 +1004,17 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster, uint3
 
     //As of 2.2 resilience reduces damage from DoT ticks as much as the chance to not be critically hit
     //Reduce dot damage from resilience for players
+
+    if (!GetSpellInfo()->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE) && GetBase()->CanApplyResilience())
+    {
+#ifdef LICH_KING
+        fixcrit;
+#endif
+        int32 dmg = damage;
+        Unit::ApplyResilience(target, nullptr, &dmg, false, CR_CRIT_TAKEN_SPELL);
+        damage = dmg;
+    }
+
     if (target->GetTypeId() == TYPEID_PLAYER)
         damage -= (target->ToPlayer())->GetDotDamageReduction(damage);
 
@@ -1127,10 +1138,15 @@ void AuraEffect::HandlePeriodicHealthLeechAuraTick(Unit* m_target, Unit* caster,
         }
     }
 
-    //As of 2.2 resilience reduces damage from DoT ticks as much as the chance to not be critically hit
-    // Reduce dot damage from resilience for players
-    if (!GetSpellInfo()->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE) && m_target->GetTypeId() == TYPEID_PLAYER)
-        pdamage -= (m_target->ToPlayer())->GetDotDamageReduction(pdamage);
+    if (!GetSpellInfo()->HasAttribute(SPELL_ATTR4_FIXED_DAMAGE) && GetBase()->CanApplyResilience())
+    {
+#ifdef LICH_KING
+        fixcrit;
+#endif
+        int32 dmg = pdamage;
+        Unit::ApplyResilience(m_target, nullptr, &dmg, false, CR_CRIT_TAKEN_SPELL);
+        pdamage = dmg;
+    }
 
     DamageInfo damageInfo(caster, m_target, pdamage, GetSpellInfo(), GetSpellInfo()->GetSchoolMask(), DOT, BASE_ATTACK);
     Unit::CalcAbsorbResist(damageInfo);
