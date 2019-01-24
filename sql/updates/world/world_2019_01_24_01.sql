@@ -1,0 +1,2 @@
+UPDATE gameobject_template SET patch = 0 WHERE patch = 5 and entry <= 186484 AND entry IN (SELECT entry FROM gameobject WHERE map IN (0,1,530));
+UPDATE gameobject SET patch_min = 0 WHERE map IN (0,1,530) AND patch_min = 5 AND id IN (SELECT entry FROM gameobject_template WHERE patch = 0);
