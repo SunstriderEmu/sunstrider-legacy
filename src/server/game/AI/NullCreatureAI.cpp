@@ -17,7 +17,7 @@ void PossessedAI::UpdateAI(const uint32 diff)
 {
     if(me->GetVictim())
     {
-        if(me->_CanCreatureAttack(me->GetVictim()) != CAN_ATTACK_RESULT_OK)
+        if(!me->CanCreatureAttack(me->GetVictim()))
             me->AttackStop();
         else
             DoMeleeAttackIfReady();

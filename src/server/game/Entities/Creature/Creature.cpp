@@ -1180,7 +1180,7 @@ Unit* Creature::SelectVictim(bool evade /*= true*/)
     else
         return nullptr;
 
-    if (target && _IsTargetAcceptable(target) && _CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+    if (target && _IsTargetAcceptable(target) && CanCreatureAttack(target))
     {
         if (!IsFocusing(nullptr, true))
             SetInFront(target);
@@ -2989,7 +2989,7 @@ void Creature::AreaCombat()
         for(const auto & i : PlayerList)
         {
             if (Player* i_pl = i.GetSource())
-                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && _CanCreatureAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanCreatureAttack(i_pl, false))
                     GetThreatManager().AddThreat(i_pl, 0.0f);
         }
     }

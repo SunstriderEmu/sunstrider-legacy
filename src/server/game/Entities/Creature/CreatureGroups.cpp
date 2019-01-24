@@ -319,7 +319,7 @@ void CreatureGroup::MemberEngagingTarget(Creature *member, Unit *target)
         if(!other->IsAlive())
             continue;
 
-        if(other->_CanCreatureAttack(target) == CAN_ATTACK_RESULT_OK)
+        if(other->CanCreatureAttack(target))
             other->EngageWithTarget(target);
     }
 
