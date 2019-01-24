@@ -4841,7 +4841,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
 #ifdef LICH_KING
         minion->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-        minion->SetPvP(true);
+        minion->SetPvP(IsPvP());
 #endif
 
         // FIXME: hack, speed must be set only at follow
@@ -4980,7 +4980,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
 #ifdef LICH_KING
         charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-        charm->SetPvP(true);
+        charm->SetPvP(IsPvP());
 #endif
 
         ASSERT(charm->AddGuidValue(UNIT_FIELD_CHARMEDBY, GetGUID()),
@@ -5024,7 +5024,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
 #ifdef LICH_KING
             charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, player->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-            charm->SetPvP(true);
+            charm->SetPvP(IsPvP());
 #endif    
         }
         else
