@@ -11,6 +11,7 @@ enum RogueSpells
     SPELL_ROGUE_MASTER_OF_SUBTLETY_BUFF         = 31665,
     SPELL_ROGUE_SHIV_TRIGGERED                  =  5940,
     SPELL_ROGUE_CHEAT_DEATH_COOLDOWN            = 31231,
+    SPELL_ROGUE_CHEAT_DEATH_BUFF                = 45182,
 };
 
 // 13877, 33735, (check 51211, 65956) - Blade Flurry
@@ -226,6 +227,57 @@ class spell_rog_shiv : public SpellScript
     }
 };
 
+// -31228 - Cheat Death
+class spell_rog_cheat_death : public AuraScript
+{
+    PrepareAuraScript(spell_rog_cheat_death);
+
+    uint32 absorbChance = 0;
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_ROGUE_CHEAT_DEATH_COOLDOWN, SPELL_ROGUE_CHEAT_DEATH_BUFF });
+    }
+
+    bool Load() override
+    {
+        absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
+        return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
+    }
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool & /*canBeRecalculated*/)
+    {
+        // Set absorbtion amount to unlimited
+        amount = -1;
+    }
+
+    void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+    {
+        Player* target = GetTarget()->ToPlayer();
+        if (dmgInfo.GetDamage() < target->GetHealth() || target->GetSpellHistory()->HasCooldown(SPELL_ROGUE_CHEAT_DEATH_COOLDOWN) || !roll_chance_i(absorbChance))
+            return;
+
+        target->CastSpell(target, SPELL_ROGUE_CHEAT_DEATH_COOLDOWN, true);
+        target->GetSpellHistory()->AddCooldown(SPELL_ROGUE_CHEAT_DEATH_COOLDOWN, 0, std::chrono::minutes(1));
+        target->CastSpell(target, SPELL_ROGUE_CHEAT_DEATH_BUFF, true);
+
+        uint32 health10 = target->CountPctFromMaxHealth(10);
+
+        // hp > 10% - absorb hp till 10%
+        if (target->GetHealth() > health10)
+            absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + health10;
+        // hp lower than 10% - absorb everything
+        else
+            absorbAmount = dmgInfo.GetDamage();
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_cheat_death::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        OnEffectAbsorb += AuraEffectAbsorbFn(spell_rog_cheat_death::Absorb, EFFECT_0);
+    }
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_preparation();
@@ -233,4 +285,5 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_deadly_throw_interrupt();
     new spell_rog_quick_recovery();
     RegisterSpellScript(spell_rog_shiv);
+    RegisterAuraScript(spell_rog_cheat_death);
 }

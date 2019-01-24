@@ -1969,16 +1969,6 @@ void Spell::EffectDummy(uint32 i)
                 }
             }
             break;
-        case SPELLFAMILY_ROGUE:
-            switch(m_spellInfo->Id )
-            {
-                case 31231:                                 // Cheat Death
-                {
-                    m_caster->CastSpell(m_caster,45182, true);
-                    return;
-                }
-            }
-            break;
         case SPELLFAMILY_HUNTER:
             // Kill command
             if(m_spellInfo->SpellFamilyFlags & 0x00080000000000LL && _unitCaster)

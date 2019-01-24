@@ -5312,14 +5312,16 @@ float Player::GetRatingBonusValue(CombatRating cr) const
 uint32 Player::GetMeleeCritDamageReduction(uint32 damage) const
 {
     float melee  = GetRatingBonusValue(CR_CRIT_TAKEN_MELEE)*2.0f;
-    if (melee>25.0f) melee = 25.0f;
+    if (melee > 25.0f) //cap
+        melee = 25.0f;
     return uint32 (melee * damage /100.0f);
 }
 
 uint32 Player::GetRangedCritDamageReduction(uint32 damage) const
 {
     float ranged = GetRatingBonusValue(CR_CRIT_TAKEN_RANGED)*2.0f;
-    if (ranged>25.0f) ranged=25.0f;
+    if (ranged > 25.0f) //cap
+        ranged = 25.0f;
     return uint32 (ranged * damage /100.0f);
 }
 

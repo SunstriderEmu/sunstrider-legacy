@@ -1988,22 +1988,6 @@ static const SpellPartialResistDistribution SPELL_PARTIAL_RESIST_DISTRIBUTION = 
     damageInfo.ModifyDamage(-absorbIgnoringDamage);
 #endif
 
-    AuraEffectList const& vOverrideScripts = damageInfo.GetVictim()->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-    for (AuraEffectList::const_iterator i = vOverrideScripts.begin(), next; i != vOverrideScripts.end(); i = next)
-    {
-        next = i; ++next;
-
-        if (damageInfo.GetVictim()->GetTypeId() != TYPEID_PLAYER)
-            break;
-
-        // Shadow of Death - set cheat death on cooldown
-        if ((*i)->GetSpellInfo()->Id == 40251 && damageInfo.GetVictim()->GetHealth() <= damageInfo.GetDamage())
-        {
-            (damageInfo.GetVictim()->ToPlayer())->GetSpellHistory()->AddCooldown(31231, 0, std::chrono::seconds(60));
-            break;
-        }
-    }
-
     // We're going to call functions which can modify content of the list during iteration over it's elements
     // Let's copy the list so we can prevent iterator invalidation
     AuraEffectList vSchoolAbsorbCopy(damageInfo.GetVictim()->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB));
@@ -2022,42 +2006,6 @@ static const SpellPartialResistDistribution SPELL_PARTIAL_RESIST_DISTRIBUTION = 
 
         if (!(absorbAurEff->GetMiscValue() & damageInfo.GetSchoolMask()))
             continue;
-
-        // Cheat Death hack
-        if (damageInfo.GetVictim()->GetTypeId() == TYPEID_PLAYER && absorbAurEff->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_ROGUE && absorbAurEff->GetSpellInfo()->SpellIconID == 2109)
-        {
-            Player* playerVictim = damageInfo.GetVictim()->ToPlayer();
-            if (playerVictim->GetSpellHistory()->HasCooldown(31231))
-                continue;
-            if (playerVictim->GetHealth() <= damageInfo.GetDamage())
-            {
-                int32 chance = damageInfo.GetAbsorb();
-                if (roll_chance_i(chance))
-                {
-                    playerVictim->CastSpell(playerVictim, 31231, true);
-                    playerVictim->GetSpellHistory()->AddCooldown(31231, 0, std::chrono::seconds(60));
-
-                    // with health > 10% lost health until health==10%, in other case no losses
-                    uint32 health10 = playerVictim->GetMaxHealth() / 10;
-                    if (playerVictim->GetHealth() <= health10)
-                        damageInfo.AbsorbDamage(damageInfo.GetDamage()); //absorb remaining damage
-                    else
-                        damageInfo.AbsorbDamage(damageInfo.GetDamage() - (damageInfo.GetDamage() - health10)); //absorb damage up to 10% hp
-                }
-            }
-            continue;
-        }
-
-        // Shadow of Death hack
-        if (absorbAurEff->GetSpellInfo()->Id == 40251)
-        {
-            if (damageInfo.GetVictim()->GetHealth() <= damageInfo.GetDamage())
-            {
-                damageInfo.AbsorbDamage(damageInfo.GetDamage()); //absorb remaining damage
-                absorbAurEff->GetBase()->Remove();
-            }
-            break;
-        }
 
         //Reflective Shield
         if ((damageInfo.GetVictim() != damageInfo.GetAttacker()))
