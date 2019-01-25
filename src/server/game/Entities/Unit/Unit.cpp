@@ -9017,24 +9017,9 @@ void CharmInfo::InitPossessCreateSpells()
 {
     if(_unit->GetTypeId() == TYPEID_UNIT)
     {
-        // Adding switch until better way is found. Malcrom
-        // Adding entrys to this switch will prevent COMMAND_ATTACK being added to pet bar.
-        switch (_unit->GetEntry())
-        {
-#ifdef LICH_KING
-        case 23575: // Mindless Abomination
-        case 24783: // Trained Rock Falcon
-        case 27664: // Crashin' Thrashin' Racer
-        case 40281: // Crashin' Thrashin' Racer
-#endif
-        case 25653: // Power of the Blue Flight (Kil'Jaeden fight)
-        case 23109: // Vengeful Spirit (Teron Gorefiend fight)
-            break;
-        default:
+        auto info = _unit->ToCreature()->GetCreatureTemplate();
+        if(!(info->DifficultyFlags.Flags2 & CREATURE_DIFFICULTYFLAGS_2_NO_DEFAULT_PET_BAR))
             InitEmptyActionBar();
-            break;
-        }
-
 
         for (uint8 i = 0; i < MAX_CREATURE_SPELLS; ++i)
         {
@@ -9060,8 +9045,12 @@ void CharmInfo::InitCharmCreateSpells()
         InitEmptyActionBar();
         return;
     }
-
-    InitPetActionBar();
+    else if (_unit->GetTypeId() == TYPEID_UNIT)
+    {
+        auto info = _unit->ToCreature()->GetCreatureTemplate();
+        if (!(info->DifficultyFlags.Flags2 & CREATURE_DIFFICULTYFLAGS_2_NO_DEFAULT_PET_BAR))
+            InitPetActionBar();
+    }
 
     for (uint32 x = 0; x < MAX_SPELL_CHARM; ++x)
     {
