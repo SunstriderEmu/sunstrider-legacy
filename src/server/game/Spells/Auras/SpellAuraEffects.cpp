@@ -2010,6 +2010,9 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster, 
     if (GetSpellInfo()->HasAttribute(SPELL_ATTR4_INHERIT_CRIT_FROM_AURA))
         args.AddSpellMod(SPELLVALUE_CRIT_CHANCE, int32(GetBase()->GetCritChance() * 100.0f)); // @todo: ugly x100 remove when basepoints are double
 #endif
+     // sunwell: do not skip reagent cost for entry casts
+    if (GetSpellInfo()->Effects[GetEffIndex()].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || GetSpellInfo()->Effects[GetEffIndex()].TargetB.GetCheckType() == TARGET_CHECK_ENTRY)
+        args.TriggerFlags = TriggerCastFlags(args.TriggerFlags &~ TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
 
     triggerCaster->CastSpell(targets, triggerSpellId, args);
 }

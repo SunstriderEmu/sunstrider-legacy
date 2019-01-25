@@ -1728,18 +1728,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
                     break; 
-                case SPELL_EFFECT_APPLY_AURA:
-                    switch (spellInfo->EffectApplyAuraName[effectIndex])
-                    {
-                        case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
-                            /* Sunstrider: I failed to find the right generic logic for SPELL_AURA_PERIODIC_TRIGGER_SPELL with TARGET_UNIT_TARGET_ENEMY, so here is a hack instead
-                             This fixes around 20 spells */
-                            if((spellInfo->EffectImplicitTargetA[effectIndex] == TARGET_UNIT_TARGET_ENEMY)
-                                && (spellInfo->SpellIconID == 225)) //arcane missiles
-                                spellInfo->EffectImplicitTargetA[effectIndex] = TARGET_UNIT_CASTER;
-                            break;
-                    }
-                    break;
             }
             effectIndex++;
         }
