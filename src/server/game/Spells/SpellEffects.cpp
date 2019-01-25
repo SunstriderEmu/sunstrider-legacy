@@ -4806,7 +4806,10 @@ void Spell::EffectInterruptCast(uint32 effIndex)
         {
             SpellInfo const* curSpellInfo = spell->m_spellInfo;
             // check if we can interrupt spell
-            if ( (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[idx]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[idx]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[idx]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
+            if ( (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_CASTING 
+                    || (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_PREPARING  && unitTarget->m_currentSpells[idx]->GetCastTime() > 0.0f)) 
+                && unitTarget->m_currentSpells[idx]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT 
+                && unitTarget->m_currentSpells[idx]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE)
             {
                 if(_unitCaster)
                 {

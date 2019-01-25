@@ -1092,7 +1092,8 @@ bool Creature::Create(ObjectGuid::LowType guidlow, Map *map, uint32 phaseMask, u
     if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS && map->IsDungeon())
         m_respawnDelay = 0; // special value, prevents respawn for dungeon bosses unless overridden
 
-    if(!(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_NO_CORPSE_UPON_DEATH))
+
+    if (!(GetCreatureTemplate()->DifficultyFlags.Flags1 & CREATURE_DIFFICULTYFLAGS_NO_CORPSE_UPON_DEATH))
     {
         switch (GetCreatureTemplate()->rank)
         {

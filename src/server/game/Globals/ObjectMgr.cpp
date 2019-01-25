@@ -277,10 +277,11 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
 {
     uint32 oldMSTime = GetMSTime();
 
+    uint32 const expansion = sWorld->GetWowPatch() > WOW_PATCH_240 ? 2 : 1;
     //                                                 
     QueryResult result = WorldDatabase.PQuery("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
                                              //   5
-                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed_walk, speed_run, "
+                                             "modelid4, name, subname, IconName, gossip_menu_id, ct.minlevel, ct.maxlevel, exp, faction, npcflag, speed_walk, speed_run, "
                                              //
                                              "scale, `rank`, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, unit_flags2, dynamicflags, family,"
                                              //   
@@ -292,9 +293,15 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //           
                                              "HealthModifier, ManaModifier, ArmorModifier, DamageModifier, ExperienceModifier, RacialLeader, RegenHealth, "
                                              //   
-                                             "mechanic_immune_mask, spell_school_immune_mask, flags_extra, ScriptName, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, patch "
+                                             "mechanic_immune_mask, spell_school_immune_mask, flags_extra, ScriptName, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, df.Flags1, df.Flags2, df.Flags3, df.Flags4, df.Flags5, patch "
                                              //   
-                                             "FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId WHERE patch=(SELECT max(patch) FROM creature_template t2 WHERE ct.entry=t2.entry && patch <= %u)", sWorld->GetWowPatch());
+                                             "FROM creature_template ct "
+                                             "LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId "
+                                             "LEFT JOIN creature_difficulty_flags df ON ct.entry = df.CreatureId "
+                                             "WHERE ct.patch = (SELECT max(patch) FROM creature_template ct2 WHERE ct.entry = ct2.entry AND ct2.patch <= %u) "
+                                             "      AND (df.Expansion IS NULL OR df.Expansion = (SELECT max(expansion) FROM creature_difficulty_flags df2 WHERE df.CreatureId = df2.CreatureId AND df2.expansion <= %u)) "
+                                             "GROUP BY ct.entry ", //There can be several entry for a creature in creature_difficulty_flags
+                                             sWorld->GetWowPatch(), expansion);
 
     if (!result)
     {
@@ -398,6 +405,21 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     f++;
     if (!fields[f].IsNull())
         creatureTemplate.Movement.Rooted = fields[f].GetBool();
+    f++;
+    if (!fields[f].IsNull())
+        creatureTemplate.DifficultyFlags.Flags1 = fields[f].GetUInt32();
+    f++;
+    if (!fields[f].IsNull())
+        creatureTemplate.DifficultyFlags.Flags2 = fields[f].GetUInt32();
+    f++;
+    if (!fields[f].IsNull())
+        creatureTemplate.DifficultyFlags.Flags3 = fields[f].GetUInt32();
+    f++;
+    if (!fields[f].IsNull())
+        creatureTemplate.DifficultyFlags.Flags4 = fields[f].GetUInt32();
+    f++;
+    if (!fields[f].IsNull())
+        creatureTemplate.DifficultyFlags.Flags5 = fields[f].GetUInt32();
     f++;
 }
 
