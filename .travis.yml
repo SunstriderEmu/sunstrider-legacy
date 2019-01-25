@@ -11,22 +11,23 @@ git:
 addons:
   mariadb: '10.3'
   apt:
+    update: true
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:rexut/factory'
     packages:
       - libssl-dev
       - libmariadb-client-lgpl-dev
       - libreadline6-dev
       - zlib1g-dev
       - libbz2-dev
-      #problem here: xenial uses boost 1.58 and we need 1.62. (xenial-backports does not use a more recent either)
-      - libboost-dev
-      - libboost-filesystem-dev
-      - libboost-iostreams-dev
-      - libboost-program-options-dev
-      - libboost-regex-dev
-      - libboost-system-dev
-      - libboost-thread-dev
+      - libboost1.62-dev
+      - libboost-filesystem1.62-dev
+      - libboost-iostreams1.62-dev
+      - libboost-program-options1.62-dev
+      - libboost-regex1.62-dev
+      - libboost-system1.62-dev
+      - libboost-thread1.62-dev
       # For data archive
       - p7zip
       # For post run debug
