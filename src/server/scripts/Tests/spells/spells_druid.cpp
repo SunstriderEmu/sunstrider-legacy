@@ -1275,6 +1275,7 @@ public:
 			TEST_HAS_AURA(druid, ClassSpells::Druid::PROWL_RNK_3);
 
 			// Speed
+            WaitNextUpdate(); //Wait for speed ack
 			TEST_ASSERT(druid->GetSpeed(MOVE_RUN) == expectedRunSpeed);
 
 			// Remove

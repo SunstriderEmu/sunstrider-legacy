@@ -348,7 +348,7 @@ class SpellDelayedStacks : public TestCase
         Creature* caster = SpawnCreature(17256); //hellfire channeler
         Creature* other  = SpawnCreature(17256); //hellfire channeler
 
-        SECTION("stacks", STATUS_KNOWN_BUG, [&] 
+        SECTION("stacks", [&] 
         {
             for(uint32 i = 0; i < STACK_COUNT; i++)
                 TEST_CAST(caster, caster, BUFF_ID, SPELL_CAST_OK, TRIGGERED_FULL_MASK);

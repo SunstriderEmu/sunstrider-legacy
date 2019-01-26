@@ -1479,6 +1479,7 @@ public:
             TEST_CAST(warlock, warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1, SPELL_CAST_OK, TRIGGERED_CAST_DIRECTLY);
             TEST_ASSERT(warlock->IsMounted());
             TEST_HAS_AURA(warlock, ClassSpells::Warlock::SUMMON_FELSTEED_RNK_1);
+            WaitNextUpdate(); //Wait for speed ack
             TEST_ASSERT(Between(warlock->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
 
             uint32 const expectedSummonFelsteedManaCost = 100;

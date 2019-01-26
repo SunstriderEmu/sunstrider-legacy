@@ -384,6 +384,7 @@ public:
             // Curse of Exhaustion
             float const expectedSpeed = warrior->GetSpeed(MOVE_RUN) * coeBoostFactor;
             FORCE_CAST(warlock, warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1);
+            WaitNextUpdate(); //Wait for warrior speed ack
             ASSERT_INFO("Warrior has %f speed, %f was expected.", warrior->GetSpeed(MOVE_RUN), expectedSpeed);
             TEST_ASSERT(Between<float>(warrior->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
             TEST_HAS_NOT_AURA(warlock, ClassSpells::Warlock::AMPLIFY_CURSE_RNK_1);
@@ -737,6 +738,7 @@ public:
             float const warriorSpeed = warrior->GetSpeed(MOVE_RUN);
             float const expectedSpeed = warrior->GetSpeed(MOVE_RUN) * speedMalusFactor;
             FORCE_CAST(warlock, warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1);
+            WaitNextUpdate(); //wait for warrior to ack move speed change
             ASSERT_INFO("Warrior has %f speed, %f was expected.", warrior->GetSpeed(MOVE_RUN), expectedSpeed);
             TEST_ASSERT(Between<float>(warrior->GetSpeed(MOVE_RUN), expectedSpeed - 0.1f, expectedSpeed + 0.1f));
             TEST_AURA_MAX_DURATION(warrior, ClassSpells::Warlock::CURSE_OF_EXHAUSTION_RNK_1, Seconds(12));

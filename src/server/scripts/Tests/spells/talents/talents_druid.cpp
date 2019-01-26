@@ -1285,8 +1285,6 @@ class NaturalShapeshifterTest : public TestCase
 {
     /*
     "Reduces the mana cost of all shapeshifting by 30%."
-    Bugs:
-        - Should reduce mana cost of Tree of Life
     */
 	void Test() override
 	{
@@ -1314,7 +1312,7 @@ class NaturalShapeshifterTest : public TestCase
         SECTION("Moonkin form", [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::MOONKIN_FORM_RNK_1, POWER_MANA, expectedMoonMana);
         });
-        SECTION("Tree of life form", STATUS_KNOWN_BUG, [&] {
+        SECTION("Tree of life form", [&] {
             TEST_POWER_COST(druid, ClassSpells::Druid::TREE_OF_LIFE_RNK_1, POWER_MANA, expectedTreeMana);
         });
 	}
