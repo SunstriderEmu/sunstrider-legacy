@@ -297,11 +297,11 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //   
                                              "FROM creature_template ct "
                                              "LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId "
-                                             "LEFT JOIN creature_difficulty_flags df ON ct.entry = df.CreatureId "
+                                             "LEFT JOIN creature_difficulty_flags df ON ct.entry = df.CreatureId AND df.expansion <= %u "
                                              "WHERE ct.patch = (SELECT max(patch) FROM creature_template ct2 WHERE ct.entry = ct2.entry AND ct2.patch <= %u) "
                                              "      AND (df.Expansion IS NULL OR df.Expansion = (SELECT max(expansion) FROM creature_difficulty_flags df2 WHERE df.CreatureId = df2.CreatureId AND df2.expansion <= %u)) "
                                              "GROUP BY ct.entry ", //There can be several entry for a creature in creature_difficulty_flags
-                                             sWorld->GetWowPatch(), expansion);
+                                             expansion, sWorld->GetWowPatch(), expansion);
 
     if (!result)
     {
