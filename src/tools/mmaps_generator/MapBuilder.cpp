@@ -633,51 +633,12 @@ namespace MMAP
         int lTriCount = meshData.liquidTris.size() / 3;
         uint8* lTriFlags = meshData.liquidType.getCArray();
 
-        // these are WORLD UNIT based metrics
-        // this are basic unit dimentions
-        // value have to divide GRID_SIZE(533.3333f) ( aka: 0.5333, 0.2666, 0.3333, 0.1333, etc )
-        const static float BASE_UNIT_DIM = 0.2666666f;
+        const TileConfig tileConfig = TileConfig();
+        int TILES_PER_MAP = tileConfig.TILES_PER_MAP;
+        float BASE_UNIT_DIM = tileConfig.BASE_UNIT_DIM;
 
-        // All are in UNIT metrics!
-        const static int VERTEX_PER_MAP = int(GRID_SIZE/BASE_UNIT_DIM + 0.5f);
-        const static int VERTEX_PER_TILE = 80; // must divide VERTEX_PER_MAP
-        const static int TILES_PER_MAP = VERTEX_PER_MAP/VERTEX_PER_TILE;
+        rcConfig config = GetMapSpecificConfig(mapID, bmin, bmax, tileConfig);
 
-        rcConfig config;
-        memset(&config, 0, sizeof(rcConfig));
-
-        rcVcopy(config.bmin, bmin);
-        rcVcopy(config.bmax, bmax);
-
-        bool continent = (mapID <= 1 || mapID == 530);
-        // Should be able to pass here .go xyz -4930 -999 502 0
-        float agentHeight = 1.5f;
-        // Fences should not be passable
-        static const float agentMaxClimbModelTerrainTransition = 1.2f;
-        static const float agentMaxClimbTerrain = 1.8f;
-
-        config.cs = BASE_UNIT_DIM;
-        config.ch = 0.1f;
-        // .go xyz 9612 410 1328
-        // Prevent z overflow at big heights. We need at least 0.16 to handle teldrassil.
-        if (continent)
-            config.ch = 0.2f;
-
-        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
-        config.walkableSlopeAngle = 75.0f;
-        config.tileSize = VERTEX_PER_TILE;
-        config.walkableRadius = 1; //nost uses this value (for continents at least)
-        config.borderSize = config.walkableRadius + 3;
-        config.maxEdgeLen = VERTEX_PER_TILE + 1;        // anything bigger than tileSize
-        config.walkableHeight = (int)ceilf(agentHeight / config.ch);
-        // a value >= 3|6 allows npcs to walk over some fences
-        // a value >= 4|8 allows npcs to walk over all fences
-        config.walkableClimb = (int)floorf(agentMaxClimbModelTerrainTransition / config.ch); // For models
-        config.minRegionArea = rcSqr(30); //nost value here: if changing that one, check blade's edge arena pillars again. TC has 60, apparently too high
-        config.mergeRegionArea = rcSqr(20);  //TC has 50
-        config.maxSimplificationError = 1.5f; // eliminates most jagged edges (tiny polygons)
-        config.detailSampleDist = config.cs * 16; 
-        config.detailSampleMaxError = config.ch * 1;
         int inWaterGround = config.walkableHeight;
         int stepForGroundInheriteWater = (int)ceilf(30.0f / config.ch);
 
@@ -880,7 +841,7 @@ namespace MMAP
         params.offMeshConAreas = meshData.offMeshConnectionsAreas.getCArray();
         params.offMeshConFlags = meshData.offMeshConnectionsFlags.getCArray();
 
-        params.walkableHeight = agentHeight;  // agent height
+        params.walkableHeight = BASE_UNIT_DIM * config.walkableHeight;  // agent height
         params.walkableRadius = BASE_UNIT_DIM * config.walkableRadius;  // agent radius
         params.walkableClimb = agentMaxClimbTerrain;    // keep less that walkableHeight (aka agent height)!
         params.tileX = (((bmin[0] + bmax[0]) / 2) - navMesh->getParams()->orig[0]) / GRID_SIZE;
@@ -1196,7 +1157,6 @@ namespace MMAP
         int* tris = meshData.solidTris.getCArray();
         int ntris = meshData.solidTris.size() / 3;
 
-        // get bounds of current tile
         rcConfig config;
         memset(&config, 0, sizeof(rcConfig));
         float agentHeight = 1.0f;
@@ -1426,4 +1386,51 @@ namespace MMAP
         return 0;
     }
 
+    rcConfig MapBuilder::GetMapSpecificConfig(uint32 mapID, float bmin[3], float bmax[3], const TileConfig &tileConfig)
+    {
+        rcConfig config;
+        memset(&config, 0, sizeof(rcConfig));
+
+        rcVcopy(config.bmin, bmin);
+        rcVcopy(config.bmax, bmax);
+
+        bool const continent = (mapID <= 1 || mapID == 530);
+        // Should be able to pass here .go xyz -4930 -999 502 0
+        float const agentHeight = 1.5f;
+
+        config.cs = tileConfig.BASE_UNIT_DIM;;
+        config.ch = 0.1f;
+        // .go xyz 9612 410 1328
+        // Prevent z overflow at big heights. We need at least 0.16 to handle teldrassil.
+        if (continent)
+            config.ch = 0.2f;
+
+        config.maxVertsPerPoly = DT_VERTS_PER_POLYGON;
+        config.walkableSlopeAngle = 75.0f;
+        config.tileSize = tileConfig.VERTEX_PER_TILE;
+        config.walkableRadius = 1; //nost uses this value (for continents at least)
+        config.borderSize = config.walkableRadius + 3;
+        config.maxEdgeLen = tileConfig.VERTEX_PER_TILE + 1;        // anything bigger than tileSize
+        config.walkableHeight = (int)ceilf(agentHeight / config.ch);
+        // a value >= 3|6 allows npcs to walk over some fences
+        // a value >= 4|8 allows npcs to walk over all fences
+        config.walkableClimb = (int)floorf(agentMaxClimbModelTerrainTransition / config.ch); // For models
+        config.minRegionArea = rcSqr(30); //nost value here: if changing that one, check blade's edge arena pillars again. TC has 60, apparently too high
+        config.mergeRegionArea = rcSqr(20);  //TC has 50
+        config.maxSimplificationError = 1.5f; // eliminates most jagged edges (tiny polygons)
+        config.detailSampleDist = config.cs * 16;
+        config.detailSampleMaxError = config.ch * 1;
+
+        switch (mapID)
+        {
+        // Blade's Edge Arena
+        case 562:
+            config.walkableRadius = 0;
+            break;
+        default:
+            break;
+        }
+
+        return config;
+    }
 }
