@@ -1271,7 +1271,13 @@ void Guardian::UpdateResistances(uint32 school)
 
         // hunter and warlock pets gain 40% of owner's resistance
         if (IsPet())
+        {
             value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
+
+            // "Felhunters have innate magic resistance, equal to twice its masters level." https://wow.gamepedia.com/index.php?title=Felhunter&oldid=1511849#Felhunter_Stats
+            if (GetEntry() == ENTRY_FELHUNTER)
+                value += m_owner->GetLevel() * 2;
+        }
 
         SetResistance(SpellSchools(school), int32(value));
     }
