@@ -517,11 +517,7 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_TRAP:
                 {
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
-                    Unit* owner = GetOwner();
-                    if (owner && owner->IsInCombat())
-                        m_cooldownTime = GetMap()->GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
-                    else if (GetEntry() == 180647)
-                        m_cooldownTime = GetMap()->GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
+                    m_cooldownTime = GetMap()->GetGameTimeMS() + GetGOInfo()->GetCooldown() * IN_MILLISECONDS;
                     m_lootState = GO_READY;
                     break;
                 }
@@ -628,9 +624,6 @@ void GameObject::Update(uint32 diff)
                 if (!this->IsInWorld())
                     return;
 
-                if (m_cooldownTime > GetMap()->GetGameTimeMS())
-                    break;
-
                 // Type 2 (bomb) does not need to be triggered by a unit and despawns after casting its spell.
                 if (goInfo->trap.type == 2)
                 {
@@ -686,7 +679,12 @@ void GameObject::Update(uint32 diff)
                 }
 
                 if (target)
+                {
+		    //sun: only use the arming time if target is in combat
+                    if (target->IsInCombat() && GetMap()->GetGameTimeMS() < m_cooldownTime)
+                        break;
                     SetLootState(GO_ACTIVATED, target); //make target activate this gameobject. This will trigger trap spell in GO_ACTIVATED.
+                }
             }
 
             if (m_charges && m_usetimes >= m_charges)
