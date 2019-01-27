@@ -22,19 +22,20 @@ enum GameEventState
 //some events from DB for core usage
 enum GameEventList
 {
-    GAME_EVENT_MIDSUMMER_FIRE_FESTIVAL = 1,
-    GAME_EVENT_NEW_YEARS_EVE           = 6,
-    GAME_EVENT_HALLOWS_END             = 12,
-    GAME_EVENT_NIGHTS                  = 25,
-    GAME_EVENT_PIRATES_DAY             = 50,
-    GAME_EVENT_WINTER_VEIL_PRESENTS    = 52,
-    GAME_EVENT_WICKERMAN_FESTIVAL      = 150,
-    GAME_EVENT_HORSENAME_RAZOR_HILL    = 156,
-    GAME_EVENT_BETA                    = 162,
-    GAME_EVENT_2_4                     = 167,
+    GAME_EVENT_MIDSUMMER_FIRE_FESTIVAL      = 1,
+    GAME_EVENT_NEW_YEARS_EVE                = 6,
+    GAME_EVENT_HALLOWS_END                  = 12,
+    GAME_EVENT_NIGHTS                       = 25,
+    GAME_EVENT_PIRATES_DAY                  = 50,
+    GAME_EVENT_WINTER_VEIL_PRESENTS         = 52,
+    GAME_EVENT_WICKERMAN_FESTIVAL           = 150,
+    GAME_EVENT_HORSENAME_RAZOR_HILL         = 156,
+    GAME_EVENT_BETA                         = 162,
+    GAME_EVENT_2_4                          = 167,
+    GAME_EVENT_BATTLE_OF_THE_DARK_PORTAL    = 180,
 
 #ifdef LICH_KING
-    GAME_EVENT_DAY_OF_THE_DEAD         = 51,
+    GAME_EVENT_DAY_OF_THE_DEAD              = 51,
 #endif
 };
 
