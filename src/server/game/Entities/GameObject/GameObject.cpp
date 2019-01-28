@@ -680,8 +680,8 @@ void GameObject::Update(uint32 diff)
 
                 if (target)
                 {
-		    //sun: only use the arming time if target is in combat
-                    if (target->IsInCombat() && GetMap()->GetGameTimeMS() < m_cooldownTime)
+                    //sun: for players, only use the arming time if target is in combat
+                    if (GetMap()->GetGameTimeMS() < m_cooldownTime && (!GetOwnerGUID().IsPlayer() || target->IsInCombat()))
                         break;
                     SetLootState(GO_ACTIVATED, target); //make target activate this gameobject. This will trigger trap spell in GO_ACTIVATED.
                 }
