@@ -766,14 +766,14 @@ void GameObject::Update(uint32 diff)
         case GO_JUST_DEACTIVATED:
         {
             // If nearby linked trap exists, despawn it
-            /*TC if (GameObject* linkedTrap = GetLinkedTrap())
+            if (GameObject* linkedTrap = GetLinkedTrap())
                 linkedTrap->SetLootState(GO_JUST_DEACTIVATED);
-            */
+
 
             //if Gameobject should cast spell, then this, but some GOs (type = 10) should be destroyed
-            /*TC but cast is already handled in GameObject::Use
             if (GetGoType() == GAMEOBJECT_TYPE_GOOBER)
             {
+                /*TC but cast is already handled in GameObject::Use
                 uint32 spellId = GetGOInfo()->goober.spellId;
 
                 if(spellId)
@@ -788,9 +788,16 @@ void GameObject::Update(uint32 diff)
 
                     m_unique_users.clear();
                     m_usetimes = 0;
-                }
+                }*/
+
+                SetGoState(GO_STATE_READY);
+
+                //any return here in case battleground traps
+                /*TC
+                if (GameObjectOverride const* goOverride = GetGameObjectOverride())
+                    if (goOverride->Flags & GO_FLAG_NODESPAWN)
+                        return;*/
             }
-            */
 
             //! The GetOwnerGUID() check is mostly for compatibility with hacky scripts - 99% of the time summoning should be done trough spells.
             if (GetSpellId() || GetOwnerGUID())
