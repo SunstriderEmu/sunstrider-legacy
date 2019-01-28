@@ -1376,7 +1376,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         for (auto & target : targets)
         {
             if (Unit* newTarget = target->ToUnit())
-                AddUnitTarget(newTarget, effMask, false);
+                AddUnitTarget(newTarget, effMask, false, true, center);
             else if (GameObject* gObjTarget = target->ToGameObject())
                 AddGOTarget(gObjTarget, effMask);
         }
@@ -2233,10 +2233,10 @@ private:
     ObjectGuid _casterGuid;
 };
 
-void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*= true*/, bool implicit /*= true*/)
+void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*= true*/, bool implicit /*= true*/, Position const* losPosition /*= nullptr*/)
 {
     for (uint32 effIndex = 0; effIndex < MAX_SPELL_EFFECTS; ++effIndex)
-        if (!m_spellInfo->Effects[effIndex].IsEffect() || !CheckEffectTarget(target, effIndex))
+        if (!m_spellInfo->Effects[effIndex].IsEffect() || !CheckEffectTarget(target, effIndex, losPosition))
             effectMask &= ~(1 << effIndex);
 
     // no effects left
@@ -7590,7 +7590,7 @@ CurrentSpellTypes Spell::GetCurrentContainer()
         return(CURRENT_GENERIC_SPELL);
 }
 
-bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
+bool Spell::CheckEffectTarget(Unit const* target, uint32 eff, Position const* losPosition) const
 {
     switch (m_spellInfo->Effects[eff].ApplyAuraName)
     {
@@ -7691,30 +7691,34 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             return false;
     }
     break;
-    /*case SPELL_EFFECT_CHARGE:
-    break;*/
     // else no break intended
-    default:                                            // normal case
-                                                        // Get GO cast coordinates if original caster -> GO
-        WorldObject* caster = nullptr;
-        if (m_originalCasterGUID.IsGameObject())
-            caster = m_caster->GetMap()->GetGameObject(m_originalCasterGUID);
-        if (!caster)
-            caster = m_caster;
-        if (target != caster)
+    default:   // normal case
+                                                       
+        if (losPosition)
+            return target->IsWithinLOS(losPosition->GetPositionX(), losPosition->GetPositionY(), losPosition->GetPositionZ(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2);
+        else
         {
-            if (m_targets.HasDst())
+            // Get GO cast coordinates if original caster -> GO
+            WorldObject* caster = nullptr;
+            if (m_originalCasterGUID.IsGameObject())
+                caster = m_caster->GetMap()->GetGameObject(m_originalCasterGUID);
+            if (!caster)
+                caster = m_caster;
+            if (target != caster)
             {
-                if (!target->IsWithinLOS(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), m_targets.GetDstPos()->GetPositionZ()))
-                    return false;
-            }
-            else 
-            {
-                if((m_caster->GetTypeId() != TYPEID_GAMEOBJECT || !m_caster->GetOwnerGUID()) //sun: no los check for non owned traps, fixes some slightly underground traps in world
-                   && (_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
-                   ) 
-                    if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                if (m_targets.HasDst())
+                {
+                    if (!target->IsWithinLOS(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), m_targets.GetDstPos()->GetPositionZ()))
                         return false;
+                }
+                else
+                {
+                    if ((m_caster->GetTypeId() != TYPEID_GAMEOBJECT || !m_caster->GetOwnerGUID()) //sun: no los check for non owned traps, fixes some slightly underground traps in world
+                        && (_triggeredCastFlags & TRIGGERED_IGNORE_LOS)
+                        )
+                        if (target != m_caster && !target->IsWithinLOSInMap(caster, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::M2))
+                            return false;
+                }
             }
         }
         break;
