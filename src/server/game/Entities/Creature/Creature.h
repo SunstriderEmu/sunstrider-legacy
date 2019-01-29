@@ -1059,9 +1059,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsAboveHPPercent(float percent);
         bool IsBetweenHPPercent(float minPercent, float maxPercent);
         
-        bool IsBeingEscorted() const { return m_isBeingEscorted; }
-        void SetEscorted(bool status) { m_isBeingEscorted = status; }
-
         //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
@@ -1112,7 +1109,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetHomeless(bool set = true) { m_homeless = set; }
         bool IsHomeless() const { return m_homeless; }
 
-        bool IsEscortNPC(bool onlyIfActive = true);
+        bool IsEscortNPC(bool onlyIfActive = true) const;
 
         bool CanGiveExperience() const;
 
@@ -1177,8 +1174,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
         
-        bool m_isBeingEscorted;
-
         // Time since target is unreachable
         uint32 m_unreachableTargetTime;
         // Creature evade all attacks. This is different from evade mode, when target is unreachable creature will stay some tile on place before evading.

@@ -924,6 +924,11 @@ void SmartAI::FriendlyKilled(Creature const* c, float range)
     GetScript()->ProcessEventsFor( SMART_EVENT_FRIENDLY_KILLED, (Unit*)c );
 }
 
+bool SmartAI::IsEscortNPC(bool onlyIfActive) const 
+{
+    return mEscortQuestID != 0;
+}
+
 int SmartGameObjectAI::Permissible(const GameObject* g)
 {
     if (g->GetAIName() == SMARTAI_GOBJECT_AI_NAME)

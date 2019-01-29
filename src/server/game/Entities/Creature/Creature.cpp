@@ -271,7 +271,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_focusDelay(0),
     m_shouldReacquireTarget(false), 
     m_suppressedOrientation(0.0f),
-    m_isBeingEscorted(false), 
     _waypointPathId(0),
     _currentWaypointNodeInfo(0, 0),
     m_unreachableTargetTime(0), 
@@ -1860,7 +1859,7 @@ bool Creature::CanAlwaysSee(WorldObject const* obj) const
 
 CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) const
 {
-    if(IsCivilian())
+    if(IsCivilian() && !IsEscortNPC(true)) //sun: allow escort npc to ignore their civilian flag while on an escort
         return CAN_ATTACK_RESULT_CIVILIAN;
 
     // Do not attack non-combat pets
@@ -1966,7 +1965,7 @@ bool Creature::IsOutOfThreatArea(Unit const* target) const
         return false;
 
     float dist;
-    if (IsHomeless() || IsBeingEscorted())
+    if (IsHomeless() || IsEscortNPC(true))
         dist = target->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
     else {
         float x, y, z, o;
@@ -3567,7 +3566,7 @@ void Creature::SetDisplayId(uint32 modelId)
 
 }
 
-bool Creature::IsEscortNPC(bool onlyIfActive)
+bool Creature::IsEscortNPC(bool onlyIfActive) const
 {
     if (CreatureAI* ai = AI())
         return ai->IsEscortNPC(onlyIfActive);

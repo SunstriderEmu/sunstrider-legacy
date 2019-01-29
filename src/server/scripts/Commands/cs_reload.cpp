@@ -350,7 +350,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`creature_loot_template`)");
         LoadLootTemplates_Creature();
-        LootTemplates_Creature.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `creature_loot_template` reloaded.");
         return true;
     }
@@ -367,7 +367,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`disenchant_loot_template`)");
         LoadLootTemplates_Disenchant();
-        LootTemplates_Disenchant.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `disenchant_loot_template` reloaded.");
         return true;
     }
@@ -376,7 +376,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`fishing_loot_template`)");
         LoadLootTemplates_Fishing();
-        LootTemplates_Fishing.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `fishing_loot_template` reloaded.");
         return true;
     }
@@ -385,7 +385,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`gameobject_loot_template`)");
         LoadLootTemplates_Gameobject();
-        LootTemplates_Gameobject.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `gameobject_loot_template` reloaded.");
         return true;
     }
@@ -394,7 +394,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`item_loot_template`)");
         LoadLootTemplates_Item();
-        LootTemplates_Item.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `item_loot_template` reloaded.");
         return true;
     }
@@ -403,7 +403,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`pickpocketing_loot_template`)");
         LoadLootTemplates_Pickpocketing();
-        LootTemplates_Pickpocketing.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `pickpocketing_loot_template` reloaded.");
         return true;
     }
@@ -412,7 +412,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`prospecting_loot_template`)");
         LoadLootTemplates_Prospecting();
-        LootTemplates_Prospecting.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `prospecting_loot_template` reloaded.");
         return true;
     }
@@ -439,7 +439,7 @@ public:
     {
         TC_LOG_INFO("command", "Re-Loading Loot Tables... (`skinning_loot_template`)");
         LoadLootTemplates_Skinning();
-        LootTemplates_Skinning.CheckLootRefs();
+        LoadLootTemplates_Reference();
         handler->SendGlobalGMSysMessage("DB table `skinning_loot_template` reloaded.");
         return true;
     }

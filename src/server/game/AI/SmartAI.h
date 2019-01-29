@@ -185,6 +185,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void SetGossipReturn(bool val) { _gossipReturn = val; }
 
         void SetEscortQuest(uint32 questID) { mEscortQuestID = questID; }
+        bool IsEscortNPC(bool onlyIfActive) const override; //sun: also implement this from CreatureAI. Needed in Creature::CanAggro
 
         void FriendlyKilled(Creature const* c, float range) override;
 
