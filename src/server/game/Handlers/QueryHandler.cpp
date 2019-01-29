@@ -192,13 +192,23 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
         for(uint32 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << float(0);
-            if(GetSessionDbcLocale() == LOCALE_frFR)
+            if (guid.IsCreature())
             {
-                data << "Salutations $N";
-                data << "Salutations $N";
-            } else {
-                data << "Greetings $N";
-                data << "Greetings $N";
+                if (GetSessionDbcLocale() == LOCALE_frFR)
+                {
+                    data << "Salutations $N";
+                    data << "Salutations $N";
+                }
+                else {
+                    data << "Greetings $N";
+                    data << "Greetings $N";
+                }
+            }
+            else 
+            {
+                //sun: no greetings for gameobjects
+                data << " "; //don't know the retail value. Empty string is not accepted by client
+                data << " ";
             }
             data << uint32(0);
             data << uint32(0);
