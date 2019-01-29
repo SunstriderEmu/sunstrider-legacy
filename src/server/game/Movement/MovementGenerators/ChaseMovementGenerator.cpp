@@ -238,7 +238,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
             bool forceDest = cOwner && (cOwner->IsWorldBoss() || cOwner->IsDungeonBoss()); 
 
             bool success = _path->CalculatePath(x, y, z, forceDest);
-            if (!success || (_path->GetPathType() & PATHFIND_NOPATH))
+            if (!success || (_path->GetPathType() & PATHFIND_NOPATH | PATHFIND_INCOMPLETE))
             {
                 if (cOwner)
                     cOwner->SetCannotReachTarget(true);
