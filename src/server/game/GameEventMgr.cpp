@@ -538,7 +538,7 @@ void GameEventMgr::LoadFromDB()
 
     mGameEventCreatureQuests.resize(mGameEvent.size());
     //                                   0   1      2
-    result = WorldDatabase.Query("SELECT id, quest, event FROM game_event_creature_quest");
+    result = WorldDatabase.PQuery("SELECT id, quest, event FROM game_event_creature_quest WHERE patch_min <= %u AND patch_max >= %u", sWorld->GetWowPatch(), sWorld->GetWowPatch());
 
     count = 0;
     if( !result )
