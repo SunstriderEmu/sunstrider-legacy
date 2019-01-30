@@ -6720,8 +6720,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReve
 
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.PQuery("SELECT id, quest, pool_entry FROM %s qr LEFT JOIN pool_quest pq ON qr.quest = pq.entry", table.c_str());
-
+    QueryResult result = WorldDatabase.PQuery("SELECT id, quest, pool_entry FROM %s qr LEFT JOIN pool_quest pq ON qr.quest = pq.entry WHERE patch_min <= %u AND patch_max >= %u", table.c_str(), sWorld->GetWowPatch(), sWorld->GetWowPatch());
     if(!result)
     {
         TC_LOG_ERROR("sql.sql",">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table.c_str(), table.c_str());
