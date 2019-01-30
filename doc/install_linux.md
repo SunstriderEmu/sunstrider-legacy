@@ -3,7 +3,7 @@
 <!----------------------------------------------------------------------------->
 ## Requirements
 
-1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). MySQL should also work but is not supported, and you may encounter problems when importing the databases.
+1. Get the right mariadb repository [here][mariadbrepository] (version 10.1). MySQL should also work but is not supported, and you may encounter problems when importing the databases.
 
 2. clang: Get the right LLVM repository [here][llvmrepository]. Current supported clang version is 7. gcc may work too but is not supported.
 
