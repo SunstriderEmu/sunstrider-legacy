@@ -19346,7 +19346,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 /*vendorslot*/,
         return false;
 
     ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( item );
-    if( !pProto )
+    if (!pProto)
     {
         SendBuyError( BUY_ERR_CANT_FIND_ITEM, nullptr, item, 0);
         return false;
@@ -19390,7 +19390,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 /*vendorslot*/,
     VendorItem const* crItem = vItems->m_items[vendor_slot];
 
     // check current item amount if it limited
-    if( crItem->maxcount != 0 )
+    if (crItem->maxcount != 0)
     {
         if(pCreature->GetVendorItemCurrentCount(crItem) < pProto->BuyCount * count )
         {
@@ -19399,7 +19399,7 @@ bool Player::BuyItemFromVendorSlot(ObjectGuid vendorguid, uint32 /*vendorslot*/,
         }
     }
 
-    if( uint32(GetReputationRank(pProto->RequiredReputationFaction)) < pProto->RequiredReputationRank)
+    if (uint32(GetReputationRank(pProto->RequiredReputationFaction)) < pProto->RequiredReputationRank)
     {
         SendBuyError( BUY_ERR_REPUTATION_REQUIRE, pCreature, item, 0);
         return false;
