@@ -206,8 +206,8 @@ public:
             PreventDefaultAction();
             if (!eventInfo.GetProcSpell() || !GetCaster())
                 return;
-            WorldObject const* wTarget = ObjectAccessor::GetUnit(*GetCaster(), eventInfo.GetProcSpell()->m_targets.GetOrigUnitTargetGUID());
-            if(Unit const* target = wTarget->ToUnit())
+
+            if(Unit const* target = ObjectAccessor::GetUnit(*GetCaster(), eventInfo.GetProcSpell()->m_targets.GetOrigUnitTargetGUID()))
                 GetCaster()->CastSpell(target, SPELL_HUNTER_ENTRAPMENT_PROC, aurEff);
         }
 
