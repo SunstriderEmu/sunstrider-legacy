@@ -2060,6 +2060,14 @@ bool SpellInfo::IsAutocastable() const
     return true;
 }
 
+bool SpellInfo::IsSelfCast() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].Effect && Effects[i].TargetA.GetTarget() != TARGET_UNIT_CASTER)
+            return false;
+    return true;
+}
+
 bool SpellInfo::IsPassiveStackableWithRanks() const
 {
     return IsPassive() 
