@@ -3483,9 +3483,9 @@ bool Unit::IsHighestExclusiveAura(Aura const* aura, bool removeOtherAuraApplicat
                         && !aura->CanStackWith(existingAurEff->GetBase());
                 };
 
-                if ( existingAurEff->GetBase()->GetCasterGUID() != aura->GetCasterGUID()  //allow replacing your own auras in all cases
-                    && (   sSpellMgr->CheckSpellGroupStackRules(aura->GetSpellInfo(), existingAurEff->GetSpellInfo()) == SPELL_GROUP_STACK_RULE_EXCLUSIVE_HIGHEST
-                        || exclusiveByDefault()  )
+                if (existingAurEff->GetBase()->GetCasterGUID() != aura->GetCasterGUID()  //allow replacing your own auras in all cases
+                    && (sSpellMgr->CheckSpellGroupStackRules(aura->GetSpellInfo(), existingAurEff->GetSpellInfo()) == SPELL_GROUP_STACK_RULE_EXCLUSIVE_HIGHEST
+                        || exclusiveByDefault())
                    )
                 {
                     int32 diff = abs(aurEff->GetAmount()) - abs(existingAurEff->GetAmount());

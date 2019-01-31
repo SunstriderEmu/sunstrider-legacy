@@ -2594,7 +2594,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
 
     // Spells with this flag cannot trigger if effect is cast on self
     bool const canEffectTrigger = !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_CANT_TRIGGER_PROC) && spell->unitTarget->CanProc() &&
-        (spell->CanExecuteTriggersOnHit(EffectMask) || MissCondition == SPELL_MISS_IMMUNE || MissCondition == SPELL_MISS_IMMUNE2);
+        (spell->CanExecuteTriggersOnHit(EffectMask) || MissCondition == SPELL_MISS_IMMUNE || MissCondition == SPELL_MISS_IMMUNE2) && 
+        !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO); //also exclude spell with no aggro (such as distract)
 
     // Trigger info was not filled in Spell::prepareDataForTriggerSystem - we do it now
     if (canEffectTrigger && !procAttacker && !procVictim)
