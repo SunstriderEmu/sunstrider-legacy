@@ -270,21 +270,18 @@ struct DuelInfo
     time_t OutOfBoundsTime = 0;
 };
 
-enum Pack58Step
+enum BoostPackType
 {
-    PACK58_STEP1,
-    PACK58_MELEE,
-    PACK58_HEAL,
-    PACK58_TANK,
-    PACK58_MAGIC,
+    BOOST_PACK_TYPE_MELEE = 0,
+    BOOST_PACK_TYPE_HEAL  = 1,
+    BOOST_PACK_TYPE_TANK  = 2,
+    BOOST_PACK_TYPE_MAGIC = 3,
 };
 
-enum Pack58Type
+enum BoostPackLevel
 {
-    PACK58_TYPE_MELEE = 0,
-    PACK58_TYPE_HEAL  = 1,
-    PACK58_TYPE_TANK  = 2,
-    PACK58_TYPE_MAGIC = 3,
+    BOOST_PACK_LVL_58 = 58,
+    BOOST_PACK_LVL_70 = 70,
 };
 
 struct Areas
@@ -1712,7 +1709,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LearnAllClassSpells();
         void LearnAllClassProficiencies();
 
-        void DoPack58(uint8 step);
+        void DoBoostPack(BoostPackLevel lvl, BoostPackType type);
 
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
         void SetFreeTalentPoints(uint32 points);
