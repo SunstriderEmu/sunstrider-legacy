@@ -1559,7 +1559,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_SELF_TELEPORT_ON_TARGET:
         {
-            float x,y,z;
+            float x = 0.0f, y = 0.0f, z = 0.0f;
             bool found = false;
 
             for (WorldObject* target : targets)
@@ -1570,7 +1570,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     found = true;
                     break;
                 }
-
             }
 
             if (!found)
@@ -1579,7 +1578,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             me->NearTeleportTo(x, y, z, me->GetOrientation());
             if(e.action.teleportSelfOnTarget.useVisual)
                 me->CastSpell(me, 46614, TRIGGERED_FULL_MASK); //teleport visual
-
 
             break;
         }
@@ -1668,8 +1666,28 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             uint32 quest = e.action.wpStart.quest;
             uint32 DespawnTime = e.action.wpStart.despawnTime;
-            ENSURE_AI(SmartAI, me->AI())->SetEscortQuest(quest);
             ENSURE_AI(SmartAI, me->AI())->SetDespawnTime(DespawnTime);
+
+            //sun: also use the escort respawn as in EscortAI
+            if (quest)
+            {
+                ENSURE_AI(SmartAI, me->AI())->SetEscortQuest(quest);
+                if (Map* map = me->GetMap())
+                {
+                    if (CreatureData const* cdata = me->GetCreatureData())
+                    {
+                        if (SpawnGroupTemplateData const* groupdata = cdata->spawnGroupData)
+                        {
+                            if (sWorld->getBoolConfig(CONFIG_RESPAWN_DYNAMIC_ESCORTNPC) && (groupdata->flags & SPAWNGROUP_FLAG_ESCORTQUESTNPC) && !map->GetCreatureRespawnTime(me->GetSpawnId()))
+                            {
+                                me->SetRespawnTime(me->GetRespawnDelay());
+                                me->SaveRespawnTime();
+                            }
+                        }
+                    }
+                }
+            }
+
             break;
         }
         case SMART_ACTION_WP_PAUSE:
