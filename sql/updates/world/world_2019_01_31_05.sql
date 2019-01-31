@@ -1,0 +1,1 @@
+UPDATE creature_addon SET path_id = NULL WHERE spawnID = 6720;
