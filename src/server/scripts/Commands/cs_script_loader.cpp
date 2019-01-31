@@ -42,7 +42,6 @@ void AddSC_pdump_commandscript();
 void AddSC_pet_commandscript();
 void AddSC_profiling_commandscript();
 void AddSC_quest_commandscript();
-void AddSC_recup_commandscript();
 void AddSC_reload_commandscript();
 void AddSC_replay_commandscript();
 void AddSC_reset_commandscript();
@@ -89,7 +88,6 @@ void AddCommandsScripts()
     AddSC_profiling_commandscript();
     AddSC_reload_commandscript();
     AddSC_replay_commandscript();
-    AddSC_recup_commandscript();
     AddSC_reset_commandscript();
     AddSC_send_commandscript();
     AddSC_server_commandscript();
