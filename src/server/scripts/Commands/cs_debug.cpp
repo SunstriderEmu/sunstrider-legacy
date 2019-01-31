@@ -83,6 +83,7 @@ public:
             { "setarmor",       SEC_GAMEMASTER3,  false, &HandleDebugSetArmorCommand,         "" },
             { "getarmor",       SEC_GAMEMASTER3,  false, &HandleDebugGetArmorCommand,         "" },
             { "boundary",       SEC_GAMEMASTER3,  false, &HandleDebugBoundaryCommand,         "" },
+            { "setanimationtier",SEC_GAMEMASTER3, false, &HandleSetAnimationTierCommand,     "" },
             //Dev utilities
             { "spawnbatchobjects",SEC_SUPERADMIN, false, &HandleSpawnBatchObjects,            "" },
         };
@@ -1747,6 +1748,23 @@ public:
         return true;
     }
 
+    static bool HandleSetAnimationTierCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* target = handler->GetSelectedUnit();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            return true;
+        }
+        int32 _args = atoi(args);
+        if (_args > UnitAnimationTier::Submerged)
+            return false;
+
+        UnitAnimationTier tier = UnitAnimationTier(_args);
+        target->SetAnimationTier(tier);
+        handler->PSendSysMessage("Set animation tier of target to %i", _args);
+        return true;
+    }
 
     /* Spawn a bunch of gameobjects objects from given file. This command will check wheter a close object is found on this server and ignore the new one if one is found.
     A preview gobject is spawned.
