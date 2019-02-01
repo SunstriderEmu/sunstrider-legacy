@@ -12,6 +12,8 @@ CREATE OR REPLACE PROCEDURE DeleteCreature (param1 INT)
 	LEFT JOIN spawn_group sg ON sg.spawnId = c.spawnID AND spawnType = 0 
 	WHERE c.spawnID = param1;
 	-- incomplete here...
+	DELETE FROM creature_formations WHERE memberGUID = param1;
+	DELETE FROM creature_movement_override WHERE SpawnId = param1;
 	DELETE FROM creature WHERE spawnID = param1;
   END;
 
