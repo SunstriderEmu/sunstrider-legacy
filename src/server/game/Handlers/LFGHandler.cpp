@@ -14,8 +14,7 @@ static void AttemptJoin(Player* _player)
     if(!_player->m_lookingForGroup.canAutoJoin() || _player->GetGroup())
         return;
 
-    auto lock = HashMapHolder<Player>::GetLock();
-    lock->lock();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     for(const auto & player : players)
     {
@@ -131,8 +130,6 @@ static void AttemptAddMore(Player* _player)
 
 void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     LookingForGroup_auto_join = true;
 
     if(!_player)                                            // needed because STATUS_AUTHED
@@ -143,15 +140,11 @@ void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLfgCancelAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     LookingForGroup_auto_join = false;
 }
 
 void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     LookingForGroup_auto_add = true;
 
     if(!_player)                                            // needed because STATUS_AUTHED
@@ -162,15 +155,11 @@ void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLfmCancelAutoAddmembersOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     LookingForGroup_auto_add = false;
 }
 
 void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 {
-    
-    
     for(auto & slot : _player->m_lookingForGroup.slots)
         slot.Clear();
 
@@ -180,17 +169,11 @@ void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 
 void WorldSession::HandleLfmSetNoneOpcode( WorldPacket & /*recvData */)
 {
-    
-    
     _player->m_lookingForGroup.more.Clear();
 }
 
 void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 temp, entry, type;
     recvData >> temp;
 
@@ -207,10 +190,6 @@ void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     std::string comment;
     recvData >> comment;
 
@@ -219,10 +198,6 @@ void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLookingForGroup(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint32 type, entry, unk;
 
     recvData >> type >> entry >> unk;
@@ -299,12 +274,8 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
     SendPacket(&data);
 }
 
-void WorldSession::HandleSetLfgOpcode( WorldPacket & recvData )
+void WorldSession::HandleSetLfgOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     uint32 slot, temp, entry, type;
     recvData >> slot >> temp;
 
@@ -321,4 +292,3 @@ void WorldSession::HandleSetLfgOpcode( WorldPacket & recvData )
 
     SendLfgResult(type, entry, 0);
 }
-
