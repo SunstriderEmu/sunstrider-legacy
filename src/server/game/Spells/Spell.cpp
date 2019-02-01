@@ -2318,8 +2318,14 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
         targetInfo.TimeDelay = 0LL;
 
     // If target reflect spell back to caster
-    if (targetInfo.MissCondition == SPELL_MISS_REFLECT)
+    if (targetInfo.MissCondition == SPELL_MISS_REFLECT) 
     {
+        //sun: caster was a gameobject...
+        if (m_caster->GetTypeId() != TYPEID_UNIT)
+        {
+            //let the spell just die I guess
+            return;
+        }
         // Calculate reflected spell result on caster (shouldn't be able to reflect gameobject spells)
         Unit* uCaster = ASSERT_NOTNULL(m_caster->ToUnit());
         targetInfo.ReflectResult = uCaster->SpellHitResult(uCaster, m_spellInfo, false); // can't reflect twice
