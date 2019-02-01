@@ -80,7 +80,7 @@ void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* invoker, uint3
 {
     if (me->IsInCombat())// no wp movement in combat
     {
-        TC_LOG_ERROR("FIXME","SmartAI::StartPath: Creature entry %u wanted to start waypoint movement while in combat, ignoring.", me->GetEntry());
+        TC_LOG_ERROR("misc","SmartAI::StartPath: Creature entry %u wanted to start waypoint movement while in combat, ignoring.", me->GetEntry());
         return;
     }
     if (HasEscortState(SMART_ESCORT_ESCORTING))
@@ -405,13 +405,22 @@ void SmartAI::UpdatePath(const uint32 diff)
 
 void SmartAI::UpdateAI(const uint32 diff)
 {
+#ifdef LICH_KING
+    CheckConditions(diff);
+#endif
+
     GetScript()->OnUpdate(diff);
+
     UpdatePath(diff);
     UpdateFollow(diff);
     UpdateDespawn(diff);
     
     if (!IsAIControlled())
+    {
+        if (_charmAI)
+            _charmAI->UpdateAI(diff);
         return;
+    }
 
     if (!UpdateVictim())
         return;
@@ -440,6 +449,9 @@ void SmartAI::MovementInform(uint32 MovementType, uint32 id)
 
     if (MovementType == POINT_MOTION_TYPE && id == SMART_ESCORT_LAST_OOC_POINT)
         _OOCReached = true;
+
+    if (_charmAI)
+        _charmAI->MovementInform(MovementType, id);
 }
 
 ///@todo move escort related logic
@@ -602,11 +614,16 @@ void SmartAI::JustDied(Unit* killer)
         EndPath(true);
 
     GetScript()->ProcessEventsFor(SMART_EVENT_DEATH, killer);
+
+    if (_charmAI)
+        _charmAI->JustDied(killer);
 }
 
 void SmartAI::KilledUnit(Unit* victim)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_KILL, victim);
+    if (_charmAI)
+        _charmAI->KilledUnit(victim);
 }
 
 void SmartAI::VictimDied(Unit* attacked)
@@ -623,8 +640,8 @@ void SmartAI::AttackStart(Unit* who)
 {
     if (!IsAIControlled())
     {
-        if (who && mCanAutoAttack)
-            me->Attack(who, true);
+        if (_charmAI)
+            _charmAI->AttackStart(who);
         return;
     }
 
@@ -639,6 +656,18 @@ void SmartAI::AttackStart(Unit* who)
             me->GetMotionMaster()->MoveChase(who, me->GetCombatRange(), Optional<ChaseAngle>(), mRun);
         }
     }
+}
+
+void SmartAI::OwnerAttackedBy(Unit* attacker) /*override*/
+{
+    if (_charmAI)
+        _charmAI->OwnerAttackedBy(attacker);
+}
+
+void SmartAI::OwnerAttacked(Unit* target) /*override*/
+{
+    if (_charmAI)
+        _charmAI->OwnerAttacked(target);
 }
 
 void SmartAI::SpellHit(Unit* unit, const SpellInfo* spellInfo)
@@ -661,6 +690,8 @@ void SmartAI::DamageTaken(Unit* doneBy, uint32& damage)
         damage = 0;
         me->SetHealth(mInvincibilityHpLevel);
     }
+    if (_charmAI)
+        _charmAI->DamageTaken(doneBy, damage);
 }
 
 void SmartAI::HealReceived(Unit* doneBy, uint32& addhealth)
@@ -678,9 +709,11 @@ void SmartAI::IsSummonedBy(Unit* summoner)
     GetScript()->ProcessEventsFor(SMART_EVENT_JUST_SUMMONED, summoner);
 }
 
-void SmartAI::DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/)
+void SmartAI::DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType damagetype)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_DAMAGED_TARGET, doneTo, damage);
+    if (_charmAI)
+        _charmAI->DamageDealt(doneTo, damage, damagetype);
 }
 
 void SmartAI::SummonedCreatureDespawn(Creature* unit)
@@ -701,7 +734,7 @@ void SmartAI::PassengerBoarded(Unit* who, int8 seatId, bool apply)
     GetScript()->ProcessEventsFor(apply ? SMART_EVENT_PASSENGER_BOARDED : SMART_EVENT_PASSENGER_REMOVED, who, uint32(seatId), 0, apply);
 }
 
-void SmartAI::OnCharmed(bool /*isNew*/)
+void SmartAI::OnCharmed(bool isNew)
 {
     bool const charmed = me->IsCharmed();
     if (charmed) // do this before we change charmed state, as charmed state might prevent these things from processing
@@ -729,6 +762,13 @@ void SmartAI::OnCharmed(bool /*isNew*/)
     }
 
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, nullptr, 0, 0, charmed);
+    
+    //sun: added for new smart charm AI system
+    if (!isNew)
+    {
+        me->PushAI(nullptr);
+        me->ScheduleAIChange();
+    }
 }
 
 void SmartAI::DoAction(int32 param)
@@ -927,6 +967,16 @@ void SmartAI::FriendlyKilled(Creature const* c, float range)
 bool SmartAI::IsEscortNPC(bool onlyIfActive) const 
 {
     return mEscortQuestID != 0;
+}
+
+void SmartAI::SetCharmAI(CreatureAI* ai)
+{
+    _charmAI.reset(ai);
+}
+
+void SmartAI::RemoveCharmAI()
+{
+    _charmAI.reset();
 }
 
 int SmartGameObjectAI::Permissible(const GameObject* g)

@@ -51,6 +51,7 @@
 #include "MovementPacketSender.h"
 #include "MoveSplineInit.h"
 #include "UnitAI.h"
+#include "SmartAI.h"
 
 #include <math.h>
 #include <array>
@@ -8689,7 +8690,7 @@ void Unit::ScheduleAIChange()
     bool const charmed = IsCharmed();
     // if charm is applied, we can't have disabled AI already, and vice versa
     if (charmed)
-        PushAI(nullptr);
+        PushAI(nullptr); //Pushing a nullptr on top will trigger UpdateCharmAI in Unit::Update
     else
     {
         RestoreDisabledAI();
@@ -8932,18 +8933,28 @@ void Unit::UpdateCharmAI()
             else
                 newAI = new PetAI(ToCreature());
         }
-
         ASSERT(newAI);
-        SetAI(newAI);
-        newAI->OnCharmed(true);
+        RestoreDisabledAI();
+        if (SmartAI* smart = dynamic_cast<SmartAI*>(GetTopAI()))
+            smart->SetCharmAI(dynamic_cast<CreatureAI*>(newAI)); //both PossessedAI and PetAI are CreatureAI
+        else
+        {
+            SetAI(newAI);
+            newAI->OnCharmed(true);
+        }
     }
     else
     {
-        RestoreDisabledAI();
-        // Hack: this is required because we want to call OnCharmed(true) on the restored AI
-        RefreshAI();
-        if (UnitAI* ai = GetAI())
-            ai->OnCharmed(true);
+        if (SmartAI* smart = dynamic_cast<SmartAI*>(i_AI.get()))
+            smart->RemoveCharmAI();
+        else
+        {
+            RestoreDisabledAI();
+            // Hack: this is required because we want to call OnCharmed(true) on the restored AI
+            RefreshAI();
+            if (UnitAI* ai = GetAI())
+                ai->OnCharmed(true);
+        }
     }
 }
 

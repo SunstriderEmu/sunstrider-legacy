@@ -96,6 +96,9 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Called at any Damage from any attacker (before damage apply)
         void DamageTaken(Unit* doneBy, uint32& damage) override;
 
+        void OwnerAttackedBy(Unit* attacker) override;
+        void OwnerAttacked(Unit* target) override;
+
         // Called when the creature receives heal
         void HealReceived(Unit* doneBy, uint32& addhealth) override;
 
@@ -191,6 +194,10 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void SetRepeatWaypointPath(bool set) { _repeatWaypointPath = set; }
 
+        //sun: see _charmAI
+        void SetCharmAI(CreatureAI* ai);
+        void RemoveCharmAI();
+
     private:
         bool mIsCharmed;
         uint32 mFollowCreditType;
@@ -246,6 +253,11 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool _gossipReturn;
 
         uint32 mEscortQuestID;
+        
+        //sun: SmartAI is unique in that it's the only AI that is still active while charmed/possessed
+        //However we still need to replicate PossessedAI and PetAI behavior when it happens, so instead of copy pasting all code
+        //Let's have a subAI stored in here to handle it. We have to call it for every hooks overrides in PossessedAI and PetAI
+        std::unique_ptr<CreatureAI> _charmAI;
 };
 
 class TC_GAME_API SmartGameObjectAI : public GameObjectAI
