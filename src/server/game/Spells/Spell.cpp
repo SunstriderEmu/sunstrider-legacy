@@ -820,38 +820,40 @@ void Spell::SelectSpellTargets()
     {
         switch (m_spellInfo->Effects[i].Effect)
         {
-        case SPELL_EFFECT_DUMMY:
-        {
-            switch (m_spellInfo->Id)
+            case SPELL_EFFECT_DUMMY:
             {
-            case 40160: // Throw Bomb
-            {
-                GameObject* go = m_caster->FindNearestGameObject(185861, 100.0f);
-
-                if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 4.0f) {
-                    go->SetLootState(GO_JUST_DEACTIVATED);
-                    m_caster->ToPlayer()->KilledMonsterCredit(23118, go->GetGUID());
-                }
-
-                break;
-            }
-            case 33655: // Dropping the Nether Modulator
-            {
-                for(uint32 entry : { 183350, 183351 })
+                switch (m_spellInfo->Id)
                 {
-                    GameObject* go = m_caster->FindNearestGameObject(entry, 100.0f);
-                    if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
-                        go->SetLootState(GO_JUST_DEACTIVATED);
-                        m_caster->ToPlayer()->KilledMonsterCredit(19291, go->GetGUID());
+                    case 40160: // Throw Bomb
+                    {
+                        GameObject* go = m_caster->FindNearestGameObject(185861, 100.0f);
+                        if (go != nullptr && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 4.0f)
+                        {
+                            go->SetLootState(GO_JUST_DEACTIVATED);
+                            m_caster->ToPlayer()->KilledMonsterCredit(23118, go->GetGUID());
+                        }
+
+                        break;
+                    }
+                    case 33655: // Dropping the Nether Modulator
+                    {
+                        const uint32 murkethId = 183350;
+                        const uint32 shaadrazId = 183351;
+                        for(uint32 entry : { murkethId, shaadrazId })
+                        {
+                            GameObject* go = m_caster->FindNearestGameObject(entry, 100.0f);
+                            if (go != nullptr && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f)
+                            {
+                                go->SetLootState(GO_JUST_DEACTIVATED);
+                                const uint32 credit = entry == murkethId ? 19291 : 19292;
+                                m_caster->ToPlayer()->KilledMonsterCredit(credit, go->GetGUID());
+                                break;
+                            }
+                        }
                         break;
                     }
                 }
-                
-                break;
             }
-
-            }
-        }
         }
     }
 

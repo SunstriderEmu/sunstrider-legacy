@@ -1,5 +1,5 @@
 -- Fix Bleeding Hollow Archer dmg (set to Bestiary)
-UPDATE creature_template SET DamageModifier=4.634, BaseVariance=0.4577, Armor=1 WHERE entry = 17270;
+UPDATE creature_template SET DamageModifier=4.634, BaseVariance=0.4577, ArmorModifier=1 WHERE entry = 17270;
 
 -- Fix Wounded Blood Elf Pilgrim not attacking
 -- NPC 16993
