@@ -13,3 +13,7 @@ INSERT IGNORE INTO smart_scripts (entryorguid, source_type, id, link, event_type
 (@ENTRY*100+1, 9, 104, 0, 0, 0, 100, 0, 0, 0, 0, 0, 19, 512, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Wounded Blood Elf Pilgrim - In Combat - Set Unit Flag Immune to NPC '),
 (@ENTRY*100+1, 9, 105, 0, 0, 0, 100, 0, 3000, 3000, 0, 0, 53, 0, 16993, 0, 9375, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Wounded Blood Elf Pilgrim - In Combat - Start Waypoint 16993 '),
 (@ENTRY*100+1, 9, 106, 0, 0, 0, 100, 0, 0, 0, 0, 0, 2, 495, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 'Wounded Blood Elf Pilgrim - In Combat - Set Faction 495 ');
+
+-- Fix Darkness Released weird movements & speed
+UPDATE creature_template_movement SET Flight = 1 WHERE CreatureId = 22507;
+UPDATE creature_template SET speed_run = 0.5 WHERE entry = 22507;
