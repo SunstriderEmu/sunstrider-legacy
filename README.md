@@ -14,11 +14,9 @@ Development started in 2009 from a [trinitycore1](https://bitbucket.org/KPsN/tri
 You can think of this core as TrinityCore on TBC.  
 Over the years all majors systems were rewritten using TC as a base. This allows us to continuously make us of the TrinityCore recent developments and have a dev-friendly core using the well known infrastructure of TC. 
 When a system has been imported from TC, differences (either improvements or TBC adaptations) with original TC are usually highlighted by comments.
-* Partly open source  
-With the exception of instance and creatures scripts, as well as the AntiCheat. The core is not currently meant to be used as is outside of the Valoren server, but you're free to re use parts of it.
 * Automated testing system  
 Our star feature! Mainly used for spells at the moment.
-* [Continuous integration](https://travis-ci.org/ValorenWoW/sunstrider-core)  
+* [Continuous integration](https://travis-ci.org/sunstrider/sunstrider-core)  
 Including tests results!
 * Dynamic spawn system (see [here](https://github.com/TrinityCore/TrinityCore/pull/19056))
 * Scripts and tests can be compiled in dynamic libraries and reloaded on runtime (see [here](https://trinitycore.atlassian.net/wiki/spaces/tc/pages/18874377/Using+the+script+hotswapping+system))
