@@ -7,7 +7,7 @@ Development started in 2009 from a [trinitycore1](https://bitbucket.org/KPsN/tri
 
 * [Windows](/doc/install_win.md)
 * [Linux](/doc/install_linux.md)
-
+ 
 ## Main features
 
 * Close to TrinityCore  
