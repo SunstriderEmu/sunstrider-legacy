@@ -30,7 +30,7 @@ jobs:
            7zr x 2019_01_22_data.7z -y > /dev/null
            rm 2019_01_22_data.7z
           
-     - run
+     - run:
          name: database
          command: |
            cd ~/bin
