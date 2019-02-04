@@ -10,19 +10,6 @@ jobs:
         command: |
           apt-get update -yqq
           apt-get install p7zip clang make cmake libmariadbclient-dev mariadb-server mariadb-client openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev
-          pwd
-          git config user.email "circleci@build.bot" && git config user.name "CircleCI"
-          git tag -a -m "CircleCI build" init
-          cd ..
-          pwd
-          mkdir bin logs data
-          cd bin
-          wget https://github.com/kelno/sunstrider-core/releases/download/2019_01_30/world_2019_01_30.sql.zip
-          unzip world_2019_01_02.sql.zip
-          cd ../data
-          wget https://blob.allumeciga.re/2019_01_22_data.7z
-          7zr x 2019_01_22_data.7z -y > /dev/null
-          rm 2019_01_22_data.7z
-          cd ..
+          echo 'Hello'
           
           
