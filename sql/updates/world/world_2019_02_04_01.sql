@@ -305,16 +305,16 @@ UPDATE creature SET spawntimesecs = 300 WHERE spawnID IN (
     1311732
 );
 
-DeleteCreature(1095337); -- Zuluhed the Whacked, should be spawned in a quest!
-DeleteCreature(1096267); -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1096268); -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1096269); -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1096270); -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1096271); -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1310188); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1095337); -- Zuluhed the Whacked, should be spawned in a quest!
+CALL DeleteCreature(1096267); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1096268); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1096269); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1096270); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1096271); -- Spawned in a WM event (probably arena tournament)
+CALL DeleteCreature(1310188); -- Spawned in a WM event (probably arena tournament)
 DELETE FROM gameobject WHERE guid = 1056710; -- Spawned in a WM event (probably arena tournament)
-DeleteCreature(1096317); -- Vengeful Harbinger, should be spawned in a quest!
-DeleteCreature(1310191); -- Weird spawn
+CALL DeleteCreature(1096317); -- Vengeful Harbinger, should be spawned in a quest!
+CALL DeleteCreature(1310191); -- Weird spawn
 
 
 
