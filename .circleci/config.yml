@@ -5,12 +5,13 @@ jobs:
    docker:
      - image: ubuntu:18.04
    steps:
-     - checkout
      - run:
-         name: The First Step
+         name: Install dep
          command: |
-           echo 'Hello World!'
-           echo 'This is the delivery pipeline'
+           apt-get update -yqq
+           apt-get install git p7zip clang make cmake libmariadbclient-dev mariadb-server mariadb-client openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev
+           pwd
+     - checkout
      - run:
          name: Code Has Arrived
          command: |
