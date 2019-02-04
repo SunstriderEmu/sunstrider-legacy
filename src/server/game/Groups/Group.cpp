@@ -838,7 +838,6 @@ void Group::Disband(bool hideDestroy)
         //sun, always remove PLAYER_FLAGS_GROUP_LEADER
         player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GROUP_LEADER);
     }
-    RollId.clear();
     m_memberSlots.clear();
 
     RemoveAllInvites();
