@@ -43,6 +43,7 @@ jobs:
            pwd=`pwd`
            pwd
            cd build
+           git config user.email "circleci@build.bot" && git config user.name "Circl CI"
            export CXX=/usr/bin/clang++-7
            export CC=/usr/bin/clang-7
            $CXX --version
