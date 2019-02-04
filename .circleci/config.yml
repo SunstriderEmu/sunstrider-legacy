@@ -5,6 +5,7 @@ jobs:
    docker:
      - image: ubuntu:18.04
    steps:
+     - checkout
      - run:
          name: packages dependancies
          command: |
@@ -19,7 +20,6 @@ jobs:
            export CC=/usr/bin/clang-7
            $CXX --version
            pwd
-     - checkout
      - run:
          name: folder structure & pre extracted data
          command: |
