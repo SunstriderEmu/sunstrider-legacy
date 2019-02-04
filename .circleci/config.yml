@@ -36,7 +36,7 @@ jobs:
            pwd
            $pwd= `pwd`
            cd bin
-           /opt/cmake/bin/cmake ../sunstrider-core -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=$pwd
+           /opt/cmake/bin/cmake ../sunstrider-core -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
      - run:
          name: build
          command: |
