@@ -7,7 +7,7 @@ jobs:
    steps:
      - checkout
      - run:
-         name: packages dependancies
+         name: packages dependencies
          command: |
            apt-get update -yqq
            apt-get install -y curl wget git p7zip jq unzip
@@ -16,10 +16,6 @@ jobs:
            mkdir /opt/cmake
            wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
            sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license 
-           export CXX=/usr/bin/clang++-7
-           export CC=/usr/bin/clang-7
-           $CXX --version
-           pwd
      - run:
          name: folder structure & pre extracted data
          command: |
@@ -28,8 +24,7 @@ jobs:
            cd ~/data
            wget https://blob.allumeciga.re/2019_01_22_data.7z
            7zr x 2019_01_22_data.7z -y > /dev/null
-           rm 2019_01_22_data.7z
-          
+           rm 2019_01_22_data.7z          
      - run:
          name: database
          command: |
@@ -48,6 +43,9 @@ jobs:
            pwd=`pwd`
            pwd
            cd build
+           export CXX=/usr/bin/clang++-7
+           export CC=/usr/bin/clang-7
+           $CXX --version
            /opt/cmake/bin/cmake ../project -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
      - run:
          name: build
