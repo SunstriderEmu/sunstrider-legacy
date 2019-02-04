@@ -6,52 +6,72 @@ jobs:
      - image: ubuntu:18.04
    steps:
      - run:
-         name: Packages deps
+         name: packages dependancies
          command: |
            apt-get update -yqq
-           apt-get install -y wget git p7zip clang make cmake libmariadbclient-dev mariadb-server mariadb-client openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev
+           apt-get install -y curl wget git p7zip jq unzip
+           apt-get install -y clang-7 make libmariadbclient-dev mariadb-server mariadb-client openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev
+           apt-get remove cmake
+           mkdir /opt/cmake
+           wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.sh
+           sh cmake-3.11.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license 
+           export CXX=/usr/bin/clang++-7
+           export CC=/usr/bin/clang-7
+           $CXX --version
            pwd
      - checkout
      - run:
-         name: Code Has Arrived
+         name: folder structure & pre extracted data
          command: |
-           ls -al
-           echo '^^^That should look familiar^^^'
-     - run:
-         name: Folder structure & download deps
-         command: |
-           pwd
-           mkdir bin logs data
-           cd data
+           cd ~
+           mkdir bin logs data build
+           cd ~/data
            wget https://blob.allumeciga.re/2019_01_22_data.7z
            7zr x 2019_01_22_data.7z -y > /dev/null
            rm 2019_01_22_data.7z
-           cd ..
-           cd bin
-           echo 'TODO: Download mmaps here'
-           cd ..
+          
+     - run
+         name: database
+         command: |
+           cd ~/bin
+           ASSET_ID=`curl -H "Authorization: token 160e0a92bbe2d628594f33955ced3c1f461c2938" https://api.github.com/repos/kelno/sunstrider-core/releases/latest | jq -r '.assets[0].id'`
+           curl -vLJO -H 'Accept: application/octet-stream' "https://api.github.com/repos/kelno/sunstrider-core/releases/assets/${ASSET_ID}?access_token=${CI_ACCESS_TOKEN}"
+           ls
+           unzip *.zip
+           rm *.zip
+           service mysql start
+           mysql < ~/project/sql/create/create_mysql.sql
      - run:
          name: cmake
          command: |
+           cd ~
+           pwd=`pwd`
            pwd
-           $pwd= `pwd`
-           cd bin
-           /opt/cmake/bin/cmake ../sunstrider-core -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
+           cd build
+           /opt/cmake/bin/cmake ../project -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
      - run:
          name: build
          command: |
-           $CXX --version
+           cd ~/build
            make -j 10 -k && make install && make clean
+           cd ~
            ls -l bin
            ls -l etc
-           cd etc
+           cd ~/etc
            sed -e 's!^DataDir\s*=.*!DataDir = "../data/"!g;' -e 's!^LogsDir\s*=.*!LogsDir = "../logs/"!g;'  -e 's!^Testing.MaxParallel\s*=.*!Testing.MaxParallel = 1000!g;' -e 's!^Logger.scripts.ai\s*=.*!Logger.scripts.ai=6,Console Server!g;' < "worldserver.conf.dist" > "worldserver.conf"
-           cd ..
      - run:
-         name: run
+         name: tests
          command: |
-           cd bin
+           cd ~/bin
            ./authserver --version
            ./worldserver --version
-           echo 'Tests!'
+           ulimit -c
+           ulimit -a -S
+           ulimit -a -H
+           ulimit -c unlimited -S
+           echo 'Core pattern:'
+           cat /proc/sys/kernel/core_pattern
+           ./worldserver --tests
+           ls -l
+           for i in $(find ./ -maxdepth 1 -name 'core*' -print); do gdb worldserver core* -ex "thread apply all bt" -ex "set pagination 0" -batch; done;
            
