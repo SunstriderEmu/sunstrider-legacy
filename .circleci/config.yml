@@ -17,8 +17,8 @@ jobs:
           pwd
           mkdir bin logs data
           cd bin
-#          wget https://github.com/kelno/sunstrider-core/releases/download/2019_01_30/world_2019_01_30.sql.zip
-#          unzip world_2019_01_02.sql.zip
+          wget https://github.com/kelno/sunstrider-core/releases/download/2019_01_30/world_2019_01_30.sql.zip
+          unzip world_2019_01_02.sql.zip
           cd ../data
           wget https://blob.allumeciga.re/2019_01_22_data.7z
           7zr x 2019_01_22_data.7z -y > /dev/null
