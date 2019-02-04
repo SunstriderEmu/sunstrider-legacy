@@ -6,7 +6,7 @@ jobs:
      - image: ubuntu:18.04
    steps:
      - run:
-         name: Install dep
+         name: Packages deps
          command: |
            apt-get update -yqq
            apt-get install -y git p7zip clang make cmake libmariadbclient-dev mariadb-server mariadb-client openssl libssl-dev zlib1g-dev libtool libncurses5-dev patch build-essential git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev
@@ -17,3 +17,41 @@ jobs:
          command: |
            ls -al
            echo '^^^That should look familiar^^^'
+     - run:
+         name: Folder structure & download deps
+         commands: |
+           pwd
+           mkdir bin logs data
+           cd data
+           wget https://blob.allumeciga.re/2019_01_22_data.7z
+           7zr x 2019_01_22_data.7z -y > /dev/null
+           rm 2019_01_22_data.7z
+           cd ..
+           cd bin
+           echo 'TODO: Download mmaps here'
+           cd ..
+     - run:
+         name: cmake
+         commands: |
+           pwd
+           $pwd= `pwd`
+           cd bin
+           /opt/cmake/bin/cmake ../sunstrider-core -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=$pwd
+     - run:
+         name: build
+         commands: |
+           $CXX --version
+           make -j 10 -k && make install && make clean
+           ls -l bin
+           ls -l etc
+           cd etc
+           sed -e 's!^DataDir\s*=.*!DataDir = "../data/"!g;' -e 's!^LogsDir\s*=.*!LogsDir = "../logs/"!g;'  -e 's!^Testing.MaxParallel\s*=.*!Testing.MaxParallel = 1000!g;' -e 's!^Logger.scripts.ai\s*=.*!Logger.scripts.ai=6,Console Server!g;' < "worldserver.conf.dist" > "worldserver.conf"
+           cd ..
+     - run:
+         name: run
+         commands: |
+           cd bin
+           ./authserver --version
+           ./worldserver --version
+           echo 'Tests!'
+           
