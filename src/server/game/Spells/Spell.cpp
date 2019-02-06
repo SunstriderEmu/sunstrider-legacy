@@ -3061,6 +3061,7 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, bool scaleAura, TargetInfo& 
                 if ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
                     && !m_caster->CanSeeOrDetect(unit, false))
                     isVisibleForHit = false;
+
                 if (!isVisibleForHit)
                 {
                     // that was causing CombatLog errors
