@@ -19,7 +19,6 @@ class TC_GAME_API GuardAI : public CreatureAI
 
         GuardAI(Creature *c);
 
-        void MoveInLineOfSight(Unit *) override;
         void EnterEvadeMode(EvadeReason /* why */) override;
         void JustDied(Unit *) override;
 

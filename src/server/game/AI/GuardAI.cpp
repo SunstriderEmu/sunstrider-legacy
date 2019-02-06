@@ -27,22 +27,6 @@ bool GuardAI::CanSeeAlways(WorldObject const* obj)
     return false;
 }
 
-void GuardAI::MoveInLineOfSight(Unit *u)
-{
-    // Ignore Z for flying creatures
-    if ( !i_creature.CanFly() && i_creature.GetDistanceZ(u) > CREATURE_Z_ATTACK_RANGE )
-        return;
-
-    if( !i_creature.GetVictim()
-        && u->isInAccessiblePlaceFor(&i_creature) 
-        && ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) ))
-    {
-        float attackRadius = i_creature.GetAggroRange(u);
-        if(i_creature.IsWithinDistInMap(u,attackRadius))
-            AttackStart(u);
-    }
-}
-
 void GuardAI::EnterEvadeMode(EvadeReason why)
 {
     if( !i_creature.IsAlive() )
