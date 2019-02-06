@@ -231,8 +231,10 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
     {
         TC_LOG_DEBUG("maps", "++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
         BuildShortcut();
+        bool waterPath = SourceCanSwim();
+
         //if unit can only swim, check if path is in water
-        if (SourceCanSwim() && !SourceCanFly())
+        if (SourceCanSwim() && !SourceCanFly() && !SourceCanWalk())
         {
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
@@ -243,12 +245,17 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
-                    _type = PathType(PATHFIND_NOPATH);
+                    waterPath = false;
                     break;
                 }
             }
         }
-        _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        if (SourceCanFly())
+            _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH | PATHFIND_FLIGHT);
+        else if (waterPath)
+            _type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        else
+            _type = PATHFIND_NOPATH;
         return;
     }
 
