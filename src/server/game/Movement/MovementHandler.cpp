@@ -808,8 +808,9 @@ void WorldSession::HandleMovementFlagChangeToggleAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
 {
-    //Sun: Tentative implementation based on mangos logic
+    //Sun
     //A comment regarding the role of CMSG_MOVE_TIME_SKIPPED: https://github.com/TrinityCore/TrinityCore/pull/18189#issuecomment-300423962
+    //some more comments https://github.com/TrinityCore/TrinityCore/pull/22994
 
     //TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
     ObjectGuid guid;
@@ -824,6 +825,10 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
 
     if (!_clientControl.IsAllowedToMove(guid, true))
         return;
+    
+    if(Unit* activeMover = _clientControl.GetActiveMover())
+        if(activeMover->GetGUID() == guid)
+            activeMover->m_movementInfo.time += timeSkipped;
 
     TC_LOG_TRACE("movement", "CMSG_MOVE_TIME_SKIPPED: Player %s, receiving time skip %u for %s", 
         _player->GetName().c_str(), timeSkipped, guid.ToString().c_str());
