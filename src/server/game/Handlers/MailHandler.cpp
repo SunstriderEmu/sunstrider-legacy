@@ -631,10 +631,6 @@ void WorldSession::HandleGetMailList(WorldPacket& recvData) //LK ok
     uint32 mailsCount = 0;                                 // real send to client mails amount
     uint32 realCount  = 0;                                 // real mails amount
 
-#ifndef LICH_KING
-    bool partial = false; // Did we have to cut result set to prevent client crash?
-#endif
-
     WorldPacket data(SMSG_MAIL_LIST_RESULT, (200));         // guess size
 #ifdef LICH_KING
     data << uint32(0);                                      // real mail's count
