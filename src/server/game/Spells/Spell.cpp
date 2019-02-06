@@ -2530,6 +2530,8 @@ void Spell::TargetInfo::PreprocessTarget(Spell* spell)
         {
             if (missInfo != SPELL_MISS_MISS)
                 spell->m_caster->SendSpellMiss(unit, spell->m_spellInfo->Id, missInfo);
+            else
+                MissCondition = SPELL_MISS_MISS; //sun: keep result for later usage
 
             spell->m_damage = 0;
             spell->m_healing = 0;
@@ -2603,7 +2605,8 @@ void Spell::TargetInfo::DoDamageAndTriggers(Spell* spell)
     // Spells with this flag cannot trigger if effect is cast on self
     bool const canEffectTrigger = !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_CANT_TRIGGER_PROC) && spell->unitTarget->CanProc() &&
         (spell->CanExecuteTriggersOnHit(EffectMask) || MissCondition == SPELL_MISS_IMMUNE || MissCondition == SPELL_MISS_IMMUNE2) && 
-        !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO); //also exclude spell with no aggro (such as distract)
+        !spell->m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO) && //sun: also exclude spell with no aggro (such as distract)
+        MissCondition != SPELL_MISS_MISS && MissCondition != SPELL_MISS_EVADE; // sun: missed spells should not affect the target
 
     // Trigger info was not filled in Spell::prepareDataForTriggerSystem - we do it now
     if (canEffectTrigger && !procAttacker && !procVictim)
@@ -3050,16 +3053,21 @@ SpellMissInfo Spell::PreprocessSpellHit(Unit* unit, bool scaleAura, TargetInfo& 
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
         else if (!friendlyTarget)
         {
-            // sun: reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
-            bool isVisibleForHit = ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH)) && !m_caster->CanSeeOrDetect(unit, true)) ? false : true;
-
             // for delayed spells ignore not visible explicit target
-            if (m_spellInfo->Speed > 0.0f && unit == m_targets.GetUnitTarget() && !isVisibleForHit)
+            if (m_spellInfo->Speed > 0.0f && unit == m_targets.GetUnitTarget())
             {
-                // that was causing CombatLog errors
-                //caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
-                m_damage = 0;
-                return SPELL_MISS_NONE;
+                // sun: reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
+                bool isVisibleForHit = true;
+                if ((unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
+                    && !m_caster->CanSeeOrDetect(unit, false))
+                    isVisibleForHit = false;
+                if (!isVisibleForHit)
+                {
+                    // that was causing CombatLog errors
+                    //caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
+                    m_damage = 0;
+                    return SPELL_MISS_MISS; 
+                }
             }
 
             if (m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AURA_CC))
