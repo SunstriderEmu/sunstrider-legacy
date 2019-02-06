@@ -1739,7 +1739,11 @@ bool Map::IsPlayerWalkable(Position pos) const
     if (closestPointYZX[0] == 0.0f && closestPointYZX[1] == 0.0f && closestPointYZX[2] == 0.0f)
         return false;
 
-    DEBUG_ASSERT(pos.GetExactDist(closestPointYZX[2], closestPointYZX[0], closestPointYZX[1]) < 8.0f); //making sure found point is indeed close to query point
+    if (pos.GetExactDist(closestPointYZX[2], closestPointYZX[0], closestPointYZX[1]) < 8.0f) //making sure found point is indeed close to query point
+    {
+        //strange: does happen in some place, pos = {m_positionX=-10313.6396 m_positionY=-3927.60596 m_positionZ=-81.1527176 ...} just outisde of suken temple
+        return false;
+    }
 
     // Do not select points over player pos
     if (closestPointYZX[1] > pointYZX[1] + 3.0f)

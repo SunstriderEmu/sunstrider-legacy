@@ -1,7 +1,6 @@
 version: 2.1
 jobs:
  build:
-   # pre-built images: https://circleci.com/docs/2.0/circleci-images/
    docker:
      - image: ubuntu:18.04
    steps:
@@ -29,7 +28,7 @@ jobs:
          name: database
          command: |
            cd ~/bin
-           ASSET_ID=`curl -H "Authorization: token 160e0a92bbe2d628594f33955ced3c1f461c2938" https://api.github.com/repos/kelno/sunstrider-core/releases/latest | jq -r '.assets[0].id'`
+           ASSET_ID=`curl -H "Authorization: token ${CI_ACCESS_TOKEN}" https://api.github.com/repos/kelno/sunstrider-core/releases/latest | jq -r '.assets[0].id'`
            curl -vLJO -H 'Accept: application/octet-stream' "https://api.github.com/repos/kelno/sunstrider-core/releases/assets/${ASSET_ID}?access_token=${CI_ACCESS_TOKEN}"
            ls
            unzip *.zip
@@ -43,11 +42,11 @@ jobs:
            pwd=`pwd`
            pwd
            cd build
-           git config user.email "circleci@build.bot" && git config user.name "Circl CI"
+           git config user.email "circleci@build.bot" && git config user.name "CircleCI"
            export CXX=/usr/bin/clang++-7
            export CC=/usr/bin/clang-7
            $CXX --version
-           /opt/cmake/bin/cmake ../project -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
+           /opt/cmake/bin/cmake ../project -DWARNINGS=1 -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS=static -DTESTS=1 -DCMAKE_BUILD_TYPE=Release -DDO_DEBUG=1 -DCMAKE_INSTALL_PREFIX=${pwd}
      - run:
          name: build
          command: |
