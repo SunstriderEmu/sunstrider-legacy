@@ -149,7 +149,7 @@ bool CreatureAI::UpdateVictim(bool evade)
     if (!me->HasReactState(REACT_PASSIVE))
     {
         if (Unit* victim = me->SelectVictim(evade))
-            if (!me->IsFocusing(nullptr, true) && victim != me->GetVictim())
+            if (!me->IsFocusing(nullptr, true) && (victim != me->GetVictim() || me->GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)) //sun: also start attack if we're not chasing... we might have triggered another movement in scripts
                 AttackStart(victim);
 
         return evade && me->GetVictim() != nullptr;

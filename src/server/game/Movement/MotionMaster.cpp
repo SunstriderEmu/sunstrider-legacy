@@ -628,6 +628,7 @@ void MotionMaster::MovePoint(uint32 id, Position const& pos, bool generatePath/*
 
 void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, Optional<float> finalOrient, bool forceDestination)
 {
+    _owner->AttackStop(); //sun: we should stop attacking our current melee target. This is also needed because if we're still considered attacking a target the chase generator won't be started again automatically
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         TC_LOG_TRACE("movement.motionmaster", "MotionMaster::MovePoint: '%s', targeted point Id: %u (X: %f, Y: %f, Z: %f)", _owner->GetGUID().ToString().c_str(), id, x, y, z);
