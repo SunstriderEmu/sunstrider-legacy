@@ -1869,11 +1869,12 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool force /* = false */) co
     {
         if(!IsWithinSightDist(who))
             return CAN_ATTACK_RESULT_TOO_FAR;
-    } else {
+    } else 
+    {
         if (!_IsTargetAcceptable(who))
             return CAN_ATTACK_RESULT_OTHERS;
 
-        if(!IsWithinDistInMap(who, GetAggroRange(who) + GetCombatReach() + who->GetCombatReach()))
+        if(!IsWithinDistInMap(who, GetAggroRange(who))) //TC says "The combatreach should not get taken into account for the distance so we drop it from the range (see Supremus as example)"
             return CAN_ATTACK_RESULT_TOO_FAR;
 
         //ignore LoS for assist
@@ -1984,7 +1985,7 @@ bool Creature::IsOutOfThreatArea(Unit const* target) const
 float Creature::GetAggroRange(Unit const* pl) const
 {
     float aggroRate = sWorld->GetRate(RATE_CREATURE_AGGRO);
-    if(aggroRate==0)
+    if (aggroRate == 0)
         return 0.0f;
 
     int32 playerlevel   = pl->GetLevelForTarget(this);
@@ -1997,7 +1998,7 @@ float Creature::GetAggroRange(Unit const* pl) const
         leveldif = -25;
 
     // "The aggro radius of a mob having the same level as the player is roughly 20 yards"
-    float aggroRadius = 20;
+    float aggroRadius = 20.0f;
 
     // "Aggro Radius varies with level difference at a rate of roughly 1 yard/level"
     // radius grow if playlevel < creaturelevel
