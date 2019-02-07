@@ -286,7 +286,6 @@ Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     m_combatPulseTime(0), 
     m_combatPulseDelay(0),
     m_lastDamagedTime(0),
-    m_movementFlagsUpdateTimer(MOVEMENT_FLAGS_UPDATE_TIMER),
     m_originalEntry(0),
     m_questPoolId(0),
     m_chosenTemplate(0),
@@ -699,6 +698,9 @@ void Creature::Update(uint32 diff)
             ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this);
     }
 
+    //sun: removed that system... That's very bad in many many cases and wee want to update those flags using movement system rather than updating them at all time (and screw up scripts)
+    //TC UpdateMovementFlags();
+
     switch(m_deathState)
     {
         case JUST_RESPAWNED:
@@ -774,12 +776,6 @@ void Creature::Update(uint32 diff)
             m_timeSinceSpawn += diff;
 
             DecreaseTimer(m_stealthAlertCooldown, diff);
-
-            if (DecreaseTimer(m_movementFlagsUpdateTimer, diff))
-            {
-                UpdateMovementFlags();
-                m_movementFlagsUpdateTimer = MOVEMENT_FLAGS_UPDATE_TIMER;
-            }
 
             if(IsInCombat() && 
                 (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
@@ -1428,7 +1424,6 @@ void Creature::UpdateLevelDependantStats()
     CreatureTemplate const* cInfo = GetCreatureTemplate();
     // uint32 rank = IsPet() ? 0 : cInfo->rank;
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
-
 
     // health
     uint32 health = stats->GenerateHealth(cInfo);

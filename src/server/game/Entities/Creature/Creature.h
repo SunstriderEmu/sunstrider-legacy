@@ -349,8 +349,6 @@ enum class CreatureGroundMovementType : uint8
     Max
 };
 
-#define MOVEMENT_FLAGS_UPDATE_TIMER 5000
-
 enum class CreatureFlightMovementType : uint8
 {
     None             = 0,
@@ -1183,7 +1181,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 m_chosenTemplate; //chosen creature template for this creature
 
         Position m_lastMovementFlagsPosition;
-        uint32 m_movementFlagsUpdateTimer;
 
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
