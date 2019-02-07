@@ -372,6 +372,19 @@ void MovementPacketSender::SendMovementFlagChangeToAll(Unit* unit, MovementFlags
     {
 #ifdef LICH_KING
         case MOVEMENTFLAG_DISABLE_GRAVITY:  opcode = apply ? SMSG_SPLINE_MOVE_GRAVITY_DISABLE   : SMSG_SPLINE_MOVE_GRAVITY_ENABLE; break;
+#else
+        case MOVEMENTFLAG_DISABLE_GRAVITY:
+        { //experimental, we need a way to send the move flag update, this packet seems to work (for creatures as well)
+            opcode = apply ? MSG_MOVE_START_SWIM_CHEAT : MSG_MOVE_STOP_SWIM_CHEAT;
+            WorldPacket data(opcode, 8 + 30);
+            unit->GetMovementInfo().WriteContentIntoPacket(&data, true);  //this contains the server time, not the time provided by client
+            unit->SendMessageToSet(&data, nullptr);
+            if(apply)
+                unit->SetAnimationTier(UnitAnimationTier::Ground);
+            else
+                unit->SetAnimationTier(UnitAnimationTier::Fly);
+            return;
+        }
 #endif
         case MOVEMENTFLAG_ROOT:             opcode = apply ? SMSG_SPLINE_MOVE_ROOT              : SMSG_SPLINE_MOVE_UNROOT; break;
         case MOVEMENTFLAG_WATERWALKING:     opcode = apply ? SMSG_SPLINE_MOVE_WATER_WALK        : SMSG_SPLINE_MOVE_LAND_WALK; break;
