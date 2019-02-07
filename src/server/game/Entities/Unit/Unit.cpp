@@ -358,7 +358,6 @@ Unit::Unit(bool isWorldObject) :
         i = 1.0f;
 
     _targetLocked = false;
-    m_ChaseRange = 0;//MELEE_RANGE;
 
     _lastLiquid = nullptr;
 
@@ -11095,7 +11094,6 @@ void Unit::SetDisableGravity(bool apply)
         )
         return;
 
-#ifdef LICH_KING
     if (IsMovedByPlayer() && IsInWorld())
         MovementPacketSender::SendMovementFlagChangeToMover(this, MOVEMENTFLAG_DISABLE_GRAVITY, apply);
     else if (IsMovedByPlayer() && !IsInWorld())
@@ -11105,9 +11103,6 @@ void Unit::SetDisableGravity(bool apply)
         SetDisableGravityReal(apply);
         MovementPacketSender::SendMovementFlagChangeToAll(this, MOVEMENTFLAG_DISABLE_GRAVITY, apply);
     }
-#else
-    SetDisableGravityReal(apply);
-#endif
 }
 
 void Unit::SetDisableGravityReal(bool apply)

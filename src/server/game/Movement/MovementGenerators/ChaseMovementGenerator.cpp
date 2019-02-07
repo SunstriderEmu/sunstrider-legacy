@@ -152,7 +152,7 @@ bool ChaseMovementGenerator::Update(Unit* owner, uint32 diff)
     bool const mutualChase     = IsMutualChase(owner, target);
     float const hitboxSum      = owner->GetCombatReach() + target->GetCombatReach();
     //exact dist min range
-    float const minTolerance   = _range ? _range->MinTolerance + hitboxSum : owner->GetCombatReach();
+    float const minTolerance   = _range ? _range->MinTolerance + hitboxSum : 0.0f; //owner->GetCombatReach();
     float const minTarget      = (_range ? _range->MinRange : 0.0f) + hitboxSum;
     //exact dist max range
     float const maxTolerance   = _range ? _range->MaxTolerance + hitboxSum : owner->GetMeleeRange(target); // melee range already includes hitboxes
