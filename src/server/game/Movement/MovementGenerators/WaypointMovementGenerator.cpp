@@ -524,7 +524,6 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
         init.SetFacing(finalOrientation);
 
     init.MovebyPath(_precomputedPath, 0, creature->GetTransport());
-
     init.Launch();
     _splineId = creature->movespline->GetId();
 

@@ -1043,9 +1043,9 @@ void BattlegroundMgr::LoadBattleEventIndexes()
     events.event1 = BG_EVENT_NONE;
     events.event2 = BG_EVENT_NONE;
     m_GameObjectBattleEventIndexMap.clear();             // need for reload case
-    m_GameObjectBattleEventIndexMap[-1].push_back(events);
+    m_GameObjectBattleEventIndexMap[uint32(-1)].push_back(events);
     m_CreatureBattleEventIndexMap.clear();               // need for reload case
-    m_CreatureBattleEventIndexMap[-1].push_back(events);
+    m_CreatureBattleEventIndexMap[uint32(-1)].push_back(events);
 
     uint32 count = 0;
 

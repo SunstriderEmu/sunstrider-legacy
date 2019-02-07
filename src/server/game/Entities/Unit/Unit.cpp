@@ -4386,20 +4386,24 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         return false;
 
     // player cannot attack in mount state
-    if (GetTypeId() == TYPEID_PLAYER) {
+    if (GetTypeId() == TYPEID_PLAYER) 
+    {
         if (IsMounted())
             return false;
-    } else {
+    } else 
+    {
         Creature* c = victim->ToCreature();
         if (c && c->IsEvadingAttacks())
             return false;
     }
 
     // nobody can attack GM in GM-mode
-    if (victim->GetTypeId() == TYPEID_PLAYER) {
+    if (victim->GetTypeId() == TYPEID_PLAYER) 
+    {
         if ((victim->ToPlayer())->IsGameMaster() || (victim->ToPlayer())->isSpectator())
             return false;
-    } else {
+    } else 
+    {
         if (victim->ToCreature()->IsEvadingAttacks())
             return false;
     }
@@ -4412,8 +4416,10 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SetStandState(UNIT_STAND_STATE_STAND);
 
     //already attacking
-    if (m_attacking) {
-        if (m_attacking == victim) {
+    if (m_attacking) 
+    {
+        if (m_attacking == victim) 
+        {
             // switch to melee attack from ranged/magic
             if (meleeAttack)
             {

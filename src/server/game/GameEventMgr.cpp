@@ -788,7 +788,7 @@ void GameEventMgr::LoadFromDB()
         uint32 oldMSTime = GetMSTime();
 
         //                                                  0          1
-        QueryResult result = WorldDatabase.Query("SELECT questId, eventEntry FROM game_event_seasonal_questrelation");
+        QueryResult _result = WorldDatabase.Query("SELECT questId, eventEntry FROM game_event_seasonal_questrelation");
 
         if (!result)
             TC_LOG_INFO("server.loading", ">> Loaded 0 seasonal quests additions in game events. DB table `game_event_seasonal_questrelation` is empty.");
@@ -796,7 +796,7 @@ void GameEventMgr::LoadFromDB()
         {
             do
             {
-                Field* fields = result->Fetch();
+                Field* fields = _result->Fetch();
 
                 uint32 questId = fields[0].GetUInt32();
                 uint32 eventEntry = fields[1].GetUInt32(); /// @todo Change to uint8
@@ -816,7 +816,7 @@ void GameEventMgr::LoadFromDB()
 
                 questTemplate->SetEventIdForQuest(static_cast<uint16>(eventEntry));
                 ++count;
-            } while (result->NextRow());
+            } while (_result->NextRow());
 
             TC_LOG_INFO("server.loading", ">> Loaded %u quests additions in game events in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
         }
