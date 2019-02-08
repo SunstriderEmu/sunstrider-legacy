@@ -23,6 +23,7 @@ INSERT IGNORE INTO reference_loot_template (Entry, Item, Reference, Chance, Ques
 UPDATE reference_loot_template SET GroupId = 1 WHERE Entry = 34039;
 UPDATE reference_loot_template SET GroupId = 3 WHERE Entry = 90039;
 
+UPDATE creature_template SET lootid = NULL WHERE entry = 17257;
 DELETE FROM creature_loot_template WHERE Entry = 17257;
 INSERT INTO creature_loot_template (Entry, Item, Reference, Chance, QuestRequired, LootMode, GroupId, MinCount, MaxCount, Comment, patch_min, patch_max) VALUES
 (17257,	29434,	0,	    100,	0,	1,	0,	3,	3,	"Badge of Justice",	4,	10),

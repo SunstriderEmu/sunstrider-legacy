@@ -62,6 +62,7 @@ INSERT IGNORE INTO creature_loot_template (Entry, Item, Reference, Chance, Quest
 (15691,	187914,	    0,	100,	0,	1,	1,	1,	1,	'Tokens',	0,	0),
 (15691,	187914,	    0,	100,	0,	1,	1,	2,	2,	'Tokens',	1,	3),
 (15691,	187914,	    0,	100,	0,	1,	1,	3,	3,	'Tokens',	4,	10);
+UPDATE creature_template SET lootid = 15691 WHERE entry = 15691;
 
 -- Prince Malchezaar
 DELETE FROM creature_loot_template WHERE Item IN (29759, 29760, 29761);
@@ -73,6 +74,7 @@ INSERT IGNORE INTO creature_loot_template (Entry, Item, Reference, Chance, Quest
 (15690,	187915,	    0,	100,	0,	1,	1,	1,	1,	'Tokens',	0,	0),
 (15690,	187915,	    0,	100,	0,	1,	1,	2,	2,	'Tokens',	1,	3),
 (15690,	187915,	    0,	100,	0,	1,	1,	3,	3,	'Tokens',	4,	10);
+UPDATE creature_template SET lootid = 15690 WHERE entry = 15690;
 
 -- Patch 2.4: all raid bosses drops badges and 3 tokens (Maggy, Gruul & HKM already done)
 UPDATE creature_loot_template SET patch_min = 4 WHERE Item = 29434 AND Entry IN (
@@ -107,6 +109,7 @@ INSERT IGNORE INTO creature_loot_template (Entry, Item, Reference, Chance, Quest
 (19516,	34054,	    0,	100,	0,	1,	1,	1,	1,	'Tokens',	0,	0),
 (19516,	34054,	    0,	100,	0,	1,	1,	2,	2,	'Tokens',	1,	3),
 (19516,	34054,	    0,	100,	0,	1,	1,	3,	3,	'Tokens',	4,	10);
+UPDATE creature_template SET lootid = 19516 WHERE entry = 19516;
 
 -- Kael'thas
 DELETE FROM reference_loot_template WHERE Item IN (30236, 30237, 30238);

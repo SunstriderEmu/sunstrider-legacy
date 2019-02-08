@@ -17,7 +17,6 @@ ALTER TABLE `creature_questender` CHARSET=utf8;
 ALTER TABLE `creature_queststarter` CHARSET=utf8;
 ALTER TABLE `creature_template` CHARSET=utf8;
 ALTER TABLE `creature_template_addon` CHARSET=utf8;
-ALTER TABLE `db_script_string` CHARSET=utf8;
 ALTER TABLE `disenchant_loot_template` CHARSET=utf8;
 ALTER TABLE `event_scripts` CHARSET=utf8;
 ALTER TABLE `exploration_basexp` CHARSET=utf8;
