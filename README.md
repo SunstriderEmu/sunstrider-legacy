@@ -1,6 +1,6 @@
 # The Sunstrider Core
 
-_Please note_: this is a legacy version of the project which is no longer supported or developed. All development is now private.
+*_Please note_*: this is a legacy version of the project which is no longer supported or developed. All development is now private.
 If you'd like to work on the project or ask questions, join our Discord!
 
 https://discordapp.com/invite/wGzmdXY
