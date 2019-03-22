@@ -40,14 +40,13 @@ Instances and battlegrounds may be updated multiple times while continents are u
 * Creature soft evade on inaccessible targets
 * Movemaps on transports!
 * Years of service
-
 A lot of improvements were made when the server was live:
-    * Large debugged quest base  
+* Large debugged quest base  
 A LOT of quests of all levels have been fixed, so we're benefiting from a good base on quests.
-    * Good instance and boss scripts  
+* Good instance and boss scripts  
 Most high level instance scripts are decent seeing other BC server ones (but still need work). Black temple and Sunwell scripts have been the most worked on and are close to perfect.
-    * A lot of abuse prevention fixes  
-    * Most world creatures use correct spells and have correct equipment
+* A lot of abuse prevention fixes  
+* Most world creatures use correct spells and have correct equipment
 
 ## Additional features (non blizzlike)
 
