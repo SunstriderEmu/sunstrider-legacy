@@ -14,7 +14,7 @@ Development started in 2009 from a [trinitycore1](https://bitbucket.org/KPsN/tri
 
 * Close to TrinityCore  
 You can think of this core as TrinityCore for TBC.  
-Over the years all majors systems were rewritten using TC as a base. This allows us to continuously make use of the TrinityCore's recent developments and have a dev-friendly core using the well known infrastructure of TC. 
+Over the years all major systems were rewritten using TC as a base. This allows us to continuously make use of the TrinityCore's recent developments and have a dev-friendly core using the well known infrastructure of TC. 
 When a system had been imported from TC, differences (either improvements or TBC adaptations) from original TC are usually highlighted by comments.
 * Automated testing system  
 Our star feature! Mainly used for spells at the moment.
