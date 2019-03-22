@@ -40,6 +40,7 @@ Instances and battlegrounds may be updated multiple times while continents are u
 * Creature soft evade on inaccessible targets
 * Movemaps on transports!
 * Years of service
+
 A lot of improvements were made when the server was live:
     * Large debugged quest base  
 A LOT of quests of all levels have been fixed, so we're benefiting from a good base on quests.
