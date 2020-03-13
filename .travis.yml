@@ -65,7 +65,7 @@ script:
   - make -j 10 -k && make install && make clean
   - cd check_install
   - mkdir data && cd data
-  - wget https://blob.allumeciga.re/2019_01_22_data.7z
+  - wget https://51.15.19.183/2019_01_22_data.7z
   - 7zr x 2019_01_22_data.7z -y > /dev/null
   - rm 2019_01_22_data.7z
   - cd ..
@@ -73,7 +73,7 @@ script:
   - cd bin
   - ./authserver --version
   - ./worldserver --version
-  - wget https://github.com/ValorenWoW/sunstrider-core/releases/download/2019_01_02/world_2019_01_02.sql.zip
+  - wget https://github.com/SunstriderEmu/sunstrider-legacy/releases/download/2019_01_02/world_2019_01_02.sql.zip
   - unzip world_2019_01_02.sql.zip
   - rm world_2019_01_02.sql.zip
   - sed -e 's!^DataDir\s*=.*!DataDir = "../data/"!g;' -e 's!^LogsDir\s*=.*!LogsDir = "../logs/"!g;'  -e 's!^Testing.MaxParallel\s*=.*!Testing.MaxParallel = 1000!g;' -e 's!^Logger.scripts.ai\s*=.*!Logger.scripts.ai=6,Console Server!g;' < "../etc/worldserver.conf.dist" > "../etc/worldserver.conf"
