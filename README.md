@@ -51,14 +51,12 @@ Most high level instance scripts are decent seeing other BC server ones (but sti
 ## Additional features (non blizzlike)
 
 * [Playerbots](https://github.com/ike3/mangosbot)
-* [Fully reworked stealth mechanics](http://wiki.valoren.org/index.php/Stealth_mechanics)
+* Fully reworked stealth mechanics
 * Transports including static npcs (ship crew), purely cosmectic. Selling and combat is disabled for them.
 * Dynamic PvP titles system depending on player rank in arena ladder (Disabled by default)
 * ArenaSpectator (Not tested for a long while, we'll probably just trash it)
-* Duel zone ([wiki](https://github.com/ValorenWoW/sunstrider-core/wiki/Duel-zone-(custom-feature)))
+* Duel zone
 * Pack58 item packs
 
 
-And much more. We've also developed some cool dev tools we'll probably share at a later point.
-
-[Wiki](https://github.com/ValorenWoW/sunstrider-core/wiki) (WIP, import in progress)
+And much more.
